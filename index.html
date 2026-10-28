@@ -82,7 +82,6 @@ label{color:#c0d0e0}
 <header class="top"><button class="hamb" id="openMenu" aria-label="Open menu">☰</button><div class="brand"><h1 id="pageTitle">Dashboard</h1><small>Ticket Control · Pattaya Dinosaur Kingdom</small></div><select class="lang" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option></select></header>
 <div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="closeMenu" style="width:100%">✕ Close menu</button></div></aside>
 <main class="wrap">
-<div class="notice" id="connectionNotice">Clean workspace: no example tickets are preloaded. Browser storage is active; Firebase cloud sync must be configured and verified before shared data is available.</div>
 <section id="stats" class="stats"></section>
 <section id="pageContent"></section>
 </main>
@@ -101,7 +100,6 @@ function departmentTickets(){return tickets.filter(t=>t.department===page)}
 function navRender(){document.getElementById('nav').innerHTML=PAGES.map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page))}
 function go(p){page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 function render(){navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
-document.getElementById('connectionNotice').textContent=tr('cloudMsg');
 let visible=dep()?departmentTickets():tickets;
 let total=visible.reduce((a,t)=>a+t.quantity,0),value=visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
