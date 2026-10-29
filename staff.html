@@ -367,13 +367,14 @@ async function startCloudSession(session){
    document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return;
  }
  const requestedDepartment=document.getElementById('staffDepartment').value||localStorage.getItem('tctl-staff-department')||'all';
- await recordStaffActivity(true,true);
- if(window.staffActivityTimer)clearInterval(window.staffActivityTimer);
- window.staffActivityTimer=setInterval(()=>recordStaffActivity(true,false),30000);
 
  // Keep "All Departments" as the staff permission/visible-menu choice, but open Sale first
  // so the four departments are available in the menu without mixing ticket cards together.
  selectedStaffDepartment=requestedDepartment;
+ await recordStaffActivity(true,true);
+ if(window.staffActivityTimer)clearInterval(window.staffActivityTimer);
+ window.staffActivityTimer=setInterval(()=>recordStaffActivity(true,false),30000);
+
  localStorage.setItem('tctl-staff-department',selectedStaffDepartment);
  page=selectedStaffDepartment==='all'?'sale':selectedStaffDepartment;
  document.getElementById('authScreen').style.display='none';
