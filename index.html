@@ -163,25 +163,39 @@ async function loadCloud(){
  }
  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
  if(error)throw error;
- tickets=(data||[]).map(mapCloud);cloudReady=true;localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
+ tickets=(data||[]).map(mapCloud);lastCloudFingerprint=JSON.stringify((data||[]).map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
 }
-let cloudPollTimer=null,cloudLoadBusy=false;
-async function refreshCloudTickets(){
- if(!currentUser||!cloudReady||document.getElementById('authScreen').style.display!=='none')return;
+let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
+async function refreshCloudTickets(force=false){
+ if(!currentUser||!cloudReady)return;
+ if(document.visibilityState==='hidden'&&!force)return;
  const modal=document.getElementById('ticketModal');
- if(modal&&modal.classList.contains('open'))return;
+ if(modal&&modal.classList.contains('open')&&!force)return;
  if(cloudLoadBusy)return;
  cloudLoadBusy=true;
- try{await loadCloud()}catch(e){console.error('Auto-refresh cloud tickets failed',e)}
+ try{
+  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+  if(error)throw error;
+  const rows=data||[];
+  const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));
+  if(force||fingerprint!==lastCloudFingerprint){
+   lastCloudFingerprint=fingerprint;
+   tickets=rows.map(mapCloud);
+   localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));
+   render();
+  }
+ }catch(e){console.error('Auto-refresh cloud tickets failed',e)}
  finally{cloudLoadBusy=false}
 }
 function listenRealtime(){
  if(cloudChannel)sb.removeChannel(cloudChannel);
  cloudChannel=sb.channel('ticket-control-live-'+(currentUser?.id||'session'))
-  .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{await refreshCloudTickets()})
+  .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{await refreshCloudTickets(true)})
   .subscribe(status=>{console.log('Ticket realtime status:',status)});
  if(cloudPollTimer)clearInterval(cloudPollTimer);
- cloudPollTimer=setInterval(refreshCloudTickets,3000);
+ cloudPollTimer=setInterval(()=>refreshCloudTickets(false),1500);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshCloudTickets(true)});
+ window.addEventListener('focus',()=>refreshCloudTickets(true));
 }
 async function startCloudSession(session){
  currentUser=session.user;
