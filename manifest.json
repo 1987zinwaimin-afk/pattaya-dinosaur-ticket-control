@@ -1,0 +1,25 @@
+{
+  "name": "Pattaya Dinosaur Kingdom Ticket Control",
+  "short_name": "Dinosaur Tickets",
+  "description": "Pattaya Dinosaur Kingdom ticket inventory and department control",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#041326",
+  "theme_color": "#041326",
+  "icons": [
+    {
+      "src": "/file_000000006da082119bbf212e4f6fad52.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/file_000000006da082119bbf212e4f6fad52.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
