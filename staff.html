@@ -346,6 +346,16 @@ function listenRealtime(){
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshCloudTickets(true)});
  window.addEventListener('focus',()=>refreshCloudTickets(true));
 }
+async function recordStaffActivity(active,firstLogin){
+ if(!sb||!currentUser)return;
+ const displayName=(document.getElementById('authName')?.value||currentUser.user_metadata?.display_name||'Staff').trim();
+ const normalizedName=displayName.toLocaleLowerCase().replace(/\\s+/g,' ').trim();
+ if(!normalizedName)return;
+ const row={normalized_name:normalizedName,display_name:displayName,department:selectedStaffDepartment||'all',user_id:currentUser.id,last_seen:new Date().toISOString(),is_active:!!active,updated_at:new Date().toISOString()};
+ if(firstLogin)row.logged_in_at=new Date().toISOString();
+ const {error}=await sb.from('staff_login_activity').upsert(row,{onConflict:'normalized_name'});
+ if(error)console.warn('Staff activity update failed:',error.message);
+}
 async function startCloudSession(session){
  currentUser=session.user;
  const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle();
@@ -357,6 +367,10 @@ async function startCloudSession(session){
    document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return;
  }
  const requestedDepartment=document.getElementById('staffDepartment').value||localStorage.getItem('tctl-staff-department')||'all';
+ await recordStaffActivity(true,true);
+ if(window.staffActivityTimer)clearInterval(window.staffActivityTimer);
+ window.staffActivityTimer=setInterval(()=>recordStaffActivity(true,false),30000);
+
  // Keep "All Departments" as the staff permission/visible-menu choice, but open Sale first
  // so the four departments are available in the menu without mixing ticket cards together.
  selectedStaffDepartment=requestedDepartment;
@@ -406,7 +420,7 @@ restoreSavedSession();
 function tr(k){return T[lang][k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function departmentTickets(){return tickets.filter(t=>t.department===page)}
-function navRender(){const visiblePages=PAGES.filter(p=>(p.id==='train'&&(selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'))||(['sale','entry','playing','event'].includes(p.id)&&(selectedStaffDepartment==='all'||p.id===selectedStaffDepartment)));document.getElementById('nav').innerHTML=visiblePages.map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('')+'<button type="button" id="staffLogout" style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='all';page='all';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
+function navRender(){const visiblePages=PAGES.filter(p=>(p.id==='train'&&(selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'))||(['sale','entry','playing','event'].includes(p.id)&&(selectedStaffDepartment==='all'||p.id===selectedStaffDepartment)));document.getElementById('nav').innerHTML=visiblePages.map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('')+'<button type="button" id="staffLogout" style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}await recordStaffActivity(false,false);if(window.staffActivityTimer){clearInterval(window.staffActivityTimer);window.staffActivityTimer=null}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='all';page='all';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
 function go(p){page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 function render(){if(STAFF_MODE && selectedStaffDepartment!=='all' && !['sale','entry','playing','event','train'].includes(page))page=selectedStaffDepartment;if(STAFF_MODE&&selectedStaffDepartment==='all'&&!['sale','entry','playing','event','train','all'].includes(page))page='all';navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
 let visible=dep()?departmentTickets():(STAFF_MODE&&selectedStaffDepartment!=='all'?tickets.filter(t=>t.department===selectedStaffDepartment):tickets);
