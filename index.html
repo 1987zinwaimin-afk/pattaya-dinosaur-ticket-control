@@ -417,9 +417,24 @@ async function startCloudSession(session){
  if(ownerSessionStartPromise)return ownerSessionStartPromise;
  ownerSessionStartPromise=(async()=>{
   currentUser=session.user;
-  let profileResult;
-  try{profileResult=await withAuthTimeout(sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle(),'Owner profile lookup',10000)}
-  catch(e){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('Login session exists, but Owner profile check did not finish: '+e.message)}
+  let profileResult=null,lastProfileLookupError=null;
+  // Retry the authenticated profile read on mobile connections that briefly stall.
+  for(let attempt=1;attempt<=3;attempt++){
+   try{
+    profileResult=await withAuthTimeout(sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle(),'Owner profile lookup',15000);
+    if(!profileResult.error)break;
+    lastProfileLookupError=profileResult.error;
+    if(attempt<3)await new Promise(resolve=>setTimeout(resolve,500*attempt));
+   }catch(e){
+    lastProfileLookupError=e;
+    if(attempt<3)await new Promise(resolve=>setTimeout(resolve,500*attempt));
+   }
+  }
+  if(!profileResult||profileResult.error){
+   currentUser=null;document.getElementById('authScreen').style.display='grid';
+   const detail=lastProfileLookupError?.message||'No response from the profiles table';
+   throw new Error('Owner profile check failed after 3 attempts: '+detail+'. Your login session and saved ticket data were not deleted. Please tap Sign in again.');
+  }
   const {data:profile,error:profileError}=profileResult;
   if(profileError||!profile){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error(profileError?'Owner profile lookup error: '+profileError.message:'This account has no profile record. Existing data was not changed.')}
   currentRole=profile.role;
@@ -444,14 +459,14 @@ document.getElementById('authForm').onsubmit=async e=>{
    if(password.length<8){throw new Error('For a new account, password must be at least 8 characters.')}
    const {data,error}=await withAuthTimeout(sb.auth.signUp({email,password,options:{data:{display_name:name}}}),'Create account',12000);
    if(error)throw error;
-   if(data.session){err.textContent='Account created. Checking Owner permission…';await withAuthTimeout(startCloudSession(data.session),'Owner profile check')}
+   if(data.session){err.textContent='Account created. Checking Owner permission…';await withAuthTimeout(startCloudSession(data.session),'Owner profile check',60000)}
    else{err.textContent='Account created. Check your email to confirm, then sign in.'}
   }else{
    const {data,error}=await withAuthTimeout(sb.auth.signInWithPassword({email,password}),'Gmail/password sign-in',12000);
    if(error)throw error;
    if(!data.session)throw new Error('Login service returned no session. Please try again.');
    err.textContent='Login successful. Checking Owner permission…';
-   await withAuthTimeout(startCloudSession(data.session),'Owner profile check');
+   await withAuthTimeout(startCloudSession(data.session),'Owner profile check',60000);
   }
  }catch(e){console.error('Owner login failed:',e);err.textContent=e.message||'Authentication failed. Please try again.'}
  finally{submitButton.disabled=false;submitButton.textContent=originalText}
