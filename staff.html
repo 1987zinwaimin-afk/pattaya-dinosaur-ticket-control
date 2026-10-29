@@ -145,11 +145,20 @@ label{color:#c0d0e0}
 @media(min-width:520px){.ticket img{height:110px}.ticket-body{padding:10px}.ticket h3{font-size:1rem}}
 @media(max-width:360px){.wrap{padding-left:7px;padding-right:7px}.stats{gap:5px}.stat{padding:8px 7px}.stat span{font-size:10px}.stat strong{font-size:1rem}.cards{gap:6px}.ticket img{height:76px}.ticket-body{padding:6px}.ticket h3{font-size:.82rem}.price{font-size:.72rem;padding:4px 5px}.ticket-actions button{font-size:.7rem;padding:6px 4px}}
 
+
+/* Smaller floating menu button; language selector lives inside the slide-out menu */
+.header-menu{left:8px;top:8px;transform:none;width:34px;min-width:34px;min-height:34px;height:34px;padding:3px;border-radius:9px;font-size:17px;line-height:1;box-shadow:0 2px 6px #0005;background:rgba(5,24,43,.78)}
+.header-language{display:none!important}
+.side .menu-language-wrap{margin:0 8px 18px}
+.side .menu-language-label{display:block;color:var(--muted);font-size:12px;margin:0 0 6px}
+.side select.menu-language{display:block;width:100%;max-width:none;padding:10px 12px;border-radius:12px;line-height:1.2;background:#06182b;color:#fff}
+@media(max-width:520px){.header-menu{left:7px;top:7px;width:31px;min-width:31px;height:31px;min-height:31px;font-size:16px;padding:2px}}
+
 </style>
 </head>
 <body>
-<header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><span id="pageTitle" class="visually-hidden">Dashboard</span><select class="lang header-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option></select></header>
-<div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="closeMenu" style="width:100%">✕ Close menu</button></div></aside>
+<header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
+<div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><div class="menu-language-wrap"><label class="menu-language-label" for="language">Language / ภาษา</label><select class="menu-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option></select></div><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="closeMenu" style="width:100%">✕ Close menu</button></div></aside>
 <main class="wrap">
 <section id="stats" class="stats"></section>
 <section id="pageContent"></section>
