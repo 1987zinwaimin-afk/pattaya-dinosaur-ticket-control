@@ -220,12 +220,15 @@ document.getElementById('authForm').onsubmit=async e=>{
   }else{const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await startCloudSession(data.session)}
  }catch(e){err.textContent=e.message||'Authentication failed'}
 };
+let restoringSavedSession=false;
 async function restoreSavedSession(){
+ if(restoringSavedSession||currentUser)return;
+ restoringSavedSession=true;
  try{
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
   if(data.session)await startCloudSession(data.session);
- }catch(e){console.error('Could not restore saved Owner session',e);document.getElementById('authError').textContent='Could not restore saved session. Please sign in once again.'}
+ }catch(e){console.error('Could not restore saved Owner session',e);document.getElementById('authError').textContent='Could not restore saved session. Please sign in once again.'}finally{restoringSavedSession=false}
 }
 sb.auth.onAuthStateChange((event,session)=>{
  if(event==='INITIAL_SESSION'&&session)setTimeout(()=>restoreSavedSession(),0);
