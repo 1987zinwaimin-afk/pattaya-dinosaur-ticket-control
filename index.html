@@ -135,11 +135,22 @@ const PAGES=[{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',icon:'
 const T={en:{types:'Ticket types',qty:'Total quantity',value:'Inventory value',add:'＋ Add Ticket',save:'▤ Save Report',share:'↗ Share Report',search:'⌕ Search tickets...',none:'No tickets saved yet.',noHint:'Use Add Ticket to create your first real ticket.',sold:'Tickets sold',total:'Total',edit:'✎ Edit',more:'⋮ More',addQty:'＋ Add quantity',clear:'Clear quantity',del:'Delete ticket',name:'Ticket name',price:'Price (THB)',initial:'Initial quantity',image:'Ticket image',saveTicket:'Save ticket',cancel:'Cancel',location:'Event location',records:'Ticket records',today:'Today',month:'Month',custom:'Custom range',from:'From date',to:'To date',report:'Generate report',staffName:'Staff name',department:'Department',loginHistory:'Staff login activity is not connected yet.',cloud:'Cloud status',cloudMsg:'Connected to Ticket Control Live cloud database. Ticket changes sync in real time.',light:'Light theme',dark:'Dark theme',noReport:'No report data for this range.',addSuccess:'Ticket saved in this browser.',quantityPrompt:'Enter quantity to add',editTitle:'Edit ticket',newTitle:'Add ticket',reportSaved:'Report downloaded.',staffNotice:'Staff accounts and secure login are not configured yet.'},th:{types:'ประเภทตั๋ว',qty:'จำนวนตั๋วทั้งหมด',value:'มูลค่าสต็อก',add:'＋ เพิ่มตั๋ว',save:'▤ บันทึกรายงาน',share:'↗ แชร์รายงาน',search:'⌕ ค้นหาตั๋ว...',none:'ยังไม่มีตั๋วที่บันทึก',noHint:'กดเพิ่มตั๋วเพื่อสร้างรายการแรก',sold:'จำนวนที่ขาย',total:'รวม',edit:'✎ แก้ไข',more:'⋮ เพิ่มเติม',addQty:'＋ เพิ่มจำนวน',clear:'ล้างจำนวน',del:'ลบตั๋ว',name:'ชื่อตั๋ว',price:'ราคา (THB)',initial:'จำนวนเริ่มต้น',image:'รูปภาพตั๋ว',saveTicket:'บันทึกตั๋ว',cancel:'ยกเลิก',location:'สถานที่จัดงาน',records:'รายการตั๋ว',today:'รายวัน',month:'รายเดือน',custom:'ช่วงวันที่กำหนด',from:'ตั้งแต่วันที่',to:'ถึงวันที่',report:'สร้างรายงาน',staffName:'ชื่อพนักงาน',department:'แผนก',loginHistory:'ยังไม่ได้เชื่อมต่อประวัติการเข้าสู่ระบบ',cloud:'สถานะคลาวด์',cloudMsg:'เชื่อมต่อฐานข้อมูล Ticket Control Live แล้ว รายการตั๋วจะซิงก์แบบเรียลไทม์',light:'ธีมสว่าง',dark:'ธีมมืด',noReport:'ไม่มีข้อมูลรายงานในช่วงนี้',addSuccess:'บันทึกตั๋วในเบราว์เซอร์แล้ว',quantityPrompt:'ใส่จำนวนที่ต้องการเพิ่ม',editTitle:'แก้ไขตั๋ว',newTitle:'เพิ่มตั๋ว',reportSaved:'ดาวน์โหลดรายงานแล้ว',staffNotice:'ยังไม่ได้ตั้งค่าบัญชีพนักงานและการเข้าสู่ระบบที่ปลอดภัย'}};
 let lang=localStorage.getItem('tctl-lang')||'en',page='dashboard',tickets=readTickets(),lastInput={},theme=localStorage.getItem('tctl-theme')||'dark';
 function readTickets(){try{return JSON.parse(localStorage.getItem('tctl-new-tickets')||'[]')}catch{return []}}
+let lastCloudRows=new Map();
+function cloudRowForTicket(t){
+ return {id:t.id,department:t.department,name:t.name,price:t.price??null,quantity:Number(t.quantity||0),image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()};
+}
 function save(){
  localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));
  if(!currentUser||!cloudReady)return;
- const snapshot=tickets.map(t=>({id:t.id,department:t.department,name:t.name,price:t.price,quantity:t.quantity,image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()}));
- syncTickets(snapshot);
+ const changed=[];
+ for(const t of tickets){
+  const row=cloudRowForTicket(t);
+  const prior=lastCloudRows.get(String(t.id));
+  const fields=['department','name','price','quantity','image_path','image_url','location'];
+  const differs=!prior||fields.some(k=>(prior[k]??null)!==(row[k]??null));
+  if(differs){row.updated_at=new Date().toISOString();t.updatedAt=row.updated_at;lastCloudRows.set(String(t.id),row);changed.push(row)}
+ }
+ if(changed.length)syncTickets(changed);
 }
 let syncBusy=false,syncPending=null;
 async function syncTickets(snapshot){
@@ -163,7 +174,7 @@ async function loadCloud(){
  }
  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
  if(error)throw error;
- tickets=(data||[]).map(mapCloud);lastCloudFingerprint=JSON.stringify((data||[]).map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
+ tickets=(data||[]).map(mapCloud);lastCloudRows=new Map((data||[]).map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify((data||[]).map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
@@ -181,6 +192,7 @@ async function refreshCloudTickets(force=false){
   if(force||fingerprint!==lastCloudFingerprint){
    lastCloudFingerprint=fingerprint;
    tickets=rows.map(mapCloud);
+   lastCloudRows=new Map(rows.map(r=>[String(r.id),r]));
    localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));
    render();
   }
