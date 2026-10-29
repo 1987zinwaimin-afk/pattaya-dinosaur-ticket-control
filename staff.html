@@ -368,6 +368,7 @@ async function startCloudSession(session){
  if(enteredName && profile.display_name && enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase()){
    document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return;
  }
+ let sharedProfile=profile;if(!sharedProfile.avatar_url&&profile.display_name){try{const {data:matches,error:matchError}=await sb.from('profiles').select('display_name,avatar_url,role').eq('role','staff').ilike('display_name',profile.display_name.trim()).not('avatar_url','is',null).limit(10);if(!matchError&&matches?.length){const match=matches.find(x=>x.avatar_url&&String(x.avatar_url).trim());if(match)sharedProfile={...profile,avatar_url:match.avatar_url}}}catch(photoLookupError){console.warn('Could not resolve shared staff photo by name:',photoLookupError)}}
  const requestedDepartment=document.getElementById('staffDepartment').value||localStorage.getItem('tctl-staff-department')||'all';
 
  // Keep "All Departments" as the staff permission/visible-menu choice, but open Sale first
@@ -382,7 +383,7 @@ async function startCloudSession(session){
  document.getElementById('authScreen').style.display='none';
  document.getElementById('authError').textContent='';
  navRender();
- try{await loadCloud();listenRealtime();render();showStaffWelcome(profile,selectedStaffDepartment)}catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
+ try{await loadCloud();listenRealtime();render();showStaffWelcome(sharedProfile,selectedStaffDepartment)}catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
 }
 document.getElementById('authForm').onsubmit=async e=>{
  e.preventDefault();
