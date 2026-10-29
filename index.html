@@ -200,7 +200,7 @@ label{color:#c0d0e0}
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Ticket Control Live</h2><p id="authIntro">Owner Login</p>
-<form id="authForm"><label id="authNameLabel" for="authName" style="display:none">Name (for new account)</label><input id="authName" maxlength="80" placeholder="Your name" style="display:none"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username" required placeholder="name@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters">
+<form id="authForm"><label id="authNameLabel" for="authName" style="display:none">Name (for new account)</label><input id="authName" maxlength="80" placeholder="Your name" style="display:none"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username" required placeholder="name@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" required placeholder="At least 8 characters">
 <div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Sign in</button><button type="button" id="authToggle">Create account</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">OWNER WEBSITE · Staff must use the separate Staff link.</div>
 </div></div>
@@ -386,7 +386,7 @@ async function startCloudSession(session){
 }
 function setAuthMode(mode){authMode=mode;document.getElementById('authSubmit').textContent=mode==='signin'?'Sign in':'Create account';document.getElementById('authToggle').textContent=mode==='signin'?'Create account':'Back to sign in';document.getElementById('authNameLabel').style.display=mode==='signup'?'block':'none';document.getElementById('authName').style.display=mode==='signup'?'block':'none';document.getElementById('authIntro').textContent=mode==='signup'?'Owner account setup. Staff must use the separate Staff website.':'Owner / Staff Cloud Login';document.getElementById('authError').textContent=''}
 document.getElementById('authName').style.display='none';
-document.getElementById('authToggle').onclick=()=>setAuthMode(authMode==='signin'?'signup':'signin');
+document.getElementById('authToggle').addEventListener('click',()=>setAuthMode(authMode==='signin'?'signup':'signin'));
 document.getElementById('authForm').onsubmit=async e=>{
  e.preventDefault();const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value,name=document.getElementById('authName').value.trim();
  const err=document.getElementById('authError');err.textContent='Connecting…';
