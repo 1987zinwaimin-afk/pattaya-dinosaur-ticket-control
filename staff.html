@@ -230,7 +230,10 @@ document.getElementById('authForm').onsubmit=async e=>{
   await startCloudSession(data.session);
  }catch(e){err.textContent=(e.message||'Could not connect.')+' If anonymous sign-in is disabled in Supabase Auth settings, enable Anonymous Sign-Ins for this project.'}
 };
+let restoringSavedSession=false;
 async function restoreSavedSession(){
+ if(restoringSavedSession||currentUser)return;
+ restoringSavedSession=true;
  try{
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
@@ -244,7 +247,7 @@ async function restoreSavedSession(){
   }else{
    await sb.auth.signOut();
   }
- }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Could not restore saved session. Please continue once again.'}
+ }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Could not restore saved session. Please continue once again.'}finally{restoringSavedSession=false}
 }
 sb.auth.onAuthStateChange((event,session)=>{
  if(event==='INITIAL_SESSION'&&session)setTimeout(()=>restoreSavedSession(),0);
