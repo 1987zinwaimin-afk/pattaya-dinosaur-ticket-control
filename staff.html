@@ -137,11 +137,22 @@ let lang=localStorage.getItem('tctl-lang')||'en',page='sale',tickets=readTickets
 const staffDepartmentLabels={sale:'Sale Department',entry:'Entry Department',playing:'Playing Department',event:'Event Department',all:'All Department'};
 let selectedStaffDepartment='sale';
 function readTickets(){try{return JSON.parse(localStorage.getItem('tctl-new-tickets')||'[]')}catch{return []}}
+let lastCloudRows=new Map();
+function cloudRowForTicket(t){
+ return {id:t.id,department:t.department,name:t.name,price:t.price??null,quantity:Number(t.quantity||0),image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()};
+}
 function save(){
  localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));
  if(!currentUser||!cloudReady)return;
- const snapshot=tickets.map(t=>({id:t.id,department:t.department,name:t.name,price:t.price,quantity:t.quantity,image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()}));
- syncTickets(snapshot);
+ const changed=[];
+ for(const t of tickets){
+  const row=cloudRowForTicket(t);
+  const prior=lastCloudRows.get(String(t.id));
+  const fields=['department','name','price','quantity','image_path','image_url','location'];
+  const differs=!prior||fields.some(k=>(prior[k]??null)!==(row[k]??null));
+  if(differs){row.updated_at=new Date().toISOString();t.updatedAt=row.updated_at;lastCloudRows.set(String(t.id),row);changed.push(row)}
+ }
+ if(changed.length)syncTickets(changed);
 }
 let syncBusy=false,syncPending=null;
 async function syncTickets(snapshot){
@@ -165,7 +176,7 @@ async function loadCloud(){
  }
  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
  if(error)throw error;
- tickets=(data||[]).map(mapCloud);lastCloudFingerprint=JSON.stringify((data||[]).map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
+ tickets=(data||[]).map(mapCloud);lastCloudRows=new Map((data||[]).map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify((data||[]).map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
@@ -183,6 +194,7 @@ async function refreshCloudTickets(force=false){
   if(force||fingerprint!==lastCloudFingerprint){
    lastCloudFingerprint=fingerprint;
    tickets=rows.map(mapCloud);
+   lastCloudRows=new Map(rows.map(r=>[String(r.id),r]));
    localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));
    render();
   }
