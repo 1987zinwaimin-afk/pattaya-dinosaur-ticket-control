@@ -182,7 +182,17 @@ async function loadCloud(){
   const live=parseTicketCache('tctl-new-tickets');
   const backup=parseTicketCache('tctl-local-backup-before-cloud');
   localTicketsBeforeCloud=live.length?live:backup;
-  console.log('Local recovery candidates:',{live:live.length,backup:backup.length});
+  // Search other ticket-related keys on this same new-site origin for recoverable arrays.
+  // Never read data from another website origin and never overwrite non-empty Cloud data.
+  if(!localTicketsBeforeCloud.length){
+   const isTicketArray=(v)=>Array.isArray(v)&&v.some(t=>t&&['sale','entry','playing','event'].includes(t.department)&&String(t.name||'').trim());
+   for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(!key||!/(ticket|tctl)/i.test(key)||['tctl-new-tickets','tctl-local-backup-before-cloud'].includes(key))continue;
+    try{const v=JSON.parse(localStorage.getItem(key)||'null');if(isTicketArray(v)){localTicketsBeforeCloud=v;console.warn('Found recoverable ticket data in local key:',key);break}}catch(e){}
+   }
+  }
+  console.log('Local recovery candidates:',{live:live.length,backup:backup.length,selected:localTicketsBeforeCloud.length});
  }catch(e){console.warn('Could not inspect local ticket caches',e)}
  // Do not write a duplicate backup to localStorage; it can exceed mobile browser quota.
  // Read existing cache/backup if present, but leave them untouched.
