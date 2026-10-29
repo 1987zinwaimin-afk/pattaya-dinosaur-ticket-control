@@ -1,0 +1,26 @@
+{
+  "id": "/staff.html",
+  "name": "Pattaya Dinosaur Kingdom Staff Ticket Control",
+  "short_name": "Staff Tickets",
+  "description": "Staff ticket inventory by assigned department",
+  "start_url": "/staff.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#041326",
+  "theme_color": "#041326",
+  "icons": [
+    {
+      "src": "/file_000000006da082119bbf212e4f6fad52.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/file_000000006da082119bbf212e4f6fad52.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
