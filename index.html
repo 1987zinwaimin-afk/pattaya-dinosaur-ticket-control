@@ -128,7 +128,7 @@ label{color:#c0d0e0}
 <script>
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-auth-v1'}});
 let authMode="signin",currentUser=null,currentRole="staff",cloudReady=false,cloudChannel=null;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',icon:'🎪'}];
 const PAGES=[{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',icon:'◈'},...DEPTS,{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',icon:'▥'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',icon:'♧'},{id:'settings',en:'Settings',th:'ตั้งค่า',icon:'⚙'}];
