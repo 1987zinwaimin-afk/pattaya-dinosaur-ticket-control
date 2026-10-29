@@ -175,6 +175,9 @@ function showCloudError(msg){
 }
 function mapCloud(row){return {id:row.id,department:row.department,name:row.name,price:row.price===null?null:Number(row.price),quantity:Number(row.quantity||0),image:row.image_url||null,imageUrl:row.image_url||null,imagePath:row.image_path||null,location:row.location||'',createdAt:row.created_at,updatedAt:row.updated_at,createdBy:row.created_by}}
 async function loadCloud(){
+ // Capture local tickets before reading Cloud: the Owner browser may contain the only surviving copy.
+ let localTicketsBeforeCloud=[];
+ try{localTicketsBeforeCloud=JSON.parse(localStorage.getItem('tctl-new-tickets')||'[]');if(!Array.isArray(localTicketsBeforeCloud))localTicketsBeforeCloud=[]}catch(e){console.warn('Could not parse local ticket cache',e)}
  // Never let a large base64/local ticket cache block the authoritative cloud load.
  // Keep any backup only when browser quota permits; cloud data must still load if it does not.
  try{
@@ -185,7 +188,37 @@ async function loadCloud(){
  }catch(storageError){console.warn('Skipping oversized local backup; continuing with Cloud data.',storageError)}
  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
  if(error)throw error;
- tickets=(data||[]).map(mapCloud);lastCloudRows=new Map((data||[]).map(r=>[String(r.id),r]));const syncBanner=document.getElementById('cloudSyncStatus');if(syncBanner)syncBanner.style.display='none';lastCloudFingerprint=JSON.stringify((data||[]).map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();
+ let cloudRows=data||[];
+ // One-time recovery: when the cloud table is empty but this browser has tickets, migrate that local copy to Cloud.
+ // Never overwrite non-empty Cloud data and never delete local tickets during recovery.
+ if(cloudRows.length===0 && localTicketsBeforeCloud.length>0){
+  const recovered=[];
+  for(const t of localTicketsBeforeCloud){
+   if(!t||!['sale','entry','playing','event'].includes(t.department)||!String(t.name||'').trim())continue;
+   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(t.id||'')))t.id=crypto.randomUUID();
+   let imageUrl=t.imageUrl||t.image||null,imagePath=t.imagePath||null;
+   if(typeof imageUrl==='string' && imageUrl.startsWith('data:') && currentUser){
+    try{
+     const blob=await (await fetch(imageUrl)).blob();
+     const ext=(blob.type.split('/')[1]||'jpeg').replace(/[^a-z0-9]/gi,'')||'jpg';
+     const path=currentUser.id+'/'+t.id+'/recovered-'+Date.now()+'.'+ext;
+     const {error:uploadError}=await sb.storage.from('ticket-images').upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg'});
+     if(!uploadError){imagePath=path;imageUrl=sb.storage.from('ticket-images').getPublicUrl(path).data.publicUrl}else{console.warn('Could not recover ticket image',uploadError);imageUrl=null}
+    }catch(imageError){console.warn('Could not recover ticket image',imageError);imageUrl=null}
+   }
+   if(typeof imageUrl==='string' && imageUrl.startsWith('data:'))imageUrl=null;
+   t.imagePath=imagePath;t.imageUrl=imageUrl;t.image=imageUrl;
+   recovered.push(cloudRowForTicket(t));
+  }
+  if(recovered.length){
+   const {error:migrateError}=await sb.from('tickets').upsert(recovered,{onConflict:'id'});
+   if(migrateError)throw new Error('Cloud is empty and local tickets were found, but recovery upload failed: '+migrateError.message);
+   const {data:reloaded,error:reloadError}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+   if(reloadError)throw reloadError;
+   cloudRows=reloaded||[];
+  }
+ }
+ tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));const syncBanner=document.getElementById('cloudSyncStatus');if(syncBanner)syncBanner.style.display='none';lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
