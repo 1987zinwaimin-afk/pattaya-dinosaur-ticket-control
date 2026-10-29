@@ -236,18 +236,40 @@ function drawTrainStats(){const today=localToday(),rows=trainRows.filter(r=>r.tr
 function drawTrainHistory(){const body=document.getElementById('trainHistory');if(!body)return;const q=(document.getElementById('trainSearch')?.value||'').toLowerCase(),date=document.getElementById('trainFilterDate')?.value||'';const rows=trainRows.filter(r=>(!date||r.trip_date===date)&&(!q||[r.driver_name,r.trip_date,r.depart_time,r.return_time,r.riders].some(v=>String(v??'').toLowerCase().includes(q))));body.innerHTML=rows.length?rows.map((r,i)=>{const mins=durationMins(r.depart_time,r.return_time);return '<tr><td>'+String(i+1)+'</td><td><span style="color:#6ee7a8">'+fmtTime(r.depart_time)+'</span></td><td><span style="color:#ff8795">'+fmtTime(r.return_time)+'</span></td><td>'+r.riders+'</td><td>'+escapeHtml(r.driver_name)+'</td><td>'+(mins===null?'In progress':mins+' min')+'</td><td>'+fmtDate(r.trip_date)+'</td><td><div class="actions" style="gap:4px"><button type="button" data-train-edit="'+r.id+'" class="blue">✎</button><button type="button" data-train-delete="'+r.id+'" class="danger">🗑</button></div></td></tr>'}).join(''):'<tr><td colspan="8" class="subtle">No train records found.</td></tr>';body.querySelectorAll('[data-train-edit]').forEach(b=>b.onclick=()=>editTrainRow(b.dataset.trainEdit));body.querySelectorAll('[data-train-delete]').forEach(b=>b.onclick=()=>deleteTrainRow(b.dataset.trainDelete))}
 async function editTrainRow(id){const r=trainRows.find(x=>x.id===id);if(!r)return;const depart=prompt('Departure time (HH:MM)',fmtTime(r.depart_time));if(depart===null)return;const back=prompt('Return time (HH:MM, blank if not returned)',fmtTime(r.return_time)==='—'?'':fmtTime(r.return_time));if(back===null)return;const riders=prompt('Number of riders',String(r.riders));if(riders===null)return;const driver=prompt('Driver name',r.driver_name);if(driver===null)return;const date=prompt('Trip date (YYYY-MM-DD)',r.trip_date);if(date===null)return;if(!/^\d{2}:\d{2}$/.test(depart)|| (back&&!/^\d{2}:\d{2}$/.test(back))||!Number.isInteger(Number(riders))||Number(riders)<0||!driver.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('Please check the time, date, rider count and driver name.');return}const {error}=await sb.from('train_time_logs').update({depart_time:depart,return_time:back||null,riders:Number(riders),driver_name:driver.trim(),trip_date:date,updated_by:currentUser.id,updated_at:new Date().toISOString()}).eq('id',id);if(error){alert('Edit failed: '+error.message);return}await loadTrainData()}
 async function deleteTrainRow(id){if(!confirm('Delete this train trip record?'))return;const {error}=await sb.from('train_time_logs').delete().eq('id',id);if(error){alert('Delete failed: '+error.message);return}await loadTrainData()}
-function shareTrainReport(){
- const rows=[...trainRows].sort((a,b)=>String(b.trip_date||'').localeCompare(String(a.trip_date||'')));
- const totalRiders=rows.reduce((sum,row)=>sum+Number(row.riders||0),0);
- const report=['Train Time In / Time Out Report','Generated: '+new Date().toLocaleString(),'Trips: '+rows.length,'Total riders: '+totalRiders,'',...rows.map((row,index)=>String(index+1)+'. '+fmtDate(row.trip_date)+' | In: '+fmtTime(row.depart_time)+' | Out: '+fmtTime(row.return_time)+' | Riders: '+Number(row.riders||0)+' | Driver: '+(row.driver_name||'-'))].join(String.fromCharCode(10));
- if(navigator.share){navigator.share({title:'Train Time In / Time Out Report',text:report}).catch(function(error){if(error&&error.name!=='AbortError')copyTrainReport(report)})}
- else copyTrainReport(report)
+async function createTrainReportBlob(){
+ const rows=[...trainRows].sort((a,b)=>String(b.trip_date||'').localeCompare(String(a.trip_date||''))||String(a.depart_time||'').localeCompare(String(b.depart_time||'')));
+ const width=1200,pad=30,gap=14,cardH=132,headerH=205,summaryY=224,summaryH=126,cardsY=370;
+ const height=Math.max(620,cardsY+Math.max(1,rows.length)*(cardH+gap)+88);
+ const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+ const ctx=canvas.getContext('2d');ctx.fillStyle='#071a33';ctx.fillRect(0,0,width,height);
+ ctx.strokeStyle='#e8b94f';ctx.lineWidth=4;ctx.strokeRect(18,18,width-36,height-36);
+ let bannerDrawn=false;
+ try{const banner=new Image();banner.src='/file_000000002a408207ab0d9bef49f92c89.png';await new Promise((resolve,reject)=>{banner.onload=resolve;banner.onerror=reject;setTimeout(reject,4000)});ctx.drawImage(banner,24,24,width-48,headerH);bannerDrawn=true}catch(e){}
+ if(!bannerDrawn){const grad=ctx.createLinearGradient(0,20,width,220);grad.addColorStop(0,'#102f4b');grad.addColorStop(.5,'#1b4564');grad.addColorStop(1,'#071a33');ctx.fillStyle=grad;ctx.fillRect(24,24,width-48,headerH)}
+ ctx.fillStyle='#e8b94f';ctx.fillRect(30,summaryY,width-60,5);
+ ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,summaryY+12,790,summaryH,22);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=3;ctx.stroke();
+ ctx.fillStyle='#10213b';ctx.textAlign='left';ctx.font='bold 31px Arial';ctx.fillText('Train Time In / Time Out',58,summaryY+56);
+ ctx.fillStyle='#63758b';ctx.font='22px Arial';ctx.fillText('Train Schedule Report · '+new Date().toLocaleDateString(),58,summaryY+95);
+ const riders=rows.reduce((sum,row)=>sum+Number(row.riders||0),0),completed=rows.filter(row=>row.return_time),minutes=completed.reduce((sum,row)=>sum+(durationMins(row.depart_time,row.return_time)||0),0);
+ ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(838,summaryY+12,332,summaryH,22);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.stroke();
+ ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 22px Arial';ctx.fillText('TOTAL RIDERS',1004,summaryY+49);ctx.font='bold 48px Arial';ctx.fillText(String(riders),1004,summaryY+96);
+ for(let i=0;i<rows.length;i++){
+  const row=rows[i],y=cardsY+i*(cardH+gap);
+  ctx.fillStyle='#fffdf7';ctx.beginPath();ctx.roundRect(pad,y,width-pad*2,cardH,18);ctx.fill();ctx.strokeStyle='#dce3ec';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle='#10213b';ctx.textAlign='left';ctx.font='bold 25px Arial';ctx.fillText(String(i+1)+'. '+fmtDate(row.trip_date),pad+20,y+36);
+  ctx.fillStyle='#17805d';ctx.font='bold 23px Arial';ctx.fillText('TIME IN  '+fmtTime(row.depart_time),pad+20,y+76);
+  ctx.fillStyle='#c83d59';ctx.fillText('TIME OUT  '+fmtTime(row.return_time),pad+360,y+76);
+  ctx.fillStyle='#63758b';ctx.font='21px Arial';ctx.fillText('Driver: '+String(row.driver_name||'-').slice(0,30),pad+20,y+110);
+  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(width-pad-180,y+18,160,96,14);ctx.fill();
+  ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 17px Arial';ctx.fillText('RIDERS',width-pad-100,y+44);ctx.font='bold 38px Arial';ctx.fillText(String(Number(row.riders||0)),width-pad-100,y+87);
+ }
+ const footerY=height-70;ctx.strokeStyle='#e8b94f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(36,footerY);ctx.lineTo(width-36,footerY);ctx.stroke();
+ ctx.fillStyle='#f5d48b';ctx.textAlign='center';ctx.font='bold 22px Arial';ctx.fillText('TRIPS: '+rows.length+'  ·  COMPLETED: '+completed.length+'  ·  TOTAL RIDERS: '+riders+'  ·  DURATION: '+Math.floor(minutes/60)+'h '+String(minutes%60).padStart(2,'0')+'m',width/2,height-30);
+ return await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
 }
-async function copyTrainReport(report){
- try{await navigator.clipboard.writeText(report);alert('Train report copied. You can paste it into LINE or email.')}
- catch(error){prompt('Copy Train Report',report)}
-}
-function exportTrainCsv(){const rows=[['No','Date','Depart Time','Return Time','Riders','Driver Name','Duration minutes'],...trainRows.map((r,i)=>[i+1,r.trip_date,fmtTime(r.depart_time),fmtTime(r.return_time),r.riders,r.driver_name,durationMins(r.depart_time,r.return_time)??''])];const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='train-time-report-'+localToday()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+async function exportTrainCsv(){try{const blob=await createTrainReportBlob();if(!blob)throw new Error('Could not create report image');const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='train-time-report-'+localToday()+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}catch(e){alert('Could not save train report image: '+(e.message||e))}}
+async function shareTrainReport(){try{const blob=await createTrainReportBlob();if(!blob)throw new Error('Could not create report image');const file=new File([blob],'train-time-report-'+localToday()+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Train Time In / Time Out Report'});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);alert('Train report image saved. You can share the PNG from Downloads.')}catch(e){if(e.name!=='AbortError')alert('Could not share train report image: '+(e.message||e))}}
+function exportTrainCsvData(){const rows=[['No','Date','Depart Time','Return Time','Riders','Driver Name','Duration minutes'],...trainRows.map((r,i)=>[i+1,r.trip_date,fmtTime(r.depart_time),fmtTime(r.return_time),r.riders,r.driver_name,durationMins(r.depart_time,r.return_time)??''])];const csv=rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='train-time-data-'+localToday()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 
 function cloudRowForTicket(t){
  return {id:t.id,department:t.department,name:t.name,price:t.price??null,quantity:Number(t.quantity||0),image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()};
