@@ -164,7 +164,7 @@ async function syncTickets(snapshot){
    const next=syncPending;syncPending=null;
    if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);}
   }
- }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));lastCloudRows=new Map([...lastCloudRows].filter(([id])=>!((syncPending||[]).some(row=>String(row.id)===id))));}
+ }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));syncPending=syncPending||snapshot;setTimeout(()=>{if(!syncBusy&&syncPending)syncTickets(syncPending)},3000);}
  finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
 }
 function showCloudError(msg){const e=document.getElementById('authError');if(e&&document.getElementById('authScreen').style.display!=='none')e.textContent=msg;else console.error(msg)}
