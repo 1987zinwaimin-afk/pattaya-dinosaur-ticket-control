@@ -177,7 +177,13 @@ function mapCloud(row){return {id:row.id,department:row.department,name:row.name
 async function loadCloud(){
  // Capture local tickets before reading Cloud: the Owner browser may contain the only surviving copy.
  let localTicketsBeforeCloud=[];
- try{localTicketsBeforeCloud=JSON.parse(localStorage.getItem('tctl-new-tickets')||'[]');if(!Array.isArray(localTicketsBeforeCloud))localTicketsBeforeCloud=[]}catch(e){console.warn('Could not parse local ticket cache',e)}
+ const parseTicketCache=(key)=>{try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[]}catch(e){console.warn('Could not parse '+key,e);return []}};
+ try{
+  const live=parseTicketCache('tctl-new-tickets');
+  const backup=parseTicketCache('tctl-local-backup-before-cloud');
+  localTicketsBeforeCloud=live.length?live:backup;
+  console.log('Local recovery candidates:',{live:live.length,backup:backup.length});
+ }catch(e){console.warn('Could not inspect local ticket caches',e)}
  // Never let a large base64/local ticket cache block the authoritative cloud load.
  // Keep any backup only when browser quota permits; cloud data must still load if it does not.
  try{
