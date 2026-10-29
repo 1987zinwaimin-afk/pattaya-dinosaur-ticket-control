@@ -170,6 +170,24 @@ label{color:#c0d0e0}
 @media(max-width:520px){#pageContent .cards{gap:10px}#pageContent .cards>.panel{padding:14px}#pageContent .form-grid{gap:9px}#pageContent .form-grid label{font-size:.82rem}#pageContent .form-grid input,#pageContent .form-grid select{height:42px;min-height:42px;padding:7px 9px;font-size:14px}#pageContent .form-grid button{font-size:.86rem;padding:9px 8px}#pageContent .section-title{gap:8px;align-items:flex-start}#pageContent .section-title h2{font-size:1.2rem;line-height:1.3}}
 @media(max-width:360px){#pageContent .form-grid{grid-template-columns:1fr}}
 
+
+/* Train dashboard mobile polish: compact KPI cards and tidy history controls */
+#pageContent .cards:has(#trainToday){grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;margin-bottom:10px!important}
+#pageContent .cards:has(#trainToday)>.panel{padding:10px 12px!important;min-width:0;border-radius:16px}
+#pageContent .cards:has(#trainToday) .subtle{font-size:.78rem;line-height:1.25;white-space:normal}
+#pageContent .cards:has(#trainToday) strong{display:block;font-size:1.22rem!important;line-height:1.2;margin-top:5px;overflow-wrap:anywhere}
+#pageContent .panel:has(#trainHistory){margin-top:10px!important;padding:12px!important;min-width:0;overflow:hidden}
+#pageContent .panel:has(#trainHistory) .section-title{display:flex;flex-direction:column;align-items:stretch;gap:10px;margin-bottom:12px}
+#pageContent .panel:has(#trainHistory) .section-title h3{font-size:1.05rem;line-height:1.3;margin:0 0 3px}
+#pageContent .panel:has(#trainHistory) .section-title .subtle{font-size:.78rem;line-height:1.35}
+#pageContent .panel:has(#trainHistory) .actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:7px;width:100%;min-width:0}
+#pageContent .panel:has(#trainHistory) .actions input{width:100%!important;max-width:none!important;min-width:0;height:40px;min-height:40px;padding:7px 9px;font-size:13px}
+#pageContent .panel:has(#trainHistory) .actions button{width:100%;min-width:0;min-height:40px;padding:8px 7px;font-size:.78rem;white-space:normal;line-height:1.2}
+#pageContent .panel:has(#trainHistory)>div[style*="overflow:auto"]{max-width:100%;overflow-x:auto!important;border:1px solid #294866;border-radius:10px}
+#pageContent .panel:has(#trainHistory) table{min-width:760px!important;font-size:12px}
+#pageContent .panel:has(#trainHistory) th,#pageContent .panel:has(#trainHistory) td{padding:8px 7px!important;white-space:nowrap}
+@media(max-width:380px){#pageContent .cards:has(#trainToday){gap:5px!important}#pageContent .cards:has(#trainToday)>.panel{padding:8px 7px!important}#pageContent .cards:has(#trainToday) .subtle{font-size:.68rem}#pageContent .cards:has(#trainToday) strong{font-size:1.05rem!important}#pageContent .panel:has(#trainHistory) .actions{gap:5px}#pageContent .panel:has(#trainHistory) .actions button{font-size:.72rem}}
+
 </style>
 </head>
 <body>
