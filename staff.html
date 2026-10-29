@@ -143,13 +143,18 @@ function save(){
  const snapshot=tickets.map(t=>({id:t.id,department:t.department,name:t.name,price:t.price,quantity:t.quantity,image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()}));
  syncTickets(snapshot);
 }
-let syncBusy=false;
+let syncBusy=false,syncPending=null;
 async function syncTickets(snapshot){
- if(syncBusy)return; syncBusy=true;
+ syncPending=snapshot;
+ if(syncBusy)return;
+ syncBusy=true;
  try{
-  if(snapshot.length){const {error}=await sb.from('tickets').upsert(snapshot,{onConflict:'id'});if(error)throw error;}
+  while(syncPending){
+   const next=syncPending;syncPending=null;
+   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;}
+  }
  }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));}
- finally{syncBusy=false}
+ finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
 }
 function showCloudError(msg){const e=document.getElementById('authError');if(e&&document.getElementById('authScreen').style.display!=='none')e.textContent=msg;else console.error(msg)}
 function mapCloud(row){return {id:row.id,department:row.department,name:row.name,price:row.price===null?null:Number(row.price),quantity:Number(row.quantity||0),image:row.image_url||null,imageUrl:row.image_url||null,imagePath:row.image_path||null,location:row.location||'',createdAt:row.created_at,updatedAt:row.updated_at,createdBy:row.created_by}}
@@ -162,9 +167,23 @@ async function loadCloud(){
  if(error)throw error;
  tickets=(data||[]).map(mapCloud);cloudReady=true;localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
 }
+let cloudPollTimer=null,cloudLoadBusy=false;
+async function refreshCloudTickets(){
+ if(!currentUser||!cloudReady||document.getElementById('authScreen').style.display!=='none')return;
+ const modal=document.getElementById('ticketModal');
+ if(modal&&modal.classList.contains('open'))return;
+ if(cloudLoadBusy)return;
+ cloudLoadBusy=true;
+ try{await loadCloud()}catch(e){console.error('Auto-refresh cloud tickets failed',e)}
+ finally{cloudLoadBusy=false}
+}
 function listenRealtime(){
  if(cloudChannel)sb.removeChannel(cloudChannel);
- cloudChannel=sb.channel('ticket-control-live').on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{try{await loadCloud()}catch(e){console.error(e)}}).subscribe();
+ cloudChannel=sb.channel('ticket-control-live-'+(currentUser?.id||'session'))
+  .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{await refreshCloudTickets()})
+  .subscribe(status=>{console.log('Ticket realtime status:',status)});
+ if(cloudPollTimer)clearInterval(cloudPollTimer);
+ cloudPollTimer=setInterval(refreshCloudTickets,3000);
 }
 async function startCloudSession(session){
  currentUser=session.user;
@@ -211,7 +230,7 @@ sb.auth.getSession().then(async({data,error})=>{
 function tr(k){return T[lang][k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function departmentTickets(){return tickets.filter(t=>t.department===page)}
-function navRender(){const visiblePages=PAGES.filter(p=>['sale','entry','playing','event'].includes(p.id)&& (selectedStaffDepartment==='all'||p.id===selectedStaffDepartment));document.getElementById('nav').innerHTML=visiblePages.map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('')+'<button type="button" id="staffLogout" style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}currentUser=null;currentRole=null;cloudReady=false;document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='all';page='all';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
+function navRender(){const visiblePages=PAGES.filter(p=>['sale','entry','playing','event'].includes(p.id)&& (selectedStaffDepartment==='all'||p.id===selectedStaffDepartment));document.getElementById('nav').innerHTML=visiblePages.map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('')+'<button type="button" id="staffLogout" style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='all';page='all';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
 function go(p){page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 function render(){if(STAFF_MODE && selectedStaffDepartment!=='all' && !['sale','entry','playing','event'].includes(page))page=selectedStaffDepartment;if(STAFF_MODE&&selectedStaffDepartment==='all'&&!['sale','entry','playing','event','all'].includes(page))page='all';navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
 let visible=dep()?departmentTickets():(STAFF_MODE&&selectedStaffDepartment!=='all'?tickets.filter(t=>t.department===selectedStaffDepartment):tickets);
