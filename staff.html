@@ -230,10 +230,13 @@ document.getElementById('authForm').onsubmit=async e=>{
   await startCloudSession(data.session);
  }catch(e){err.textContent=(e.message||'Could not connect.')+' If anonymous sign-in is disabled in Supabase Auth settings, enable Anonymous Sign-Ins for this project.'}
 };
-sb.auth.getSession().then(async({data,error})=>{
- if(error||!data.session)return;
+async function restoreSavedSession(){
  try{
-  const {data:profile}=await sb.from('profiles').select('display_name,role').eq('id',data.session.user.id).maybeSingle();
+  const {data,error}=await sb.auth.getSession();
+  if(error)throw error;
+  if(!data.session)return;
+  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role').eq('id',data.session.user.id).maybeSingle();
+  if(profileError)throw profileError;
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
    document.getElementById('staffDepartment').value=localStorage.getItem('tctl-staff-department')||'all';
@@ -241,8 +244,12 @@ sb.auth.getSession().then(async({data,error})=>{
   }else{
    await sb.auth.signOut();
   }
- }catch(e){console.error('Could not restore staff session',e)}
+ }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Could not restore saved session. Please continue once again.'}
+}
+sb.auth.onAuthStateChange((event,session)=>{
+ if(event==='INITIAL_SESSION'&&session)setTimeout(()=>restoreSavedSession(),0);
 });
+restoreSavedSession();
 function tr(k){return T[lang][k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function departmentTickets(){return tickets.filter(t=>t.department===page)}
