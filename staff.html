@@ -303,9 +303,11 @@ async function startCloudSession(session){
  if(enteredName && profile.display_name && enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase()){
    document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return;
  }
- selectedStaffDepartment=document.getElementById('staffDepartment').value||localStorage.getItem('tctl-staff-department')||'all';
+ const requestedDepartment=document.getElementById('staffDepartment').value||localStorage.getItem('tctl-staff-department')||'all';
+ // "All Departments" must never mix inventory on staff login: default to Sale.
+ selectedStaffDepartment=requestedDepartment==='all'?'sale':requestedDepartment;
  localStorage.setItem('tctl-staff-department',selectedStaffDepartment);
- page=selectedStaffDepartment==='all'?'all':selectedStaffDepartment;
+ page=selectedStaffDepartment;
  document.getElementById('authScreen').style.display='none';
  document.getElementById('authError').textContent='';
  navRender();
