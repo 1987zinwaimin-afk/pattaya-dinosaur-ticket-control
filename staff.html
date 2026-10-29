@@ -150,7 +150,7 @@ function save(){
   const prior=lastCloudRows.get(String(t.id));
   const fields=['department','name','price','quantity','image_path','image_url','location'];
   const differs=!prior||fields.some(k=>(prior[k]??null)!==(row[k]??null));
-  if(differs){row.updated_at=new Date().toISOString();t.updatedAt=row.updated_at;lastCloudRows.set(String(t.id),row);changed.push(row)}
+  if(differs){row.updated_at=new Date().toISOString();t.updatedAt=row.updated_at;changed.push(row)}
  }
  if(changed.length)syncTickets(changed);
 }
@@ -162,9 +162,9 @@ async function syncTickets(snapshot){
  try{
   while(syncPending){
    const next=syncPending;syncPending=null;
-   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;}
+   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);}
   }
- }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));}
+ }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));lastCloudRows=new Map([...lastCloudRows].filter(([id])=>!((syncPending||[]).some(row=>String(row.id)===id))));}
  finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
 }
 function showCloudError(msg){const e=document.getElementById('authError');if(e&&document.getElementById('authScreen').style.display!=='none')e.textContent=msg;else console.error(msg)}
@@ -181,7 +181,7 @@ async function loadCloud(){
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
  if(!currentUser||!cloudReady)return;
- if(document.visibilityState==='hidden'&&!force)return;
+ // Continue polling even when this tab is in the background; mobile split-screen and tab switching must not stall sync.
  const modal=document.getElementById('ticketModal');
  if(modal&&modal.classList.contains('open')&&!force)return;
  if(cloudLoadBusy)return;
