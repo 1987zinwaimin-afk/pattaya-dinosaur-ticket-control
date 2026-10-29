@@ -200,14 +200,14 @@ label{color:#c0d0e0}
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Ticket Control Live</h2><p id="authIntro">Owner Login</p>
-<form id="authForm"><label id="authNameLabel" for="authName" style="display:none">Name (for new account)</label><input id="authName" maxlength="80" placeholder="Your name" style="display:none"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username" required placeholder="name@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" required placeholder="At least 8 characters">
+<form id="authForm" onsubmit="event.preventDefault();document.getElementById('authError').textContent='Login script did not initialize. Please refresh the page and try again.';return false;"><label id="authNameLabel" for="authName" style="display:none">Name (for new account)</label><input id="authName" maxlength="80" placeholder="Your name" style="display:none"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username" required placeholder="name@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" required placeholder="At least 8 characters">
 <div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Sign in</button><button type="button" id="authToggle">Create account</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">OWNER WEBSITE · Staff must use the separate Staff link.</div>
 </div></div>
 
 <div class="modal" id="ticketModal"><div class="modalbox"><h2 id="modalTitle">Add ticket</h2><form id="ticketForm"><input type="hidden" id="editId"><label id="imageLabel">Ticket image</label><input type="file" id="imageFile" accept="image/*"><div id="imageHint" class="subtle">Ticket images are uploaded to secure cloud storage.</div><label for="ticketName" id="nameLabel">Ticket name *</label><input id="ticketName" required maxlength="100" placeholder="e.g. Adult admission"><label for="ticketPrice" id="priceLabel">Price (THB)</label><input id="ticketPrice" type="number" min="0" step="0.01" placeholder="100"><label for="ticketInitial" id="initialLabel">Initial quantity</label><input id="ticketInitial" type="number" min="0" step="1" value="0"><label id="eventLocationLabel" class="hidden" for="eventLocation">Event location</label><input id="eventLocation" class="hidden" maxlength="160" placeholder="Event location"><div class="modal-actions"><button type="button" id="cancelModal">Cancel</button><button class="gold" type="submit" id="saveTicket">Save ticket</button></div></form></div></div>
 <div class="modal" id="actionModal"><div class="modalbox"><h2 id="actionTitle">More options</h2><div id="actionBody"></div><div class="modal-actions"><button id="closeAction">Close</button></div></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onerror="this.onerror=null;document.write('<script src=&quot;https://unpkg.com/@supabase/supabase-js@2&quot;><\\/script>')"></script>
 <script>
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
