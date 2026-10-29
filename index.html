@@ -373,12 +373,36 @@ function cards(list){let root=document.getElementById('ticketCards');if(!root)re
 root.querySelectorAll('[data-qty]').forEach(inp=>{inp.value='';inp.addEventListener('focus',()=>{lastInput[inp.dataset.qty]=inp.value});inp.addEventListener('blur',()=>{let n=Math.floor(Number(inp.value));if(inp.value.trim()!==''&&Number.isFinite(n)&&n>0){let t=tickets.find(x=>x.id===inp.dataset.qty);if(t){t.quantity+=n;t.updatedAt=new Date().toISOString();save();render()}}});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur()}})});
 root.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openTicket(b.dataset.edit));root.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.morebox.open').forEach(x=>{if(x.id!=='more-'+b.dataset.more)x.classList.remove('open')});document.getElementById('more-'+b.dataset.more).classList.toggle('open')});root.querySelectorAll('[data-clear]').forEach(b=>b.onclick=()=>{let t=tickets.find(x=>x.id===b.dataset.clear);if(t&&confirm('Clear quantity for '+t.name+'?')){t.quantity=0;t.updatedAt=new Date().toISOString();save();render()}});root.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{let t=tickets.find(x=>x.id===b.dataset.delete);if(t&&confirm('Delete '+t.name+'?')){tickets=tickets.filter(x=>x.id!==t.id);if(currentUser&&cloudReady){sb.from('tickets').delete().eq('id',t.id).then(({error})=>{if(error)showCloudError(error.message)});if(t.imagePath)sb.storage.from('ticket-images').remove([t.imagePath])}save();render()}})}
 function openTicket(id){let t=tickets.find(x=>x.id===id);document.getElementById('ticketForm').reset();document.getElementById('editId').value=id||'';document.getElementById('ticketInitial').value=t?t.quantity:0;document.getElementById('ticketName').value=t?t.name:'';document.getElementById('ticketPrice').value=t&&t.price!==null?t.price:'';document.getElementById('eventLocation').value=t&&t.location||'';document.getElementById('modalTitle').textContent=t?tr('editTitle'):tr('newTitle');document.getElementById('eventLocationLabel').classList.toggle('hidden',page!=='event');document.getElementById('eventLocation').classList.toggle('hidden',page!=='event');document.getElementById('ticketModal').classList.add('open')}
-document.getElementById('cancelModal').onclick=()=>document.getElementById('ticketModal').classList.remove('open');document.getElementById('ticketForm').onsubmit=async e=>{e.preventDefault();let id=document.getElementById('editId').value,name=document.getElementById('ticketName').value.trim(),priceText=document.getElementById('ticketPrice').value,quantity=Math.max(0,Math.floor(Number(document.getElementById('ticketInitial').value)||0)),file=document.getElementById('imageFile').files[0],image=null;if(file){if(file.size>1200000){alert('Please choose an image smaller than 1.2 MB.');return}image=await new Promise((resolve,reject)=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}let old=tickets.find(t=>t.id===id);let ticketId=id||crypto.randomUUID(),imagePath=old?.imagePath||null,imageUrl=old?.imageUrl||old?.image||null;
+document.getElementById('cancelModal').onclick=()=>document.getElementById('ticketModal').classList.remove('open');async function compressTicketImage(inputFile){
+ if(!inputFile||!inputFile.type||!inputFile.type.startsWith('image/'))throw new Error('Please choose a valid image file.');
+ const MAX_BYTES=1100000,MAX_SIDE=1800;
+ let bitmap=null,source=null,cleanup=null;
+ try{
+  if('createImageBitmap' in window){bitmap=await createImageBitmap(inputFile);source=bitmap}
+  else{source=await new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(inputFile);cleanup=()=>URL.revokeObjectURL(url);img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Could not read this image. Please choose another image.'));img.src=url})}
+  const sw=source.width||source.naturalWidth,sh=source.height||source.naturalHeight;
+  if(!sw||!sh)throw new Error('Could not read this image. Please choose another image.');
+  const scale=Math.min(1,MAX_SIDE/Math.max(sw,sh));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(sw*scale));canvas.height=Math.max(1,Math.round(sh*scale));
+  const ctx=canvas.getContext('2d');ctx.fillStyle='#ffffff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(source,0,0,canvas.width,canvas.height);
+  let quality=.86,blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));
+  while(blob&&blob.size>MAX_BYTES&&quality>.42){quality=Math.max(.4,quality-.1);blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality))}
+  if(!blob)throw new Error('Image compression failed. Please choose another image.');
+  if(blob.size>1200000){
+   const scaleDown=.78;canvas.width=Math.max(1,Math.round(canvas.width*scaleDown));canvas.height=Math.max(1,Math.round(canvas.height*scaleDown));ctx.drawImage(source,0,0,canvas.width,canvas.height);
+   blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.45));
+  }
+  if(!blob||blob.size>1200000)throw new Error('This image could not be reduced enough. Please choose a smaller image.');
+  const base=(inputFile.name||'ticket-image').replace(/\.[^.]+$/,'').replace(/[^a-zA-Z0-9_-]/g,'_')||'ticket-image';
+  return new File([blob],base+'.jpg',{type:'image/jpeg',lastModified:Date.now()});
+ }finally{if(bitmap)bitmap.close();if(cleanup)cleanup()}
+}
+document.getElementById('ticketForm').onsubmit=async e=>{e.preventDefault();let id=document.getElementById('editId').value,name=document.getElementById('ticketName').value.trim(),priceText=document.getElementById('ticketPrice').value,quantity=Math.max(0,Math.floor(Number(document.getElementById('ticketInitial').value)||0)),file=document.getElementById('imageFile').files[0],image=null;if(file){try{file=await compressTicketImage(file)}catch(compressError){alert(compressError.message||'Could not compress image.');return}image=await new Promise((resolve,reject)=>{let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file)})}let old=tickets.find(t=>t.id===id);let ticketId=id||crypto.randomUUID(),imagePath=old?.imagePath||null,imageUrl=old?.imageUrl||old?.image||null;
 if(file){
  if(!currentUser){alert('Please sign in first.');return}
- const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+ const ext='jpg';
  imagePath=currentUser.id+'/'+ticketId+'/'+Date.now()+'.'+ext;
- const {error:uploadError}=await sb.storage.from('ticket-images').upload(imagePath,file,{upsert:true,contentType:file.type||'image/jpeg'});
+ const {error:uploadError}=await sb.storage.from('ticket-images').upload(imagePath,file,{upsert:true,contentType:'image/jpeg'});
  if(uploadError){alert('Image upload failed: '+uploadError.message);return}
  const {data:urlData}=sb.storage.from('ticket-images').getPublicUrl(imagePath);imageUrl=urlData.publicUrl;
 }
