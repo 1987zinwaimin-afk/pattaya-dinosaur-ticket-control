@@ -11,14 +11,23 @@ button{cursor:pointer;border:1px solid #365774;border-radius:15px;padding:12px 1
 
 
 
+/* Image-only dinosaur banner header; navigation controls remain accessible over the image */
+.brand-header{position:sticky;top:0;z-index:20;display:block;padding:0;min-height:0;height:auto;line-height:0;overflow:hidden;background:#07172b;border-bottom:3px solid #e8b94f;box-shadow:0 4px 18px #0004}
+.brand-banner{display:block;width:100%;height:auto;aspect-ratio:5.85/1;object-fit:cover;object-position:center center}
+.header-menu,.header-language{position:absolute;top:50%;transform:translateY(-50%);z-index:2;line-height:1.2;box-shadow:0 2px 8px #0005;background:rgba(5,24,43,.78);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);color:#fff}
+.header-menu{left:12px;min-width:44px;width:44px;min-height:44px;padding:7px;border-radius:12px;font-size:22px}
+.header-language{right:12px;max-width:96px;padding:9px 7px;border-radius:11px;font-size:13px}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+@media(max-width:520px){.brand-banner{aspect-ratio:5.85/1;min-height:84px;max-height:140px;object-fit:cover}.header-menu{left:8px;min-width:38px;width:38px;min-height:38px;font-size:19px}.header-language{right:8px;max-width:82px;padding:7px 5px;font-size:12px}}
+
 /* Compact the sticky top header on mobile without hiding navigation */
-.top{padding:9px 12px;gap:9px;min-height:0}
+.top:not(.brand-header){padding:9px 12px;gap:9px;min-height:0}
 .hamb{min-width:46px;width:46px;padding:8px;font-size:21px;border-radius:13px;flex:0 0 46px}
 .brand{min-width:0;flex:1}
 .brand h1{font-size:clamp(16px,4.2vw,22px);line-height:1.08;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .brand small{display:block;font-size:12px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
 .lang{max-width:98px;padding:9px 7px;font-size:13px;border-radius:11px;flex:0 0 auto}
-@media(max-width:420px){.top{padding:8px 10px;gap:8px}.hamb{min-width:44px;width:44px;flex-basis:44px;min-height:44px;padding:7px}.brand h1{font-size:17px}.brand small{font-size:11px;margin-top:3px}.lang{max-width:92px;padding:8px 6px;font-size:12px}}
+@media(max-width:420px){.top:not(.brand-header){padding:8px 10px;gap:8px}.hamb{min-width:44px;width:44px;flex-basis:44px;min-height:44px;padding:7px}.brand h1{font-size:17px}.brand small{font-size:11px;margin-top:3px}.lang{max-width:92px;padding:8px 6px;font-size:12px}}
 
 /* Compact department action buttons across Sale, Entry, Playing and Event pages */
 .actions{display:flex;align-items:stretch;gap:8px;flex-wrap:nowrap;margin:12px 0}
@@ -109,7 +118,7 @@ label{color:#c0d0e0}
 </style>
 </head>
 <body>
-<header class="top"><button class="hamb" id="openMenu" aria-label="Open menu">☰</button><div class="brand"><h1 id="pageTitle">Dashboard</h1><small>Ticket Control · Pattaya Dinosaur Kingdom</small></div><select class="lang" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option></select></header>
+<header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><span id="pageTitle" class="visually-hidden">Dashboard</span><select class="lang header-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option></select></header>
 <div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="closeMenu" style="width:100%">✕ Close menu</button></div></aside>
 <main class="wrap">
 <section id="stats" class="stats"></section>
