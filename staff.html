@@ -356,9 +356,10 @@ async function recordStaffActivity(active,firstLogin){
  const {error}=await sb.from('staff_login_activity').upsert(row,{onConflict:'normalized_name'});
  if(error)console.warn('Staff activity update failed:',error.message);
 }
+function showStaffWelcome(profile,department){const existing=document.getElementById('staffWelcomeOverlay');if(existing)existing.remove();const name=(profile?.display_name||document.getElementById('authName')?.value||'Staff').trim();const deptNames={sale:'Sale Department',entry:'Entry Department',playing:'Playing Department',event:'Event Department',all:'All Department'};const dept=deptNames[department]||department||'Staff';const avatar=profile?.avatar_url?'<img src="'+esc(profile.avatar_url)+'" alt="Profile photo" style="width:118px;height:118px;object-fit:cover;border-radius:50%;border:4px solid #f5cf70;box-shadow:0 0 24px #e9b84d88">':'<div style="width:118px;height:118px;border-radius:50%;border:4px solid #f5cf70;display:grid;place-items:center;background:linear-gradient(135deg,#15385d,#07172c);color:#ffe7a0;font-size:48px;font-weight:800;box-shadow:0 0 24px #e9b84d88">'+esc(name.slice(0,1).toUpperCase())+'</div>';const overlay=document.createElement('div');overlay.id='staffWelcomeOverlay';overlay.style.cssText='position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 80% 70%,#174e77aa,transparent 38%),linear-gradient(135deg,#041326f5,#0a2c4cf5);backdrop-filter:blur(14px);overflow:auto';overlay.innerHTML='<div style="position:relative;box-sizing:border-box;width:min(100%,680px);padding:clamp(22px,5vw,42px);border:2px solid #e8bd5b;border-radius:28px;background:linear-gradient(145deg,#102c4bed,#07182bf2);box-shadow:0 0 35px #f0c25b55,inset 0 0 35px #7bbfff12;text-align:center;color:#f5f8ff"><div style="font-size:13px;letter-spacing:3px;color:#f5d67e;font-weight:800">PATTAYA DINOSAUR KINGDOM</div><div style="margin:22px auto 14px">'+avatar+'</div><div style="font-size:clamp(30px,7vw,46px);font-weight:900;color:#ffe6a0;line-height:1.1">Welcome Back!</div><h1 style="font-size:clamp(27px,6vw,38px);margin:12px 0 10px;color:#fff">'+esc(name)+'</h1><div style="display:inline-block;border:1px solid #f3ce6d;border-radius:24px;padding:8px 18px;color:#ffe9a8;font-weight:800;margin-bottom:22px">'+esc(dept)+'</div><div style="border:1px solid #b88e48;border-radius:18px;padding:18px;margin:0 0 16px;text-align:left;background:#ffffff08"><div style="font-size:25px;color:#ffe29a;font-weight:800">👋 Hello '+esc(name)+'!</div><div style="font-size:16px;line-height:1.6;color:#d9e8fa;margin-top:6px">Welcome to Pattaya Dinosaur Kingdom</div><div style="font-size:16px;line-height:1.6;color:#f5d67e;margin-top:4px">ยินดีต้อนรับ · ကြိုဆိုပါတယ်</div></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;text-align:left;margin-bottom:20px"><div style="border:1px solid #45607d;border-radius:14px;padding:12px;background:#ffffff08"><div style="font-size:12px;color:#a9c0d9">Login Time</div><strong style="font-size:14px">'+esc(new Date().toLocaleString())+'</strong></div><div style="border:1px solid #45607d;border-radius:14px;padding:12px;background:#ffffff08"><div style="font-size:12px;color:#a9c0d9">Department</div><strong style="font-size:14px">'+esc(dept)+'</strong></div></div><div style="border:1px solid #b88e48;border-radius:16px;padding:13px;color:#e4efff;margin-bottom:22px">⭐ Have a great day! Let’s make today another amazing day!</div><button id="staffWelcomeStart" style="width:min(100%,300px);padding:15px 22px;border:0;border-radius:30px;background:linear-gradient(100deg,#fff0a1,#ffc24c);color:#10223a;font-size:19px;font-weight:900;box-shadow:0 5px 0 #8c6328">Let’s Start →</button></div>';document.body.appendChild(overlay);document.getElementById('staffWelcomeStart').onclick=()=>overlay.remove()}
 async function startCloudSession(session){
  currentUser=session.user;
- const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle();
+ const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name,avatar_url').eq('id',currentUser.id).maybeSingle();
  if(profileError||!profile){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Staff profile is not ready. Please try again.';return}
  currentRole=profile.role;
  if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
@@ -380,7 +381,7 @@ async function startCloudSession(session){
  document.getElementById('authScreen').style.display='none';
  document.getElementById('authError').textContent='';
  navRender();
- try{await loadCloud();listenRealtime();render()}catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
+ try{await loadCloud();listenRealtime();render();showStaffWelcome(profile,selectedStaffDepartment)}catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
 }
 document.getElementById('authForm').onsubmit=async e=>{
  e.preventDefault();
@@ -403,7 +404,7 @@ async function restoreSavedSession(){
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
   if(!data.session)return;
-  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role').eq('id',data.session.user.id).maybeSingle();
+  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role,avatar_url').eq('id',data.session.user.id).maybeSingle();
   if(profileError)throw profileError;
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
