@@ -408,22 +408,30 @@ async function enableStaffLoginNotifications(){try{if('Notification'in window){c
 function showStaffLoginNotice(row){const p=getStaffNotifyPrefs();const depts={sale:'Sale Ticket Department',entry:'Entry Ticket Department',playing:'Playing Ticket Department',event:'Event Ticket Department',all:'All Departments'};const msg=(row.display_name||'Staff')+' logged in — '+(depts[row.department]||row.department||'Unknown Department');playStaffLoginTone(p.sound);let toast=document.getElementById('staffLoginToast');if(!toast){toast=document.createElement('div');toast.id='staffLoginToast';document.body.appendChild(toast)}const base='position:fixed;z-index:99999;max-width:min(420px,calc(100vw - 28px));padding:16px 18px;color:#f4f7fb;font-weight:750;box-shadow:0 10px 35px #0009;';const styles={'3':'right:14px;top:14px;border:1px solid #f4ca70;border-radius:16px;background:linear-gradient(135deg,#123b58ee,#071a2cee);','6':'right:14px;top:14px;border:1px solid #45c5e8;border-radius:999px;background:#071a2cf2;padding:12px 18px;','2':'left:50%;top:35%;transform:translate(-50%,-35%);width:min(360px,calc(100vw - 32px));text-align:center;border:2px solid #f4ca70;border-radius:22px;background:#071a2cf7;padding:28px 20px;','5':'left:0;top:20%;bottom:20%;width:min(340px,calc(100vw - 45px));border:1px solid #f4ca70;border-radius:0 20px 20px 0;background:#071a2cf7;padding:22px 18px;'};toast.style.cssText=base+(styles[p.style]||styles['3']);toast.textContent=(p.style==='2'?'🔔 NEW STAFF LOGIN\n\n':'🔔 Staff Login: ')+msg;toast.style.whiteSpace='pre-line';toast.style.display='block';clearTimeout(window.staffLoginToastTimer);window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},p.style==='2'?9000:7000);if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||p.background==='both')){try{new Notification('Staff Login',{body:msg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}}}
 async function pollStaffLoginNotifications(){if(!sb||!currentUser||currentRole!=='owner')return;try{const {data,error}=await sb.from('staff_login_activity').select('normalized_name,display_name,department,logged_in_at,last_seen,is_active').order('logged_in_at',{ascending:false});if(error)throw error;const rows=data||[];if(!staffNotifyBaseline){rows.forEach(r=>staffNotifySeen[r.normalized_name]=r.logged_in_at||'');staffNotifyBaseline=true;return}for(const r of rows){const stamp=r.logged_in_at||'';if(stamp&&staffNotifySeen[r.normalized_name]&&staffNotifySeen[r.normalized_name]!==stamp)showStaffLoginNotice(r);staffNotifySeen[r.normalized_name]=stamp}}catch(e){console.warn('Staff login notification check failed',e.message)}}
 function startStaffLoginNotifications(){if(staffNotifyTimer)clearInterval(staffNotifyTimer);staffNotifyBaseline=false;staffNotifySeen={};pollStaffLoginNotifications();staffNotifyTimer=setInterval(pollStaffLoginNotifications,5000)}
+let ownerSessionStartPromise=null;
 async function startCloudSession(session){
- currentUser=session.user;
- let profileResult;
- try{profileResult=await withAuthTimeout(sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle(),'Owner profile lookup')}
- catch(e){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('Gmail/Password accepted, but Owner profile check failed: '+e.message)}
- const {data:profile,error:profileError}=profileResult;
- if(profileError||!profile){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error(profileError?'Owner profile lookup error: '+profileError.message:'Login succeeded but this account has no profiles row. No data was changed.')}
- currentRole=profile.role;
- if(currentRole!=='owner'){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('This account is not marked as Owner. Please do not create a new account; Owner permission must be checked.')}
- document.getElementById('authScreen').style.display='none';
- try{await withAuthTimeout(loadCloud(),'Loading ticket data');listenRealtime();startStaffLoginNotifications()}catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
+ if(!session?.user)throw new Error('No active login session was returned. Please sign in again.');
+ if(currentUser?.id===session.user.id&&cloudReady){document.getElementById('authScreen').style.display='none';return}
+ if(ownerSessionStartPromise)return ownerSessionStartPromise;
+ ownerSessionStartPromise=(async()=>{
+  currentUser=session.user;
+  let profileResult;
+  try{profileResult=await withAuthTimeout(sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle(),'Owner profile lookup',10000)}
+  catch(e){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('Login session exists, but Owner profile check did not finish: '+e.message)}
+  const {data:profile,error:profileError}=profileResult;
+  if(profileError||!profile){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error(profileError?'Owner profile lookup error: '+profileError.message:'This account has no profile record. Existing data was not changed.')}
+  currentRole=profile.role;
+  if(currentRole!=='owner'){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('This account is not marked as Owner. Please use the existing Owner account; do not create another account.')}
+  document.getElementById('authScreen').style.display='none';
+  try{await withAuthTimeout(loadCloud(),'Loading ticket data',20000);cloudReady=true;listenRealtime();startStaffLoginNotifications()}
+  catch(e){showCloudError('Signed in, but cloud data did not finish loading: '+e.message);throw new Error('Signed in successfully, but ticket data did not finish loading. Check your connection and press Refresh. '+e.message)}
+ })();
+ try{return await ownerSessionStartPromise}finally{ownerSessionStartPromise=null}
 }
 function setAuthMode(mode){authMode=mode;document.getElementById('authSubmit').textContent=mode==='signin'?'Sign in':'Create account';document.getElementById('authToggle').textContent=mode==='signin'?'Create account':'Back to sign in';document.getElementById('authNameLabel').style.display=mode==='signup'?'block':'none';document.getElementById('authName').style.display=mode==='signup'?'block':'none';document.getElementById('authIntro').textContent=mode==='signup'?'Owner account setup. Staff must use the separate Staff website.':'Owner / Staff Cloud Login';document.getElementById('authError').textContent=''}
 document.getElementById('authName').style.display='none';
 document.getElementById('authToggle').addEventListener('click',()=>setAuthMode(authMode==='signin'?'signup':'signin'));
-async function withAuthTimeout(promise,label,ms=15000){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out. Check internet and try again.')),ms)})])}finally{clearTimeout(timer)}}
+async function withAuthTimeout(promise,label,ms=12000){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds. Your saved data is unchanged. Check internet and tap Sign in once more.')),ms)})])}finally{clearTimeout(timer)}}
 document.getElementById('authForm').onsubmit=async e=>{
  e.preventDefault();const submitButton=document.getElementById('authSubmit');if(submitButton.disabled)return;const originalText=submitButton.textContent;submitButton.disabled=true;
  const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value,name=document.getElementById('authName').value.trim();
@@ -432,12 +440,12 @@ document.getElementById('authForm').onsubmit=async e=>{
   if(authMode==='signup'){
    if(!name){throw new Error('Please enter your name to create an account.')}
    if(password.length<8){throw new Error('For a new account, password must be at least 8 characters.')}
-   const {data,error}=await withAuthTimeout(sb.auth.signUp({email,password,options:{data:{display_name:name}}}),'Create account');
+   const {data,error}=await withAuthTimeout(sb.auth.signUp({email,password,options:{data:{display_name:name}}}),'Create account',12000);
    if(error)throw error;
    if(data.session){err.textContent='Account created. Checking Owner permission…';await withAuthTimeout(startCloudSession(data.session),'Owner profile check')}
    else{err.textContent='Account created. Check your email to confirm, then sign in.'}
   }else{
-   const {data,error}=await withAuthTimeout(sb.auth.signInWithPassword({email,password}),'Gmail/password sign-in');
+   const {data,error}=await withAuthTimeout(sb.auth.signInWithPassword({email,password}),'Gmail/password sign-in',12000);
    if(error)throw error;
    if(!data.session)throw new Error('Login service returned no session. Please try again.');
    err.textContent='Login successful. Checking Owner permission…';
