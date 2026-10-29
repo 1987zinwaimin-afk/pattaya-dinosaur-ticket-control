@@ -184,14 +184,8 @@ async function loadCloud(){
   localTicketsBeforeCloud=live.length?live:backup;
   console.log('Local recovery candidates:',{live:live.length,backup:backup.length});
  }catch(e){console.warn('Could not inspect local ticket caches',e)}
- // Never let a large base64/local ticket cache block the authoritative cloud load.
- // Keep any backup only when browser quota permits; cloud data must still load if it does not.
- try{
-  if(!localStorage.getItem('tctl-local-backup-before-cloud')){
-   const prior=localStorage.getItem('tctl-new-tickets');
-   if(prior && prior.length < 1500000) localStorage.setItem('tctl-local-backup-before-cloud',prior);
-  }
- }catch(storageError){console.warn('Skipping oversized local backup; continuing with Cloud data.',storageError)}
+ // Do not write a duplicate backup to localStorage; it can exceed mobile browser quota.
+ // Read existing cache/backup if present, but leave them untouched.
  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
  if(error)throw error;
  let cloudRows=data||[];
