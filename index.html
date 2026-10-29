@@ -76,6 +76,31 @@ label{color:#c0d0e0}
 .theme-light .ticket h3{color:#f7f9fd!important}
 @media(max-width:420px){.cards{gap:11px}.ticket img{height:115px}.ticket-body{padding:10px}.ticket h3{font-size:1rem}.wrap{padding-left:14px;padding-right:14px}.stat{border-radius:17px}.stat span{font-size:.76rem}.stat strong{font-size:1.1rem}}
 
+
+/* Final mobile spacing pass: bring summary/actions upward and shorten ticket cards */
+@media(max-width:600px){
+  .wrap{padding:8px 12px 32px}
+  #stats{margin:8px 0;gap:7px}
+  .stat{padding:9px 10px;border-radius:16px}
+  .stat span{font-size:.73rem;line-height:1.2}
+  .stat strong{font-size:1.05rem;margin-top:3px}
+  .actions{margin:8px 0;gap:7px}
+  .actions button{min-height:44px;padding:8px 5px;font-size:12px}
+  .search{margin:8px 0}
+  .cards{gap:9px}
+  .ticket img{height:98px}
+  .ticket .placeholder{height:98px}
+  .ticket-body{padding:8px}
+  .ticket h3{font-size:.98rem;line-height:1.25;margin:0 0 6px}
+  .price{padding:5px 8px;border-radius:9px;margin:1px 0 6px;font-size:.95rem}
+  .soldrow{font-size:.82rem;line-height:1.2;margin:5px 0;gap:4px}
+  .qty{padding:8px;font-size:.9rem;border-radius:10px}
+  .ticket-actions{gap:6px;margin-top:7px}
+  .ticket-actions button{padding:8px 5px;font-size:.8rem;border-radius:11px}
+  .morebox{gap:5px;margin-top:6px}
+  .morebox button{padding:7px 4px;font-size:11px}
+}
+
 </style>
 </head>
 <body>
