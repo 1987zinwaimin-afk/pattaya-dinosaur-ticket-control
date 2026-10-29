@@ -117,8 +117,7 @@ label{color:#c0d0e0}
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Staff Ticket Control</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
-<form id="authForm"><label for="authName">Staff name</label><input id="authName" maxlength="80" required placeholder="Enter your registered staff name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="all">All Department</option></select><label for="authEmail">Staff account email</label><input id="authEmail" type="email" autocomplete="username" required placeholder="name@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters">
-<div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Sign in</button><button type="button" id="authToggle">Create account</button></div></form>
+<form id="authForm"><label for="authName">Staff name</label><input id="authName" maxlength="80" required placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="all">All Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
 
@@ -170,35 +169,43 @@ function listenRealtime(){
 async function startCloudSession(session){
  currentUser=session.user;
  const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle();
- if(profileError||!profile){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Account profile is not ready. Please sign in again.';return}
+ if(profileError||!profile){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Staff profile is not ready. Please try again.';return}
  currentRole=profile.role;
- if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Owner accounts are blocked on the Staff website. Please use the Owner website link.';return}
+ if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
  const enteredName=document.getElementById('authName').value.trim();
  if(enteredName && profile.display_name && enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase()){
-   await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Staff name does not match this account. Please enter the registered name.';return;
+   document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return;
  }
- selectedStaffDepartment=document.getElementById('staffDepartment').value;
+ selectedStaffDepartment=document.getElementById('staffDepartment').value||'all';
  page=selectedStaffDepartment==='all'?'all':selectedStaffDepartment;
  document.getElementById('authScreen').style.display='none';
  try{await loadCloud();listenRealtime();render()}catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
 }
-function setAuthMode(mode){authMode=mode;document.getElementById('authSubmit').textContent=mode==='signin'?'Login':'Create staff account';document.getElementById('authToggle').textContent=mode==='signin'?'Create staff account':'Back to Login';document.getElementById('authName').style.display='block';document.getElementById('authIntro').textContent=mode==='signup'?'Owner account setup. Staff must use the separate Staff website.':'Owner / Staff Cloud Login';document.getElementById('authError').textContent=''}
-document.getElementById('authName').style.display='none';
-document.getElementById('authToggle').onclick=()=>setAuthMode(authMode==='signin'?'signup':'signin');
 document.getElementById('authForm').onsubmit=async e=>{
- e.preventDefault();const email=document.getElementById('authEmail').value.trim(),password=document.getElementById('authPassword').value,name=document.getElementById('authName').value.trim();
- const err=document.getElementById('authError');err.textContent='Connecting…';
+ e.preventDefault();
+ const name=document.getElementById('authName').value.trim();
+ const err=document.getElementById('authError');
+ if(!name){err.textContent='Please enter your staff name.';return}
+ err.textContent='Connecting securely…';
  try{
-  if(authMode==='signup'){
-   if(!name){err.textContent='Enter the staff name.';return}
-   const {data,error}=await sb.auth.signUp({email,password,options:{data:{display_name:name}}});
-   if(error)throw error;
-   if(data.session){await startCloudSession(data.session)}else{err.textContent='Account created. Check your email to confirm, then sign in.'}
-  }else{if(!name){err.textContent='Enter the registered staff name.';return}const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;await startCloudSession(data.session)}
- }catch(e){err.textContent=e.message||'Authentication failed'}
+  const {data,error}=await sb.auth.signInAnonymously({options:{data:{display_name:name}}});
+  if(error)throw error;
+  if(!data.session)throw new Error('Could not start a staff session. Please try again.');
+  await startCloudSession(data.session);
+ }catch(e){err.textContent=(e.message||'Could not connect.')+' If anonymous sign-in is disabled in Supabase Auth settings, enable Anonymous Sign-Ins for this project.'}
 };
-sb.auth.getSession().then(({data})=>{if(data.session){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Please sign in using the Staff form.';sb.auth.signOut()}});
-
+sb.auth.getSession().then(async({data,error})=>{
+ if(error||!data.session)return;
+ try{
+  const {data:profile}=await sb.from('profiles').select('display_name,role').eq('id',data.session.user.id).maybeSingle();
+  if(profile?.role==='staff'){
+   document.getElementById('authName').value=profile.display_name||'';
+   await startCloudSession(data.session);
+  }else{
+   await sb.auth.signOut();
+  }
+ }catch(e){console.error('Could not restore staff session',e)}
+});
 function tr(k){return T[lang][k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function departmentTickets(){return tickets.filter(t=>t.department===page)}
