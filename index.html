@@ -208,7 +208,7 @@ async function loadCloud(){
    }
    if(typeof imageUrl==='string' && imageUrl.startsWith('data:'))imageUrl=null;
    t.imagePath=imagePath;t.imageUrl=imageUrl;t.image=imageUrl;
-   recovered.push(cloudRowForTicket(t));
+   const recoveredRow=cloudRowForTicket(t);recoveredRow.created_by=currentUser.id;recoveredRow.updated_by=currentUser.id;recovered.push(recoveredRow);
   }
   if(recovered.length){
    const {error:migrateError}=await sb.from('tickets').upsert(recovered,{onConflict:'id'});
