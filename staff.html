@@ -127,7 +127,7 @@ label{color:#c0d0e0}
 <script>
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-auth-v1'}});
 let authMode="signin",currentUser=null,currentRole="staff",cloudReady=false,cloudChannel=null;
 const STAFF_MODE=true;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',icon:'🎪'}];
@@ -209,7 +209,8 @@ async function startCloudSession(session){
  if(enteredName && profile.display_name && enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase()){
    document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return;
  }
- selectedStaffDepartment=document.getElementById('staffDepartment').value||'all';
+ selectedStaffDepartment=document.getElementById('staffDepartment').value||localStorage.getItem('tctl-staff-department')||'all';
+ localStorage.setItem('tctl-staff-department',selectedStaffDepartment);
  page=selectedStaffDepartment==='all'?'all':selectedStaffDepartment;
  document.getElementById('authScreen').style.display='none';
  document.getElementById('authError').textContent='';
@@ -235,6 +236,7 @@ sb.auth.getSession().then(async({data,error})=>{
   const {data:profile}=await sb.from('profiles').select('display_name,role').eq('id',data.session.user.id).maybeSingle();
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
+   document.getElementById('staffDepartment').value=localStorage.getItem('tctl-staff-department')||'all';
    await startCloudSession(data.session);
   }else{
    await sb.auth.signOut();
