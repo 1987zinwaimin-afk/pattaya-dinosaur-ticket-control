@@ -115,6 +115,36 @@ label{color:#c0d0e0}
 .auth-screen{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at 20% 0%,#174a75,transparent 40%),#041326;display:grid;place-items:center;padding:20px}
 .auth-card{width:min(440px,100%);padding:24px;border:1px solid #315573;border-radius:24px;background:linear-gradient(145deg,#102d49,#06172a);box-shadow:0 20px 60px #0008}
 .auth-card h2{color:#ffd778;margin:0 0 8px}.auth-card p{color:#b8cadd}.auth-card .auth-actions{display:grid;gap:10px;margin-top:18px}.auth-error{color:#ff8ea8;white-space:pre-wrap;font-size:.9rem;margin-top:12px}.auth-meta{font-size:.82rem;color:#a8bad0;margin-top:12px}
+
+/* Compact mobile dashboard: reduce oversized cards, buttons and spacing */
+.wrap{padding:12px 10px 30px}
+.stats{gap:7px;margin:10px 0}
+.stat{padding:9px 10px;border-radius:15px;box-shadow:0 3px 10px #0002}
+.stat span{font-size:clamp(10px,2.8vw,12px);line-height:1.25}
+.stat strong{font-size:1.08rem;margin-top:3px;line-height:1.15}
+.actions{gap:7px;margin:9px 0}
+.actions button{min-height:43px;padding:7px 5px;font-size:12px;border-radius:11px;box-shadow:0 3px 0 #020a14,0 5px 10px #0003}
+.actions .report-icon-btn{height:43px;min-height:43px;width:100%;min-width:0;padding:6px;border-radius:11px}
+.actions .report-icon-btn svg{width:23px;height:23px}
+.search{margin:9px 0}
+.search input,.search input[type=search]{padding:10px 12px;border-radius:12px;font-size:14px;min-height:43px}
+.cards{gap:8px}
+.ticket{border-radius:15px}
+.ticket img{height:88px;object-fit:cover}
+.ticket .placeholder{height:80px;font-size:28px}
+.ticket-body{padding:8px}
+.ticket h3{font-size:.9rem;line-height:1.25;margin:0 0 5px}
+.price{font-size:.8rem;padding:5px 7px;border-radius:8px;margin:1px 0 6px}
+.soldrow{font-size:.78rem;line-height:1.25;margin:5px 0;gap:4px}
+.qty{font-size:.9rem;padding:8px 9px;border-width:1px;border-radius:10px;min-height:38px}
+.ticket-actions{gap:5px;margin-top:7px}
+.ticket-actions button{font-size:.78rem;padding:7px 6px;border-radius:10px;line-height:1.15;min-height:36px}
+.morebox{gap:5px;margin-top:6px}
+.morebox button{font-size:11px;padding:6px 4px}
+.empty{padding:28px 12px;border-radius:14px}
+@media(min-width:520px){.ticket img{height:110px}.ticket-body{padding:10px}.ticket h3{font-size:1rem}}
+@media(max-width:360px){.wrap{padding-left:7px;padding-right:7px}.stats{gap:5px}.stat{padding:8px 7px}.stat span{font-size:10px}.stat strong{font-size:1rem}.cards{gap:6px}.ticket img{height:76px}.ticket-body{padding:6px}.ticket h3{font-size:.82rem}.price{font-size:.72rem;padding:4px 5px}.ticket-actions button{font-size:.7rem;padding:6px 4px}}
+
 </style>
 </head>
 <body>
