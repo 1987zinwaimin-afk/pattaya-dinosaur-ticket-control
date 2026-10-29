@@ -162,7 +162,7 @@ async function syncTickets(snapshot){
  try{
   while(syncPending){
    const next=syncPending;syncPending=null;
-   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);}
+   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);lastCloudFingerprint='';const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';}
   }
  }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));syncPending=syncPending||snapshot;setTimeout(()=>{if(!syncBusy&&syncPending)syncTickets(syncPending)},3000);}
  finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
@@ -212,6 +212,8 @@ async function loadCloud(){
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
  if(!currentUser||!cloudReady)return;
+ // Do not let an empty/stale read replace local edits while their Cloud upsert is still running.
+ if(syncBusy)return;
  // Continue polling even when this tab is in the background; mobile split-screen and tab switching must not stall sync.
  const modal=document.getElementById('ticketModal');
  if(modal&&modal.classList.contains('open')&&!force)return;
