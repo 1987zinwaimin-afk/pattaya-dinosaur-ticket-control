@@ -336,19 +336,23 @@ if(file){
 let chosenDepartment=(STAFF_MODE&&selectedStaffDepartment==='all')?document.getElementById('ticketDepartment').value:(old?old.department:page);let obj={id:ticketId,department:chosenDepartment,name,price:priceText===''?null:Number(priceText),quantity,image:imageUrl,imageUrl,imagePath,location:chosenDepartment==='event'?document.getElementById('eventLocation').value.trim():'',createdAt:old?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),createdBy:old?.createdBy||currentUser.id};if(old){tickets=tickets.map(t=>t.id===ticketId?obj:t)}else tickets.push(obj);save();document.getElementById('ticketModal').classList.remove('open');render()};
 async function createReportBlob(list,titleText){
  const items=Array.isArray(list)?list:[],width=1200,pad=30,gap=18,cols=2,cardW=(width-pad*2-gap)/2,cardH=142;
- const rows=Math.max(1,Math.ceil(items.length/cols)),height=260+rows*(cardH+gap)+86;
+ const rows=Math.max(1,Math.ceil(items.length/cols)),bannerH=205,infoY=225,infoH=145,cardsY=390,height=cardsY+rows*(cardH+gap)+86;
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
  const ctx=canvas.getContext('2d');ctx.fillStyle='#071a33';ctx.fillRect(0,0,width,height);
  ctx.strokeStyle='#e8b94f';ctx.lineWidth=4;ctx.strokeRect(18,18,width-36,height-36);
- const grad=ctx.createLinearGradient(0,20,width,220);grad.addColorStop(0,'#102f4b');grad.addColorStop(.5,'#1b4564');grad.addColorStop(1,'#071a33');ctx.fillStyle=grad;ctx.fillRect(24,24,width-48,190);
- ctx.fillStyle='#f5d48b';ctx.fillRect(32,220,width-64,5);
- ctx.fillStyle='#f5d48b';ctx.font='bold 42px Arial';ctx.textAlign='left';ctx.fillText('PATTAYA DINOSAUR KINGDOM',48,82);
- ctx.fillStyle='#fffaf0';ctx.font='bold 32px Arial';ctx.fillText(titleText|| (dep()?dep().en:'Ticket Report'),48,137);
- ctx.fillStyle='#c8d7e8';ctx.font='22px Arial';ctx.fillText('Ticket Report · '+new Date().toLocaleDateString(),48,180);
+ // Use the supplied clean banner artwork in the REPORT image (not the website navigation header).
+ let bannerDrawn=false;try{const banner=new Image();banner.src='/file_000000002a408207ab0d9bef49f92c89.png';await new Promise((resolve,reject)=>{banner.onload=resolve;banner.onerror=reject;setTimeout(reject,4000)});ctx.drawImage(banner,24,24,width-48,bannerH);bannerDrawn=true}catch(e){}
+ if(!bannerDrawn){const grad=ctx.createLinearGradient(0,20,width,220);grad.addColorStop(0,'#102f4b');grad.addColorStop(.5,'#1b4564');grad.addColorStop(1,'#071a33');ctx.fillStyle=grad;ctx.fillRect(24,24,width-48,bannerH);}
+ ctx.fillStyle='#e8b94f';ctx.fillRect(30,234,width-60,5);
+ // Reference-style department/date panel and total-count panel directly below the banner.
+ ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,infoY,805,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
+ ctx.fillStyle='#10213b';ctx.textAlign='left';ctx.font='bold 31px Arial';let heading=String(titleText||(dep()?dep().en:'Ticket Report'));if(heading.length>34)heading=heading.slice(0,33)+'…';ctx.fillText(heading,60,infoY+49);
+ ctx.fillStyle='#63758b';ctx.font='24px Arial';ctx.fillText('Daily Ticket Report · '+new Date().toLocaleDateString(),60,infoY+94);
  const total=items.reduce((s,t)=>s+(Number(t.quantity)||0),0);
- ctx.fillStyle='#f5d48b';ctx.fillRect(width-275,42,215,140);ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 22px Arial';ctx.fillText('TOTAL TICKETS',width-167,78);ctx.font='bold 56px Arial';ctx.fillText(String(total),width-167,137);
+ ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(850,infoY,320,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
+ ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 25px Arial';ctx.fillText('TOTAL TICKETS',1010,infoY+43);ctx.font='bold 66px Arial';ctx.fillText(String(total),1010,infoY+110);
  for(let i=0;i<items.length;i++){
-  const t=items[i],x=pad+(i%cols)*(cardW+gap),y=248+Math.floor(i/cols)*(cardH+gap);
+  const t=items[i],x=pad+(i%cols)*(cardW+gap),y=cardsY+Math.floor(i/cols)*(cardH+gap);
   ctx.fillStyle='#fffdf7';ctx.beginPath();ctx.roundRect(x,y,cardW,cardH,18);ctx.fill();ctx.strokeStyle='#dce3ec';ctx.lineWidth=2;ctx.stroke();
   const ix=x+12,iy=y+12,iw=164,ih=cardH-24;let imageUrl=t.image||t.imageUrl||null,drawn=false;
   if(imageUrl){try{const im=new Image();im.crossOrigin='anonymous';im.src=imageUrl;await new Promise((resolve,reject)=>{im.onload=resolve;im.onerror=reject;setTimeout(reject,3500)});ctx.save();ctx.beginPath();ctx.roundRect(ix,iy,iw,ih,10);ctx.clip();ctx.drawImage(im,ix,iy,iw,ih);ctx.restore();drawn=true}catch(e){}}
