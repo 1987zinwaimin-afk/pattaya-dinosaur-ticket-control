@@ -485,18 +485,26 @@ async function enableStaffLoginNotifications(){try{if(!currentUser||currentRole!
 function showStaffLoginNotice(row){const p=getStaffNotifyPrefs();const depts={sale:'Sale Ticket Department',entry:'Entry Ticket Department',playing:'Playing Ticket Department',event:'Event Ticket Department',all:'All Departments'};const msg=(row.display_name||'Staff')+' logged in — '+(depts[row.department]||row.department||'Unknown Department');playStaffLoginTone(p.sound);let toast=document.getElementById('staffLoginToast');if(!toast){toast=document.createElement('div');toast.id='staffLoginToast';document.body.appendChild(toast)}const base='position:fixed;z-index:99999;max-width:min(420px,calc(100vw - 28px));padding:16px 18px;color:#f4f7fb;font-weight:750;box-shadow:0 10px 35px #0009;';const styles={'3':'right:14px;top:14px;border:1px solid #f4ca70;border-radius:16px;background:linear-gradient(135deg,#123b58ee,#071a2cee);','6':'right:14px;top:14px;border:1px solid #45c5e8;border-radius:999px;background:#071a2cf2;padding:12px 18px;','2':'left:50%;top:35%;transform:translate(-50%,-35%);width:min(360px,calc(100vw - 32px));text-align:center;border:2px solid #f4ca70;border-radius:22px;background:#071a2cf7;padding:28px 20px;','5':'left:0;top:20%;bottom:20%;width:min(340px,calc(100vw - 45px));border:1px solid #f4ca70;border-radius:0 20px 20px 0;background:#071a2cf7;padding:22px 18px;'};toast.style.cssText=base+(styles[p.style]||styles['3']);toast.textContent=(p.style==='2'?'🔔 NEW STAFF LOGIN\n\n':'🔔 Staff Login: ')+msg;toast.style.whiteSpace='pre-line';toast.style.display='block';clearTimeout(window.staffLoginToastTimer);window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},p.style==='2'?9000:7000);if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||p.background==='both')){try{new Notification('Staff Login',{body:msg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}}}
 async function pollStaffLoginNotifications(){if(!sb||!currentUser||currentRole!=='owner')return;try{const {data,error}=await sb.from('staff_login_activity').select('normalized_name,display_name,department,logged_in_at,last_seen,is_active').order('logged_in_at',{ascending:false});if(error)throw error;const rows=data||[];if(!staffNotifyBaseline){rows.forEach(r=>staffNotifySeen[r.normalized_name]=r.logged_in_at||'');staffNotifyBaseline=true;return}for(const r of rows){const stamp=r.logged_in_at||'';if(stamp&&staffNotifySeen[r.normalized_name]&&staffNotifySeen[r.normalized_name]!==stamp)showStaffLoginNotice(r);staffNotifySeen[r.normalized_name]=stamp}}catch(e){console.warn('Staff login notification check failed',e.message)}}
 function startStaffLoginNotifications(){if(staffNotifyTimer)clearInterval(staffNotifyTimer);staffNotifyBaseline=false;staffNotifySeen={};pollStaffLoginNotifications();staffNotifyTimer=setInterval(pollStaffLoginNotifications,5000)}
-let ownerSessionStartPromise=null;
+let ownerSessionStartPromise=null,ownerSessionStartUserId=null;
 async function startCloudSession(session){
  if(!session?.user)throw new Error('No active login session was returned. Please sign in again.');
- if(currentUser?.id===session.user.id&&cloudReady){document.getElementById('authScreen').style.display='none';return}
- if(ownerSessionStartPromise)return ownerSessionStartPromise;
- ownerSessionStartPromise=(async()=>{
+ const requestedUserId=session.user.id;
+ if(currentUser?.id===requestedUserId&&cloudReady){document.getElementById('authScreen').style.display='none';return}
+ // Share one initialization for the same account. If another session is being initialized,
+ // wait for it to settle before starting this one; never return a different user's pending task.
+ if(ownerSessionStartPromise){
+  if(ownerSessionStartUserId===requestedUserId)return ownerSessionStartPromise;
+  try{await ownerSessionStartPromise}catch(e){}
+  return startCloudSession(session);
+ }
+ ownerSessionStartUserId=requestedUserId;
+ const startPromise=(async()=>{
   currentUser=session.user;
   let profileResult=null,lastProfileLookupError=null;
-  // Retry the authenticated profile read on mobile connections that briefly stall.
+  // Retry only the profile read; authentication itself has already succeeded.
   for(let attempt=1;attempt<=3;attempt++){
    try{
-    profileResult=await withAuthTimeout(sb.from('profiles').select('role,display_name').eq('id',currentUser.id).maybeSingle(),'Owner profile lookup',15000);
+    profileResult=await withAuthTimeout(sb.from('profiles').select('role,display_name').eq('id',requestedUserId).maybeSingle(),'Owner profile lookup',15000);
     if(!profileResult.error)break;
     lastProfileLookupError=profileResult.error;
     if(attempt<3)await new Promise(resolve=>setTimeout(resolve,500*attempt));
@@ -518,7 +526,10 @@ async function startCloudSession(session){
   try{await withAuthTimeout(loadCloud(),'Loading ticket data',20000);cloudReady=true;listenRealtime();startStaffLoginNotifications()}
   catch(e){showCloudError('Signed in, but cloud data did not finish loading: '+e.message);throw new Error('Signed in successfully, but ticket data did not finish loading. Check your connection and press Refresh. '+e.message)}
  })();
- try{return await ownerSessionStartPromise}finally{ownerSessionStartPromise=null}
+ ownerSessionStartPromise=startPromise;
+ try{return await startPromise}finally{
+  if(ownerSessionStartPromise===startPromise){ownerSessionStartPromise=null;ownerSessionStartUserId=null}
+ }
 }
 function setAuthMode(mode){authMode=mode;document.getElementById('authSubmit').textContent=mode==='signin'?'Sign in':'Create account';document.getElementById('authToggle').textContent=mode==='signin'?'Create account':'Back to sign in';document.getElementById('authNameLabel').style.display=mode==='signup'?'block':'none';document.getElementById('authName').style.display=mode==='signup'?'block':'none';document.getElementById('authIntro').textContent=mode==='signup'?'Owner account setup. Staff must use the separate Staff website.':'Owner / Staff Cloud Login';document.getElementById('authError').textContent=''}
 document.getElementById('authName').style.display='none';
