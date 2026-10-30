@@ -256,6 +256,8 @@ label{color:#c0d0e0}
 <h2>Ticket Control Live</h2><p id="authIntro">Owner Login</p>
 <form id="authForm" onsubmit="event.preventDefault();document.getElementById('authError').textContent='Login script did not initialize. Please refresh the page and try again.';return false;"><label id="authNameLabel" for="authName" style="display:none">Name (for new account)</label><input id="authName" maxlength="80" placeholder="Your name" style="display:none"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username" required placeholder="name@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" required placeholder="At least 8 characters">
 <div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Sign in</button><button type="button" id="authToggle">Create account</button></div></form>
+<button type="button" id="forgotPasswordBtn" style="width:100%;margin-top:12px;background:transparent;border:0;box-shadow:none;color:#ffd778;text-decoration:underline;padding:8px">Forgot password?</button>
+<form id="recoveryForm" style="display:none;margin-top:14px"><h3 style="color:var(--gold)">Set a new password</h3><label for="recoveryPassword">New password</label><input id="recoveryPassword" type="password" minlength="8" autocomplete="new-password" required placeholder="At least 8 characters"><label for="recoveryPasswordConfirm">Confirm new password</label><input id="recoveryPasswordConfirm" type="password" minlength="8" autocomplete="new-password" required placeholder="Enter it again"><button class="gold" type="submit" style="width:100%;margin-top:14px">Save new password</button></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">OWNER WEBSITE · Staff must use the separate Staff link.</div>
 </div></div>
 
@@ -531,8 +533,33 @@ async function startCloudSession(session){
   if(ownerSessionStartPromise===startPromise){ownerSessionStartPromise=null;ownerSessionStartUserId=null}
  }
 }
-function setAuthMode(mode){authMode=mode;document.getElementById('authSubmit').textContent=mode==='signin'?'Sign in':'Create account';document.getElementById('authToggle').textContent=mode==='signin'?'Create account':'Back to sign in';document.getElementById('authNameLabel').style.display=mode==='signup'?'block':'none';document.getElementById('authName').style.display=mode==='signup'?'block':'none';document.getElementById('authIntro').textContent=mode==='signup'?'Owner account setup. Staff must use the separate Staff website.':'Owner / Staff Cloud Login';document.getElementById('authError').textContent=''}
+function setAuthMode(mode){authMode=mode;document.getElementById('authSubmit').textContent=mode==='signin'?'Sign in':'Create account';document.getElementById('authToggle').textContent=mode==='signin'?'Create account':'Back to sign in';document.getElementById('authNameLabel').style.display=mode==='signup'?'block':'none';document.getElementById('authName').style.display=mode==='signup'?'block':'none';document.getElementById('forgotPasswordBtn').style.display=mode==='signin'?'block':'none';document.getElementById('authIntro').textContent=mode==='signup'?'Owner account setup. Staff must use the separate Staff website.':'Owner / Staff Cloud Login';document.getElementById('authError').textContent=''}
 document.getElementById('authName').style.display='none';
+document.getElementById('forgotPasswordBtn').onclick=async()=>{
+ const email=document.getElementById('authEmail').value.trim(),err=document.getElementById('authError'),btn=document.getElementById('forgotPasswordBtn');
+ if(!email){err.textContent='အရင်ဆုံး Owner Gmail ကို Email အကွက်မှာ ထည့်ပေးပါ။';document.getElementById('authEmail').focus();return}
+ btn.disabled=true;err.textContent='Password reset email ပို့နေပါတယ်…';
+ try{
+  const {error}=await withAuthTimeout(sb.auth.resetPasswordForEmail(email,{redirectTo:'https://pattaya-dinosaur-ticket-control.vercel.app/'}),'Password reset email',20000);
+  if(error)throw error;
+  err.textContent='Password ပြန်သတ်မှတ်ရန် Link ကို '+email+' သို့ ပို့ပြီးပါပြီ။ Gmail Inbox / Spam ကိုစစ်ပြီး Link ကိုဖွင့်ပါ။';
+ }catch(e){console.error('Password reset request failed:',e);err.textContent='Password reset email မပို့နိုင်ပါ: '+(e.message||'Please try again.')}
+ finally{btn.disabled=false}
+};
+document.getElementById('recoveryForm').onsubmit=async e=>{
+ e.preventDefault();const p=document.getElementById('recoveryPassword').value,p2=document.getElementById('recoveryPasswordConfirm').value,err=document.getElementById('authError');
+ if(p.length<8){err.textContent='Password အနည်းဆုံး ၈ လုံးရှိရပါမယ်။';return}
+ if(p!==p2){err.textContent='Password နှစ်ခု မတူပါ။ ပြန်စစ်ပါ။';return}
+ const btn=e.currentTarget.querySelector('button[type="submit"]');btn.disabled=true;err.textContent='Password အသစ် သိမ်းနေပါတယ်…';
+ try{
+  const {error}=await withAuthTimeout(sb.auth.updateUser({password:p}),'Update password',20000);
+  if(error)throw error;
+  await sb.auth.signOut({scope:'local'});
+  document.getElementById('recoveryForm').style.display='none';document.getElementById('authForm').style.display='block';document.getElementById('forgotPasswordBtn').style.display='block';document.getElementById('authPassword').value='';document.getElementById('recoveryPassword').value='';document.getElementById('recoveryPasswordConfirm').value='';
+  err.textContent='Password အသစ်ပြောင်းပြီးပါပြီ။ Gmail နဲ့ Password အသစ်ကို အသုံးပြုပြီး Sign in ဝင်ပါ။';
+ }catch(e){console.error('Password update failed:',e);err.textContent='Password အသစ်ပြောင်းမရပါ: '+(e.message||'Please try again.')}
+ finally{btn.disabled=false}
+};
 document.getElementById('authToggle').addEventListener('click',()=>setAuthMode(authMode==='signin'?'signup':'signin'));
 async function withAuthTimeout(promise,label,ms=12000){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds. Your saved data is unchanged. Check internet and tap Sign in once more.')),ms)})])}finally{clearTimeout(timer)}}
 document.getElementById('authForm').onsubmit=async e=>{
@@ -560,7 +587,7 @@ document.getElementById('authForm').onsubmit=async e=>{
    err.textContent='Login successful. Checking Owner permission…';
    await withAuthTimeout(startCloudSession(data.session),'Owner profile check',60000);
   }
- }catch(e){console.error('Owner login failed:',e);err.textContent=e.message||'Authentication failed. Please try again.'}
+ }catch(e){console.error('Owner login failed:',e);const msg=e.message||'Authentication failed. Please try again.';err.textContent=/invalid login credentials|invalid email or password/i.test(msg)?'Email သို့မဟုတ် Password မှားနေပါတယ်။ Gmail နဲ့ Password ကို ပြန်စစ်ပြီး ထပ်ဝင်ပါ။ Password မေ့နေပါက Forgot password? ကိုနှိပ်ပါ။':msg}
  finally{submitButton.disabled=false;submitButton.textContent=originalText}
 };
 let restoringSavedSession=false;
@@ -575,6 +602,16 @@ async function restoreSavedSession(){
 }
 sb.auth.onAuthStateChange((event,session)=>{
  if(event==='INITIAL_SESSION'&&session)setTimeout(()=>restoreSavedSession(),0);
+ if(event==='PASSWORD_RECOVERY'){
+  setTimeout(()=>{
+   document.getElementById('authScreen').style.display='grid';
+   document.getElementById('authIntro').textContent='Reset your Owner password';
+   document.getElementById('authForm').style.display='none';
+   document.getElementById('forgotPasswordBtn').style.display='none';
+   document.getElementById('recoveryForm').style.display='block';
+   document.getElementById('authError').textContent='Gmail မှ Password Reset Link ကို အတည်ပြုပြီးပါပြီ။ Password အသစ်ထည့်ပါ။';
+  },0);
+ }
 });
 restoreSavedSession();
 function tr(k){return T[lang][k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
