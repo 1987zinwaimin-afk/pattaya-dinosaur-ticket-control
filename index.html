@@ -451,7 +451,16 @@ async function refreshCloudTickets(force=false){
    tickets=rows.map(mapCloud);
    lastCloudRows=new Map(rows.map(r=>[String(r.id),r]));
    try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local cache full; Cloud data is still active.',storageError)}
-   render();
+   // Do not rebuild #pageContent while the Owner is editing a staff profile.
+   // Android photo picker backgrounds Chrome; the focus/visibility refresh can
+   // otherwise replace the modal before the selected file is returned.
+   const profileModal=document.getElementById('staffProfileModal');
+   const profileForm=document.getElementById('staffProfileForm');
+   const keepProfileEditorOpen=page==='staff'&&profileModal&&profileForm&&(
+    profileModal.classList.contains('open')||
+    (profileModal.dataset.keepOpenAfterPicker==='1'&&document.getElementById('staffProfileUserId')?.value)
+   );
+   if(!keepProfileEditorOpen)render();
   }
  }catch(e){console.error('Auto-refresh cloud tickets failed',e)}
  finally{cloudLoadBusy=false}
