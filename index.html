@@ -234,6 +234,14 @@ label{color:#c0d0e0}
 .ticket .ticket-quantity-highlight small{flex:0 0 auto!important;font-size:clamp(9px,2.5vw,11px)!important;font-weight:900!important;letter-spacing:.02em!important;text-align:right!important;white-space:nowrap!important}
 .ticket .qty{width:100%!important;min-width:0!important;min-height:54px;margin:0!important;padding:12px 14px!important;border:1px solid #496984!important;border-radius:14px!important;background:#06182b!important;color:#f4f7fb!important;font-size:16px!important}
 @media(max-width:380px){.ticket .ticket-quantity-highlight{gap:5px!important;padding:8px!important}.ticket .ticket-quantity-highlight strong{font-size:22px!important}.ticket .ticket-quantity-highlight span{font-size:10px!important}.ticket .ticket-quantity-highlight small{font-size:9px!important}}
+
+/* Compact Total Tickets badge: keep every part on one line */
+.ticket .soldrow{display:flex!important;align-items:center!important;justify-content:flex-start!important;margin:6px 0 9px!important;overflow:visible!important}
+.ticket .ticket-quantity-highlight{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;width:auto!important;max-width:100%!important;min-width:0!important;min-height:44px!important;padding:6px 12px!important;border-radius:12px!important;white-space:nowrap!important;overflow:visible!important}
+.ticket .ticket-quantity-highlight span{flex:0 0 auto!important;white-space:nowrap!important;font-size:clamp(11px,3vw,13px)!important;line-height:1!important}
+.ticket .ticket-quantity-highlight strong{display:inline-block!important;flex:0 0 auto!important;min-width:0!important;white-space:nowrap!important;overflow:visible!important;overflow-wrap:normal!important;word-break:keep-all!important;font-size:clamp(22px,5.5vw,27px)!important;line-height:1!important;text-align:center!important}
+.ticket .ticket-quantity-highlight small{flex:0 0 auto!important;white-space:nowrap!important;font-size:clamp(9px,2.4vw,10px)!important;line-height:1!important}
+@media(max-width:380px){.ticket .ticket-quantity-highlight{gap:6px!important;padding:6px 9px!important;min-height:42px!important}.ticket .ticket-quantity-highlight strong{font-size:22px!important}}
 </style>
 </head>
 <body>
