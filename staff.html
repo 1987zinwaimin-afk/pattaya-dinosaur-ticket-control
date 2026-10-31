@@ -846,6 +846,52 @@ input:focus,select:focus,textarea:focus{
  .auth-card form label{margin:8px 0 4px!important}
 }
 
+
+/* Number 3 — Modern Floating Card: real park backdrop and clean centered login */
+.auth-screen{
+ background:
+  linear-gradient(180deg,rgba(2,12,25,.28),rgba(2,13,27,.62) 48%,rgba(2,12,24,.72)),
+  radial-gradient(ellipse at 50% 48%,rgba(3,20,38,.12),rgba(2,12,24,.62)),
+  url('/file_000000002a408207ab0d9bef49f92c89.png') center center/cover no-repeat,
+  #041326!important;
+}
+.auth-screen:before{display:none!important}
+.auth-card{
+ width:min(430px,100%)!important;
+ padding:clamp(20px,4vw,28px)!important;
+ border:1px solid rgba(244,202,112,.68)!important;
+ border-radius:25px!important;
+ background:linear-gradient(150deg,rgba(10,35,59,.83),rgba(2,16,32,.91))!important;
+ box-shadow:0 22px 70px rgba(0,0,0,.55),0 0 30px rgba(244,202,112,.16),inset 0 1px rgba(255,255,255,.12)!important;
+ backdrop-filter:blur(20px) saturate(130%)!important;
+ -webkit-backdrop-filter:blur(20px) saturate(130%)!important;
+}
+.auth-card:before{display:none!important}
+.auth-card h2{
+ display:block!important;margin:0!important;text-align:center!important;
+ color:#ffe09a!important;font-size:clamp(25px,6vw,31px)!important;
+ line-height:1.2!important;letter-spacing:.01em!important;
+ text-transform:none!important;text-shadow:0 2px 18px rgba(244,202,112,.24)!important
+}
+.auth-card h2:after{display:none!important;content:none!important}
+.auth-card p{margin:9px 0 20px!important;text-align:center!important;color:#d6e5f4!important;font-size:14px!important}
+.auth-card form label{color:#d0deec!important}
+.auth-card input:not([type=checkbox]),.auth-card select{
+ background:rgba(5,23,42,.76)!important;border-color:rgba(145,185,216,.48)!important;
+ box-shadow:inset 0 1px 8px rgba(0,0,0,.18)!important
+}
+.auth-card .auth-actions button.gold{
+ min-height:52px!important;border-radius:14px!important;
+ background:linear-gradient(110deg,#ffedb6,#f2c55f 55%,#d99d35)!important;
+ box-shadow:0 5px 18px rgba(228,173,67,.28),inset 0 1px rgba(255,255,255,.58)!important
+}
+.auth-card .auth-actions button:not(.gold){min-height:48px!important}
+.auth-card #forgotPasswordBtn{color:#ffdc8d!important}
+@media(max-width:480px){
+ .auth-screen{padding:14px!important;background-position:center center!important}
+ .auth-card{width:min(100%,410px)!important;padding:20px 18px!important}
+}
+
 </style>
 </head>
 <body>
@@ -857,7 +903,7 @@ input:focus,select:focus,textarea:focus{
 </main>
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
-<h2>Staff Ticket Control</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
+<h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
 <form id="authForm"><label for="authName">Staff name</label><input id="authName" maxlength="80" required placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="all">All Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
