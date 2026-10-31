@@ -1587,10 +1587,12 @@ async function renderPayroll(){
    if(targetChanged||!end.value)end.value=iso(defaultEnd);
   }
   loadedTargetUserId=targetUserId;
-  rate.readOnly=!owner;rate.disabled=!owner;
-  document.getElementById('savePayrollSettings').style.display=owner?'inline-flex':'none';
-  document.getElementById('payrollRateWrap').querySelector('label').textContent=owner?'Daily wage (THB)':'Daily wage set by Owner (THB)';
-  if(!owner&&!setting)rate.placeholder='Owner has not set the daily wage yet';
+  rate.readOnly=false;rate.disabled=false;
+  start.disabled=!owner;end.disabled=!owner;
+  document.getElementById('savePayrollSettings').style.display='inline-flex';
+  document.getElementById('savePayrollSettings').textContent=owner?'Save salary settings':'Save my daily wage';
+  document.getElementById('payrollRateWrap').querySelector('label').textContent=owner?'Daily wage (THB)':'My daily wage (THB)';
+  rate.placeholder=owner?'Enter daily wage':'Enter your daily wage (THB)';
   if(!start.value||!end.value||start.value>end.value){
    calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';
    summary.textContent='Choose a valid start date and closing date.';
@@ -1623,11 +1625,12 @@ async function renderPayroll(){
   summary.innerHTML='<div class="summary-row"><span>Salary period</span><b>'+start.value+' → '+end.value+'</b></div><div class="summary-row"><span>Work days</span><b>'+work+' / '+days.length+' days</b></div><div class="summary-row"><span>Days off</span><b>'+off+' days</b></div><div class="summary-row"><span>Not marked</span><b>'+unmarked+' days</b></div><div class="summary-row"><span>Daily wage</span><b>'+money(dayRate)+'</b></div><div class="summary-row"><span>Calculation</span><b>'+work+' × '+money(dayRate)+'</b></div><div style="margin-top:12px;padding:14px;border-radius:14px;background:var(--panel2,#102b45);border:1px solid var(--line)"><span class="subtle">Estimated salary</span><div style="font-size:clamp(25px,6vw,34px);font-weight:900;color:var(--gold)">'+money(amount)+'</div></div><details style="margin-top:12px"><summary style="cursor:pointer;font-weight:750;color:var(--gold);padding:8px 0">View daily wage breakdown ('+days.length+' days)</summary><div style="overflow-x:auto"><table style="width:100%;min-width:300px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">Date</th><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">Attendance</th><th style="text-align:right;padding:7px 5px;border-bottom:1px solid var(--line)">Wage</th></tr></thead><tbody>'+detailRows+'</tbody></table></div></details><p class="subtle" style="font-size:12px">Salary is calculated from saved Work day entries only. Day off and unmarked dates are not included.</p>';
  }
  document.getElementById('savePayrollSettings').onclick=async()=>{
-  if(!owner)return;
-  if(!start.value||!end.value||start.value>end.value||rate.value===''||!Number.isFinite(Number(rate.value))||Number(rate.value)<0){alert('Enter a valid salary period and daily wage.');return}
-  const {error}=await sb.from('payroll_settings').upsert({user_id:targetUserId,daily_rate:Number(rate.value),period_start:start.value,period_end:end.value,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  if(error){alert('Could not save salary settings: '+error.message);return}
-  alert('Salary settings saved.');await load();
+  if(owner&&(!start.value||!end.value||start.value>end.value)){alert('Enter a valid salary period.');return}
+  if(rate.value===''||!Number.isFinite(Number(rate.value))||Number(rate.value)<0){alert('Enter a valid daily wage (0 or higher).');return}
+  const {error}=await sb.from('payroll_settings').upsert({user_id:targetUserId,daily_rate:Number(rate.value),period_start:start.value||iso(defaultStart),period_end:end.value||iso(defaultEnd),updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+  if(error){alert('Could not save daily wage: '+error.message);return}
+  alert(owner?'Salary settings saved.':'Your daily wage has been saved. Owner can view it in Staff Payroll.');
+  await load();
  };
  document.getElementById('savePayrollAttendance').onclick=async()=>{
   const rows=[...document.querySelectorAll('.payroll-day')].map(x=>({work_date:x.dataset.date,status:x.value}));
