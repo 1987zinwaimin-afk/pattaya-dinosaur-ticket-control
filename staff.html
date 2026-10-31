@@ -604,6 +604,45 @@ input:focus,select:focus,textarea:focus{
  #pageContent[data-ui-page="train"] tbody td:nth-child(8){grid-column:auto}
 }
 
+
+/* Owner / Staff database mobile presentation — no profile or login data mutation */
+#pageContent[data-ui-page="owner"],#pageContent[data-ui-page="staff"]{display:grid;gap:13px;min-width:0}
+#pageContent[data-ui-page="owner"]>.panel,
+#pageContent[data-ui-page="staff"]>.panel{padding:clamp(13px,3.5vw,20px);min-width:0}
+#ownerLoginHistory{border-radius:18px!important;background:linear-gradient(145deg,rgba(19,50,77,.88),rgba(6,23,40,.96))!important}
+#ownerLoginHistory h3{color:var(--gold)!important;font-size:18px}
+#ownerLoginHistory>div{min-width:0;border-color:rgba(151,190,220,.24)!important;background:rgba(3,17,31,.34)!important;border-radius:15px!important}
+#ownerLoginHistory>div>div:first-child{font-size:clamp(14px,3.8vw,18px);line-height:1.4}
+#ownerLoginHistory .summary-row{align-items:flex-start;gap:10px;padding:11px 2px}
+#ownerLoginHistory .summary-row span{flex:1 1 48%;font-size:13px}
+#ownerLoginHistory .summary-row b{flex:1 1 52%;text-align:right;overflow-wrap:anywhere;font-size:13px}
+#ownerLoginHistory ol{padding-left:22px!important;margin-top:10px!important}
+#ownerLoginHistory ol li{padding:10px 5px!important;border-color:rgba(151,190,220,.15)!important;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+#pageContent[data-ui-page="staff"] #staffActivityList{padding:10px!important;border-radius:17px!important;background:rgba(4,20,36,.5)!important}
+#pageContent[data-ui-page="staff"] #staffActivityList>div{gap:10px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList>div>div{
+ border:1px solid rgba(151,190,220,.24)!important;border-radius:17px!important;
+ background:linear-gradient(145deg,rgba(19,50,77,.9),rgba(5,21,38,.97))!important;
+ box-shadow:0 9px 22px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.04)!important;
+ padding:13px!important
+}
+#pageContent[data-ui-page="staff"] #staffActivityList img{width:76px!important;height:76px!important;flex-basis:76px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList .edit-staff-profile,
+#pageContent[data-ui-page="staff"] #staffActivityList .delete-staff-activity{min-height:40px!important;border-radius:11px!important}
+#pageContent[data-ui-page="staff"] #staffProfileModal .modalbox{max-width:480px!important;border-radius:21px!important}
+#pageContent[data-ui-page="staff"] #staffProfileForm label{font-weight:700}
+#pageContent[data-ui-page="staff"] #staffProfileForm input:not([type="hidden"]){min-height:46px}
+@media(max-width:480px){
+ #pageContent[data-ui-page="staff"] #staffActivityList>div>div>div:first-child{grid-template-columns:68px minmax(0,1fr)!important;gap:11px!important}
+ #pageContent[data-ui-page="staff"] #staffActivityList img,
+ #pageContent[data-ui-page="staff"] #staffActivityList>div>div>div:first-child>div:first-child{width:68px!important;height:68px!important;flex-basis:68px!important}
+ #pageContent[data-ui-page="staff"] #staffActivityList>div>div>div:last-child{align-items:flex-start!important}
+ #pageContent[data-ui-page="staff"] #staffActivityList .edit-staff-profile,
+ #pageContent[data-ui-page="staff"] #staffActivityList .delete-staff-activity{font-size:11px!important;padding:8px 7px!important}
+ #ownerLoginHistory .summary-row{flex-direction:column;gap:4px}
+ #ownerLoginHistory .summary-row b{text-align:left}
+}
+
 </style>
 </head>
 <body>
