@@ -1379,6 +1379,7 @@ function renderMonthly(){
  root.innerHTML='<div class="report-page">'+
   '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">TICKET CONTROL · REPORTS</span><h2>'+tr('report')+'</h2><p class="subtle">Review ticket inventory for a selected date range</p></div><span class="report-icon">▤</span></div>'+
   '<div class="report-filters"><label>'+tr('from')+'<input type="date" id="fromDate" value="'+first+'"></label><label>'+tr('to')+'<input type="date" id="toDate" value="'+today+'"></label></div>'+
+  '<div class="report-department-filter"><label for="reportDepartment">Department</label><select id="reportDepartment"><option value="all">All Departments</option>'+DEPTS.map(d=>'<option value="'+esc(d.id)+'">'+esc(d[lang]||d.en)+'</option>').join('')+'</select></div>'+'+
   '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+tr('report')+'</button><button id="downloadMonthly" class="report-secondary">⇩ Save image</button><button class="blue" id="shareMonthly">↗ Share report</button></div>'+
   '<p id="monthlyError" class="report-error" role="alert" aria-live="polite"></p></section>'+
   '<section id="monthlyResults" class="report-results" aria-live="polite"></section>'+
@@ -1390,7 +1391,8 @@ function renderMonthly(){
   if(!f||!t){error.textContent='Please select both report dates.';return null}
   if(f>t){error.textContent='The start date must be on or before the end date.';return null}
   error.textContent='';
-  return tickets.filter(x=>{const stamp=String(x.updatedAt||x.createdAt||'').slice(0,10);return stamp&&stamp>=f&&stamp<=t});
+  const dept=document.getElementById('reportDepartment')?.value||'all';
+  return tickets.filter(x=>{const stamp=String(x.updatedAt||x.createdAt||'').slice(0,10);return stamp&&stamp>=f&&stamp<=t&&(dept==='all'||x.department===dept)});
  };
  const report=()=>{
   const list=calc();if(!list){results.innerHTML='';return false}
@@ -1402,13 +1404,14 @@ function renderMonthly(){
    const amount=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0)*(Number(x.price)||0),0);
    return '<article class="report-dept"><div class="report-dept-title"><span class="report-dept-icon">'+d.icon+'</span><strong>'+esc(d[lang]||d.en)+'</strong></div><div class="report-dept-stats"><div><small>Ticket types</small><b>'+rows.length.toLocaleString()+'</b></div><div><small>Total quantity</small><b>'+qty.toLocaleString()+'</b></div><div><small>Inventory value</small><b>'+money(amount)+'</b></div></div></article>';
   }).join('');
-  results.innerHTML='<div class="report-range"><span>REPORT PERIOD</span><strong>'+fDate(from.value)+' – '+fDate(to.value)+'</strong></div>'+
+  results.innerHTML='<div class="report-range"><span>REPORT PERIOD · '+esc((document.getElementById('reportDepartment')?.selectedOptions[0]?.textContent)||'All Departments')+'</span><strong>'+fDate(from.value)+' – '+fDate(to.value)+'</strong></div>'+
    '<div class="report-kpis"><article class="report-kpi"><span>Ticket types</span><strong>'+list.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>Total quantity</span><strong>'+quantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>Inventory value</span><strong>'+money(value)+'</strong></article></div>'+
    '<div class="report-section-title"><h3>Department breakdown</h3><span>'+DEPTS.length+' departments</span></div>'+
    (list.length?departments:'<div class="report-empty">No ticket records were found for this date range.</div>');
   return true;
  };
  const fDate=value=>new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(new Date(value+'T12:00:00+07:00'));
+ document.getElementById('reportDepartment').onchange=report;
  document.getElementById('makeMonthly').onclick=report;
  document.getElementById('downloadMonthly').onclick=async()=>{const list=calc();if(list)await saveReportList(list,'Monthly Ticket Inventory Report')};
  document.getElementById('shareMonthly').onclick=async()=>{const list=calc();if(list)await shareReportList(list,'Monthly Ticket Inventory Report')};
