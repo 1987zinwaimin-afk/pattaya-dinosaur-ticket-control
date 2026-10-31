@@ -1524,7 +1524,7 @@ function renderMonthly(){
  root.innerHTML='<div class="report-page">'+
   '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">TICKET CONTROL · REPORTS</span><h2>'+tr('report')+'</h2><p class="subtle">Review ticket inventory for a selected date range</p></div><span class="report-icon">▤</span></div>'+
   '<div class="report-filters"><label>'+tr('from')+'<input type="date" id="fromDate" value="'+first+'"></label><label>'+tr('to')+'<input type="date" id="toDate" value="'+today+'"></label></div>'+
-  '<div class="report-department-filter"><label for="reportDepartment">Department</label><select id="reportDepartment"><option value="all">All Departments</option>'+DEPTS.map(d=>'<option value="'+esc(d.id)+'">'+esc(d[lang]||d.en)+'</option>').join('')+'</select></div>'+'+
+  '<div class="report-department-filter"><label for="reportDepartment">Department</label><select id="reportDepartment"><option value="all">All Departments</option>'+DEPTS.map(d=>'<option value="'+esc(d.id)+'">'+esc(d[lang]||d.en)+'</option>').join('')+'</select></div>'+
   '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+tr('report')+'</button><button id="downloadMonthly" class="report-secondary">⇩ Save image</button><button class="blue" id="shareMonthly">↗ Share report</button></div>'+
   '<p id="monthlyError" class="report-error" role="alert" aria-live="polite"></p></section>'+
   '<section id="monthlyResults" class="report-results" aria-live="polite"></section>'+
