@@ -1287,7 +1287,7 @@ document.getElementById('authForm').onsubmit=async e=>{
   const {data,error}=await sb.auth.signInAnonymously({options:{data:{display_name:name}}});
   if(error)throw error;
   if(!data.session)throw new Error('Could not start a staff session. Please try again.');
-  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:staffId,p_display_name:name});
+  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:staffId,p_display_name:name,p_department:document.getElementById('staffDepartment').value||'all'});
   if(claimError)throw claimError;
   if(!claimed)throw new Error('Staff ID could not be verified.');
   currentStaffId=claimed;
