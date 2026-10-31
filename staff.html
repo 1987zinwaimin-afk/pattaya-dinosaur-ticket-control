@@ -1292,7 +1292,7 @@ document.getElementById('authForm').onsubmit=async e=>{
   if(!claimed)throw new Error('Staff ID could not be verified.');
   currentStaffId=claimed;
   await startCloudSession(data.session,true);
- }catch(e){err.textContent=(e.message||'Could not connect.')+' If anonymous sign-in is disabled in Supabase Auth settings, enable Anonymous Sign-Ins for this project.'}
+ }catch(e){err.textContent=e.message||'Could not connect. Please check Staff ID and Name.'}
 };
 let restoringSavedSession=false;
 async function restoreSavedSession(){
