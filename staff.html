@@ -993,7 +993,7 @@ input:focus,select:focus,textarea:focus{
 @media(max-width:600px){
  .auth-card.is-signup #authNameLabel{display:block!important}
  .auth-card.is-signup #authName{display:block!important;width:100%!important;min-height:39px!important;height:39px!important;margin:0 0 5px!important;visibility:visible!important;opacity:1!important}
- .auth-card:not(.is-signup) #authNameLabel,.auth-card:not(.is-signup) #authName{display:none!important}
+ .auth-card:not(.is-signup) #authNameLabel,.auth-card:not(.is-signup) #authName{display:block!important}
 }
 
 
@@ -1029,7 +1029,8 @@ input:focus,select:focus,textarea:focus{
   min-height:39px!important;
   margin:4px 0 8px!important;
  }
- .auth-card #authForm label[for="authName"]{display:block!important}
+ .auth-card #authForm label[for="authName"],.auth-card #authForm label[for="authStaffId"]{display:block!important}
+ .auth-card #authForm #authStaffId{display:block!important;visibility:visible!important;opacity:1!important;width:100%!important;min-height:39px!important;height:39px!important;margin:4px 0 8px!important}
 }
 
 
@@ -1085,7 +1086,7 @@ input:focus,select:focus,textarea:focus{
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
-<form id="authForm"><label for="authName">Staff name</label><input id="authName" maxlength="80" required placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="all">All Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
+<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="all">All Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
 
@@ -1096,7 +1097,7 @@ input:focus,select:focus,textarea:focus{
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-staff-auth-v1'}});
-let authMode="signin",currentUser=null,currentRole="staff",cloudReady=false,cloudChannel=null;
+let authMode="signin",currentUser=null,currentRole="staff",currentStaffId=null,cloudReady=false,cloudChannel=null;
 const STAFF_MODE=true;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',icon:'🎪'}];
 const PAGES=[{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',icon:'◈'},...DEPTS,{id:'train',en:'Train Time In / Time Out',th:'ตารางเวลารถไฟ',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',icon:'▥'},{id:'payroll',en:'My Payroll',th:'เงินเดือนของฉัน',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',icon:'♧'},{id:'settings',en:'Settings',th:'ตั้งค่า',icon:'⚙'}];
@@ -1234,23 +1235,26 @@ function listenRealtime(){
 async function recordStaffActivity(active,firstLogin){
  if(!sb||!currentUser)return;
  const displayName=(document.getElementById('authName')?.value||currentUser.user_metadata?.display_name||'Staff').trim();
- const normalizedName=displayName.toLocaleLowerCase().replace(/\\s+/g,' ').trim();
- if(!normalizedName)return;
- const row={normalized_name:normalizedName,display_name:displayName,department:selectedStaffDepartment||'all',user_id:currentUser.id,last_seen:new Date().toISOString(),is_active:!!active,updated_at:new Date().toISOString()};
+ const staffId=currentStaffId;
+ if(!staffId)return;
+ const row={normalized_name:staffId.toUpperCase(),display_name:displayName,staff_id:staffId,department:selectedStaffDepartment||'all',user_id:currentUser.id,last_seen:new Date().toISOString(),is_active:!!active,updated_at:new Date().toISOString()};
  if(firstLogin)row.logged_in_at=new Date().toISOString();
- const {error}=await sb.from('staff_login_activity').upsert(row,{onConflict:'normalized_name'});
+ const {error}=await sb.from('staff_login_activity').upsert(row,{onConflict:'staff_id'});
  if(error)console.warn('Staff activity update failed:',error.message);
 }
 function showStaffWelcome(profile,department){const existing=document.getElementById('staffWelcomeOverlay');if(existing)existing.remove();const name=(profile?.display_name||document.getElementById('authName')?.value||'Staff').trim();const deptNames={sale:'Sale Department',entry:'Entry Department',playing:'Playing Department',event:'Event Department',all:'All Department'};const dept=deptNames[department]||department||'Staff';const avatar=profile?.avatar_url?'<button type="button" id="staffWelcomePhotoButton" aria-label="View profile photo larger" style="display:block;margin:0 auto;padding:0;border:0;background:transparent;border-radius:50%;cursor:zoom-in;line-height:0"><img src="'+esc(profile.avatar_url)+'" alt="Profile photo — tap to enlarge" style="display:block;width:clamp(140px,38vw,176px);height:clamp(140px,38vw,176px);object-fit:cover;object-position:center;border-radius:50%;border:4px solid #f5cf70;box-shadow:0 0 22px #e9b84d88;cursor:zoom-in"></button>':'<div style="width:clamp(140px,38vw,176px);height:clamp(140px,38vw,176px);margin:0 auto;border-radius:50%;border:4px solid #f5cf70;display:grid;place-items:center;background:linear-gradient(135deg,#15385d,#07172c);color:#ffe7a0;font-size:54px;font-weight:800;box-shadow:0 0 22px #e9b84d88">'+esc(name.slice(0,1).toUpperCase())+'</div>';const overlay=document.createElement('div');overlay.id='staffWelcomeOverlay';overlay.style.cssText='position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:12px;background:radial-gradient(circle at 80% 70%,#174e77aa,transparent 38%),linear-gradient(135deg,#041326f5,#0a2c4cf5);backdrop-filter:blur(12px);overflow:auto';overlay.innerHTML='<div style="position:relative;box-sizing:border-box;width:min(100%,520px);max-height:calc(100dvh - 24px);overflow:auto;padding:clamp(16px,4vw,24px);border:1.5px solid #e8bd5b;border-radius:22px;background:linear-gradient(145deg,#102c4bed,#07182bf2);box-shadow:0 0 24px #f0c25b44,inset 0 0 24px #7bbfff10;text-align:center;color:#f5f8ff"><div style="font-size:10px;letter-spacing:2px;color:#f5d67e;font-weight:800">PATTAYA DINOSAUR KINGDOM</div><div style="margin:12px auto 8px">'+avatar+'</div><div style="font-size:clamp(25px,6vw,32px);font-weight:900;color:#ffe6a0;line-height:1.1">Welcome Back!</div><h1 style="font-size:clamp(23px,5vw,30px);margin:7px 0;color:#fff">'+esc(name)+'</h1><div style="display:inline-block;border:1px solid #f3ce6d;border-radius:22px;padding:6px 14px;color:#ffe9a8;font-size:14px;font-weight:800;margin-bottom:14px">'+esc(dept)+'</div><div style="border:1px solid #b88e48;border-radius:14px;padding:12px;margin:0 0 12px;text-align:left;background:#ffffff08"><div style="font-size:21px;color:#ffe29a;font-weight:800">👋 Hello '+esc(name)+'!</div><div style="font-size:14px;line-height:1.45;color:#d9e8fa;margin-top:4px">Welcome to Pattaya Dinosaur Kingdom</div></div><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;text-align:left;margin-bottom:12px"><div style="border:1px solid #45607d;border-radius:11px;padding:9px;background:#ffffff08"><div style="font-size:11px;color:#a9c0d9">Login Time</div><strong style="font-size:12px;line-height:1.4">'+esc(new Date().toLocaleString())+'</strong></div><div style="border:1px solid #45607d;border-radius:11px;padding:9px;background:#ffffff08"><div style="font-size:11px;color:#a9c0d9">Department</div><strong style="font-size:12px;line-height:1.4">'+esc(dept)+'</strong></div></div><div style="border:1px solid #b88e48;border-radius:12px;padding:10px;color:#e4efff;font-size:13px;line-height:1.4;margin-bottom:14px">⭐ Have a great day! Let’s make today amazing!</div><button id="staffWelcomeStart" style="width:min(100%,260px);padding:12px 18px;border:0;border-radius:28px;background:linear-gradient(100deg,#fff0a1,#ffc24c);color:#10223a;font-size:17px;font-weight:900;box-shadow:0 4px 0 #8c6328">Let’s Start →</button></div>';document.body.appendChild(overlay);const photoButton=document.getElementById('staffWelcomePhotoButton');if(photoButton){photoButton.style.setProperty('box-shadow','none','important');photoButton.style.setProperty('outline','none','important');photoButton.style.setProperty('min-width','0','important');photoButton.style.setProperty('width','fit-content','important');photoButton.style.setProperty('height','fit-content','important');photoButton.style.setProperty('padding','0','important');photoButton.style.setProperty('border','0','important');photoButton.style.setProperty('background','transparent','important');const welcomeImg=photoButton.querySelector('img');if(welcomeImg){welcomeImg.style.setProperty('display','block','important');welcomeImg.style.setProperty('width','clamp(140px,38vw,176px)','important');welcomeImg.style.setProperty('height','clamp(140px,38vw,176px)','important');welcomeImg.style.setProperty('border-radius','50%','important');welcomeImg.style.setProperty('object-fit','cover','important');welcomeImg.style.setProperty('box-shadow','0 0 22px #e9b84d88','important');welcomeImg.style.setProperty('outline','none','important')}photoButton.onclick=()=>{const lightbox=document.createElement('div');lightbox.id='staffWelcomePhotoLightbox';lightbox.style.cssText='position:fixed;inset:0;z-index:100001;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(1,8,18,.94);backdrop-filter:blur(10px)';lightbox.innerHTML='<button type="button" aria-label="Close photo" style="position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;width:46px;height:46px;border-radius:50%;border:1px solid #f5cf70;background:#173b5b;color:#fff;font-size:28px;z-index:2">×</button><img alt="Staff profile photo" src="'+esc(profile.avatar_url)+'" style="display:block;max-width:96vw;max-height:84dvh;width:auto;height:auto;object-fit:contain;border:3px solid #f5cf70;border-radius:16px;box-shadow:0 18px 70px #000a"><div style="position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:18px;right:18px;text-align:center;color:#fff;font-weight:700">'+esc(name)+'</div>';const close=()=>lightbox.remove();lightbox.addEventListener('click',e=>{if(e.target===lightbox||e.target.closest('button'))close()});document.addEventListener('keydown',function escPhoto(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',escPhoto)}});document.body.appendChild(lightbox)}}document.getElementById('staffWelcomeStart').onclick=()=>overlay.remove()}
 
 async function startCloudSession(session,notifyOwnerPush=false){
  currentUser=session.user;
- const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived').eq('id',currentUser.id).maybeSingle();
+ const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle();
  if(profileError||!profile){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Staff profile is not ready. Please try again.';return}
  if(profile.is_archived){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
  currentRole=profile.role;
+ currentStaffId=profile.staff_id||null;
  if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
  const enteredName=document.getElementById('authName').value.trim();
+ const enteredStaffId=document.getElementById('authStaffId').value.trim();
+ if(!profile.staff_id||enteredStaffId.toUpperCase()!==profile.staff_id.toUpperCase()){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session is not linked to the entered Staff ID. Please sign out and continue with your assigned ID.';return}
  if(enteredName && profile.display_name && enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase()){
    document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return;
  }
@@ -1275,13 +1279,18 @@ async function startCloudSession(session,notifyOwnerPush=false){
 document.getElementById('authForm').onsubmit=async e=>{
  e.preventDefault();
  const name=document.getElementById('authName').value.trim();
+ const staffId=document.getElementById('authStaffId').value.trim();
  const err=document.getElementById('authError');
- if(!name){err.textContent='Please enter your staff name.';return}
- err.textContent='Connecting securely…';
+ if(!staffId||!name){err.textContent='Please enter Staff ID and Name.';return}
+ err.textContent='Checking Staff ID…';
  try{
   const {data,error}=await sb.auth.signInAnonymously({options:{data:{display_name:name}}});
   if(error)throw error;
   if(!data.session)throw new Error('Could not start a staff session. Please try again.');
+  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:staffId,p_display_name:name});
+  if(claimError)throw claimError;
+  if(!claimed)throw new Error('Staff ID could not be verified.');
+  currentStaffId=claimed;
   await startCloudSession(data.session,true);
  }catch(e){err.textContent=(e.message||'Could not connect.')+' If anonymous sign-in is disabled in Supabase Auth settings, enable Anonymous Sign-Ins for this project.'}
 };
@@ -1293,11 +1302,12 @@ async function restoreSavedSession(){
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
   if(!data.session)return;
-  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role,avatar_url,is_archived').eq('id',data.session.user.id).maybeSingle();
+  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role,avatar_url,is_archived,staff_id').eq('id',data.session.user.id).maybeSingle();
   if(profileError)throw profileError;
   if(profile?.is_archived){await sb.auth.signOut();document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
+   document.getElementById('authStaffId').value=profile.staff_id||'';
    document.getElementById('staffDepartment').value=localStorage.getItem('tctl-staff-department')||'all';
    await startCloudSession(data.session);
   }else{
