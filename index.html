@@ -1313,6 +1313,56 @@ html body #pageContent #staffActivityList > div > div:first-child > div > span{c
 html body #pageContent #staffActivityList > div > div:first-child > div > span[style*="f4ca70"]{color:#ffe08a!important}
 html body #pageContent #staffActivityList > div > div:last-child > span{opacity:1!important;font-weight:850!important}
 html body #pageContent #staffActivityList > div{opacity:1!important;filter:none!important;background:linear-gradient(145deg,#173a56 0%,#081d31 100%)!important}
+
+/* Owner Staff Login Activity: enforce strong contrast and easy mobile actions */
+html body #pageContent #staffActivityList > div{
+  background:linear-gradient(145deg,#173b59 0%,#071a2c 100%)!important;
+  border:1px solid #8aa9c1!important;border-radius:18px!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.24)!important;
+  opacity:1!important;filter:none!important;
+}
+html body #pageContent #staffActivityList > div *{
+  opacity:1!important;filter:none!important;
+  text-shadow:none!important;
+}
+html body #pageContent #staffActivityList > div strong{
+  color:#ffffff!important;font-weight:850!important;
+}
+html body #pageContent #staffActivityList > div span{
+  color:#f1f5f9!important;font-weight:600!important;
+}
+html body #pageContent #staffActivityList > div span[style*="f4ca70"]{
+  color:#ffe08a!important;font-weight:900!important;
+}
+html body #pageContent #staffActivityList > div span[style*="4ade80"]{
+  color:#86efac!important;font-weight:900!important;
+}
+html body #pageContent #staffActivityList > div span[style*="fb7185"]{
+  color:#fda4af!important;font-weight:900!important;
+}
+html body #pageContent #staffActivityList button.edit-staff-profile{
+  background:#e7f1fb!important;color:#102a43!important;
+  border:2px solid #a9c5dc!important;font-weight:850!important;
+  min-height:48px!important;padding:11px 14px!important;
+}
+html body #pageContent #staffActivityList button.delete-staff-activity{
+  background:#b4232f!important;color:#ffffff!important;
+  border:2px solid #ff9aa3!important;font-weight:900!important;
+  min-height:48px!important;padding:11px 14px!important;
+}
+html body #pageContent #staffActivityList button.edit-staff-profile:active,
+html body #pageContent #staffActivityList button.delete-staff-activity:active{transform:scale(.98)}
+@media(max-width:520px){
+ html body #pageContent #staffActivityList > div > div:last-child > div{
+   display:grid!important;grid-template-columns:1fr 1fr!important;
+   width:100%!important;gap:10px!important;
+ }
+ html body #pageContent #staffActivityList button.edit-staff-profile,
+ html body #pageContent #staffActivityList button.delete-staff-activity{
+   width:100%!important;min-width:0!important;white-space:normal!important;
+   font-size:14px!important;line-height:1.25!important;
+ }
+}
 </style>
 </head>
 <body>
