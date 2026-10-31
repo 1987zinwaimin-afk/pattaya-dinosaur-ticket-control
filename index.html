@@ -2363,7 +2363,7 @@ async function saveStaffProfile(e){
   if(saveError)throw new Error('Photo upload completed, but saving this staff profile failed: '+saveError.message);
   if(!saved)throw new Error('The profile update returned no row. The photo may be uploaded, but this account was not updated. Check Owner permissions.');
   // Update only this selected profile. Other same-name accounts remain separate.
-  const normalized=name.toLocaleLowerCase().replace(/\\s+/g,' ').trim();
+  const normalized=name.toLocaleLowerCase().replace(/\s+/g,' ').trim();
   const {data:activity,error:activityReadError}=await sb.from('staff_login_activity').select('*').eq('user_id',userId).maybeSingle();
   if(activityReadError)throw new Error('Profile photo was saved, but activity display could not be updated: '+activityReadError.message);
   if(activity){
@@ -2411,7 +2411,7 @@ async function loadStaffActivity(){
   const byId=new Map(profiles.map(p=>[p.id,p]));
   const avatarByName=new Map();
   for(const p of [...profiles,...nameProfiles]){
-   const key=String(p.display_name||'').toLocaleLowerCase().replace(/\\s+/g,' ').trim();
+   const key=String(p.display_name||'').toLocaleLowerCase().replace(/\s+/g,' ').trim();
    if(key&&p.avatar_url&&!avatarByName.has(key))avatarByName.set(key,p.avatar_url);
   }
   // One card per assigned Staff ID. Keep unassigned users separate by Auth user ID,
@@ -2433,7 +2433,7 @@ async function loadStaffActivity(){
    const p=byId.get(r.user_id);
    const nm=p?.display_name||r.display_name;
    const staffId=p?.staff_id||r.staff_id||'Not assigned';
-   const sharedAvatar=avatarByName.get(String(nm||'').toLocaleLowerCase().replace(/\\s+/g,' ').trim());
+   const sharedAvatar=avatarByName.get(String(nm||'').toLocaleLowerCase().replace(/\s+/g,' ').trim());
    const photoUrl=p?.avatar_url||sharedAvatar;
    const avatar=photoUrl?'<img alt="'+esc(nm)+' profile photo" src="'+esc(photoUrl)+'" style="width:88px;height:88px;flex:0 0 88px;object-fit:cover;object-position:center;border-radius:50%;border:3px solid var(--gold);box-shadow:0 0 12px #eac35b44">':'<div aria-label="No profile photo" style="width:88px;height:88px;flex:0 0 88px;border-radius:50%;border:3px solid var(--gold);display:grid;place-items:center;color:#f8d978;background:linear-gradient(145deg,#183b5a,#071a2c);box-shadow:0 0 12px #eac35b33"><svg viewBox="0 0 64 64" width="52" height="52" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"><circle cx="32" cy="21" r="12"/><path d="M10 56c1-13 9-20 22-20s21 7 22 20"/></svg></div>';
    return '<div style="display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding:16px;border:1px solid #244969;border-radius:20px;background:linear-gradient(145deg,#071a2c,#0b243b);box-shadow:inset 0 0 0 1px #ffffff05"><div style="display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center">'+avatar+'<div style="min-width:0"><strong style="display:block;overflow-wrap:anywhere;font-size:1.12rem;color:#f6f8ff">'+esc(nm)+'</strong><span style="display:block;color:#ffffff!important;margin-top:5px;font-size:1rem;font-weight:750;text-shadow:0 1px 2px #000">'+esc(deptNames[r.department]||r.department||'Unknown Department')+'</span><span style="display:block;color:#ffe08a!important;font-size:1rem;font-weight:900;margin-top:7px;text-shadow:0 1px 2px #000">Staff ID: '+esc(staffId)+'</span><span style="display:block;color:#f1f5f9!important;font-size:.96rem;font-weight:700;margin-top:9px;text-shadow:0 1px 2px #000;overflow-wrap:anywhere">Last login: '+esc(r.logged_in_at?new Date(r.logged_in_at).toLocaleString():'—')+'</span><span style="display:block;color:#f1f5f9!important;font-size:.96rem;font-weight:700;margin-top:5px;text-shadow:0 1px 2px #000;overflow-wrap:anywhere">Last activity: '+esc(r.last_seen?new Date(r.last_seen).toLocaleString():'—')+'</span></div></div><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px solid #24415c;padding-top:10px"><span style="font-weight:800;color:'+(active?'#4ade80':'#fb7185')+'">'+(active?'● Active':'● Inactive')+'</span><div style="display:flex;align-items:center;gap:8px;flex-wrap:nowrap;min-width:0"><button type="button" class="edit-staff-profile" data-row="'+i+'" style="background:#173b5b;border:1px solid #d6b45c;color:#fff;border-radius:11px;padding:9px 10px;font-size:clamp(12px,3.4vw,16px);font-weight:800;white-space:nowrap;flex:0 1 auto">✎ Edit Profile</button><button type="button" class="delete-staff-activity" data-row="'+i+'" style="background:#7f1d1d;border:1px solid #ef4444;color:#fff;border-radius:11px;padding:9px 10px;font-size:clamp(12px,3.4vw,16px);font-weight:900;white-space:nowrap;flex:0 1 auto">🗑 Delete Activity</button></div></div></div>';
