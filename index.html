@@ -1675,7 +1675,7 @@ async function renderPayroll(){
    const dayRate=Number(rate.value||0),total=work*dayRate;
    const selectedPerson=owner?people.find(p=>p.id===targetUserId):null;
    const personName=owner?(targetUserId===currentUser.id?'My Owner Payroll':(selectedPerson?.display_name||'Staff')):(currentUser.display_name||currentUser.email||'Staff');
-   const width=1080,rowHeight=54,top=390,height=top+rows.length*rowHeight+90;
+   const width=1080,rowHeight=54,top=390,height=top+rows.length*rowHeight+150;
    const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
    const ctx=canvas.getContext('2d');
    ctx.fillStyle='#071a2b';ctx.fillRect(0,0,width,height);
