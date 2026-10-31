@@ -978,6 +978,25 @@ input:focus,select:focus,textarea:focus{
  .auth-card .auth-actions{margin-top:9px!important}
 }
 
+
+/* Login card: compact, keep park sign visible, and prevent signup name input disappearing */
+@media(max-width:600px){
+ .auth-screen{padding-top:clamp(62px,9vh,88px)!important;padding-bottom:16px!important;background-position:center 58%!important}
+ .auth-card{width:min(360px,100%)!important;padding:13px 14px 12px!important;border-radius:19px!important}
+ .auth-card h2{font-size:24px!important;margin-bottom:3px!important}
+ .auth-card p{margin:4px 0 8px!important;font-size:12px!important}
+ .auth-card form label{margin:6px 0 3px!important;font-size:12px!important}
+ .auth-card input:not([type=checkbox]),.auth-card select{height:39px!important;min-height:39px!important;padding:7px 10px!important;font-size:13px!important}
+ .auth-card .auth-actions{gap:6px!important;margin-top:9px!important}
+ .auth-card .auth-actions button,.auth-card form>button{min-height:40px!important;padding:8px 10px!important;font-size:13px!important}
+ .auth-card #forgotPasswordBtn{min-height:35px!important;margin-top:2px!important;padding:6px!important}
+}
+@media(max-width:600px){
+ .auth-card.is-signup #authNameLabel{display:block!important}
+ .auth-card.is-signup #authName{display:block!important;width:100%!important;min-height:39px!important;height:39px!important;margin:0 0 5px!important;visibility:visible!important;opacity:1!important}
+ .auth-card:not(.is-signup) #authNameLabel,.auth-card:not(.is-signup) #authName{display:none!important}
+}
+
 </style>
 </head>
 <body>
