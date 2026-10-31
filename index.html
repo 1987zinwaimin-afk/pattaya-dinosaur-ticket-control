@@ -1611,6 +1611,45 @@ body.theme-light button:focus-visible,
 body.theme-light input:focus-visible,
 body.theme-light select:focus-visible{outline:3px solid #b27a20!important;outline-offset:2px}
 
+
+/* Emergency Premium Light menu readability fix: force actual nav label nodes to dark ink */
+body.theme-light #side,
+body.theme-light #side *{ -webkit-text-fill-color:initial; }
+body.theme-light #side .nav button,
+body.theme-light #side .nav button *,
+body.theme-light #side .nav button span,
+body.theme-light #side .nav button strong{
+ color:#20384e!important;
+ -webkit-text-fill-color:#20384e!important;
+ text-shadow:none!important;
+ opacity:1!important;
+}
+body.theme-light #side .nav button{
+ background:linear-gradient(145deg,#ffffff,#e8f0f6)!important;
+ border:1px solid #bdcbd7!important;
+ box-shadow:0 3px 0 #c7d3dd,0 6px 14px #20384e12!important;
+}
+body.theme-light #side .nav button.active,
+body.theme-light #side .nav button.active *,
+body.theme-light #side .nav button.active span{
+ color:#172b40!important;
+ -webkit-text-fill-color:#172b40!important;
+ background:linear-gradient(135deg,#f5d994,#d4a448)!important;
+}
+body.theme-light #side h2{
+ color:#80520b!important;-webkit-text-fill-color:#80520b!important;
+ text-shadow:none!important;
+}
+body.theme-light #side .menu-language-label,
+body.theme-light #side label{
+ color:#465d73!important;-webkit-text-fill-color:#465d73!important;
+}
+body.theme-light #side select,
+body.theme-light #side select option{
+ color:#172b40!important;-webkit-text-fill-color:#172b40!important;
+ background-color:#fff!important;
+}
+
 </style>
 </head>
 <body>
