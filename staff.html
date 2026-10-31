@@ -1019,6 +1019,21 @@ input:focus,select:focus,textarea:focus{
  .auth-screen{padding-top:clamp(205px,34vh,270px)!important}
 }
 
+
+/* Staff login must always show the staff-name field; signup-only owner CSS must not hide it */
+@media(max-width:600px){
+ .auth-card #authForm #authName{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  height:39px!important;
+  min-height:39px!important;
+  margin:4px 0 8px!important;
+ }
+ .auth-card #authForm label[for="authName"]{display:block!important}
+}
+
 </style>
 </head>
 <body>
