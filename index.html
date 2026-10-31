@@ -643,6 +643,45 @@ input:focus,select:focus,textarea:focus{
  #ownerLoginHistory .summary-row b{text-align:left}
 }
 
+
+/* Settings / notification controls — mobile layout only; retain current preferences and handlers */
+#pageContent[data-ui-page="settings"]{display:grid;gap:13px;min-width:0}
+#pageContent[data-ui-page="settings"]>.panel{padding:clamp(14px,3.6vw,21px);min-width:0}
+#pageContent[data-ui-page="settings"]>.panel>h2{margin-top:0;font-size:clamp(20px,5vw,26px);color:var(--gold)}
+#pageContent[data-ui-page="settings"]>.panel>.summary-row{align-items:center;gap:12px}
+#pageContent[data-ui-page="settings"]>.panel>.summary-row>span{font-weight:700;color:#d6e2ef}
+#pageContent[data-ui-page="settings"]>.panel>.summary-row>select{width:auto;max-width:180px!important;min-width:135px;min-height:44px;padding:8px 10px}
+#pageContent[data-ui-page="settings"] .panel[style*="padding:12px"]{
+ margin:15px 0!important;padding:15px!important;border-radius:18px!important;
+ background:linear-gradient(145deg,rgba(19,50,77,.88),rgba(6,23,40,.96))!important;
+ border:1px solid rgba(151,190,220,.24)!important
+}
+#pageContent[data-ui-page="settings"] .panel h3{color:var(--gold)!important;font-size:17px}
+#pageContent[data-ui-page="settings"] .panel h4{color:#e8d4a6;font-size:13px;letter-spacing:.02em}
+#pageContent[data-ui-page="settings"] input[type="radio"],
+#pageContent[data-ui-page="settings"] input[type="checkbox"]{width:18px!important;height:18px!important;min-width:18px!important;min-height:18px!important;margin:0 5px 0 0;accent-color:#e7bd69;flex:0 0 auto}
+#pageContent[data-ui-page="settings"] label.panel{
+ min-width:0;border-radius:12px!important;background:rgba(4,19,34,.55)!important;
+ border:1px solid rgba(151,190,220,.2)!important;color:#eaf1f8!important
+}
+#pageContent[data-ui-page="settings"] label:has(input[type="radio"]){display:flex;align-items:center;gap:7px;min-width:0;line-height:1.35}
+#pageContent[data-ui-page="settings"] .actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}
+#pageContent[data-ui-page="settings"] .actions button{min-width:0;min-height:44px;padding:9px 7px;font-size:13px}
+#pageContent[data-ui-page="settings"] #staffNotifySaved{padding:10px;border-radius:10px;background:rgba(30,90,66,.2)}
+#pageContent[data-ui-page="settings"] #exportAll,
+#pageContent[data-ui-page="settings"] #scanRecovery,
+#pageContent[data-ui-page="settings"] #downloadRecovery,
+#pageContent[data-ui-page="settings"] #importRecovery{width:100%;min-height:44px;margin-top:8px}
+#pageContent[data-ui-page="settings"] #recoveryFile{min-height:46px;font-size:13px}
+#pageContent[data-ui-page="settings"] #recoveryResults{max-height:260px;overflow:auto;border:1px solid var(--line)!important;border-radius:13px!important;color:#dce8f3}
+@media(max-width:480px){
+ #pageContent[data-ui-page="settings"]>.panel>.summary-row{align-items:stretch!important;flex-direction:column;gap:7px!important}
+ #pageContent[data-ui-page="settings"]>.panel>.summary-row>select{width:100%;max-width:none!important}
+ #pageContent[data-ui-page="settings"] .panel[style*="padding:12px"]>div[style*="repeat(2"]{grid-template-columns:1fr!important}
+ #pageContent[data-ui-page="settings"] .panel[style*="padding:12px"]>div[style*="repeat(3"]{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ #pageContent[data-ui-page="settings"] .actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
 </style>
 </head>
 <body>
