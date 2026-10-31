@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1600">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#06152e"/><stop offset=".48" stop-color="#123d61"/><stop offset="1" stop-color="#061727"/></linearGradient>
+ <radialGradient id="moon"><stop stop-color="#fff3b7"/><stop offset=".72" stop-color="#efb94e"/><stop offset="1" stop-color="#d98220" stop-opacity="0"/></radialGradient>
+ <linearGradient id="gold" x2="0" y2="1"><stop stop-color="#ffe8a0"/><stop offset="1" stop-color="#a85d16"/></linearGradient>
+ <linearGradient id="glass" x2="0" y2="1"><stop stop-color="#397ca0" stop-opacity=".75"/><stop offset="1" stop-color="#07182c" stop-opacity=".95"/></linearGradient>
+ <linearGradient id="path" x2="0" y2="1"><stop stop-color="#f8c86a" stop-opacity=".65"/><stop offset="1" stop-color="#1b3444" stop-opacity=".2"/></linearGradient>
+ <filter id="glow"><feGaussianBlur stdDeviation="13"/></filter>
+</defs>
+<rect width="900" height="1600" fill="url(#sky)"/>
+<circle cx="450" cy="290" r="190" fill="url(#moon)" opacity=".9"/>
+<circle cx="450" cy="290" r="94" fill="#ffe7a1" opacity=".88"/>
+<g fill="#091a29" opacity=".95"><path d="M300 330q-12-60 18-91l30-25 12-55 19 54 44 17 29 43 33 9 34-40 18-51 20 60 43 34 18 45z"/><path d="M380 310q-50-70-100-36l-35 39 70-5 25 23z"/></g>
+<g fill="#f5c86b" opacity=".8">
+<circle cx="85" cy="95" r="3"/><circle cx="170" cy="210" r="2"/><circle cx="730" cy="115" r="3"/><circle cx="820" cy="270" r="2"/><circle cx="600" cy="75" r="2"/><circle cx="265" cy="95" r="2"/><circle cx="545" cy="190" r="2"/>
+</g>
+<g fill="#061522" stroke="#17364a" stroke-width="5">
+<path d="M0 0h80q-18 130 20 250L0 380z"/><path d="M900 0h-82q18 130-20 250l102 130z"/>
+<path d="M0 400q85-170 190-190q-75 70-83 190q-40-55-107 0z"/><path d="M900 360q-85-170-190-190q75 70 83 190q40-55 107 0z"/>
+</g>
+<g stroke="#174c48" stroke-width="18" fill="none" stroke-linecap="round">
+<path d="M65 0q-5 160 18 360"/><path d="M840 0q5 160-18 360"/>
+</g>
+<g fill="#12604e">
+<path d="M80 80q-120-90-95-130q90 35 115 112q-2-120 45-128q34 100-25 155q95-60 122-10q-50 90-170 65z"/>
+<path d="M820 80q120-90 95-130q-90 35-115 112q2-120-45-128q-34 100 25 155q-95-60-122-10q50 90 170 65z"/>
+</g>
+<!-- distant mountains and waterfall -->
+<path d="M0 520L130 350l105 130 125-180 150 200 130-190 130 170 130-110v390H0z" fill="#102f48"/>
+<path d="M110 420q-25 130 8 260h26q-15-150 5-260zM750 385q-25 160 8 290h25q-15-160 5-290z" fill="#75b8d0" opacity=".35"/>
+<!-- glass dome entrance -->
+<path d="M185 690V540q0-250 265-250t265 250v150z" fill="url(#glass)" stroke="#d7a84e" stroke-width="10"/>
+<path d="M225 690V545q0-205 225-205t225 205v145" fill="none" stroke="#6fa7bd" stroke-width="5" opacity=".7"/>
+<path d="M450 340v350M340 360v330M560 360v330M225 510h450M190 610h520" stroke="#d4a85a" stroke-width="5" opacity=".7"/>
+<g fill="#ffd77b" opacity=".85"><circle cx="225" cy="690" r="9"/><circle cx="675" cy="690" r="9"/><circle cx="450" cy="690" r="10"/></g>
+<!-- entrance sign -->
+<rect x="270" y="415" width="360" height="92" rx="18" fill="#07182b" stroke="url(#gold)" stroke-width="6"/>
+<text x="450" y="458" text-anchor="middle" font-family="Georgia,serif" font-size="39" font-weight="bold" fill="#ffe19a">PATTAYA</text>
+<text x="450" y="490" text-anchor="middle" font-family="Georgia,serif" font-size="23" font-weight="bold" fill="#f4c76d">DINOSAUR KINGDOM</text>
+<!-- dinosaur silhouette -->
+<g fill="#071421" stroke="#1b3444" stroke-width="5">
+<path d="M640 720q-28-80-92-96l-40-22q-35-20-18-55q22-38 78-16l60 32q40 22 80 2l42-28q28-17 49 7q15 22-8 43l-53 43q-29 24-35 90l-10 90h-30l-6-76-22 76h-31z"/>
+<path d="M535 610q-25-22-47-10l-28 25 41 9z"/>
+</g>
+<g fill="#f2c66d"><circle cx="560" cy="565" r="7"/><circle cx="614" cy="580" r="5"/></g>
+<!-- pterosaurs -->
+<g fill="#081827"><path d="M120 300q45-65 90-8q-40-8-90 8q-55-57-95-35q45-4 95 35z"/><path d="M730 250q40-55 82-8q-37-5-82 8q-48-47-82-25q40-2 82 25z"/></g>
+<!-- lit tropical landscaping -->
+<g fill="#073e37"><path d="M0 900q100-100 170 0q-95-25-140 75q-35-40-30-75z"/><path d="M900 880q-100-100-170 0q95-25 140 75q35-40 30-75z"/><path d="M0 1110q120-90 210 10q-130-25-170 100q-45-45-40-110z"/><path d="M900 1090q-120-90-210 10q130-25 170 100q45-45 40-110z"/></g>
+<g fill="#e9b65d" opacity=".95"><circle cx="70" cy="820" r="10"/><circle cx="825" cy="820" r="10"/><circle cx="100" cy="1040" r="8"/><circle cx="800" cy="1040" r="8"/><circle cx="150" cy="1230" r="7"/><circle cx="750" cy="1230" r="7"/></g>
+<!-- stone walkway -->
+<path d="M280 720H620L900 1600H0z" fill="url(#path)" opacity=".95"/>
+<path d="M280 720L0 1600M620 720L900 1600" stroke="#d6a55a" stroke-width="7" opacity=".6"/>
+<g stroke="#d3a65c" stroke-width="3" opacity=".42"><path d="M240 850h420M195 1000h510M140 1180h620M80 1380h740"/><path d="M450 720v880"/></g>
+<g fill="#ffd078" opacity=".8"><circle cx="260" cy="790" r="8"/><circle cx="640" cy="790" r="8"/><circle cx="210" cy="940" r="7"/><circle cx="690" cy="940" r="7"/><circle cx="150" cy="1120" r="8"/><circle cx="750" cy="1120" r="8"/></g>
+<rect width="900" height="1600" fill="#041426" opacity=".13"/>
+</svg>
