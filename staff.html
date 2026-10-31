@@ -1442,7 +1442,7 @@ async function renderPayroll(){
    const activeIds=new Set((activity||[]).map(a=>a.user_id).filter(Boolean));
    const activityById=new Map((activity||[]).map(a=>[a.user_id,a]));
    people=(data||[]).filter(p=>p.id===currentUser.id||(p.role==='staff'&&activeIds.has(p.id)));
-   sel.innerHTML='<option value="'+esc(currentUser.id)+'">My Owner Payroll</option>'+people.filter(p=>p.id!==currentUser.id).map(p=>{const a=activityById.get(p.id);const staffName=p.display_name||a?.display_name||'Staff';const staffId=p.staff_id||a?.staff_id;const label=staffId?staffName+' · '+staffId:staffName;return '<option value="'+esc(p.id)+'">'+esc(label)+'</option>'}).join('');
+   sel.innerHTML='<option value="'+esc(currentUser.id)+'">My Owner Payroll</option>'+people.filter(p=>p.id!==currentUser.id).map(p=>{const a=activityById.get(p.id);const staffName=a?.display_name||p.display_name||'Staff';const staffId=a?.staff_id||p.staff_id;const label=staffId?staffName+' · '+staffId:staffName;return '<option value="'+esc(p.id)+'">'+esc(label)+'</option>'}).join('');
   }catch(e){document.getElementById('payrollSummary').textContent='Could not load staff accounts: '+e.message}
  }
  const start=document.getElementById('payrollStart'),end=document.getElementById('payrollEnd'),rate=document.getElementById('payrollRate');
