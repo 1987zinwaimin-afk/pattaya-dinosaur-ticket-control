@@ -500,6 +500,57 @@ input:focus,select:focus,textarea:focus{
  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
 
+
+/* Mobile-first readable report layout */
+#pageContent[data-ui-page="monthly"] .report-page{display:grid;gap:14px;min-width:0}
+#pageContent[data-ui-page="monthly"] .report-hero{padding:clamp(14px,3.5vw,22px)}
+#pageContent[data-ui-page="monthly"] .report-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#pageContent[data-ui-page="monthly"] .report-eyebrow{font-size:10px;letter-spacing:.14em;color:var(--gold);font-weight:850}
+#pageContent[data-ui-page="monthly"] .report-heading h2{margin:5px 0;font-size:clamp(21px,5vw,28px)}
+#pageContent[data-ui-page="monthly"] .report-heading p{margin:0}
+#pageContent[data-ui-page="monthly"] .report-icon{width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(145deg,#ffe8ae,#dba84f);color:#10243a;font-size:23px}
+#pageContent[data-ui-page="monthly"] .report-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
+#pageContent[data-ui-page="monthly"] .report-filters label{min-width:0;font-size:12px;font-weight:700}
+#pageContent[data-ui-page="monthly"] .report-filters input{display:block;width:100%;min-width:0;min-height:46px;margin-top:6px;padding:9px;font-size:14px}
+#pageContent[data-ui-page="monthly"] .report-actions{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;margin-top:14px}
+#pageContent[data-ui-page="monthly"] .report-actions button{min-width:0;min-height:46px;padding:9px 6px;font-size:clamp(11px,2.9vw,14px);line-height:1.2}
+#pageContent[data-ui-page="monthly"] .report-secondary{background:linear-gradient(145deg,#244966,#102d49)!important}
+#pageContent[data-ui-page="monthly"] .report-error{min-height:0;margin:8px 0 0;color:#ff9eae;font-size:13px}
+#pageContent[data-ui-page="monthly"] .report-results{display:grid;gap:11px;min-width:0}
+#pageContent[data-ui-page="monthly"] .report-range{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(11,34,56,.72)}
+#pageContent[data-ui-page="monthly"] .report-range span{font-size:10px;letter-spacing:.1em;color:var(--muted);font-weight:800}
+#pageContent[data-ui-page="monthly"] .report-range strong{font-size:13px;text-align:right;overflow-wrap:anywhere}
+#pageContent[data-ui-page="monthly"] .report-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#pageContent[data-ui-page="monthly"] .report-kpi{min-width:0;padding:12px 10px;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,rgba(20,52,80,.9),rgba(7,25,44,.96));box-shadow:inset 0 1px rgba(255,255,255,.05)}
+#pageContent[data-ui-page="monthly"] .report-kpi span{display:block;color:var(--muted);font-size:clamp(9px,2.5vw,11px);line-height:1.25}
+#pageContent[data-ui-page="monthly"] .report-kpi strong{display:block;margin-top:7px;color:#f5f8fc;font-size:clamp(16px,4.5vw,22px);line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#pageContent[data-ui-page="monthly"] .report-kpi-gold{border-color:rgba(247,213,138,.5);background:linear-gradient(145deg,rgba(96,72,34,.42),rgba(14,36,57,.95))}
+#pageContent[data-ui-page="monthly"] .report-kpi-gold strong{color:var(--gold);font-size:clamp(14px,3.8vw,19px)}
+#pageContent[data-ui-page="monthly"] .report-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px}
+#pageContent[data-ui-page="monthly"] .report-section-title h3{margin:0;color:var(--gold);font-size:17px}
+#pageContent[data-ui-page="monthly"] .report-section-title span{font-size:11px;color:var(--muted)}
+#pageContent[data-ui-page="monthly"] .report-dept{padding:13px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(18,48,74,.9),rgba(6,24,42,.96))}
+#pageContent[data-ui-page="monthly"] .report-dept-title{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+#pageContent[data-ui-page="monthly"] .report-dept-title strong{font-size:15px}
+#pageContent[data-ui-page="monthly"] .report-dept-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:rgba(247,213,138,.13);font-size:17px}
+#pageContent[data-ui-page="monthly"] .report-dept-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#pageContent[data-ui-page="monthly"] .report-dept-stats>div{min-width:0;padding:8px;border-radius:10px;background:rgba(2,16,30,.36)}
+#pageContent[data-ui-page="monthly"] .report-dept-stats small{display:block;color:var(--muted);font-size:10px;line-height:1.2}
+#pageContent[data-ui-page="monthly"] .report-dept-stats b{display:block;margin-top:5px;font-size:14px;color:#f4f7fb;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+#pageContent[data-ui-page="monthly"] .report-dept-stats>div:last-child b{color:var(--gold)}
+#pageContent[data-ui-page="monthly"] .report-empty{padding:24px 14px;text-align:center;border:1px dashed var(--line);border-radius:15px;color:var(--muted)}
+#pageContent[data-ui-page="monthly"] .report-footnote{margin:0;padding:0 4px;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:390px){
+ #pageContent[data-ui-page="monthly"] .report-actions{grid-template-columns:1fr 1fr}
+ #pageContent[data-ui-page="monthly"] #makeMonthly{grid-column:1/-1}
+ #pageContent[data-ui-page="monthly"] .report-filters{gap:7px}
+ #pageContent[data-ui-page="monthly"] .report-kpi{padding:10px 7px}
+ #pageContent[data-ui-page="monthly"] .report-dept{padding:10px}
+ #pageContent[data-ui-page="monthly"] .report-dept-stats{gap:5px}
+ #pageContent[data-ui-page="monthly"] .report-dept-stats>div{padding:7px 5px}
+ #pageContent[data-ui-page="monthly"] .report-dept-stats b{font-size:12px}
+}
+
 </style>
 </head>
 <body>
@@ -986,7 +1037,49 @@ async function saveReportList(list,titleText){try{const blob=await createReportB
 async function shareReportList(list,titleText){try{const blob=await createReportBlob(list,titleText);if(!blob)throw new Error('Could not create image');const file=new File([blob], 'ticket-report-'+new Date().toISOString().slice(0,10)+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:titleText||'Ticket Report'});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);alert('Report image downloaded. You can share the PNG from your Downloads folder.')}catch(e){if(e.name!=='AbortError')alert('Could not share report image: '+(e.message||e))}}
 async function saveReport(){try{const list=dep()?departmentTickets():tickets;const blob=await createReportBlob(list,dep()?dep().en:'All Ticket Departments');if(!blob)throw new Error('Could not create image');const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(dep()?page:'all')+'-ticket-report-'+new Date().toISOString().slice(0,10)+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}catch(e){alert('Could not save report image: '+(e.message||e))}}
 async function shareReport(){try{const list=dep()?departmentTickets():tickets;const blob=await createReportBlob(list,dep()?dep().en:'All Ticket Departments');if(!blob)throw new Error('Could not create image');const file=new File([blob], 'ticket-report-'+new Date().toISOString().slice(0,10)+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Ticket Report'});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);alert('Report image downloaded. You can share the PNG from your Downloads folder.')}catch(e){if(e.name!=='AbortError')alert('Could not share report image: '+(e.message||e))}}
-function renderMonthly(){document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+tr('report')+'</h2><label>'+tr('from')+'</label><input type="date" id="fromDate"><label>'+tr('to')+'</label><input type="date" id="toDate"><div class="actions"><button class="gold" id="makeMonthly">'+tr('report')+'</button><button id="downloadMonthly" class="report-icon-btn" aria-label="Save monthly report as image" title="Save monthly report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><path d="M4 17l5-5 3.5 3 2.5-2.5L20 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="blue report-icon-btn" id="shareMonthly" aria-label="Share monthly report as image" title="Share monthly report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div><div id="monthlyResults"></div><p class="subtle">Report date filters use ticket creation/update records available in this browser. Cloud history is not connected.</p></div>';let today=new Date(),first=new Date(today.getFullYear(),today.getMonth(),1);document.getElementById('fromDate').value=first.toISOString().slice(0,10);document.getElementById('toDate').value=today.toISOString().slice(0,10);let calc=()=>{let f=document.getElementById('fromDate').value,t=document.getElementById('toDate').value;return tickets.filter(x=>(x.updatedAt||x.createdAt).slice(0,10)>=f&&(x.updatedAt||x.createdAt).slice(0,10)<=t)};let report=()=>{let a=calc(),q=a.reduce((s,x)=>s+x.quantity,0),v=a.reduce((s,x)=>s+x.quantity*(x.price||0),0);document.getElementById('monthlyResults').innerHTML='<div class="summary-row"><span>'+tr('types')+'</span><b>'+a.length+'</b></div><div class="summary-row"><span>'+tr('qty')+'</span><b>'+q+'</b></div><div class="summary-row"><span>'+tr('value')+'</span><b>'+money(v)+'</b></div>'+DEPTS.map(d=>{let x=a.filter(y=>y.department===d.id);return '<div class="summary-row"><span>'+d.icon+' '+(d[lang]||d.en)+'</span><b>'+x.reduce((s,y)=>s+y.quantity,0)+'</b></div>'}).join('')};document.getElementById('makeMonthly').onclick=report;document.getElementById('downloadMonthly').onclick=async()=>{report();await saveReportList(calc(),'Monthly Ticket Report')};document.getElementById('shareMonthly').onclick=async()=>{report();await shareReportList(calc(),'Monthly Ticket Report')};report()}
+function renderMonthly(){
+ const root=document.getElementById('pageContent');
+ root.dataset.uiPage='monthly';
+ const now=new Date(),today=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+ const first=today.slice(0,8)+'01';
+ root.innerHTML='<div class="report-page">'+
+  '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">TICKET CONTROL · REPORTS</span><h2>'+tr('report')+'</h2><p class="subtle">Review ticket inventory for a selected date range</p></div><span class="report-icon">▤</span></div>'+
+  '<div class="report-filters"><label>'+tr('from')+'<input type="date" id="fromDate" value="'+first+'"></label><label>'+tr('to')+'<input type="date" id="toDate" value="'+today+'"></label></div>'+
+  '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+tr('report')+'</button><button id="downloadMonthly" class="report-secondary">⇩ Save image</button><button class="blue" id="shareMonthly">↗ Share report</button></div>'+
+  '<p id="monthlyError" class="report-error" role="alert" aria-live="polite"></p></section>'+
+  '<section id="monthlyResults" class="report-results" aria-live="polite"></section>'+
+  '<p class="report-footnote">This report summarizes the current ticket records using their last updated date (or creation date). It is an inventory snapshot, not a transaction-by-transaction sales history.</p>'+
+ '</div>';
+ const from=document.getElementById('fromDate'),to=document.getElementById('toDate'),results=document.getElementById('monthlyResults'),error=document.getElementById('monthlyError');
+ const calc=()=>{
+  const f=from.value,t=to.value;
+  if(!f||!t){error.textContent='Please select both report dates.';return null}
+  if(f>t){error.textContent='The start date must be on or before the end date.';return null}
+  error.textContent='';
+  return tickets.filter(x=>{const stamp=String(x.updatedAt||x.createdAt||'').slice(0,10);return stamp&&stamp>=f&&stamp<=t});
+ };
+ const report=()=>{
+  const list=calc();if(!list){results.innerHTML='';return false}
+  const quantity=list.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
+  const value=list.reduce((sum,x)=>sum+(Number(x.quantity)||0)*(Number(x.price)||0),0);
+  const departments=DEPTS.map(d=>{
+   const rows=list.filter(x=>x.department===d.id);
+   const qty=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
+   const amount=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0)*(Number(x.price)||0),0);
+   return '<article class="report-dept"><div class="report-dept-title"><span class="report-dept-icon">'+d.icon+'</span><strong>'+esc(d[lang]||d.en)+'</strong></div><div class="report-dept-stats"><div><small>Ticket types</small><b>'+rows.length.toLocaleString()+'</b></div><div><small>Total quantity</small><b>'+qty.toLocaleString()+'</b></div><div><small>Inventory value</small><b>'+money(amount)+'</b></div></div></article>';
+  }).join('');
+  results.innerHTML='<div class="report-range"><span>REPORT PERIOD</span><strong>'+fDate(from.value)+' – '+fDate(to.value)+'</strong></div>'+
+   '<div class="report-kpis"><article class="report-kpi"><span>Ticket types</span><strong>'+list.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>Total quantity</span><strong>'+quantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>Inventory value</span><strong>'+money(value)+'</strong></article></div>'+
+   '<div class="report-section-title"><h3>Department breakdown</h3><span>'+DEPTS.length+' departments</span></div>'+
+   (list.length?departments:'<div class="report-empty">No ticket records were found for this date range.</div>');
+  return true;
+ };
+ const fDate=value=>new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(new Date(value+'T12:00:00+07:00'));
+ document.getElementById('makeMonthly').onclick=report;
+ document.getElementById('downloadMonthly').onclick=async()=>{const list=calc();if(list)await saveReportList(list,'Monthly Ticket Inventory Report')};
+ document.getElementById('shareMonthly').onclick=async()=>{const list=calc();if(list)await shareReportList(list,'Monthly Ticket Inventory Report')};
+ report();
+}
 function renderSettings(){
  document.getElementById('pageContent').dataset.uiPage='settings';document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+tr('cloud')+'</h2><p>'+tr('cloudMsg')+'</p><div class="summary-row"><span>Language / ภาษา</span><select id="settingLang" style="max-width:140px"><option value="en">English</option><option value="th">ไทย</option></select></div><div class="summary-row"><span>Display theme</span><select id="themeSelect" style="max-width:160px"><option value="dark">Dark · Navy + Gold</option><option value="light">Light · Daylight</option></select></div><p class="subtle">Premium Dark Navy + Champagne Gold is the default. Ticket records are synced to the Ticket Control Live cloud database.</p><div class="panel" style="padding:12px;margin:14px 0"><h3 style="margin:0 0 6px;color:var(--gold)">🔔 Notification Settings</h3><p class="subtle" style="margin:0 0 10px">Staff Login alerts</p><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><label class="panel" style="padding:9px;display:flex;align-items:center;gap:7px;font-size:14px"><input type="radio" name="staffNotifyStyle" value="3"> Top Banner</label><label class="panel" style="padding:9px;display:flex;align-items:center;gap:7px;font-size:14px"><input type="radio" name="staffNotifyStyle" value="2"> Popup</label><label class="panel" style="padding:9px;display:flex;align-items:center;gap:7px;font-size:14px"><input type="radio" name="staffNotifyStyle" value="6"> Toast</label><label class="panel" style="padding:9px;display:flex;align-items:center;gap:7px;font-size:14px"><input type="radio" name="staffNotifyStyle" value="5"> Side Panel</label></div><h4 style="margin:12px 0 6px">Sound</h4><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px"><label style="font-size:13px"><input type="radio" name="staffNotifySound" value="bell"> 🔔 Bell</label><label style="font-size:13px"><input type="radio" name="staffNotifySound" value="ding"> 🎵 Ding</label><label style="font-size:13px"><input type="radio" name="staffNotifySound" value="alert"> 🚨 Alert</label></div><h4 style="margin:12px 0 6px">When Owner site is in background</h4><div style="display:grid;gap:6px;font-size:13px"><label><input type="radio" name="staffNotifyBg" value="both"> Browser notification too</label><label><input type="radio" name="staffNotifyBg" value="open"> Only while website is open</label></div><div class="actions" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px"><button id="testStaffNotifySound">▶ Test sound</button><button id="previewStaffNotify">👁 Preview</button><button id="saveStaffNotifyPrefs" class="gold">✓ Save</button><button id="enableStaffNotifications">🔔 Allow notifications</button></div><div id="staffNotifySaved" class="subtle" style="display:none;margin-top:8px"></div></div><button id="exportAll" class="gold">Export current tickets (JSON)</button><div style="height:10px"></div><button id="scanRecovery">Scan this website for old ticket backups</button><div style="height:10px"></div><button id="downloadRecovery">Download recovery file (ticket-related keys only)</button><div style="height:10px"></div><label for="recoveryFile">Import a previous ticket backup (JSON)</label><input id="recoveryFile" type="file" accept=".json,application/json"><button id="importRecovery" class="gold" style="margin-top:8px">Restore tickets from selected backup</button><pre id="recoveryResults" style="white-space:pre-wrap;overflow-wrap:anywhere;background:#07182a;padding:12px;border-radius:10px;margin-top:12px;display:none"></pre></div>';
  document.getElementById('settingLang').value=lang;document.getElementById('settingLang').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render()};
