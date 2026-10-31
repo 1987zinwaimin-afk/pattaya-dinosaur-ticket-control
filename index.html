@@ -1520,7 +1520,7 @@ async function shareReport(){try{const list=dep()?departmentTickets():tickets;co
 async function renderPayroll(){
  const root=document.getElementById('pageContent');
  root.dataset.uiPage='payroll';
- const owner=currentRole==='owner'&&!STAFF_MODE;
+ const owner=currentRole==='owner';
  const today=new Date();
  const defaultStart=new Date(today.getFullYear(),today.getMonth()-(today.getDate()<26?1:0),26);
  const defaultEnd=new Date(defaultStart.getFullYear(),defaultStart.getMonth()+1,25);
