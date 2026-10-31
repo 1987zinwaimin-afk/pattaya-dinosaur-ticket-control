@@ -1487,14 +1487,28 @@ document.getElementById('authForm').onsubmit=async e=>{
  if(!staffId||!name){err.textContent='Please enter Staff ID and Name.';return}
  err.textContent='Checking Staff ID…';
  try{
-  const {data,error}=await sb.auth.signInAnonymously({options:{data:{display_name:name}}});
-  if(error)throw error;
-  if(!data.session)throw new Error('Could not start a staff session. Please try again.');
+  // Reuse the saved anonymous identity after a failed attempt; never create a new Auth user on every retry.
+  const {data:existingSession,error:sessionError}=await sb.auth.getSession();
+  if(sessionError)throw sessionError;
+  let session=existingSession?.session||null;
+  if(session?.user?.id){
+   const {data:existingProfile,error:existingProfileError}=await sb.from('profiles').select('role,staff_id,is_archived').eq('id',session.user.id).maybeSingle();
+   if(existingProfileError)throw existingProfileError;
+   if(existingProfile?.is_archived)throw new Error('This staff account has been removed by Owner. Please contact Owner.');
+   if(existingProfile&&existingProfile.role!=='staff')throw new Error('This session is not a Staff account. Please use the Staff login page.');
+   if(existingProfile?.staff_id&&String(existingProfile.staff_id).toUpperCase()!==staffId.toUpperCase())throw new Error('This device is already linked to another Staff ID. Please contact Owner.');
+  }
+  if(!session){
+   const {data,error}=await sb.auth.signInAnonymously({options:{data:{display_name:name}}});
+   if(error)throw error;
+   session=data.session||null;
+  }
+  if(!session)throw new Error('Could not start a staff session. Please try again.');
   const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:staffId,p_display_name:name,p_department:document.getElementById('staffDepartment').value||'all'});
   if(claimError)throw claimError;
   if(!claimed)throw new Error('Staff ID could not be verified.');
   currentStaffId=claimed;
-  await startCloudSession(data.session,true);
+  await startCloudSession(session,true);
  }catch(e){err.textContent=e.message||'Could not connect. Please check Staff ID and Name.'}
 };
 let restoringSavedSession=false;
