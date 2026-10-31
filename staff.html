@@ -1429,9 +1429,8 @@ async function renderPayroll(){
  };
  document.getElementById('savePayrollAttendance').onclick=async()=>{
   const rows=[...document.querySelectorAll('.payroll-day')].map(x=>({work_date:x.dataset.date,status:x.value}));const marked=rows.filter(x=>x.status);
-  const {error:delError}=await sb.from('payroll_attendance').delete().eq('user_id',targetUserId).gte('work_date',start.value).lte('work_date',end.value);
-  if(delError){alert('Could not update attendance: '+delError.message);return}
   if(marked.length){const payload=marked.map(x=>({user_id:targetUserId,work_date:x.work_date,status:x.status,updated_by:currentUser.id,updated_at:new Date().toISOString()}));const {error}=await sb.from('payroll_attendance').upsert(payload,{onConflict:'user_id,work_date'});if(error){alert('Could not save attendance: '+error.message);return}}
+  for(const row of rows.filter(x=>!x.status)){const {error}=await sb.from('payroll_attendance').delete().eq('user_id',targetUserId).eq('work_date',row.work_date);if(error){alert('Some blank attendance dates could not be cleared: '+error.message);return}}
   alert('Attendance saved.');await load();
  };
  document.getElementById('refreshPayroll').onclick=()=>load().catch(e=>alert(e.message));
