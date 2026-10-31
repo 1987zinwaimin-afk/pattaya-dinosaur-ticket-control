@@ -1217,8 +1217,9 @@ function showStaffWelcome(profile,department){const existing=document.getElement
 
 async function startCloudSession(session,notifyOwnerPush=false){
  currentUser=session.user;
- const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name,avatar_url').eq('id',currentUser.id).maybeSingle();
+ const {data:profile,error:profileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived').eq('id',currentUser.id).maybeSingle();
  if(profileError||!profile){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Staff profile is not ready. Please try again.';return}
+ if(profile.is_archived){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
  currentRole=profile.role;
  if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
  const enteredName=document.getElementById('authName').value.trim();
@@ -1264,8 +1265,9 @@ async function restoreSavedSession(){
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
   if(!data.session)return;
-  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role,avatar_url').eq('id',data.session.user.id).maybeSingle();
+  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role,avatar_url,is_archived').eq('id',data.session.user.id).maybeSingle();
   if(profileError)throw profileError;
+  if(profile?.is_archived){await sb.auth.signOut();document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
    document.getElementById('staffDepartment').value=localStorage.getItem('tctl-staff-department')||'all';
