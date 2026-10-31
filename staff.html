@@ -368,6 +368,24 @@ img{max-width:100%}
  #ticketCards>.ticket .ticket-quantity-highlight small{font-size:9px!important}
 }
 
+
+/* Keep Edit and Delete actions side-by-side when More is expanded */
+#ticketCards>.ticket .morebox.open{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ align-items:stretch!important;
+}
+#ticketCards>.ticket .morebox.open .edit,
+#ticketCards>.ticket .morebox.open .delete{
+ grid-column:auto!important;
+ width:100%!important;
+ min-width:0!important;
+ min-height:44px!important;
+ margin:0!important;
+ white-space:normal!important;
+ overflow-wrap:anywhere!important;
+}
+
 </style>
 </head>
 <body>
