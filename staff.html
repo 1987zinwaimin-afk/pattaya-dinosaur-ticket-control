@@ -290,6 +290,84 @@ img{max-width:100%}
  .summary-row>span,.summary-row>b,.summary-row>strong{font-size:.9rem}
 }
 
+
+/* Ticket cards — visible compact redesign (presentation only) */
+#ticketCards{align-items:stretch;gap:12px!important}
+#ticketCards>.ticket{
+ display:flex!important;flex-direction:column!important;min-width:0!important;
+ border:1px solid #315a79!important;border-radius:18px!important;
+ background:linear-gradient(155deg,rgba(19,53,81,.98),rgba(5,23,41,.99))!important;
+ box-shadow:0 8px 22px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.04)!important;
+ overflow:hidden!important
+}
+#ticketCards>.ticket>img,
+#ticketCards>.ticket>div:first-child:has(>img){
+ width:100%!important;height:clamp(100px,27vw,145px)!important;
+ overflow:hidden!important;background:#102c45!important
+}
+#ticketCards>.ticket .ticket-preview-image{
+ display:block!important;width:100%!important;height:100%!important;
+ object-fit:cover!important;object-position:center!important;border:0!important
+}
+#ticketCards>.ticket>.placeholder{
+ display:grid!important;place-items:center!important;height:clamp(100px,27vw,145px)!important
+}
+#ticketCards>.ticket .ticket-body{
+ display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+ gap:8px!important;padding:12px!important;min-width:0!important;overflow:visible!important
+}
+#ticketCards>.ticket h3{
+ min-height:2.5em!important;margin:0!important;color:#f7f9fd!important;
+ font-size:clamp(14px,3.8vw,18px)!important;line-height:1.3!important;
+ font-weight:750!important;overflow-wrap:anywhere!important
+}
+#ticketCards>.ticket .price{
+ display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ width:max-content!important;max-width:100%!important;min-height:36px!important;
+ margin:0!important;padding:7px 13px!important;border-radius:11px!important;
+ font-size:clamp(13px,3.5vw,16px)!important;font-weight:900!important
+}
+#ticketCards>.ticket .soldrow{margin:0!important;padding:0!important}
+#ticketCards>.ticket .ticket-quantity-highlight{
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ width:100%!important;min-height:46px!important;padding:7px 10px!important;
+ gap:7px!important;border-radius:11px!important;white-space:nowrap!important
+}
+#ticketCards>.ticket .ticket-quantity-highlight span{font-size:11px!important}
+#ticketCards>.ticket .ticket-quantity-highlight strong{font-size:clamp(21px,5vw,27px)!important}
+#ticketCards>.ticket input.qty{
+ display:block!important;width:100%!important;height:48px!important;min-height:48px!important;
+ margin:0!important;padding:9px 12px!important;border-radius:12px!important;
+ font-size:16px!important;line-height:1.2!important
+}
+#ticketCards>.ticket .ticket-actions{
+ display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important;margin:0!important
+}
+#ticketCards>.ticket .ticket-actions button{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ width:100%!important;min-width:0!important;min-height:42px!important;
+ padding:8px 6px!important;border-radius:11px!important;font-size:clamp(11px,3vw,14px)!important;
+ line-height:1.2!important;white-space:normal!important
+}
+#ticketCards>.ticket .morebox{
+ display:none!important;grid-template-columns:1fr 1fr!important;gap:7px!important;
+ margin:0!important;padding:9px 0 0!important;border-top:1px solid rgba(140,174,200,.22)!important
+}
+#ticketCards>.ticket .morebox.open{display:grid!important}
+#ticketCards>.ticket .morebox button{
+ min-height:40px!important;width:100%!important;margin:0!important;padding:7px 5px!important;
+ border-radius:10px!important;font-size:12px!important;line-height:1.2!important
+}
+@media(max-width:380px){
+ #ticketCards{gap:9px!important}
+ #ticketCards>.ticket .ticket-body{padding:9px!important;gap:7px!important}
+ #ticketCards>.ticket>div:first-child:has(>img),
+ #ticketCards>.ticket>.placeholder{height:94px!important}
+ #ticketCards>.ticket .ticket-quantity-highlight{min-height:42px!important;padding:6px 8px!important}
+ #ticketCards>.ticket .ticket-quantity-highlight span{font-size:10px!important}
+ #ticketCards>.ticket .ticket-quantity-highlight small{font-size:9px!important}
+}
+
 </style>
 </head>
 <body>
