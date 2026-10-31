@@ -604,6 +604,45 @@ input:focus,select:focus,textarea:focus{
  #pageContent[data-ui-page="train"] tbody td:nth-child(8){grid-column:auto}
 }
 
+
+/* Owner / Staff database mobile presentation — no profile or login data mutation */
+#pageContent[data-ui-page="owner"],#pageContent[data-ui-page="staff"]{display:grid;gap:13px;min-width:0}
+#pageContent[data-ui-page="owner"]>.panel,
+#pageContent[data-ui-page="staff"]>.panel{padding:clamp(13px,3.5vw,20px);min-width:0}
+#ownerLoginHistory{border-radius:18px!important;background:linear-gradient(145deg,rgba(19,50,77,.88),rgba(6,23,40,.96))!important}
+#ownerLoginHistory h3{color:var(--gold)!important;font-size:18px}
+#ownerLoginHistory>div{min-width:0;border-color:rgba(151,190,220,.24)!important;background:rgba(3,17,31,.34)!important;border-radius:15px!important}
+#ownerLoginHistory>div>div:first-child{font-size:clamp(14px,3.8vw,18px);line-height:1.4}
+#ownerLoginHistory .summary-row{align-items:flex-start;gap:10px;padding:11px 2px}
+#ownerLoginHistory .summary-row span{flex:1 1 48%;font-size:13px}
+#ownerLoginHistory .summary-row b{flex:1 1 52%;text-align:right;overflow-wrap:anywhere;font-size:13px}
+#ownerLoginHistory ol{padding-left:22px!important;margin-top:10px!important}
+#ownerLoginHistory ol li{padding:10px 5px!important;border-color:rgba(151,190,220,.15)!important;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+#pageContent[data-ui-page="staff"] #staffActivityList{padding:10px!important;border-radius:17px!important;background:rgba(4,20,36,.5)!important}
+#pageContent[data-ui-page="staff"] #staffActivityList>div{gap:10px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList>div>div{
+ border:1px solid rgba(151,190,220,.24)!important;border-radius:17px!important;
+ background:linear-gradient(145deg,rgba(19,50,77,.9),rgba(5,21,38,.97))!important;
+ box-shadow:0 9px 22px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.04)!important;
+ padding:13px!important
+}
+#pageContent[data-ui-page="staff"] #staffActivityList img{width:76px!important;height:76px!important;flex-basis:76px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList .edit-staff-profile,
+#pageContent[data-ui-page="staff"] #staffActivityList .delete-staff-activity{min-height:40px!important;border-radius:11px!important}
+#pageContent[data-ui-page="staff"] #staffProfileModal .modalbox{max-width:480px!important;border-radius:21px!important}
+#pageContent[data-ui-page="staff"] #staffProfileForm label{font-weight:700}
+#pageContent[data-ui-page="staff"] #staffProfileForm input:not([type="hidden"]){min-height:46px}
+@media(max-width:480px){
+ #pageContent[data-ui-page="staff"] #staffActivityList>div>div>div:first-child{grid-template-columns:68px minmax(0,1fr)!important;gap:11px!important}
+ #pageContent[data-ui-page="staff"] #staffActivityList img,
+ #pageContent[data-ui-page="staff"] #staffActivityList>div>div>div:first-child>div:first-child{width:68px!important;height:68px!important;flex-basis:68px!important}
+ #pageContent[data-ui-page="staff"] #staffActivityList>div>div>div:last-child{align-items:flex-start!important}
+ #pageContent[data-ui-page="staff"] #staffActivityList .edit-staff-profile,
+ #pageContent[data-ui-page="staff"] #staffActivityList .delete-staff-activity{font-size:11px!important;padding:8px 7px!important}
+ #ownerLoginHistory .summary-row{flex-direction:column;gap:4px}
+ #ownerLoginHistory .summary-row b{text-align:left}
+}
+
 </style>
 </head>
 <body>
@@ -645,7 +684,7 @@ const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSe
 let authMode="signin",currentUser=null,currentRole="staff",cloudReady=false,cloudChannel=null;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',icon:'🎪'}];
 const PAGES=[{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',icon:'◈'},...DEPTS,{id:'train',en:'Train Time In / Time Out',th:'ตารางเวลารถไฟ',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',icon:'▥'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',icon:'♧'},{id:'settings',en:'Settings',th:'ตั้งค่า',icon:'⚙'}];
-const T={en:{types:'Ticket types',qty:'Total quantity',value:'Inventory value',add:'＋ Add Ticket',save:'▤ Save Report',share:'↗ Share Report',search:'⌕ Search tickets...',none:'No tickets saved yet.',noHint:'Use Add Ticket to create your first real ticket.',sold:'Tickets sold',total:'Total',edit:'✎ Edit',more:'⋮ More',addQty:'＋ Add quantity',clear:'Clear quantity',del:'Delete ticket',name:'Ticket name',price:'Price (THB)',initial:'Initial quantity',image:'Ticket image',saveTicket:'Save ticket',cancel:'Cancel',location:'Event location',records:'Ticket records',today:'Today',month:'Month',custom:'Custom range',from:'From date',to:'To date',report:'Generate report',staffName:'Staff name',department:'Department',loginHistory:'Staff login activity is not connected yet.',cloud:'Cloud status',cloudMsg:'Connected to Ticket Control Live cloud database. Ticket changes sync in real time.',light:'Light theme',dark:'Dark theme',noReport:'No report data for this range.',addSuccess:'Ticket saved in this browser.',quantityPrompt:'Enter quantity to add',editTitle:'Edit ticket',newTitle:'Add ticket',reportSaved:'Report downloaded.',staffNotice:'Staff accounts and secure login are not configured yet.'},th:{types:'ประเภทตั๋ว',qty:'จำนวนตั๋วทั้งหมด',value:'มูลค่าสต็อก',add:'＋ เพิ่มตั๋ว',save:'▤ บันทึกรายงาน',share:'↗ แชร์รายงาน',search:'⌕ ค้นหาตั๋ว...',none:'ยังไม่มีตั๋วที่บันทึก',noHint:'กดเพิ่มตั๋วเพื่อสร้างรายการแรก',sold:'จำนวนที่ขาย',total:'รวม',edit:'✎ แก้ไข',more:'⋮ เพิ่มเติม',addQty:'＋ เพิ่มจำนวน',clear:'ล้างจำนวน',del:'ลบตั๋ว',name:'ชื่อตั๋ว',price:'ราคา (THB)',initial:'จำนวนเริ่มต้น',image:'รูปภาพตั๋ว',saveTicket:'บันทึกตั๋ว',cancel:'ยกเลิก',location:'สถานที่จัดงาน',records:'รายการตั๋ว',today:'รายวัน',month:'รายเดือน',custom:'ช่วงวันที่กำหนด',from:'ตั้งแต่วันที่',to:'ถึงวันที่',report:'สร้างรายงาน',staffName:'ชื่อพนักงาน',department:'แผนก',loginHistory:'ยังไม่ได้เชื่อมต่อประวัติการเข้าสู่ระบบ',cloud:'สถานะคลาวด์',cloudMsg:'เชื่อมต่อฐานข้อมูล Ticket Control Live แล้ว รายการตั๋วจะซิงก์แบบเรียลไทม์',light:'ธีมสว่าง',dark:'ธีมมืด',noReport:'ไม่มีข้อมูลรายงานในช่วงนี้',addSuccess:'บันทึกตั๋วในเบราว์เซอร์แล้ว',quantityPrompt:'ใส่จำนวนที่ต้องการเพิ่ม',editTitle:'แก้ไขตั๋ว',newTitle:'เพิ่มตั๋ว',reportSaved:'ดาวน์โหลดรายงานแล้ว',staffNotice:'ยังไม่ได้ตั้งค่าบัญชีพนักงานและการเข้าสู่ระบบที่ปลอดภัย'}};
+const T={en:{types:'Ticket types',qty:'Total quantity',value:'Inventory value',add:'＋ Add Ticket',save:'▤ Save Report',share:'↗ Share Report',search:'⌕ Search tickets...',none:'No tickets saved yet.',noHint:'Use Add Ticket to create your first real ticket.',sold:'Tickets sold',total:'Total',edit:'✎ Edit',more:'⋮ More',addQty:'＋ Add quantity',clear:'Clear quantity',del:'Delete ticket',name:'Ticket name',price:'Price (THB)',initial:'Initial quantity',image:'Ticket image',saveTicket:'Save ticket',cancel:'Cancel',location:'Event location',records:'Ticket records',today:'Today',month:'Month',custom:'Custom range',from:'From date',to:'To date',report:'Generate report',staffName:'Staff name',department:'Department',loginHistory:'Staff login activity is not connected yet.',cloud:'Cloud status',cloudMsg:'Connected to Ticket Control Live cloud database. Ticket changes sync in real time.',light:'Light theme',dark:'Dark theme',noReport:'No report data for this range.',addSuccess:'Ticket saved in this browser.',quantityPrompt:'Enter quantity to add',editTitle:'Edit ticket',newTitle:'Add ticket',reportSaved:'Report downloaded.',staffNotice:'Manage staff profiles, login activity and active status.'},th:{types:'ประเภทตั๋ว',qty:'จำนวนตั๋วทั้งหมด',value:'มูลค่าสต็อก',add:'＋ เพิ่มตั๋ว',save:'▤ บันทึกรายงาน',share:'↗ แชร์รายงาน',search:'⌕ ค้นหาตั๋ว...',none:'ยังไม่มีตั๋วที่บันทึก',noHint:'กดเพิ่มตั๋วเพื่อสร้างรายการแรก',sold:'จำนวนที่ขาย',total:'รวม',edit:'✎ แก้ไข',more:'⋮ เพิ่มเติม',addQty:'＋ เพิ่มจำนวน',clear:'ล้างจำนวน',del:'ลบตั๋ว',name:'ชื่อตั๋ว',price:'ราคา (THB)',initial:'จำนวนเริ่มต้น',image:'รูปภาพตั๋ว',saveTicket:'บันทึกตั๋ว',cancel:'ยกเลิก',location:'สถานที่จัดงาน',records:'รายการตั๋ว',today:'รายวัน',month:'รายเดือน',custom:'ช่วงวันที่กำหนด',from:'ตั้งแต่วันที่',to:'ถึงวันที่',report:'สร้างรายงาน',staffName:'ชื่อพนักงาน',department:'แผนก',loginHistory:'ยังไม่ได้เชื่อมต่อประวัติการเข้าสู่ระบบ',cloud:'สถานะคลาวด์',cloudMsg:'เชื่อมต่อฐานข้อมูล Ticket Control Live แล้ว รายการตั๋วจะซิงก์แบบเรียลไทม์',light:'ธีมสว่าง',dark:'ธีมมืด',noReport:'ไม่มีข้อมูลรายงานในช่วงนี้',addSuccess:'บันทึกตั๋วในเบราว์เซอร์แล้ว',quantityPrompt:'ใส่จำนวนที่ต้องการเพิ่ม',editTitle:'แก้ไขตั๋ว',newTitle:'เพิ่มตั๋ว',reportSaved:'ดาวน์โหลดรายงานแล้ว',staffNotice:'ยังไม่ได้ตั้งค่าบัญชีพนักงานและการเข้าสู่ระบบที่ปลอดภัย'}};
 let lang=localStorage.getItem('tctl-lang')||'en',page='dashboard',tickets=readTickets(),lastInput={},theme=localStorage.getItem('tctl-theme')||'dark';
 function readTickets(){try{return JSON.parse(localStorage.getItem('tctl-new-tickets')||'[]')}catch{return []}}
 let lastCloudRows=new Map();
