@@ -1461,6 +1461,10 @@ html body #pageContent #staffActivityList button.delete-staff-activity:active{tr
 #staffProfileModal #staffProfileForm .actions{position:relative!important;z-index:6!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important}
 #staffProfileModal #staffProfileCancel{grid-column:1/-1!important;position:relative!important;z-index:7!important;pointer-events:auto!important;touch-action:manipulation!important;min-height:52px!important}
 #staffProfileModal #staffProfileSave,#staffProfileModal #staffProfileRemovePhoto{min-height:52px!important;pointer-events:auto!important;touch-action:manipulation!important}
+
+#staffProfileModal #staffProfileCancel{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;position:relative!important;z-index:100510!important;isolation:isolate!important;touch-action:manipulation!important;cursor:pointer!important}
+#staffProfileModal.modal.open{pointer-events:auto!important}
+#staffProfileModal.modal.open .modalbox{pointer-events:auto!important}
 </style>
 </head>
 <body>
@@ -2292,11 +2296,34 @@ const remove=document.getElementById('staffProfileRemovePhoto');if(remove)remove
 function openStaffProfileEdit(row,profile){const modal=document.getElementById('staffProfileModal');if(!modal)return;/* Move dialog outside the scrolling page, then size it from the real sticky header height. */if(modal.parentElement!==document.body)document.body.appendChild(modal);const header=document.querySelector('.brand-header');const headerBottom=header?Math.ceil(header.getBoundingClientRect().bottom):150;const safeTop=Math.max(0,Math.ceil(window.visualViewport?.offsetTop||0));const contentTop=0;modal.style.setProperty('position','fixed','important');modal.style.setProperty('inset','0','important');modal.style.setProperty('top','0','important');modal.style.setProperty('right','0','important');modal.style.setProperty('bottom','0','important');modal.style.setProperty('left','0','important');modal.style.setProperty('padding','12px 12px calc(env(safe-area-inset-bottom,0px) + 12px)','important');modal.style.setProperty('display','flex','important');modal.style.setProperty('align-items','center','important');modal.style.setProperty('justify-content','center','important');modal.style.setProperty('overflow-y','auto','important');modal.style.setProperty('overflow-x','hidden','important');modal.style.setProperty('z-index','100500','important');modal.style.setProperty('box-sizing','border-box','important');modal.style.setProperty('background','rgba(0,0,0,.76)','important');const modalBox=modal.querySelector('.modalbox');if(modalBox){modalBox.scrollTop=0;modalBox.style.setProperty('position','relative','important');modalBox.style.setProperty('top','auto','important');modalBox.style.setProperty('transform','none','important');modalBox.style.setProperty('width','min(520px,100%)','important');modalBox.style.setProperty('max-height','calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))','important');modalBox.style.setProperty('height','auto','important');modalBox.style.setProperty('overflow-y','auto','important');modalBox.style.setProperty('padding-bottom','24px','important');modalBox.style.setProperty('scroll-padding-bottom','24px','important');modalBox.style.setProperty('margin','auto','important');modalBox.style.setProperty('flex','0 0 auto','important')}modal.classList.add('open');modal.dataset.removePhoto='0';
 /* Rebind critical controls whenever the portal modal opens (Android Chrome safe). */
 const cancelButton=document.getElementById('staffProfileCancel');
-if(cancelButton){cancelButton.type='button';cancelButton.disabled=false;cancelButton.onclick=(event)=>{event.preventDefault();event.stopPropagation();modal.dataset.keepOpenAfterPicker='0';modal.dataset.photoPickerOpen='0';modal.classList.remove('open');};}
+if(cancelButton){cancelButton.type='button';cancelButton.disabled=false;cancelButton.removeAttribute('disabled');cancelButton.style.setProperty('pointer-events','auto','important');cancelButton.style.setProperty('position','relative','important');cancelButton.style.setProperty('z-index','100510','important');cancelButton.onclick=(event)=>{event.preventDefault();event.stopPropagation();if(window.closeStaffProfileModalNow)window.closeStaffProfileModalNow();else modal.classList.remove('open');};}
 const photoInput=document.getElementById('staffProfilePhoto');
 if(photoInput){photoInput.disabled=false;photoInput.style.setProperty('pointer-events','auto','important');photoInput.style.setProperty('position','relative','important');photoInput.style.setProperty('z-index','5','important');photoInput.style.setProperty('touch-action','manipulation','important');photoInput.accept='image/*';photoInput.onchange=async()=>{const selected=photoInput.files&&photoInput.files[0];modal.dataset.photoPickerOpen='0';modal.dataset.keepOpenAfterPicker='0';modal.classList.add('open');const preview=document.getElementById('staffProfilePreview');if(!selected){if(preview)preview.textContent='No photo selected. The profile has not been saved.';return;}if(preview)preview.textContent='Opening photo editor…';try{await setupStaffAvatarCrop(selected);if(preview)preview.innerHTML='<p class="subtle">Adjust the crop above. Your photo is not saved yet; press Save Profile after positioning it.</p>';}catch(err){if(preview)preview.textContent=(err.message||'Could not open photo editor.')+' Try another image.';}};}
 document.getElementById('staffProfileUserId').value=row.user_id||'';document.getElementById('staffProfileOldName').value=row.display_name||'';document.getElementById('staffProfileName').value=profile?.display_name||row.display_name||'';document.getElementById('staffProfileId').value=profile?.staff_id||'';document.getElementById('staffProfilePhoto').value='';document.getElementById('staffProfileError').textContent='';document.getElementById('staffProfilePreview').innerHTML=profile?.avatar_url?'<img alt="Staff profile" src="'+esc(profile.avatar_url)+'" style="width:84px;height:84px;object-fit:cover;border-radius:50%;border:3px solid var(--gold)">':'<div style="width:84px;height:84px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;font-size:30px;color:var(--gold)">'+esc((profile?.display_name||row.display_name||'S').slice(0,1).toUpperCase())+'</div>'}
 
+/* Global capture fallback: Android taps on modal action buttons must work even if
+   a form/page listener stops bubbling or the dialog was portalled to document.body. */
+if(!window.staffProfileModalActionsBound){
+ window.staffProfileModalActionsBound=true;
+ const closeStaffProfileModalNow=()=>{
+  const modal=document.getElementById('staffProfileModal');
+  if(!modal)return;
+  modal.dataset.keepOpenAfterPicker='0';modal.dataset.photoPickerOpen='0';
+  modal.classList.remove('open');
+  modal.style.setProperty('display','none','important');
+  modal.setAttribute('aria-hidden','true');
+ };
+ const handleStaffProfileCancel=e=>{
+  const target=e.target&&e.target.closest?e.target.closest('#staffProfileCancel'):null;
+  if(!target)return;
+  e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+  closeStaffProfileModalNow();
+ };
+ document.addEventListener('click',handleStaffProfileCancel,true);
+ document.addEventListener('pointerup',handleStaffProfileCancel,true);
+ document.addEventListener('touchend',handleStaffProfileCancel,{capture:true,passive:false});
+ window.closeStaffProfileModalNow=closeStaffProfileModalNow;
+}
 let staffAvatarCropState=null;
 function drawStaffAvatarCrop(){const s=staffAvatarCropState,canvas=document.getElementById('staffAvatarCropCanvas');if(!s||!canvas)return;const ctx=canvas.getContext('2d'),size=canvas.width;ctx.clearRect(0,0,size,size);ctx.fillStyle='#06182b';ctx.fillRect(0,0,size,size);const base=Math.max(size/s.image.width,size/s.image.height),scale=base*s.zoom,w=s.image.width*scale,h=s.image.height*scale;const x=(size-w)/2+s.offsetX,y=(size-h)/2+s.offsetY;ctx.save();ctx.beginPath();ctx.arc(size/2,size/2,size/2,0,Math.PI*2);ctx.clip();ctx.drawImage(s.image,x,y,w,h);ctx.restore()}
 function setupStaffAvatarCrop(file){return new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{URL.revokeObjectURL(url);const panel=document.getElementById('staffAvatarCropPanel');if(!panel){reject(new Error('Photo crop tool is unavailable.'));return}staffAvatarCropState={image:img,zoom:1,offsetX:0,offsetY:0,dragging:false,lastX:0,lastY:0};panel.style.display='block';const slider=document.getElementById('staffAvatarZoom');slider.value='1';drawStaffAvatarCrop();resolve(true)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not open the selected photo.'))};img.src=url})}
