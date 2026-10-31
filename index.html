@@ -1531,7 +1531,7 @@ async function renderPayroll(){
  '<div class="report-filters"><label>Salary period start<input type="date" id="payrollStart" value="'+iso(defaultStart)+'"></label><label>Salary closing date<input type="date" id="payrollEnd" value="'+iso(defaultEnd)+'"></label></div>'+
  '<div id="payrollRateWrap" style="margin:12px 0"><label for="payrollRate">Daily wage (THB)</label><input id="payrollRate" type="number" min="0" step="0.01" placeholder="Set by Owner" style="width:100%"></div>'+
  '<div class="actions" style="margin-top:10px"><button class="gold" id="savePayrollSettings">Save salary settings</button><button id="refreshPayroll">↻ Refresh</button></div></section>'+
- '<section class="panel" style="margin-top:14px"><h3>Attendance calendar</h3><p class="subtle">Swipe horizontally on a phone to view the full calendar. Choose Work day or Day off, then save.</p><div id="payrollCalendar">Loading…</div><div class="actions"><button class="gold" id="savePayrollAttendance">Save attendance</button></div></section>'+
+ '<section class="panel" style="margin-top:14px"><h3>Attendance calendar</h3><p class="subtle">Swipe horizontally on a phone to view the full calendar. Choose Work day or Day off, then save.</p><div id="payrollCalendar">Loading…</div><p id="payrollAutoSaveStatus" class="subtle" style="font-size:12px;margin:8px 0">Attendance auto-save is ready.</p><div class="actions"><button class="gold" id="savePayrollAttendance">Save monthly payroll image</button></div></section>'+
  '<section class="panel" style="margin-top:14px"><h3>Salary calculation</h3><div id="payrollSummary">Loading…</div></section></div>';
  let targetUserId=currentUser.id,people=[],loadedTargetUserId=null;
  if(owner){
@@ -1572,6 +1572,7 @@ async function renderPayroll(){
  const start=document.getElementById('payrollStart'),end=document.getElementById('payrollEnd'),rate=document.getElementById('payrollRate');
  const calendar=document.getElementById('payrollCalendar'),summary=document.getElementById('payrollSummary');
  let attendance=[];
+ let attendanceQueue=Promise.resolve(),pendingAttendanceSaves=0,lastAttendanceSaveError=null;
  async function load(){
   const nextTargetUserId=owner?(document.getElementById('payrollPerson').value||currentUser.id):currentUser.id;
   const targetChanged=nextTargetUserId!==loadedTargetUserId;
@@ -1632,26 +1633,90 @@ async function renderPayroll(){
   alert(owner?'Salary settings saved.':'Your daily wage has been saved. Owner can view it in Staff Payroll.');
   await load();
  };
+ calendar.addEventListener('change',event=>{
+  const select=event.target.closest('.payroll-day');
+  if(!select)return;
+  const workDate=select.dataset.date,status=select.value,saveForUser=targetUserId;
+  pendingAttendanceSaves++;lastAttendanceSaveError=null;
+  const statusNode=document.getElementById('payrollAutoSaveStatus');
+  if(statusNode)statusNode.textContent='Saving '+workDate+'…';
+  attendanceQueue=attendanceQueue.then(async()=>{
+   if(status){
+    const {error}=await sb.from('payroll_attendance').upsert({user_id:saveForUser,work_date:workDate,status,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'user_id,work_date'});
+    if(error)throw error;
+   }else{
+    const {error}=await sb.from('payroll_attendance').delete().eq('user_id',saveForUser).eq('work_date',workDate);
+    if(error)throw error;
+   }
+   attendance=attendance.filter(row=>row.work_date!==workDate);
+   if(status)attendance.push({work_date:workDate,status});
+  }).then(async()=>{
+   pendingAttendanceSaves=Math.max(0,pendingAttendanceSaves-1);
+   if(pendingAttendanceSaves===0){
+    if(statusNode)statusNode.textContent='✓ All attendance changes saved automatically';
+    await load();
+   }
+  }).catch(async error=>{
+   lastAttendanceSaveError=error;
+   pendingAttendanceSaves=Math.max(0,pendingAttendanceSaves-1);
+   if(statusNode)statusNode.textContent='Save failed: '+error.message+' · Please try again';
+   if(pendingAttendanceSaves===0)await load().catch(()=>{});
+  });
+ });
  document.getElementById('savePayrollAttendance').onclick=async()=>{
-  const rows=[...document.querySelectorAll('.payroll-day')].map(x=>({work_date:x.dataset.date,status:x.value}));
-  const marked=rows.filter(x=>x.status);
-  const clearRows=rows.filter(x=>!x.status&&attendance.some(a=>a.work_date===x.work_date));
-  if(clearRows.length&&!confirm('This will clear '+clearRows.length+' previously saved attendance date(s) in this salary period. Continue?'))return;
-  if(marked.length){
-   const payload=marked.map(x=>({user_id:targetUserId,work_date:x.work_date,status:x.status,updated_by:currentUser.id,updated_at:new Date().toISOString()}));
-   const {error}=await sb.from('payroll_attendance').upsert(payload,{onConflict:'user_id,work_date'});
-   if(error){alert('Could not save attendance: '+error.message);return}
-  }
-  for(const row of clearRows){
-   const {error}=await sb.from('payroll_attendance').delete().eq('user_id',targetUserId).eq('work_date',row.work_date);
-   if(error){alert('Some attendance dates could not be cleared: '+error.message);return}
-  }
-  alert('Attendance saved.');await load();
+  const button=document.getElementById('savePayrollAttendance');
+  button.disabled=true;button.textContent='Preparing image…';
+  try{
+   await attendanceQueue;
+   if(lastAttendanceSaveError)throw lastAttendanceSaveError;
+   await load();
+   const rows=[...document.querySelectorAll('.payroll-day')].map(x=>({date:x.dataset.date,status:x.value}));
+   const work=rows.filter(x=>x.status==='work').length,off=rows.filter(x=>x.status==='off').length;
+   const dayRate=Number(rate.value||0),total=work*dayRate;
+   const selectedPerson=owner?people.find(p=>p.id===targetUserId):null;
+   const personName=owner?(targetUserId===currentUser.id?'My Owner Payroll':(selectedPerson?.display_name||'Staff')):(currentUser.display_name||currentUser.email||'Staff');
+   const width=1080,rowHeight=54,top=390,height=top+rows.length*rowHeight+90;
+   const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+   const ctx=canvas.getContext('2d');
+   ctx.fillStyle='#071a2b';ctx.fillRect(0,0,width,height);
+   const grad=ctx.createLinearGradient(0,0,width,0);grad.addColorStop(0,'#102f4b');grad.addColorStop(1,'#173d5b');
+   ctx.fillStyle=grad;ctx.fillRect(0,0,width,300);
+   ctx.fillStyle='#f4d58a';ctx.font='bold 48px Arial';ctx.fillText('PATTAYA DINOSAUR KINGDOM',54,82);
+   ctx.fillStyle='#ffffff';ctx.font='bold 40px Arial';ctx.fillText('MONTHLY PAYROLL',54,150);
+   ctx.font='28px Arial';ctx.fillStyle='#d9e7f3';ctx.fillText('Staff: '+personName,54,208);
+   ctx.fillText('Period: '+start.value+'  to  '+end.value,54,254);
+   const boxY=320,boxW=300;
+   [[54,'Work days',String(work)],[390,'Day off',String(off)],[726,'Estimated salary',money(total)]].forEach(([x,title,value])=>{
+    ctx.fillStyle='#12334f';ctx.fillRect(x,boxY,boxW,112);
+    ctx.fillStyle='#d5e2ef';ctx.font='24px Arial';ctx.fillText(title,x+20,boxY+38);
+    ctx.fillStyle='#f4d58a';ctx.font='bold 34px Arial';ctx.fillText(value,x+20,boxY+84);
+   });
+   let y=top;
+   ctx.fillStyle='#f4d58a';ctx.font='bold 24px Arial';ctx.fillText('DATE',58,y);ctx.fillText('ATTENDANCE',430,y);ctx.fillText('DAILY WAGE',850,y);
+   y+=24;
+   rows.forEach((row,index)=>{
+    ctx.fillStyle=index%2?'#0d2942':'#12334f';ctx.fillRect(54,y,width-108,rowHeight);
+    const dateLabel=new Date(row.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    const statusLabel=row.status==='work'?'Work day':row.status==='off'?'Day off':'Not marked';
+    ctx.fillStyle='#edf4fb';ctx.font='22px Arial';ctx.fillText(dateLabel,68,y+35);
+    ctx.fillStyle=row.status==='work'?'#69d6a8':row.status==='off'?'#83b9f0':'#b8c6d4';ctx.fillText(statusLabel,430,y+35);
+    ctx.fillStyle='#edf4fb';ctx.textAlign='right';ctx.fillText(row.status==='work'?money(dayRate):money(0),1000,y+35);ctx.textAlign='left';
+    y+=rowHeight;
+   });
+   y+=36;ctx.fillStyle='#f4d58a';ctx.font='bold 30px Arial';ctx.fillText('TOTAL: '+money(total),width-420,y);
+   ctx.fillStyle='#a9bdcf';ctx.font='18px Arial';ctx.fillText('Calculated from Work day entries only · Generated '+new Date().toLocaleString(),54,height-30);
+   const blob=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error('Could not create payroll image')), 'image/png'));
+   const url=URL.createObjectURL(blob),link=document.createElement('a');
+   link.href=url;link.download='payroll-'+targetUserId.slice(0,8)+'-'+start.value+'-to-'+end.value+'.png';
+   document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+   alert('Monthly payroll image is ready. Check your phone Downloads or Gallery.');
+  }catch(error){alert('Could not save payroll image: '+error.message)}
+  finally{button.disabled=false;button.textContent='Save monthly payroll image'}
  };
  document.getElementById('refreshPayroll').onclick=()=>load().catch(e=>alert(e.message));
- start.onchange=()=>{if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
- end.onchange=()=>{if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
- if(owner)document.getElementById('payrollPerson').onchange=()=>load().catch(e=>alert(e.message));
+ start.onchange=async()=>{await attendanceQueue;if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
+ end.onchange=async()=>{await attendanceQueue;if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
+ if(owner)document.getElementById('payrollPerson').onchange=async()=>{await attendanceQueue;load().catch(e=>alert(e.message))};
  try{await load()}catch(e){calendar.innerHTML='<p class="auth-error">Could not load payroll: '+esc(e.message)+'</p>';summary.textContent='Please refresh and try again.'}
 }
 
