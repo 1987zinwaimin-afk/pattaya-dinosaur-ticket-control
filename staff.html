@@ -1081,6 +1081,31 @@ body.theme-midnight{--bg:#080f2a;--panel:#111d42;--panel2:#1a2b59;--line:#344b83
 body.theme-luxury{--bg:#19130e;--panel:#302318;--panel2:#493522;--line:#705431;--gold:#e8c47b;--gold2:#b78a42;--text:#fff8ea;--muted:#d2c0a1;--blue:#98703d;background:radial-gradient(ellipse at 50% 15%,#594329 0,transparent 48%),var(--bg)}
 body.theme-light{--bg:#edf3f8;--panel:#fff;--panel2:#f7fbff;--line:#b9c9d9;--gold:#a97720;--gold2:#c18c2c;--text:#10243a;--muted:#50657a;--shadow:0 4px 0 #a9b8c5,0 8px 18px #23384b18;color-scheme:light;background:radial-gradient(ellipse at 50% 10%,#fff,transparent 55%),var(--bg)}
 body.theme-light .top,body.theme-light .side{background:#f5f9fd}body.theme-light .stat,body.theme-light .panel,body.theme-light .ticket,body.theme-light .modalbox{background:#fff}body.theme-light input,body.theme-light select{background:#fff;color:#10243a}body.theme-light .placeholder{background:#dce8f2}body.theme-light .notice{background:#fff4d9;color:#684d16}body.theme-light .empty{color:#50657a}body.theme-light button:not(.gold):not(.active){color:#f4f7fb}body.theme-light .nav button.active{color:#102039}body.theme-light button.blue{color:#fff}
+
+/* Strong theme skin: override legacy hard-coded gradients so every selected theme is visibly distinct. */
+body.theme-emerald,body.theme-midnight,body.theme-luxury,body.theme-light{color:var(--text)!important;background:radial-gradient(ellipse at 50% 12%,color-mix(in srgb,var(--panel2) 85%,transparent),transparent 55%),var(--bg)!important}
+body.theme-emerald .top,body.theme-midnight .top,body.theme-luxury .top,body.theme-light .top,
+body.theme-emerald .side,body.theme-midnight .side,body.theme-luxury .side,body.theme-light .side{background:color-mix(in srgb,var(--panel) 94%,var(--bg))!important;border-color:var(--line)!important;color:var(--text)!important}
+body.theme-emerald .panel,body.theme-emerald .stat,body.theme-emerald .ticket,body.theme-emerald .modalbox,body.theme-emerald .auth-card,
+body.theme-midnight .panel,body.theme-midnight .stat,body.theme-midnight .ticket,body.theme-midnight .modalbox,body.theme-midnight .auth-card,
+body.theme-luxury .panel,body.theme-luxury .stat,body.theme-luxury .ticket,body.theme-luxury .modalbox,body.theme-luxury .auth-card,
+body.theme-light .panel,body.theme-light .stat,body.theme-light .ticket,body.theme-light .modalbox,body.theme-light .auth-card{background:linear-gradient(145deg,var(--panel2),var(--panel))!important;border-color:var(--line)!important;color:var(--text)!important}
+body.theme-light .panel,body.theme-light .stat,body.theme-light .ticket,body.theme-light .modalbox,body.theme-light .auth-card{background:linear-gradient(145deg,#fff,#eaf1f8)!important}
+body.theme-emerald button:not(.gold):not(.red),body.theme-midnight button:not(.gold):not(.red),body.theme-luxury button:not(.gold):not(.red),body.theme-light button:not(.gold):not(.red){background:linear-gradient(145deg,var(--panel2),var(--panel))!important;border-color:var(--line)!important;color:var(--text)!important}
+body.theme-emerald button.gold,body.theme-midnight button.gold,body.theme-luxury button.gold,body.theme-light button.gold{background:linear-gradient(135deg,var(--gold),var(--gold2))!important;border-color:var(--gold)!important;color:var(--bg)!important}
+body.theme-emerald .brand h1,body.theme-emerald .stat strong,body.theme-emerald .ticket .soldrow b,body.theme-emerald .price,
+body.theme-midnight .brand h1,body.theme-midnight .stat strong,body.theme-midnight .ticket .soldrow b,
+body.theme-luxury .brand h1,body.theme-luxury .stat strong,body.theme-luxury .ticket .soldrow b,
+body.theme-light .brand h1,body.theme-light .stat strong,body.theme-light .ticket .soldrow b{color:var(--gold)!important}
+body.theme-emerald input,body.theme-emerald select,body.theme-midnight input,body.theme-midnight select,body.theme-luxury input,body.theme-luxury select,body.theme-light input,body.theme-light select{background:var(--bg)!important;color:var(--text)!important;border-color:var(--line)!important}
+body.theme-emerald label,body.theme-midnight label,body.theme-luxury label,body.theme-light label,
+body.theme-emerald .subtle,body.theme-midnight .subtle,body.theme-luxury .subtle,body.theme-light .subtle{color:var(--muted)!important}
+body.theme-emerald .notice,body.theme-midnight .notice,body.theme-luxury .notice,body.theme-light .notice{background:var(--panel2)!important;color:var(--text)!important;border-color:var(--line)!important}
+body.theme-light .nav button.active{background:linear-gradient(135deg,var(--gold),var(--gold2))!important;color:#17283a!important}
+body.theme-light .price{background:linear-gradient(135deg,#f2d99d,#c18c2c)!important;color:#17283a!important}
+body.theme-light button.blue{background:linear-gradient(135deg,#2879aa,#155276)!important;color:#fff!important}
+body.theme-light button.red,body.theme-emerald button.red,body.theme-midnight button.red,body.theme-luxury button.red{background:linear-gradient(135deg,#c53a63,#7f1c3a)!important;color:#fff!important}
+body.theme-emerald .ticket .placeholder,body.theme-midnight .ticket .placeholder,body.theme-luxury .ticket .placeholder,body.theme-light .ticket .placeholder{background:linear-gradient(135deg,var(--panel2),var(--panel))!important;color:var(--gold)!important}
 </style>
 </head>
 <body>
