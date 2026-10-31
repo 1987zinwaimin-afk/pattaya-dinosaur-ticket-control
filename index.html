@@ -2547,21 +2547,14 @@ async function saveStaffProfile(e){
   const staffId=document.getElementById('staffProfileId').value.trim();if(staffId&&!/^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/.test(staffId))throw new Error('Staff ID must be 2–32 characters and use letters, numbers, hyphens or underscores.');if(staffId){const {error:directoryError}=await sb.from('staff_directory').upsert({staff_id:staffId,display_name:name,updated_at:new Date().toISOString()},{onConflict:'staff_id'});if(directoryError)throw new Error('Could not save Staff ID directory entry: '+directoryError.message);}const {data:saved,error:saveError}=await sb.from('profiles').update({display_name:name,avatar_url:avatarUrl,staff_id:staffId||null}).eq('id',userId).eq('role','staff').select('id,display_name,avatar_url,staff_id').maybeSingle();
   if(saveError)throw new Error('Photo upload completed, but saving this staff profile failed: '+saveError.message);
   if(!saved)throw new Error('The profile update returned no row. The photo may be uploaded, but this account was not updated. Check Owner permissions.');
-  // Update only this selected profile. Other same-name accounts remain separate.
-  const normalized=name.toLocaleLowerCase().replace(/\s+/g,' ').trim();
-  const {data:activity,error:activityReadError}=await sb.from('staff_login_activity').select('*').eq('user_id',userId).maybeSingle();
-  if(activityReadError)throw new Error('Profile photo was saved, but activity display could not be updated: '+activityReadError.message);
-  if(activity){
-   if(normalized!==activity.normalized_name){
-    const newRow={...activity,normalized_name:normalized,display_name:name,updated_at:new Date().toISOString()};
-    const {error:upsertError}=await sb.from('staff_login_activity').upsert(newRow,{onConflict:'normalized_name'});
-    if(upsertError)throw new Error('Profile photo saved, but staff activity name sync failed: '+upsertError.message);
-    const {error:deleteError}=await sb.from('staff_login_activity').delete().eq('normalized_name',activity.normalized_name).eq('user_id',userId);
-    if(deleteError)throw new Error('Profile photo saved, but old activity label cleanup failed: '+deleteError.message);
-   }else{
-    const {error:activityUpdateError}=await sb.from('staff_login_activity').update({display_name:name,updated_at:new Date().toISOString()}).eq('normalized_name',activity.normalized_name);
-    if(activityUpdateError)throw new Error('Profile photo saved, but activity display sync failed: '+activityUpdateError.message);
-   }
+  // Update only this user's activity row. Keep normalized_name unchanged:
+  // it is UNIQUE and may already belong to another active account.
+  // The profile/photo save must not fail just because two staff share a display name.
+  const {data:activity,error:activityReadError}=await sb.from('staff_login_activity').select('user_id').eq('user_id',userId).maybeSingle();
+  if(activityReadError)console.warn('Staff profile saved; activity lookup was skipped:',activityReadError.message);
+  else if(activity){
+   const {error:activityUpdateError}=await sb.from('staff_login_activity').update({display_name:name,updated_at:new Date().toISOString()}).eq('user_id',userId);
+   if(activityUpdateError)console.warn('Staff profile saved; activity display sync will retry on next login:',activityUpdateError.message);
   }
   if(window.closeStaffProfileModalNow)window.closeStaffProfileModalNow();else document.getElementById('staffProfileModal').classList.remove('open');
   await loadStaffActivity();
