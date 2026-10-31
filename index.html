@@ -1527,7 +1527,7 @@ async function renderPayroll(){
  const iso=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
  const money=n=>'฿'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
  root.innerHTML='<div class="report-page"><section class="panel"><div class="report-heading"><div><span class="report-eyebrow">STAFF & OWNER · PAYROLL</span><h2>Staff Payroll</h2><p class="subtle">Daily attendance and salary calculation</p></div><span class="report-icon">฿</span></div>'+
- (owner?'<label for="payrollPerson">Staff / Owner account</label><select id="payrollPerson" style="width:100%;margin:6px 0 14px"><option value="'+esc(currentUser.id)+'">My Owner Payroll</option></select>':'<div class="notice" style="margin:8px 0 14px">Your attendance is saved under your signed-in staff account. Owner can view it in Staff Database → Staff Payroll.</div>')+
+ (owner?'<label for="payrollPerson">Staff / Owner account</label><select id="payrollPerson" style="width:100%;margin:6px 0 8px"><option value="'+esc(currentUser.id)+'">My Owner Payroll</option></select><div class="actions" style="margin:0 0 14px"><button id="archivePayrollAccount" class="red" type="button" style="display:none">Remove test account</button></div>':'<div class="notice" style="margin:8px 0 14px">Your attendance is saved under your signed-in staff account. Owner can view it in Staff Database → Staff Payroll.</div>')+
  '<div class="report-filters"><label>Salary period start<input type="date" id="payrollStart" value="'+iso(defaultStart)+'"></label><label>Salary closing date<input type="date" id="payrollEnd" value="'+iso(defaultEnd)+'"></label></div>'+
  '<div id="payrollRateWrap" style="margin:12px 0"><label for="payrollRate">Daily wage (THB)</label><input id="payrollRate" type="number" min="0" step="0.01" placeholder="Set by Owner" style="width:100%"></div>'+
  '<div class="actions" style="margin-top:10px"><button class="gold" id="savePayrollSettings">Save salary settings</button><button id="refreshPayroll">↻ Refresh</button></div></section>'+
@@ -1537,10 +1537,35 @@ async function renderPayroll(){
  if(owner){
   const sel=document.getElementById('payrollPerson');
   try{
-   const {data,error}=await sb.from('profiles').select('id,display_name,role').order('display_name',{ascending:true});
+   const {data,error}=await sb.from('profiles').select('id,display_name,role,is_archived').order('display_name',{ascending:true});
    if(error)throw error;
    people=(data||[]).filter(p=>p.role==='staff'||p.id===currentUser.id);
-   sel.innerHTML='<option value="'+esc(currentUser.id)+'">My Owner Payroll</option>'+people.filter(p=>p.id!==currentUser.id).map(p=>'<option value="'+esc(p.id)+'">'+esc(p.display_name||'Staff')+' · '+p.id.slice(0,8)+'</option>').join('');
+   const paintPeople=()=>{
+    const selected=sel.value||currentUser.id;
+    sel.innerHTML='<option value="'+esc(currentUser.id)+'">My Owner Payroll</option>'+people.filter(p=>p.id!==currentUser.id).map(p=>'<option value="'+esc(p.id)+'">'+esc(p.display_name||'Staff')+' · '+p.id.slice(0,8)+(p.is_archived?' · REMOVED':'')+'</option>').join('');
+    sel.value=people.some(p=>p.id===selected)?selected:currentUser.id;
+    const chosen=people.find(p=>p.id===sel.value);
+    const action=document.getElementById('archivePayrollAccount');
+    action.style.display=chosen?'inline-flex':'none';
+    action.textContent=chosen?.is_archived?'Restore account':'Remove test account';
+    action.className=chosen?.is_archived?'blue':'red';
+   };
+   paintPeople();
+   sel.onchange=()=>{paintPeople();load().catch(e=>alert(e.message))};
+   document.getElementById('archivePayrollAccount').onclick=async()=>{
+    const chosen=people.find(p=>p.id===sel.value);
+    if(!chosen)return;
+    const restore=!!chosen.is_archived;
+    const promptText=restore?'Restore this staff account to the active payroll list?':'Remove this account from the active staff/payroll list? The account will be blocked from Staff login, but its ticket and payroll records will be preserved.';
+    if(!confirm(promptText))return;
+    const {data:updated,error:updateError}=await sb.from('profiles').update({is_archived:!restore}).eq('id',chosen.id).eq('role','staff').select('id,is_archived').maybeSingle();
+    if(updateError)throw new Error('Could not update account status: '+updateError.message);
+    if(!updated)throw new Error('No profile was updated. Check Owner permissions.');
+    chosen.is_archived=!restore;
+    paintPeople();
+    if(!restore){sel.value=currentUser.id;paintPeople();await load()}
+    alert(restore?'Account restored.':'Account removed from the active list. Existing records were preserved.');
+   };
   }catch(e){document.getElementById('payrollSummary').textContent='Could not load staff accounts: '+e.message}
  }
  const start=document.getElementById('payrollStart'),end=document.getElementById('payrollEnd'),rate=document.getElementById('payrollRate');
