@@ -892,6 +892,92 @@ input:focus,select:focus,textarea:focus{
  .auth-card{width:min(100%,410px)!important;padding:20px 18px!important}
 }
 
+
+/* Final mobile login composition: compact card, preserve center park logo visibility */
+@media(max-width:600px){
+ .auth-screen{
+  display:grid!important;
+  place-items:start center!important;
+  align-content:start!important;
+  overflow-y:auto!important;
+  padding:clamp(92px,14vh,128px) 14px 22px!important;
+  background-position:center center!important;
+  background-size:cover!important;
+ }
+ .auth-card{
+  width:min(380px,100%)!important;
+  max-height:none!important;
+  padding:16px 16px 15px!important;
+  border-radius:21px!important;
+  background:linear-gradient(150deg,rgba(10,35,59,.70),rgba(2,16,32,.80))!important;
+ }
+ .auth-card h2{
+  font-size:clamp(23px,6vw,27px)!important;
+  line-height:1.15!important;
+  margin:0 0 5px!important;
+ }
+ .auth-card p{
+  margin:5px 0 11px!important;
+  font-size:13px!important;
+  line-height:1.35!important;
+ }
+ .auth-card form label{
+  display:block!important;
+  margin:8px 0 4px!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+ }
+ .auth-card input:not([type=checkbox]),.auth-card select{
+  min-height:42px!important;
+  height:42px!important;
+  padding:8px 12px!important;
+  border-radius:11px!important;
+  font-size:14px!important;
+ }
+ .auth-card .auth-actions{
+  gap:7px!important;
+  margin-top:12px!important;
+ }
+ .auth-card .auth-actions button,.auth-card form>button{
+  min-height:43px!important;
+  height:auto!important;
+  padding:9px 12px!important;
+  border-radius:11px!important;
+  font-size:14px!important;
+  line-height:1.15!important;
+ }
+ .auth-card #forgotPasswordBtn{
+  min-height:38px!important;
+  margin-top:4px!important;
+  padding:7px 10px!important;
+  font-size:12px!important;
+ }
+ .auth-card .auth-meta{
+  margin-top:8px!important;
+  padding-top:8px!important;
+  font-size:10px!important;
+  line-height:1.35!important;
+ }
+ .auth-card .auth-error{
+  margin-top:7px!important;
+  font-size:12px!important;
+ }
+}
+@media(max-width:380px){
+ .auth-screen{padding-top:clamp(84px,12vh,108px)!important;padding-left:10px!important;padding-right:10px!important}
+ .auth-card{padding:14px 13px 13px!important}
+ .auth-card form label{margin-top:7px!important}
+ .auth-card input:not([type=checkbox]),.auth-card select{min-height:40px!important;height:40px!important}
+ .auth-card .auth-actions button,.auth-card form>button{min-height:41px!important}
+}
+@media(max-height:700px){
+ .auth-screen{padding-top:76px!important}
+ .auth-card{padding-top:12px!important;padding-bottom:12px!important}
+ .auth-card p{margin-bottom:8px!important}
+ .auth-card form label{margin-top:6px!important}
+ .auth-card .auth-actions{margin-top:9px!important}
+}
+
 </style>
 </head>
 <body>
