@@ -1074,6 +1074,13 @@ input:focus,select:focus,textarea:focus{
  #pageContent[data-ui-page="payroll"] .actions button{flex-basis:115px!important}
 }
 
+
+/* Global selectable UI themes. Only presentation variables change; app data and workflows stay untouched. */
+body.theme-emerald{--bg:#061d1b;--panel:#0d332e;--panel2:#14463d;--line:#28665a;--gold:#72d6a5;--gold2:#37ad7a;--text:#effff7;--muted:#a6cbb9;--blue:#168c80;background:radial-gradient(ellipse at 50% 15%,#145044 0,transparent 48%),var(--bg)}
+body.theme-midnight{--bg:#080f2a;--panel:#111d42;--panel2:#1a2b59;--line:#344b83;--gold:#91b8ff;--gold2:#5b83dc;--text:#f3f6ff;--muted:#aebde0;--blue:#497fe0;background:radial-gradient(ellipse at 50% 15%,#1b3265 0,transparent 48%),var(--bg)}
+body.theme-luxury{--bg:#19130e;--panel:#302318;--panel2:#493522;--line:#705431;--gold:#e8c47b;--gold2:#b78a42;--text:#fff8ea;--muted:#d2c0a1;--blue:#98703d;background:radial-gradient(ellipse at 50% 15%,#594329 0,transparent 48%),var(--bg)}
+body.theme-light{--bg:#edf3f8;--panel:#fff;--panel2:#f7fbff;--line:#b9c9d9;--gold:#a97720;--gold2:#c18c2c;--text:#10243a;--muted:#50657a;--shadow:0 4px 0 #a9b8c5,0 8px 18px #23384b18;color-scheme:light;background:radial-gradient(ellipse at 50% 10%,#fff,transparent 55%),var(--bg)}
+body.theme-light .top,body.theme-light .side{background:#f5f9fd}body.theme-light .stat,body.theme-light .panel,body.theme-light .ticket,body.theme-light .modalbox{background:#fff}body.theme-light input,body.theme-light select{background:#fff;color:#10243a}body.theme-light .placeholder{background:#dce8f2}body.theme-light .notice{background:#fff4d9;color:#684d16}body.theme-light .empty{color:#50657a}body.theme-light button:not(.gold):not(.active){color:#f4f7fb}body.theme-light .nav button.active{color:#102039}body.theme-light button.blue{color:#fff}
 </style>
 </head>
 <body>
@@ -1251,6 +1258,7 @@ async function startCloudSession(session,notifyOwnerPush=false){
  if(profile.is_archived){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
  currentRole=profile.role;
  currentStaffId=profile.staff_id||null;
+ try{const {data:themeRow}=await sb.from('theme_preferences').select('theme').eq('preference_key','global').maybeSingle();if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme',theme);applyTheme()}}catch(themeLoadError){console.warn('Shared theme could not be loaded:',themeLoadError)}
  if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
  const enteredName=document.getElementById('authName').value.trim();
  const enteredStaffId=document.getElementById('authStaffId').value.trim();
@@ -1656,6 +1664,6 @@ function renderMonthly(){
 }
 function renderSettings(){document.getElementById('pageContent').dataset.uiPage='settings';document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+tr('cloud')+'</h2><p>'+tr('cloudMsg')+'</p><div class="summary-row"><span>Language / ภาษา</span><select id="settingLang" style="max-width:140px"><option value="en">English</option><option value="th">ไทย</option></select></div><div class="summary-row"><span>Display theme</span><select id="themeSelect" style="max-width:160px"><option value="dark">Dark · Navy + Gold</option><option value="light">Light · Daylight</option></select></div><p class="subtle">Premium Dark Navy + Champagne Gold is the default. Ticket records are synced to the Ticket Control Live cloud database.</p><button id="exportAll" class="gold">Export all ticket data (JSON)</button></div>';document.getElementById('settingLang').value=lang;document.getElementById('settingLang').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render()};document.getElementById('themeSelect').value=theme;document.getElementById('themeSelect').onchange=e=>{theme=e.target.value;localStorage.setItem('tctl-theme',theme);applyTheme()};document.getElementById('exportAll').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(tickets,null,2)],{type:'application/json'}));a.download='ticket-control-backup.json';a.click();URL.revokeObjectURL(a.href)}}
 function renderDatabase(){document.getElementById('pageContent').dataset.uiPage=page;document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+(page==='owner'?'Owner Database':'Staff Database')+'</h2><p>'+tr('staffNotice')+'</p><div class="notice">'+(page==='owner'?'Owner permissions and secure account provisioning are not configured.':'Staff name, department login, and activity logs require Firebase Authentication and database rules.')+'</div><p class="subtle">Signed in as ; account permissions are managed by the Ticket Control Live database.</p></div>'}
-function applyTheme(){document.body.classList.toggle('theme-light',theme==='light')}
+function applyTheme(){['dark','light','emerald','midnight','luxury'].forEach(name=>document.body.classList.toggle('theme-'+name,theme===name));document.body.dataset.theme=theme}
 document.getElementById('language').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render()};document.getElementById('openMenu').onclick=()=>{document.getElementById('side').classList.add('open');document.getElementById('shade').classList.add('open')};document.getElementById('closeMenu').onclick=()=>{document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open')};document.getElementById('shade').onclick=()=>document.getElementById('closeMenu').click();document.getElementById('closeAction').onclick=()=>document.getElementById('actionModal').classList.remove('open');applyTheme();render();
 </script></body></html>
