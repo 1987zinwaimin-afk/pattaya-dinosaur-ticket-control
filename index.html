@@ -1566,12 +1566,17 @@ async function renderPayroll(){
  if(owner){
   const sel=document.getElementById('payrollPerson');
   try{
-   const {data,error}=await sb.from('profiles').select('id,display_name,role,is_archived').order('display_name',{ascending:true});
-   if(error)throw error;
-   people=(data||[]).filter(p=>p.role==='staff'||p.id===currentUser.id);
+   const [{data,error},{data:activity,error:activityError}]=await Promise.all([
+    sb.from('profiles').select('id,display_name,role,is_archived,staff_id').order('display_name',{ascending:true}),
+    sb.from('staff_login_activity').select('user_id,staff_id,display_name').not('user_id','is',null)
+   ]);
+   if(error)throw error;if(activityError)throw activityError;
+   const activeIds=new Set((activity||[]).map(a=>a.user_id).filter(Boolean));
+   const activityById=new Map((activity||[]).map(a=>[a.user_id,a]));
+   people=(data||[]).filter(p=>p.id===currentUser.id||(p.role==='staff'&&activeIds.has(p.id)));
    const paintPeople=()=>{
     const selected=sel.value||currentUser.id;
-    sel.innerHTML='<option value="'+esc(currentUser.id)+'">My Owner Payroll</option>'+people.filter(p=>p.id!==currentUser.id&&(!p.is_archived||document.getElementById('showRemovedPayrollAccounts').checked)).map(p=>'<option value="'+esc(p.id)+'">'+esc(p.display_name||'Staff')+' · '+p.id.slice(0,8)+(p.is_archived?' · REMOVED':'')+'</option>').join('');
+    sel.innerHTML='<option value="'+esc(currentUser.id)+'">My Owner Payroll</option>'+people.filter(p=>p.id!==currentUser.id&&(!p.is_archived||document.getElementById('showRemovedPayrollAccounts').checked)).map(p=>{const a=activityById.get(p.id);const label=p.staff_id||a?.staff_id||p.display_name||a?.display_name||'Staff';return '<option value="'+esc(p.id)+'">'+esc(label)+(p.is_archived?' · REMOVED':'')+'</option>'}).join('');
     sel.value=people.some(p=>p.id===selected)?selected:currentUser.id;
     const chosen=people.find(p=>p.id===sel.value);
     const action=document.getElementById('archivePayrollAccount');
