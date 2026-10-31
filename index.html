@@ -1369,6 +1369,45 @@ html body #pageContent #staffActivityList button.delete-staff-activity:active{tr
 #pageContent #staffActivityList>div span{color:#f1f5f9!important;opacity:1!important}
 #pageContent #staffActivityList>div span[style*="ffe08a"]{color:#ffe08a!important;font-weight:900!important}
 #pageContent #staffActivityList>div{background:linear-gradient(145deg,#173f60,#0a2239)!important}
+
+/* Staff Profile editor: keep dialog below the sticky dinosaur header and inside viewport */
+#staffProfileModal.modal.open{
+ position:fixed!important;
+ inset:0!important;
+ z-index:10050!important;
+ display:flex!important;
+ align-items:flex-start!important;
+ justify-content:center!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ padding:calc(env(safe-area-inset-top,0px) + 122px) 14px calc(env(safe-area-inset-bottom,0px) + 22px)!important;
+ box-sizing:border-box!important;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+}
+#staffProfileModal .modalbox{
+ position:relative!important;
+ width:min(520px,100%)!important;
+ max-width:520px!important;
+ max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 154px)!important;
+ min-height:0!important;
+ height:auto!important;
+ margin:0 auto!important;
+ overflow-y:auto!important;
+ overflow-x:hidden!important;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+ box-sizing:border-box!important;
+ flex:0 0 auto!important;
+ scroll-padding:18px;
+}
+#staffProfileModal .modalbox h2{position:sticky;top:-1px;z-index:2;background:inherit;padding:4px 0 8px;margin-top:0}
+#staffProfileModal #staffProfileForm .actions{display:flex;flex-wrap:wrap;gap:8px}
+#staffProfileModal #staffProfileForm .actions button{flex:1 1 105px;min-width:0;min-height:44px}
+@media(max-width:480px){
+ #staffProfileModal.modal.open{padding-top:calc(env(safe-area-inset-top,0px) + 116px)!important;padding-left:12px!important;padding-right:12px!important}
+ #staffProfileModal .modalbox{max-height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 148px)!important;padding:16px!important;border-radius:18px!important}
+}
 </style>
 </head>
 <body>
