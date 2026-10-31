@@ -1386,9 +1386,9 @@ async function renderPayroll(){
  '<div class="report-filters"><label>Salary period start<input type="date" id="payrollStart" value="'+iso(defaultStart)+'"></label><label>Salary closing date<input type="date" id="payrollEnd" value="'+iso(defaultEnd)+'"></label></div>'+
  '<div id="payrollRateWrap" style="margin:12px 0"><label for="payrollRate">Daily wage (THB)</label><input id="payrollRate" type="number" min="0" step="0.01" placeholder="Set by Owner" style="width:100%"></div>'+
  '<div class="actions" style="margin-top:10px"><button class="gold" id="savePayrollSettings">Save salary settings</button><button id="refreshPayroll">↻ Refresh</button></div></section>'+
- '<section class="panel" style="margin-top:14px"><h3>Attendance calendar</h3><p class="subtle">Choose Work day or Day off for each date, then save.</p><div id="payrollCalendar">Loading…</div><div class="actions"><button class="gold" id="savePayrollAttendance">Save attendance</button></div></section>'+
+ '<section class="panel" style="margin-top:14px"><h3>Attendance calendar</h3><p class="subtle">Swipe horizontally on a phone to view the full calendar. Choose Work day or Day off, then save.</p><div id="payrollCalendar">Loading…</div><div class="actions"><button class="gold" id="savePayrollAttendance">Save attendance</button></div></section>'+
  '<section class="panel" style="margin-top:14px"><h3>Salary calculation</h3><div id="payrollSummary">Loading…</div></section></div>';
- let targetUserId=currentUser.id,people=[];
+ let targetUserId=currentUser.id,people=[],loadedTargetUserId=null;
  if(owner){
   const sel=document.getElementById('payrollPerson');
   try{
@@ -1402,40 +1402,81 @@ async function renderPayroll(){
  const calendar=document.getElementById('payrollCalendar'),summary=document.getElementById('payrollSummary');
  let attendance=[];
  async function load(){
-  if(owner)targetUserId=document.getElementById('payrollPerson').value||currentUser.id;
+  const nextTargetUserId=owner?(document.getElementById('payrollPerson').value||currentUser.id):currentUser.id;
+  const targetChanged=nextTargetUserId!==loadedTargetUserId;
+  targetUserId=nextTargetUserId;
   const {data:setting,error:se}=await sb.from('payroll_settings').select('daily_rate,period_start,period_end').eq('user_id',targetUserId).maybeSingle();
   if(se)throw se;
-  if(setting){rate.value=setting.daily_rate;start.value=setting.period_start;end.value=setting.period_end}
-  else{rate.value='';if(!start.value)start.value=iso(defaultStart);if(!end.value)end.value=iso(defaultEnd)}
+  if(setting){
+   rate.value=setting.daily_rate;
+   if(targetChanged){start.value=setting.period_start;end.value=setting.period_end}
+  }else{
+   rate.value='';
+   if(targetChanged||!start.value)start.value=iso(defaultStart);
+   if(targetChanged||!end.value)end.value=iso(defaultEnd);
+  }
+  loadedTargetUserId=targetUserId;
   rate.readOnly=!owner;rate.disabled=!owner;
   document.getElementById('savePayrollSettings').style.display=owner?'inline-flex':'none';
   document.getElementById('payrollRateWrap').querySelector('label').textContent=owner?'Daily wage (THB)':'Daily wage set by Owner (THB)';
   if(!owner&&!setting)rate.placeholder='Owner has not set the daily wage yet';
-  if(!start.value||!end.value||start.value>end.value){calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';return}
+  if(!start.value||!end.value||start.value>end.value){
+   calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';
+   summary.textContent='Choose a valid start date and closing date.';
+   return;
+  }
   const {data:rows,error}=await sb.from('payroll_attendance').select('work_date,status,note').eq('user_id',targetUserId).gte('work_date',start.value).lte('work_date',end.value).order('work_date');
-  if(error)throw error;attendance=rows||[];
+  if(error)throw error;
+  attendance=rows||[];
   const map=new Map(attendance.map(x=>[x.work_date,x]));
   const from=new Date(start.value+'T12:00:00'),to=new Date(end.value+'T12:00:00');
-  const days=[];for(let d=new Date(from);d<=to;d.setDate(d.getDate()+1)){const key=iso(d),row=map.get(key);days.push({date:key,status:row?.status||''})}
-  calendar.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px">'+days.map(d=>'<label style="display:block;border:1px solid var(--line);border-radius:12px;padding:9px"><span style="display:block;font-weight:700;margin-bottom:6px">'+new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',weekday:'short'})+'</span><select class="payroll-day" data-date="'+d.date+'" style="width:100%"><option value="">Not marked</option><option value="work" '+(d.status==='work'?'selected':'')+'>Work day</option><option value="off" '+(d.status==='off'?'selected':'')+'>Day off</option></select></label>').join('')+'</div>';
-  const work=attendance.filter(x=>x.status==='work').length,off=attendance.filter(x=>x.status==='off').length,dayRate=Number(setting?.daily_rate||0),amount=work*dayRate;
-  summary.innerHTML='<div class="summary-row"><span>Work days</span><b>'+work+' days</b></div><div class="summary-row"><span>Days off</span><b>'+off+' days</b></div><div class="summary-row"><span>Daily wage</span><b>'+money(dayRate)+'</b></div><div class="summary-row"><span>Calculation</span><b>'+work+' × '+money(dayRate)+'</b></div><div style="margin-top:12px;padding:14px;border-radius:14px;background:var(--panel2,#102b45);border:1px solid var(--line)"><span class="subtle">Estimated salary</span><div style="font-size:clamp(25px,6vw,34px);font-weight:900;color:var(--gold)">'+money(amount)+'</div></div><p class="subtle" style="font-size:12px">Calculated from saved Work day entries only. Day off and unmarked dates are not included.</p>';
+  const days=[];
+  for(let d=new Date(from);d<=to;d.setDate(d.getDate()+1)){
+   const key=iso(d),row=map.get(key);
+   days.push({date:key,status:row?.status||''});
+  }
+  calendar.innerHTML='<div style="overflow-x:auto;padding:0 0 8px"><div style="display:grid;grid-template-columns:repeat(7,minmax(108px,1fr));gap:8px;min-width:790px">'+days.map(d=>{
+   const border=d.status==='work'?'#269b72':d.status==='off'?'#397fb8':'var(--line)';
+   const label=d.status==='work'?'Work day':d.status==='off'?'Day off':'Not marked';
+   return '<label style="display:block;min-width:0;border:1px solid '+border+';border-radius:12px;padding:9px;background:var(--panel2,#102b45)"><span style="display:block;font-weight:700;margin-bottom:6px">'+new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',weekday:'short'})+'</span><select class="payroll-day" data-date="'+d.date+'" style="width:100%;padding:8px 6px;font-size:13px"><option value="" '+(!d.status?'selected':'')+'>Not marked</option><option value="work" '+(d.status==='work'?'selected':'')+'>Work day</option><option value="off" '+(d.status==='off'?'selected':'')+'>Day off</option></select><span class="subtle" style="display:block;font-size:11px;margin-top:5px">'+label+'</span></label>';
+  }).join('')+'</div></div>';
+  const work=days.filter(x=>x.status==='work').length;
+  const off=days.filter(x=>x.status==='off').length;
+  const unmarked=days.length-work-off;
+  const dayRate=Number(setting?.daily_rate||0),amount=work*dayRate;
+  const detailRows=days.map(d=>{
+   const status=d.status==='work'?'Work day':d.status==='off'?'Day off':'Not marked';
+   const pay=d.status==='work'?dayRate:0;
+   return '<tr><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+status+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line);text-align:right">'+money(pay)+'</td></tr>';
+  }).join('');
+  summary.innerHTML='<div class="summary-row"><span>Salary period</span><b>'+start.value+' → '+end.value+'</b></div><div class="summary-row"><span>Work days</span><b>'+work+' / '+days.length+' days</b></div><div class="summary-row"><span>Days off</span><b>'+off+' days</b></div><div class="summary-row"><span>Not marked</span><b>'+unmarked+' days</b></div><div class="summary-row"><span>Daily wage</span><b>'+money(dayRate)+'</b></div><div class="summary-row"><span>Calculation</span><b>'+work+' × '+money(dayRate)+'</b></div><div style="margin-top:12px;padding:14px;border-radius:14px;background:var(--panel2,#102b45);border:1px solid var(--line)"><span class="subtle">Estimated salary</span><div style="font-size:clamp(25px,6vw,34px);font-weight:900;color:var(--gold)">'+money(amount)+'</div></div><details style="margin-top:12px"><summary style="cursor:pointer;font-weight:750;color:var(--gold);padding:8px 0">View daily wage breakdown ('+days.length+' days)</summary><div style="overflow-x:auto"><table style="width:100%;min-width:300px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">Date</th><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">Attendance</th><th style="text-align:right;padding:7px 5px;border-bottom:1px solid var(--line)">Wage</th></tr></thead><tbody>'+detailRows+'</tbody></table></div></details><p class="subtle" style="font-size:12px">Salary is calculated from saved Work day entries only. Day off and unmarked dates are not included.</p>';
  }
  document.getElementById('savePayrollSettings').onclick=async()=>{
   if(!owner)return;
-  if(!start.value||!end.value||start.value>end.value||Number(rate.value)<0||rate.value===''){alert('Enter a valid salary period and daily wage.');return}
+  if(!start.value||!end.value||start.value>end.value||rate.value===''||!Number.isFinite(Number(rate.value))||Number(rate.value)<0){alert('Enter a valid salary period and daily wage.');return}
   const {error}=await sb.from('payroll_settings').upsert({user_id:targetUserId,daily_rate:Number(rate.value),period_start:start.value,period_end:end.value,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  if(error){alert('Could not save salary settings: '+error.message);return}alert('Salary settings saved.');await load();
+  if(error){alert('Could not save salary settings: '+error.message);return}
+  alert('Salary settings saved.');await load();
  };
  document.getElementById('savePayrollAttendance').onclick=async()=>{
-  const rows=[...document.querySelectorAll('.payroll-day')].map(x=>({work_date:x.dataset.date,status:x.value}));const marked=rows.filter(x=>x.status);
-  if(marked.length){const payload=marked.map(x=>({user_id:targetUserId,work_date:x.work_date,status:x.status,updated_by:currentUser.id,updated_at:new Date().toISOString()}));const {error}=await sb.from('payroll_attendance').upsert(payload,{onConflict:'user_id,work_date'});if(error){alert('Could not save attendance: '+error.message);return}}
-  for(const row of rows.filter(x=>!x.status)){const {error}=await sb.from('payroll_attendance').delete().eq('user_id',targetUserId).eq('work_date',row.work_date);if(error){alert('Some blank attendance dates could not be cleared: '+error.message);return}}
+  const rows=[...document.querySelectorAll('.payroll-day')].map(x=>({work_date:x.dataset.date,status:x.value}));
+  const marked=rows.filter(x=>x.status);
+  const clearRows=rows.filter(x=>!x.status&&attendance.some(a=>a.work_date===x.work_date));
+  if(clearRows.length&&!confirm('This will clear '+clearRows.length+' previously saved attendance date(s) in this salary period. Continue?'))return;
+  if(marked.length){
+   const payload=marked.map(x=>({user_id:targetUserId,work_date:x.work_date,status:x.status,updated_by:currentUser.id,updated_at:new Date().toISOString()}));
+   const {error}=await sb.from('payroll_attendance').upsert(payload,{onConflict:'user_id,work_date'});
+   if(error){alert('Could not save attendance: '+error.message);return}
+  }
+  for(const row of clearRows){
+   const {error}=await sb.from('payroll_attendance').delete().eq('user_id',targetUserId).eq('work_date',row.work_date);
+   if(error){alert('Some attendance dates could not be cleared: '+error.message);return}
+  }
   alert('Attendance saved.');await load();
  };
  document.getElementById('refreshPayroll').onclick=()=>load().catch(e=>alert(e.message));
- start.onchange=()=>{if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message))};
- end.onchange=()=>{if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message))};
+ start.onchange=()=>{if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
+ end.onchange=()=>{if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
  if(owner)document.getElementById('payrollPerson').onchange=()=>load().catch(e=>alert(e.message));
  try{await load()}catch(e){calendar.innerHTML='<p class="auth-error">Could not load payroll: '+esc(e.message)+'</p>';summary.textContent='Please refresh and try again.'}
 }
