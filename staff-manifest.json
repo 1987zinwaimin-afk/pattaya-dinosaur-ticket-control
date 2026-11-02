@@ -1,14 +1,14 @@
 {
   "id": "/staff.html",
   "name": "Pattaya Dinosaur Kingdom Staff Ticket Control",
-  "short_name": "Staff Tickets",
-  "description": "Staff ticket inventory by assigned department",
+  "short_name": "Dino Staff",
+  "description": "Install the Pattaya Dinosaur Kingdom Staff Ticket app on your device.",
   "start_url": "/staff.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#041326",
-  "theme_color": "#041326",
+  "background_color": "#07172b",
+  "theme_color": "#07172b",
   "icons": [
     {
       "src": "/file_000000006da082119bbf212e4f6fad52.png",
