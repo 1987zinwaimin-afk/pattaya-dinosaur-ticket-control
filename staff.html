@@ -1330,10 +1330,41 @@ body.theme-light button:focus-visible,body.theme-light input:focus-visible,body.
  outline:3px solid #b27a20!important;outline-offset:2px;
 }
 
+
+/* Staff PWA install control — visible on iOS and Android */
+.staff-install-bar{width:min(100% - 24px,980px);margin:10px auto 12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #355674;border-radius:16px;background:linear-gradient(120deg,#123552,#0c2239);box-shadow:0 5px 16px #0003}
+.staff-install-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+.staff-install-copy strong{color:#f4ca70;font-size:15px}
+.staff-install-copy span{color:#b9cadd;font-size:12px;line-height:1.3}
+.staff-install-btn,.staff-install-done{border:1px solid #f5d98d;border-radius:12px;background:linear-gradient(135deg,#ffe8a0,#dfa93f);color:#14283d;font-weight:850;padding:11px 14px;min-height:44px;white-space:nowrap;box-shadow:0 3px 0 #9b7026}
+.staff-install-btn:active,.staff-install-done:active{transform:translateY(1px)}
+.staff-install-help{position:fixed;inset:0;z-index:999999;background:#020b16d9;display:flex;align-items:center;justify-content:center;padding:18px}
+.staff-install-help[hidden]{display:none}
+.staff-install-panel{position:relative;width:min(100%,440px);max-height:85dvh;overflow:auto;border:1px solid #54718b;border-radius:22px;padding:22px;background:linear-gradient(145deg,#163a58,#07182b);color:#f4f7fb;box-shadow:0 18px 55px #0009}
+.staff-install-panel h2{margin:0 36px 10px 0;color:#f4ca70;font-size:22px}
+.staff-install-panel p{color:#c3d2e1;margin:0 0 14px}
+.staff-install-panel ol{padding-left:22px;margin:0 0 18px;line-height:1.65}
+.staff-install-panel li{margin:7px 0}
+.staff-install-panel .staff-install-close{position:absolute;right:13px;top:13px;width:36px;height:36px;border:1px solid #5b7894;border-radius:10px;background:#193b58;color:white;font-size:19px}
+.staff-install-done{width:100%}
+@media(max-width:380px){.staff-install-bar{width:calc(100% - 16px);padding:8px;gap:6px}.staff-install-copy strong{font-size:13px}.staff-install-copy span{font-size:10px}.staff-install-btn{font-size:12px;padding:9px 10px}}
 </style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
+<section id="staffInstallBar" class="staff-install-bar" aria-label="Install staff application">
+ <div class="staff-install-copy"><strong>📲 Staff App</strong><span>Install on your phone for quick access</span></div>
+ <button type="button" id="staffInstallBtn" class="staff-install-btn">⬇ Download / Install</button>
+</section>
+<div class="staff-install-help" id="staffInstallHelp" hidden role="dialog" aria-modal="true" aria-labelledby="staffInstallHelpTitle">
+ <div class="staff-install-panel">
+  <button type="button" class="staff-install-close" id="staffInstallClose" aria-label="Close">✕</button>
+  <h2 id="staffInstallHelpTitle">Install Staff App</h2>
+  <p id="staffInstallIntro">Add Pattaya Dinosaur Kingdom Staff Tickets to your Home Screen.</p>
+  <div id="staffInstallSteps"></div>
+  <button type="button" class="staff-install-done" id="staffInstallDone">Got it</button>
+ </div>
+</div>
 <div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><div class="menu-language-wrap"><label class="menu-language-label" for="language">Language / ภาษา</label><select class="menu-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option></select></div><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="closeMenu" style="width:100%">✕ Close menu</button></div></aside>
 <main class="wrap">
 <section id="stats" class="stats"></section>
@@ -1929,4 +1960,55 @@ function renderStaffSettings(){document.getElementById('pageContent').dataset.ui
 function renderDatabase(){document.getElementById('pageContent').dataset.uiPage=page;document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+(page==='owner'?'Owner Database':'Staff Database')+'</h2><p>'+tr('staffNotice')+'</p><div class="notice">'+(page==='owner'?'Owner permissions and secure account provisioning are not configured.':'Staff name, department login, and activity logs require Firebase Authentication and database rules.')+'</div><p class="subtle">Signed in as ; account permissions are managed by the Ticket Control Live database.</p></div>'}
 function applyTheme(){['dark','light','emerald','midnight','luxury'].forEach(name=>document.body.classList.toggle('theme-'+name,theme===name));document.body.dataset.theme=theme}
 document.getElementById('language').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render()};document.getElementById('openMenu').onclick=()=>{document.getElementById('side').classList.add('open');document.getElementById('shade').classList.add('open')};document.getElementById('closeMenu').onclick=()=>{document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open')};document.getElementById('shade').onclick=()=>document.getElementById('closeMenu').click();document.getElementById('closeAction').onclick=()=>document.getElementById('actionModal').classList.remove('open');applyTheme();render();
+
+/* Cross-platform Staff PWA installation */
+(()=>{
+ let deferredInstallPrompt=null;
+ const installBtn=document.getElementById('staffInstallBtn');
+ const help=document.getElementById('staffInstallHelp');
+ const steps=document.getElementById('staffInstallSteps');
+ const intro=document.getElementById('staffInstallIntro');
+ const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+ const isAppleMobile=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ const closeHelp=()=>{if(help)help.hidden=true};
+ const showHelp=(kind)=>{
+  if(!help||!steps)return;
+  if(kind==='ios'){
+   intro.textContent='On iPhone or iPad, install using Safari Share menu:';
+   steps.innerHTML='<ol><li>Open this Staff website in <b>Safari</b> (not inside another app).</li><li>Tap the <b>Share</b> button (square with an upward arrow).</li><li>Scroll and choose <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. The Staff App icon will appear on your Home Screen.</li></ol>';
+  }else{
+   intro.textContent='Install the Staff App on your Android phone:';
+   steps.innerHTML='<ol><li>If the install prompt appears, tap <b>Install</b> or <b>Add</b>.</li><li>If it does not appear, open the browser menu <b>⋮</b>.</li><li>Choose <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Confirm <b>Install / Add</b>. The Staff App icon will appear on your Home Screen.</li></ol>';
+  }
+  help.hidden=false;
+ };
+ if(installBtn){
+  if(isStandalone()){const bar=document.getElementById('staffInstallBar');if(bar)bar.hidden=true;}
+  installBtn.addEventListener('click',async()=>{
+   if(isStandalone())return;
+   if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    try{await deferredInstallPrompt.userChoice}catch(_){}
+    deferredInstallPrompt=null;
+    return;
+   }
+   showHelp(isAppleMobile()?'ios':'android');
+  });
+ }
+ window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();deferredInstallPrompt=event;
+  if(installBtn)installBtn.textContent='⬇ Install Staff App';
+ });
+ window.addEventListener('appinstalled',()=>{
+  const bar=document.getElementById('staffInstallBar');if(bar)bar.hidden=true;
+  deferredInstallPrompt=null;
+ });
+ const closeBtn=document.getElementById('staffInstallClose'),doneBtn=document.getElementById('staffInstallDone');
+ if(closeBtn)closeBtn.addEventListener('click',closeHelp);
+ if(doneBtn)doneBtn.addEventListener('click',closeHelp);
+ if(help)help.addEventListener('click',event=>{if(event.target===help)closeHelp()});
+ if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(err=>console.warn('Staff app service worker registration failed',err)));
+ }
+})();
 </script></body></html>
