@@ -1687,7 +1687,7 @@ body.theme-light #side select option{
 <section id="pageContent"></section>
 </main>
 
-<div class="auth-screen" id="authScreen"><div class="auth-card">
+<div class="auth-screen" id="authScreen" style="display:none"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Owner Login</p>
 <form id="authForm" onsubmit="event.preventDefault();document.getElementById('authError').textContent='Login script did not initialize. Please refresh the page and try again.';return false;"><label id="authNameLabel" for="authName" style="display:none">Name (for new account)</label><input id="authName" maxlength="80" placeholder="Your name" style="display:none"><label for="authEmail">Email</label><input id="authEmail" type="email" autocomplete="username" required placeholder="name@example.com"><label for="authPassword">Password</label><input id="authPassword" type="password" autocomplete="current-password" required placeholder="At least 8 characters">
 <div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Sign in</button><button type="button" id="authToggle">Create account</button></div></form>
@@ -2035,14 +2035,23 @@ let restoringSavedSession=false;
 async function restoreSavedSession(){
  if(restoringSavedSession||currentUser)return;
  restoringSavedSession=true;
+ const authScreen=document.getElementById('authScreen');
  try{
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
-  if(data.session)await startCloudSession(data.session);
- }catch(e){console.error('Could not restore saved Owner session',e);document.getElementById('authError').textContent='Could not restore saved session. Please sign in once again.'}finally{restoringSavedSession=false}
+  if(data.session){
+   await startCloudSession(data.session);
+  }else{
+   authScreen.style.display='grid';
+  }
+ }catch(e){
+  console.error('Could not restore saved Owner session',e);
+  authScreen.style.display='grid';
+  document.getElementById('authError').textContent='Could not restore saved session. Please check your connection and sign in again.';
+ }finally{restoringSavedSession=false}
 }
 sb.auth.onAuthStateChange((event,session)=>{
- if(event==='INITIAL_SESSION'&&session)setTimeout(()=>restoreSavedSession(),0);
+ if(event==='INITIAL_SESSION')setTimeout(()=>restoreSavedSession(),0);
  if(event==='PASSWORD_RECOVERY'){
   setTimeout(()=>{
    document.getElementById('authScreen').style.display='grid';
