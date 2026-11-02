@@ -1348,7 +1348,25 @@ body.theme-light button:focus-visible,body.theme-light input:focus-visible,body.
 .staff-install-panel .staff-install-close{position:absolute;right:13px;top:13px;width:36px;height:36px;border:1px solid #5b7894;border-radius:10px;background:#193b58;color:white;font-size:19px}
 .staff-install-done{width:100%}
 @media(max-width:380px){.staff-install-bar{width:calc(100% - 16px);padding:8px;gap:6px}.staff-install-copy strong{font-size:13px}.staff-install-copy span{font-size:10px}.staff-install-btn{font-size:12px;padding:9px 10px}}
-.staff-menu-install{display:flex;width:calc(100% - 24px);margin:18px 12px 12px;align-items:center;justify-content:flex-start;gap:12px;padding:16px 18px;min-height:58px;border:1px solid #e8c36e;border-radius:16px;background:linear-gradient(135deg,#ffe5a0,#dba43c);color:#172b40;font-size:17px;font-weight:850;text-align:left;box-shadow:0 4px 0 #9b7026;cursor:pointer}.staff-menu-install:active{transform:translateY(1px)}.staff-menu-install[hidden]{display:none!important}</style>
+.staff-menu-install{display:flex;width:calc(100% - 24px);margin:18px 12px 12px;align-items:center;justify-content:flex-start;gap:12px;padding:16px 18px;min-height:58px;border:1px solid #e8c36e;border-radius:16px;background:linear-gradient(135deg,#ffe5a0,#dba43c);color:#172b40;font-size:17px;font-weight:850;text-align:left;box-shadow:0 4px 0 #9b7026;cursor:pointer}.staff-menu-install:active{transform:translateY(1px)}.staff-menu-install[hidden]{display:none!important}
+/* High-contrast Staff ticket total badge — replaces the washed-out pale strip */
+.ticket .ticket-quantity-highlight{
+ background:linear-gradient(115deg,#123f68 0%,#0d3154 55%,#092541 100%)!important;
+ border:1.5px solid #e8b94f!important;
+ color:#f7f9ff!important;
+ box-shadow:0 4px 12px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.10),0 0 10px rgba(232,185,79,.16)!important;
+}
+.ticket .ticket-quantity-highlight span,
+.ticket .ticket-quantity-highlight small{
+ color:#f3f7ff!important;
+ text-shadow:0 1px 2px rgba(0,0,0,.45)!important;
+}
+.ticket .ticket-quantity-highlight strong{
+ color:#ffd36e!important;
+ font-weight:950!important;
+ text-shadow:0 1px 3px rgba(0,0,0,.5)!important;
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
