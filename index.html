@@ -1989,6 +1989,19 @@ body.theme-light #side select option{
  #pageContent .actions.ticket-toolbar.sale-toolbar{grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:50px!important;gap:5px!important}
  #pageContent .actions.ticket-toolbar.sale-toolbar>button{height:50px!important;min-height:50px!important;max-height:50px!important}
 }
+
+/* Corrected Sale Ticket toolbar: compact, equal-width buttons on one row */
+#pageContent .actions.ticket-toolbar.sale-toolbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;grid-template-rows:54px!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;gap:6px!important;width:100%!important;max-width:100%!important;overflow:hidden!important;box-sizing:border-box!important}
+#pageContent .actions.ticket-toolbar.sale-toolbar>button{display:flex!important;grid-row:1!important;grid-column:auto!important;width:100%!important;min-width:0!important;max-width:100%!important;height:54px!important;min-height:54px!important;max-height:54px!important;margin:0!important;padding:4px 2px!important;flex:none!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;overflow:hidden!important;box-sizing:border-box!important}
+#pageContent .actions.ticket-toolbar.sale-toolbar #addBtn{font-size:13px!important;font-weight:850!important}
+#pageContent .actions.ticket-toolbar.sale-toolbar #backdateDateOpen{font-size:0!important}
+#pageContent .actions.ticket-toolbar.sale-toolbar #backdateDateOpen:before{content:"↶";font-size:23px!important;line-height:1}
+#pageContent .actions.ticket-toolbar.sale-toolbar #ticketRangeCalcBtn{font-size:0!important}
+#pageContent .actions.ticket-toolbar.sale-toolbar #ticketRangeCalcBtn:before{content:"🧮";font-size:22px!important;line-height:1}
+#pageContent .actions.ticket-toolbar.sale-toolbar #entryCounterOpen{display:none!important}
+#pageContent .actions.ticket-toolbar.sale-toolbar .report-icon-btn{width:100%!important;min-width:0!important;max-width:100%!important;flex:none!important;padding:5px!important}
+#pageContent .actions.ticket-toolbar.sale-toolbar .report-icon-btn svg{width:24px!important;height:24px!important}
+@media(max-width:380px){#pageContent .actions.ticket-toolbar.sale-toolbar{grid-template-rows:50px!important;gap:5px!important}#pageContent .actions.ticket-toolbar.sale-toolbar>button{height:50px!important;min-height:50px!important;max-height:50px!important}}
 </style>
 </head>
 <body>
@@ -2229,16 +2242,17 @@ function listenRealtime(){
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshCloudTickets(true)});
  window.addEventListener('focus',()=>refreshCloudTickets(true));
 }
-let staffNotifyTimer=null,staffNotifyBaseline=false,staffNotifySeen={};
+let staffNotifyTimer=null,staffNotifyBaseline=false,staffNotifySeen={},staffNotifyStartedAt=0,staffNotifyAudioContext=null;
 function getStaffNotifyPrefs(){try{return Object.assign({style:'3',sound:'bell',background:'both'},JSON.parse(localStorage.getItem('tctl-staff-notify-prefs-v1')||'{}'))}catch(e){return {style:'3',sound:'bell',background:'both'}}}
 function saveStaffNotifyPrefs(){const p={style:document.querySelector('input[name="staffNotifyStyle"]:checked')?.value||'3',sound:document.querySelector('input[name="staffNotifySound"]:checked')?.value||'bell',background:document.querySelector('input[name="staffNotifyBg"]:checked')?.value||'both'};localStorage.setItem('tctl-staff-notify-prefs-v1',JSON.stringify(p));const s=document.getElementById('staffNotifySaved');if(s){s.textContent='✓ Settings saved on this device';s.style.display='block'}return p}
-function playStaffLoginTone(kind=getStaffNotifyPrefs().sound){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const ctx=new AC();const now=ctx.currentTime;let notes=kind==='ding'?[1046]:kind==='alert'?[880,880]:[880,1175,1568];notes.forEach((freq,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain();const t=now+i*(kind==='alert'?.23:.14);osc.type=kind==='ding'?'sine':'triangle';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.16,t+.025);gain.gain.exponentialRampToValueAtTime(.0001,t+(kind==='ding'?.32:.14));osc.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+(kind==='ding'?.34:.16))});setTimeout(()=>ctx.close(),1100)}catch(e){console.warn('Login notification sound unavailable',e)}}
+function unlockStaffNotifyAudio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;staffNotifyAudioContext=staffNotifyAudioContext||new AC();if(staffNotifyAudioContext.state==='suspended')staffNotifyAudioContext.resume().catch(()=>{})}catch(e){console.warn('Notification audio could not be unlocked',e)}}
+function playStaffLoginTone(kind=getStaffNotifyPrefs().sound){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;staffNotifyAudioContext=staffNotifyAudioContext||new AC();const ctx=staffNotifyAudioContext;if(ctx.state==='suspended')ctx.resume().catch(()=>{});const now=ctx.currentTime;const notes=kind==='ding'?[1046]:kind==='alert'?[880,880]:[880,1175,1568];notes.forEach((freq,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain(),t=now+i*(kind==='alert'?.23:.14);osc.type=kind==='ding'?'sine':'triangle';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.16,t+.025);gain.gain.exponentialRampToValueAtTime(.0001,t+(kind==='ding'?.32:.14));osc.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+(kind==='ding'?.34:.16))})}catch(e){console.warn('Login notification sound unavailable',e)}}
 const OWNER_PUSH_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
 function urlBase64ToUint8Array(value){const padding='='.repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
 async function enableStaffLoginNotifications(){try{if(!currentUser||currentRole!=='owner')throw new Error('Please sign in to the Owner website first.');if(!('serviceWorker'in navigator)||!('PushManager'in window))throw new Error('This browser does not support background push notifications. Use Chrome and add the website to your Home screen if possible.');if(!('Notification'in window))throw new Error('Browser notifications are not supported.');const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Notifications are blocked. Allow notifications for this website in Chrome settings, then try again.');const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});await navigator.serviceWorker.ready;let subscription=await registration.pushManager.getSubscription();if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(OWNER_PUSH_VAPID_PUBLIC_KEY)});const json=subscription.toJSON();if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('The browser did not return a complete push subscription.');const {error}=await sb.from('owner_push_subscriptions').upsert({owner_user_id:currentUser.id,endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth,user_agent:navigator.userAgent,updated_at:new Date().toISOString()},{onConflict:'endpoint'});if(error)throw error;playStaffLoginTone();localStorage.setItem('tctl-staff-notify-sound','1');alert('Background notifications enabled on this device. Staff logins can now notify you even when the website is closed, as long as this phone allows Chrome notifications and background activity.')}catch(e){alert('Could not enable background notifications: '+(e.message||e))}}
 function showStaffLoginNotice(row){const p=getStaffNotifyPrefs();const depts={sale:'Sale Ticket Department',entry:'Entry Ticket Department',playing:'Playing Ticket Department',event:'Event Ticket Department',all:'All Departments'};const msg=(row.display_name||'Staff')+' logged in — '+(depts[row.department]||row.department||'Unknown Department');playStaffLoginTone(p.sound);let toast=document.getElementById('staffLoginToast');if(!toast){toast=document.createElement('div');toast.id='staffLoginToast';document.body.appendChild(toast)}const base='position:fixed;z-index:99999;max-width:min(420px,calc(100vw - 28px));padding:16px 18px;color:#f4f7fb;font-weight:750;box-shadow:0 10px 35px #0009;';const styles={'3':'right:14px;top:14px;border:1px solid #f4ca70;border-radius:16px;background:linear-gradient(135deg,#123b58ee,#071a2cee);','6':'right:14px;top:14px;border:1px solid #45c5e8;border-radius:999px;background:#071a2cf2;padding:12px 18px;','2':'left:50%;top:35%;transform:translate(-50%,-35%);width:min(360px,calc(100vw - 32px));text-align:center;border:2px solid #f4ca70;border-radius:22px;background:#071a2cf7;padding:28px 20px;','5':'left:0;top:20%;bottom:20%;width:min(340px,calc(100vw - 45px));border:1px solid #f4ca70;border-radius:0 20px 20px 0;background:#071a2cf7;padding:22px 18px;'};toast.style.cssText=base+(styles[p.style]||styles['3']);toast.textContent=(p.style==='2'?'🔔 NEW STAFF LOGIN\n\n':'🔔 Staff Login: ')+msg;toast.style.whiteSpace='pre-line';toast.style.display='block';clearTimeout(window.staffLoginToastTimer);window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},p.style==='2'?9000:7000);if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||p.background==='both')){try{new Notification('Staff Login',{body:msg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}}}
-async function pollStaffLoginNotifications(){if(!sb||!currentUser||currentRole!=='owner')return;try{const {data,error}=await sb.from('staff_login_activity').select('normalized_name,display_name,department,logged_in_at,last_seen,is_active').order('logged_in_at',{ascending:false});if(error)throw error;const rows=data||[];if(!staffNotifyBaseline){rows.forEach(r=>staffNotifySeen[r.normalized_name]=r.logged_in_at||'');staffNotifyBaseline=true;return}for(const r of rows){const stamp=r.logged_in_at||'';if(stamp&&staffNotifySeen[r.normalized_name]&&staffNotifySeen[r.normalized_name]!==stamp)showStaffLoginNotice(r);staffNotifySeen[r.normalized_name]=stamp}}catch(e){console.warn('Staff login notification check failed',e.message)}}
-function startStaffLoginNotifications(){if(staffNotifyTimer)clearInterval(staffNotifyTimer);staffNotifyBaseline=false;staffNotifySeen={};pollStaffLoginNotifications();staffNotifyTimer=setInterval(pollStaffLoginNotifications,5000)}
+async function pollStaffLoginNotifications(){if(!sb||!currentUser||currentRole!=='owner')return;try{const {data,error}=await sb.from('staff_login_activity').select('normalized_name,display_name,department,logged_in_at,last_seen,is_active').order('logged_in_at',{ascending:false});if(error)throw error;const rows=data||[];if(!staffNotifyBaseline){rows.forEach(r=>staffNotifySeen[r.normalized_name]=r.logged_in_at||'');staffNotifyBaseline=true;return}for(const r of rows){const key=r.normalized_name||'';if(!key)continue;const stamp=r.logged_in_at||'';if(Object.prototype.hasOwnProperty.call(staffNotifySeen,key)){if(stamp&&staffNotifySeen[key]&&staffNotifySeen[key]!==stamp)showStaffLoginNotice(r)}else if(stamp&&Date.parse(stamp)>=staffNotifyStartedAt-2000){showStaffLoginNotice(r)}staffNotifySeen[key]=stamp}}catch(e){console.warn('Staff login notification check failed',e.message)}}
+function startStaffLoginNotifications(){if(staffNotifyTimer)clearInterval(staffNotifyTimer);staffNotifyBaseline=false;staffNotifySeen={};staffNotifyStartedAt=Date.now();pollStaffLoginNotifications();staffNotifyTimer=setInterval(pollStaffLoginNotifications,5000)}
 let ownerSessionStartPromise=null,ownerSessionStartUserId=null;
 async function startCloudSession(session){
  if(!session?.user)throw new Error('No active login session was returned. Please sign in again.');
@@ -2286,6 +2300,7 @@ async function startCloudSession(session){
   if(ownerSessionStartPromise===startPromise){ownerSessionStartPromise=null;ownerSessionStartUserId=null}
  }
 }
+document.addEventListener('pointerdown',()=>{if(currentRole==='owner')unlockStaffNotifyAudio()},{passive:true});
 function setAuthMode(mode){authMode=mode;const card=document.querySelector('.auth-card');card?.classList.toggle('is-signup',mode==='signup');document.getElementById('authSubmit').textContent=mode==='signin'?'Sign in':'Create account';document.getElementById('authToggle').textContent=mode==='signin'?'Create account':'Back to sign in';document.getElementById('authNameLabel').style.display=mode==='signup'?'block':'none';document.getElementById('authName').style.display=mode==='signup'?'block':'none';document.getElementById('forgotPasswordBtn').style.display=mode==='signin'?'block':'none';document.getElementById('authIntro').textContent=mode==='signup'?'Owner account setup. Staff must use the separate Staff website.':'Owner / Staff Cloud Login';document.getElementById('authError').textContent=''}
 document.getElementById('authName').style.display='none';
 document.getElementById('forgotPasswordBtn').onclick=async()=>{
@@ -3124,89 +3139,3 @@ installUILanguageObserver();applyUILanguage();
  <div id="entryCounterDock"><div id="entryCounterTotal">0 tickets<small>Auto-saved to Entry Ticket</small></div><button class="gold" type="button" id="entryCounterClear">Clear All</button></div>
 </div>
 </body></html>
-
-/* HARD FIX: one equal-width row for every department toolbar; override legacy :has() layouts */
-#pageContent>.actions.ticket-toolbar,
-#pageContent .actions.ticket-toolbar{
- display:grid!important;
- grid-auto-flow:row!important;
- grid-auto-rows:54px!important;
- align-items:stretch!important;
- justify-items:stretch!important;
- gap:7px!important;
- width:100%!important;
- max-width:100%!important;
- overflow:visible!important;
-}
-#pageContent>.actions.ticket-toolbar.sale-toolbar,
-#pageContent>.actions.ticket-toolbar.entry-toolbar,
-#pageContent .actions.ticket-toolbar.sale-toolbar,
-#pageContent .actions.ticket-toolbar.entry-toolbar{
- grid-template-columns:repeat(5,minmax(0,1fr))!important;
-}
-#pageContent>.actions.ticket-toolbar.playing-toolbar,
-#pageContent>.actions.ticket-toolbar.event-toolbar,
-#pageContent .actions.ticket-toolbar.playing-toolbar,
-#pageContent .actions.ticket-toolbar.event-toolbar{
- grid-template-columns:repeat(4,minmax(0,1fr))!important;
-}
-#pageContent>.actions.ticket-toolbar:has(#ticketRangeCalcBtn),
-#pageContent>.actions.ticket-toolbar:has(#entryCounterOpen){
- grid-auto-flow:row!important;
-}
-#pageContent>.actions.ticket-toolbar>button,
-#pageContent .actions.ticket-toolbar>button{
- display:flex!important;
- box-sizing:border-box!important;
- width:100%!important;
- min-width:0!important;
- max-width:100%!important;
- height:54px!important;
- min-height:54px!important;
- max-height:54px!important;
- margin:0!important;
- padding:5px 2px!important;
- flex:initial!important;
- align-items:center!important;
- justify-content:center!important;
- white-space:nowrap!important;
- overflow:hidden!important;
- overflow-wrap:normal!important;
- text-overflow:clip!important;
-}
-#pageContent>.actions.ticket-toolbar #backdateDateOpen,
-#pageContent .actions.ticket-toolbar #backdateDateOpen{
- font-size:0!important;
-}
-#pageContent>.actions.ticket-toolbar #backdateDateOpen::before,
-#pageContent .actions.ticket-toolbar #backdateDateOpen::before{
- content:"↶";
- font-size:24px!important;
- line-height:1!important;
-}
-#pageContent>.actions.ticket-toolbar #ticketRangeCalcBtn,
-#pageContent .actions.ticket-toolbar #ticketRangeCalcBtn{font-size:0!important}
-#pageContent>.actions.ticket-toolbar #ticketRangeCalcBtn::before,
-#pageContent .actions.ticket-toolbar #ticketRangeCalcBtn::before{
- content:"🧮";
- font-size:22px!important;
- line-height:1!important;
-}
-#pageContent>.actions.ticket-toolbar .report-icon-btn svg,
-#pageContent .actions.ticket-toolbar .report-icon-btn svg{
- width:25px!important;height:25px!important;max-width:100%!important;
-}
-#pageContent>.actions.ticket-toolbar.sale-toolbar #entryCounterOpen,
-#pageContent>.actions.ticket-toolbar.entry-toolbar #ticketRangeCalcBtn,
-#pageContent>.actions.ticket-toolbar.playing-toolbar #entryCounterOpen,
-#pageContent>.actions.ticket-toolbar.playing-toolbar #ticketRangeCalcBtn,
-#pageContent>.actions.ticket-toolbar.event-toolbar #entryCounterOpen,
-#pageContent>.actions.ticket-toolbar.event-toolbar #ticketRangeCalcBtn{display:none!important}
-#pageContent>.actions.ticket-toolbar.sale-toolbar #ticketRangeCalcBtn,
-#pageContent>.actions.ticket-toolbar.entry-toolbar #entryCounterOpen{display:flex!important}
-@media(max-width:380px){
- #pageContent>.actions.ticket-toolbar,
- #pageContent .actions.ticket-toolbar{gap:5px!important;grid-auto-rows:50px!important}
- #pageContent>.actions.ticket-toolbar>button,
- #pageContent .actions.ticket-toolbar>button{height:50px!important;min-height:50px!important;max-height:50px!important}
-}
