@@ -1437,6 +1437,31 @@ async function shareTrainReport(){try{const blob=await createTrainReportBlob();i
 function exportTrainCsvData(){const rows=getTrainReportSelection().rows,data=[[reportText('No','ลำดับ'),reportText('Date','วันที่'),reportText('Depart Time','เวลาออกรถ'),reportText('Return Time','เวลากลับรถ'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration minutes','ระยะเวลา (นาที)')],...rows.map((r,i)=>[i+1,r.trip_date,fmtTime(r.depart_time),fmtTime(r.return_time),r.riders,r.driver_name,durationMins(r.depart_time,r.return_time)??''])];const csv=data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='train-time-report-'+getTrainReportSelection().period+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function updateTrainReportMode(){const mode=document.getElementById('trainReportMode')?.value||'daily',date=document.getElementById('trainReportDateWrap'),month=document.getElementById('trainReportMonthWrap');if(date)date.style.display=mode==='daily'?'':'none';if(month)month.style.display=mode==='monthly'?'':'none'}
 
+let dailySalesAutosaveTimer=null,dailySalesAutosaveBusy=false;
+async function captureDailyTicketSales(){
+ if(!currentUser||!cloudReady||!navigator.onLine||dailySalesAutosaveBusy)return null;
+ dailySalesAutosaveBusy=true;
+ try{
+  const {data,error}=await sb.rpc('capture_daily_ticket_sales');
+  if(error)throw error;
+  return data;
+ }catch(e){
+  console.warn('Daily ticket sales autosave will retry:',e);
+  return null;
+ }finally{dailySalesAutosaveBusy=false}
+}
+function dailySalesVisibilityHandler(){
+ if(document.visibilityState==='visible')captureDailyTicketSales();
+}
+function startDailySalesAutosave(){
+ if(dailySalesAutosaveTimer)clearInterval(dailySalesAutosaveTimer);
+ captureDailyTicketSales();
+ dailySalesAutosaveTimer=setInterval(captureDailyTicketSales,60000);
+ window.removeEventListener('online',captureDailyTicketSales);
+ window.addEventListener('online',captureDailyTicketSales);
+ document.removeEventListener('visibilitychange',dailySalesVisibilityHandler);
+ document.addEventListener('visibilitychange',dailySalesVisibilityHandler);
+}
 function cloudRowForTicket(t){
  return {id:t.id,department:t.department,name:t.name,price:t.price??null,quantity:Number(t.quantity||0),image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()};
 }
@@ -1461,7 +1486,7 @@ async function syncTickets(snapshot){
  try{
   while(syncPending){
    const next=syncPending;syncPending=null;
-   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);lastCloudFingerprint='';const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';}
+   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);await captureDailyTicketSales();lastCloudFingerprint='';const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';}
   }
  }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));syncPending=syncPending||snapshot;setTimeout(()=>{if(!syncBusy&&syncPending)syncTickets(syncPending)},3000);}
  finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
@@ -1506,7 +1531,7 @@ async function loadCloud(){
    cloudRows=reloaded||[];
   }
  }
- tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();
+ tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();startDailySalesAutosave();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
