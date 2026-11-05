@@ -1842,6 +1842,20 @@ body.theme-light #side select option{
  #pageContent .actions.ticket-toolbar #addBtn{font-size:12px!important}
  #pageContent .actions.ticket-toolbar #backdateDateOpen::before{font-size:23px!important}
 }
+
+/* Respect the correct visible controls per department; hidden controls must not occupy toolbar cells */
+#pageContent .actions.ticket-toolbar.sale-toolbar #entryCounterOpen,
+#pageContent .actions.ticket-toolbar.entry-toolbar #ticketRangeCalcBtn,
+#pageContent .actions.ticket-toolbar.playing-toolbar #entryCounterOpen,
+#pageContent .actions.ticket-toolbar.playing-toolbar #ticketRangeCalcBtn,
+#pageContent .actions.ticket-toolbar.event-toolbar #entryCounterOpen,
+#pageContent .actions.ticket-toolbar.event-toolbar #ticketRangeCalcBtn{
+ display:none!important;
+}
+#pageContent .actions.ticket-toolbar.sale-toolbar #ticketRangeCalcBtn,
+#pageContent .actions.ticket-toolbar.entry-toolbar #entryCounterOpen{
+ display:flex!important;
+}
 </style>
 </head>
 <body>
