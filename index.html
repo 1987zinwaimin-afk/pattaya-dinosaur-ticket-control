@@ -2313,11 +2313,11 @@ async function renderPayroll(){
   summary.innerHTML='<div class="summary-row"><span>'+reportText('Salary period','รอบเงินเดือน')+'</span><b>'+formatReportDate(start.value)+' → '+formatReportDate(end.value)+'</b></div><div class="summary-row"><span>'+reportText('Work days','วันทำงาน')+'</span><b>'+work+' / '+days.length+' '+reportText('days','วัน')+'</b></div><div class="summary-row"><span>'+reportText('Days off','วันหยุด')+'</span><b>'+off+' '+reportText('days','วัน')+'</b></div><div class="summary-row"><span>'+reportText('Not marked','ยังไม่ได้ระบุ')+'</span><b>'+unmarked+' '+reportText('days','วัน')+'</b></div><div class="summary-row"><span>'+reportText('Daily wage','ค่าจ้างรายวัน')+'</span><b>'+money(dayRate)+'</b></div><div class="summary-row"><span>'+reportText('Calculation','วิธีคำนวณ')+'</span><b>'+work+' × '+money(dayRate)+'</b></div><div style="margin-top:12px;padding:14px;border-radius:14px;background:var(--panel2,#102b45);border:1px solid var(--line)"><span class="subtle">'+reportText('Estimated salary','เงินเดือนโดยประมาณ')+'</span><div style="font-size:clamp(25px,6vw,34px);font-weight:900;color:var(--gold)">'+money(amount)+'</div></div><details style="margin-top:12px"><summary style="cursor:pointer;font-weight:750;color:var(--gold);padding:8px 0">'+reportText('View daily wage breakdown','ดูรายละเอียดค่าจ้างรายวัน')+' ('+days.length+' '+reportText('days','วัน')+')</summary><div style="overflow-x:auto"><table style="width:100%;min-width:300px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">'+reportText('Date','วันที่')+'</th><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">'+reportText('Attendance','การเข้างาน')+'</th><th style="text-align:right;padding:7px 5px;border-bottom:1px solid var(--line)">'+reportText('Wage','ค่าจ้าง')+'</th></tr></thead><tbody>'+detailRows+'</tbody></table></div></details><p class="subtle" style="font-size:12px">'+reportText('Salary is calculated from saved Work day entries only. Day off and unmarked dates are not included.','คำนวณเงินเดือนจากวันที่บันทึกเป็นวันทำงานเท่านั้น ไม่รวมวันหยุดและวันที่ยังไม่ได้ระบุ')+'</p>';
  }
  document.getElementById('savePayrollSettings').onclick=async()=>{
-  if(owner&&(!start.value||!end.value||start.value>end.value)){alert('Enter a valid salary period.');return}
-  if(rate.value===''||!Number.isFinite(Number(rate.value))||Number(rate.value)<0){alert('Enter a valid daily wage (0 or higher).');return}
+  if(owner&&(!start.value||!end.value||start.value>end.value)){alert(reportText('Enter a valid salary period.','กรุณาระบุช่วงเงินเดือนให้ถูกต้อง'));return}
+  if(rate.value===''||!Number.isFinite(Number(rate.value))||Number(rate.value)<0){alert(reportText('Enter a valid daily wage (0 or higher).','กรุณาระบุค่าจ้างรายวันให้ถูกต้อง (0 หรือมากกว่า)'));return}
   const {error}=await sb.from('payroll_settings').upsert({user_id:targetUserId,daily_rate:Number(rate.value),period_start:start.value||iso(defaultStart),period_end:end.value||iso(defaultEnd),updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-  if(error){alert('Could not save daily wage: '+error.message);return}
-  alert(owner?'Salary settings saved.':'Your daily wage has been saved. Owner can view it in Staff Payroll.');
+  if(error){alert(reportText('Could not save daily wage: ','ไม่สามารถบันทึกค่าจ้างรายวันได้: ')+error.message);return}
+  alert(owner?reportText('Salary settings saved.','บันทึกการตั้งค่าเงินเดือนแล้ว'):reportText('Your daily wage has been saved. Owner can view it in Staff Payroll.','บันทึกค่าจ้างรายวันแล้ว เจ้าของสามารถดูได้ในหน้าเงินเดือนพนักงาน'));
   await load();
  };
  calendar.addEventListener('change',event=>{
@@ -2407,7 +2407,7 @@ async function renderPayroll(){
    link.href=url;link.download='payroll-'+targetUserId.slice(0,8)+'-'+start.value+'-to-'+end.value+'.png';
    document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
    alert(reportText('Monthly payroll image is ready. Check your phone Downloads or Gallery.','เตรียมภาพรายงานเงินเดือนแล้ว กรุณาตรวจสอบในโฟลเดอร์ดาวน์โหลดหรือแกลเลอรี'));
-  }catch(error){alert('Could not save payroll image: '+error.message)}
+  }catch(error){alert(reportText('Could not save payroll image: ','ไม่สามารถบันทึกรูปรายงานเงินเดือนได้: ')+error.message)}
   finally{button.disabled=false;button.textContent=reportText('Save monthly payroll image','บันทึกรายงานเงินเดือนประจำเดือน')}
  };
  document.getElementById('refreshPayroll').onclick=()=>load().catch(e=>alert(e.message));
