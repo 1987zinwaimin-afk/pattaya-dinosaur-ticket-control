@@ -2168,7 +2168,7 @@ if(file){
  const {data:urlData}=sb.storage.from('ticket-images').getPublicUrl(imagePath);imageUrl=urlData.publicUrl;
 }
 let obj={id:ticketId,department:page,name,price:priceText===''?null:Number(priceText),quantity,image:imageUrl,imageUrl,imagePath,location:page==='event'?document.getElementById('eventLocation').value.trim():'',createdAt:old?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),createdBy:old?.createdBy||currentUser.id};if(old){tickets=tickets.map(t=>t.id===ticketId?obj:t)}else tickets.push(obj);save();document.getElementById('ticketModal').classList.remove('open');render()};
-async function createReportBlob(list,titleText){
+async function createReportBlob(list,titleText,periodLabel){
  const items=Array.isArray(list)?list:[],width=1200,pad=30,gap=18,cols=2,cardW=(width-pad*2-gap)/2,cardH=142;
  const rows=Math.max(1,Math.ceil(items.length/cols)),bannerH=205,infoY=225,infoH=145,cardsY=390,height=cardsY+rows*(cardH+gap)+86;
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
@@ -2181,7 +2181,7 @@ async function createReportBlob(list,titleText){
  // Reference-style department/date panel and total-count panel directly below the banner.
  ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,infoY,805,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='left';ctx.font='bold 31px Arial';let heading=String(lang==='th'?({ 'Monthly Ticket Inventory Report':'รายงานสต็อกตั๋วประจำเดือน','Ticket Report':'รายงานตั๋ว','All Ticket Departments':'ทุกแผนก' }[titleText]||(dep()?(dep()[lang]||dep().en):'รายงานตั๋ว')):(titleText||(dep()?dep().en:'Ticket Report')));if(heading.length>34)heading=heading.slice(0,33)+'…';ctx.fillText(heading,60,infoY+49);
- ctx.fillStyle='#63758b';ctx.font='24px Arial';ctx.fillText(reportText('Daily Ticket Report · ','รายงานตั๋วประจำวัน · ')+formatReportDate(new Date()),60,infoY+94);
+ ctx.fillStyle='#63758b';ctx.font='24px Arial';ctx.fillText((periodLabel||reportText('Daily Ticket Report · ','รายงานตั๋วประจำวัน · ')+formatReportDate(new Date())),60,infoY+94);
  const total=items.reduce((s,t)=>s+(Number(t.quantity)||0),0);
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(850,infoY,320,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 25px Arial';ctx.fillText(reportText('TOTAL TICKETS','จำนวนตั๋วทั้งหมด'),1010,infoY+43);ctx.font='bold 66px Arial';ctx.fillText(String(total),1010,infoY+110);
@@ -2198,8 +2198,8 @@ async function createReportBlob(list,titleText){
  const footerY=height-74;ctx.strokeStyle='#e8b94f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(36,footerY);ctx.lineTo(width-36,footerY);ctx.stroke();ctx.fillStyle='#f5d48b';ctx.textAlign='center';ctx.font='bold 29px Arial';ctx.fillText(reportText('TOTAL: ','รวมทั้งหมด: ')+total+reportText(' TICKETS',' ใบ'),width/2,height-35);
  return await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
 }
-async function saveReportList(list,titleText){try{const blob=await createReportBlob(list,titleText);if(!blob)throw new Error('Could not create image');const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ticket-report-'+new Date().toISOString().slice(0,10)+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}catch(e){alert('Could not save report image: '+(e.message||e))}}
-async function shareReportList(list,titleText){try{const blob=await createReportBlob(list,titleText);if(!blob)throw new Error('Could not create image');const file=new File([blob], 'ticket-report-'+new Date().toISOString().slice(0,10)+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:titleText||(lang==='th'?'รายงานตั๋ว':'Ticket Report')});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);alert('Report image downloaded. You can share the PNG from your Downloads folder.')}catch(e){if(e.name!=='AbortError')alert('Could not share report image: '+(e.message||e))}}
+async function saveReportList(list,titleText,periodLabel){try{const blob=await createReportBlob(list,titleText,periodLabel);if(!blob)throw new Error('Could not create image');const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ticket-report-'+new Date().toISOString().slice(0,10)+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}catch(e){alert('Could not save report image: '+(e.message||e))}}
+async function shareReportList(list,titleText,periodLabel){try{const blob=await createReportBlob(list,titleText,periodLabel);if(!blob)throw new Error('Could not create image');const file=new File([blob], 'ticket-report-'+new Date().toISOString().slice(0,10)+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:titleText||(lang==='th'?'รายงานตั๋ว':'Ticket Report')});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);alert('Report image downloaded. You can share the PNG from your Downloads folder.')}catch(e){if(e.name!=='AbortError')alert('Could not share report image: '+(e.message||e))}}
 async function saveReport(){try{const list=dep()?departmentTickets():tickets;const blob=await createReportBlob(list,dep()?dep().en:'All Ticket Departments');if(!blob)throw new Error('Could not create image');const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(dep()?page:'all')+'-ticket-report-'+new Date().toISOString().slice(0,10)+'.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}catch(e){alert('Could not save report image: '+(e.message||e))}}
 async function shareReport(){try{const list=dep()?departmentTickets():tickets;const blob=await createReportBlob(list,dep()?dep().en:'All Ticket Departments');if(!blob)throw new Error('Could not create image');const file=new File([blob], 'ticket-report-'+new Date().toISOString().slice(0,10)+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Ticket Report'});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);alert('Report image downloaded. You can share the PNG from your Downloads folder.')}catch(e){if(e.name!=='AbortError')alert('Could not share report image: '+(e.message||e))}}
 
@@ -2465,8 +2465,8 @@ function renderMonthly(){
  month.onchange=report;
  document.getElementById('reportDepartment').onchange=report;
  document.getElementById('makeMonthly').onclick=report;
- document.getElementById('downloadMonthly').onclick=async()=>{const list=calc();if(list)await saveReportList(list,'Monthly Ticket Inventory Report')};
- document.getElementById('shareMonthly').onclick=async()=>{const list=calc();if(list)await shareReportList(list,'Monthly Ticket Inventory Report')};
+ document.getElementById('downloadMonthly').onclick=async()=>{const list=calc();if(list){const label=reportText('Monthly report · ','လချုပ် · ')+month.value;await saveReportList(list,'Monthly Ticket Inventory Report',label)}};
+ document.getElementById('shareMonthly').onclick=async()=>{const list=calc();if(list){const label=reportText('Monthly report · ','လချုပ် · ')+month.value;await shareReportList(list,'Monthly Ticket Inventory Report',label)}};
  report();
 }
 function renderSettings(){
