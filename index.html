@@ -2428,50 +2428,59 @@ function renderMonthly(){
  root.dataset.uiPage='monthly';
  const now=new Date(),selectedMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
  root.innerHTML='<div class="report-page">'+
-  '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">'+reportText('TICKET CONTROL · REPORTS','ระบบควบคุมตั๋ว · รายงาน')+'</span><h2>'+tr('report')+'</h2><p class="subtle">'+reportText('Generate a report for any selected month','ရွေးချယ်ထားသော မည်သည့်လအတွက်မဆို လချုပ်ထုတ်ယူနိုင်သည်')+'</p></div><span class="report-icon">▤</span></div>'+
+  '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">'+reportText('TICKET CONTROL · REPORTS','ระบบควบคุมตั๋ว · รายงาน')+'</span><h2>'+tr('report')+'</h2><p class="subtle">'+reportText('Daily sales history for any selected month','ရွေးချယ်ထားသောလ၏ နေ့စဉ်ရောင်းချမှုမှတ်တမ်း')+'</p></div><span class="report-icon">▤</span></div>'+
   '<div class="report-filters"><label>'+reportText('Select month','လကိုရွေးချယ်ပါ')+'<input type="month" id="reportMonth" value="'+selectedMonth+'"></label></div>'+
   '<div class="report-department-filter"><label for="reportDepartment">'+reportText('Department','แผนก')+'</label><select id="reportDepartment"><option value="all">'+reportText('All Departments','ทุกแผนก')+'</option>'+DEPTS.map(d=>'<option value="'+esc(d.id)+'">'+esc(d[lang]||d.en)+'</option>').join('')+'</select></div>'+
   '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+tr('report')+'</button><button id="downloadMonthly" class="report-secondary">⇩ '+reportText('Save image','บันทึกภาพ')+'</button><button class="blue" id="shareMonthly">↗ '+reportText('Share report','แชร์รายงาน')+'</button></div>'+
   '<p id="monthlyError" class="report-error" role="alert" aria-live="polite"></p></section>'+
   '<section id="monthlyResults" class="report-results" aria-live="polite"></section>'+
-  '<p class="report-footnote">'+reportText('This report groups ticket records by their original creation date in the selected month. Quantities and values show current saved ticket data, not historical month-end balances or transaction-by-transaction sales history.','ဤအစီရင်ခံစာသည် ရွေးချယ်ထားသောလအတွင်း မူလဖန်တီးခဲ့သည့် လက်မှတ်စာရင်းများကို ပြသသည်။')+'</p>'+
+  '<p class="report-footnote">'+reportText('This report uses saved daily sales records. The current day appears after its daily record is saved.','ဤအစီရင်ခံစာသည် သိမ်းဆည်းထားသော နေ့စဉ်ရောင်းချမှုမှတ်တမ်းများကို အသုံးပြုသည်။ ယနေ့စာရင်းကို နေ့စဉ်မှတ်တမ်းသိမ်းပြီးနောက် ပြသမည်။')+'</p>'+
  '</div>';
  const month=document.getElementById('reportMonth'),results=document.getElementById('monthlyResults'),error=document.getElementById('monthlyError');
- const calc=()=>{
+ let requestNo=0,lastReportData=null;
+ const calc=async()=>{
   const selected=month.value;
-  if(!selected||selected.length!==7||selected[4]!=='-'||!/^\d{4}$/.test(selected.slice(0,4))||!/^\d{2}$/.test(selected.slice(5,7))||Number(selected.slice(5,7))<1||Number(selected.slice(5,7))>12){error.textContent=reportText('Please select a valid month.','ကျေးဇူးပြု၍ မှန်ကန်သောလကိုရွေးချယ်ပါ');return null}
+  if(!selected||selected.length!==7||selected[4]!=='-'||!/^\\d{4}$/.test(selected.slice(0,4))||!/^\\d{2}$/.test(selected.slice(5,7))||Number(selected.slice(5,7))<1||Number(selected.slice(5,7))>12){error.textContent=reportText('Please select a valid month.','ကျေးဇူးပြု၍ မှန်ကန်သောလကိုရွေးချယ်ပါ');return null}
   const [year,monthNumber]=selected.split('-').map(Number);
   const first=new Date(year,monthNumber-1,1),last=new Date(year,monthNumber,0);
   const f=first.getFullYear()+'-'+String(first.getMonth()+1).padStart(2,'0')+'-'+String(first.getDate()).padStart(2,'0');
   const t=last.getFullYear()+'-'+String(last.getMonth()+1).padStart(2,'0')+'-'+String(last.getDate()).padStart(2,'0');
   error.textContent='';
   const dept=document.getElementById('reportDepartment')?.value||'all';
-  const list=tickets.filter(x=>{const raw=x.createdAt||x.updatedAt||'';const stamp=String(raw).slice(0,10);return stamp&&stamp>=f&&stamp<=t&&(dept==='all'||x.department===dept)});
+  const {data,error:dbError}=await sb.from('ticket_daily_sales').select('business_date,ticket_id,department,ticket_name,unit_price,quantity,total_amount').gte('business_date',f).lte('business_date',t).order('business_date',{ascending:true});
+  if(dbError)throw dbError;
+  const list=(data||[]).filter(x=>dept==='all'||x.department===dept).map(x=>({id:x.ticket_id,department:x.department,name:x.ticket_name,price:x.unit_price,quantity:Number(x.quantity)||0,amount:Number(x.total_amount)||0,businessDate:x.business_date}));
   return {list,f,t,selected};
  };
  const fDate=value=>formatReportDate(value);
- const report=()=>{
-  const data=calc();if(!data){results.innerHTML='';return false}
-  const {list,f,t}=data;
-  const quantity=list.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
-  const value=list.reduce((sum,x)=>sum+(Number(x.quantity)||0)*(Number(x.price)||0),0);
-  const departments=DEPTS.map(d=>{
-   const rows=list.filter(x=>x.department===d.id);
-   const qty=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
-   const amount=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0)*(Number(x.price)||0),0);
-   return '<article class="report-dept"><div class="report-dept-title"><span class="report-dept-icon">'+d.icon+'</span><strong>'+esc(d[lang]||d.en)+'</strong></div><div class="report-dept-stats"><div><small>'+reportText('Ticket types','ประเภทตั๋ว')+'</small><b>'+rows.length.toLocaleString()+'</b></div><div><small>'+reportText('Total quantity','จำนวนตั๋วทั้งหมด')+'</small><b>'+qty.toLocaleString()+'</b></div><div><small>'+reportText('Inventory value','มูลค่าสต็อก')+'</small><b>'+money(amount)+'</b></div></div></article>';
-  }).join('');
-  results.innerHTML='<div class="report-range"><span>'+reportText('REPORT PERIOD · ','ช่วงเวลารายงาน · ')+esc((document.getElementById('reportDepartment')?.selectedOptions[0]?.textContent)||reportText('All Departments','ทุกแผนก'))+'</span><strong>'+fDate(f)+' – '+fDate(t)+'</strong></div>'+
-   '<div class="report-kpis"><article class="report-kpi"><span>'+reportText('Ticket types','ประเภทตั๋ว')+'</span><strong>'+list.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>'+reportText('Total quantity','จำนวนตั๋วทั้งหมด')+'</span><strong>'+quantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>'+reportText('Inventory value','มูลค่าสต็อก')+'</span><strong>'+money(value)+'</strong></article></div>'+
-   '<div class="report-section-title"><h3>'+reportText('Department breakdown','สรุปแยกตามแผนก')+'</h3><span>'+DEPTS.length+reportText(' departments',' แผนก')+'</span></div>'+
-   (list.length?departments:'<div class="report-empty">'+reportText('No ticket records were found for the selected month.','ရွေးချယ်ထားသောလအတွက် လက်မှတ်စာရင်းမတွေ့ပါ')+'</div>');
-  return true;
+ const report=async()=>{
+  const thisRequest=++requestNo;
+  results.innerHTML='<div class="report-empty">'+reportText('Loading daily sales records…','နေ့စဉ်စာရင်းများကို ဖတ်နေသည်…')+'</div>';
+  try{
+   const data=await calc();if(thisRequest!==requestNo)return false;
+   if(!data){results.innerHTML='';lastReportData=null;return false}
+   lastReportData=data;
+   const {list,f,t}=data;
+   const quantity=list.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
+   const value=list.reduce((sum,x)=>sum+(Number(x.amount)||0),0);
+   const departments=DEPTS.map(d=>{
+    const rows=list.filter(x=>x.department===d.id);
+    const qty=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
+    const amount=rows.reduce((sum,x)=>sum+(Number(x.amount)||0),0);
+    return '<article class="report-dept"><div class="report-dept-title"><span class="report-dept-icon">'+d.icon+'</span><strong>'+esc(d[lang]||d.en)+'</strong></div><div class="report-dept-stats"><div><small>'+reportText('Ticket records','รายการตั๋ว')+'</small><b>'+rows.length.toLocaleString()+'</b></div><div><small>'+reportText('Tickets sold','จำนวนตั๋วที่ขาย')+'</small><b>'+qty.toLocaleString()+'</b></div><div><small>'+reportText('Sales total','ยอดขายรวม')+'</small><b>'+money(amount)+'</b></div></div></article>';
+   }).join('');
+   results.innerHTML='<div class="report-range"><span>'+reportText('REPORT PERIOD · ','ช่วงเวลารายงาน · ')+esc((document.getElementById('reportDepartment')?.selectedOptions[0]?.textContent)||reportText('All Departments','All Departments'))+'</span><strong>'+fDate(f)+' – '+fDate(t)+'</strong></div>'+
+    '<div class="report-kpis"><article class="report-kpi"><span>'+reportText('Ticket records','รายการตั๋ว')+'</span><strong>'+list.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>'+reportText('Tickets sold','จำนวนตั๋วที่ขาย')+'</span><strong>'+quantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>'+reportText('Sales total','ยอดขายรวม')+'</span><strong>'+money(value)+'</strong></article></div>'+
+    '<div class="report-section-title"><h3>'+reportText('Department breakdown','สรุปแยกตามแผนก')+'</h3><span>'+DEPTS.length+reportText(' departments',' แผนก')+'</span></div>'+
+    (list.length?departments:'<div class="report-empty">'+reportText('No daily sales records were found for the selected month.','ရွေးချယ်ထားသောလအတွက် နေ့စဉ်ရောင်းချမှုမှတ်တမ်း မတွေ့ပါ')+'</div>');
+   return true;
+  }catch(e){if(thisRequest!==requestNo)return false;lastReportData=null;results.innerHTML='';error.textContent=reportText('Could not load daily sales: ','နေ့စဉ်စာရင်းဖတ်မရပါ: ')+(e.message||e);return false}
  };
  month.onchange=report;
  document.getElementById('reportDepartment').onchange=report;
  document.getElementById('makeMonthly').onclick=report;
- document.getElementById('downloadMonthly').onclick=async()=>{const data=calc();if(data)await saveReportList(data.list,'Monthly Ticket Inventory Report',reportText('Monthly report · ','လချုပ် · ')+data.selected)};
- document.getElementById('shareMonthly').onclick=async()=>{const data=calc();if(data)await shareReportList(data.list,'Monthly Ticket Inventory Report',reportText('Monthly report · ','လချုပ် · ')+data.selected)};
+ document.getElementById('downloadMonthly').onclick=async()=>{if(await report()&&lastReportData)await saveReportList(lastReportData.list,'Monthly Ticket Sales Report',reportText('Monthly report · ','လချုပ် · ')+lastReportData.selected)};
+ document.getElementById('shareMonthly').onclick=async()=>{if(await report()&&lastReportData)await shareReportList(lastReportData.list,'Monthly Ticket Sales Report',reportText('Monthly report · ','လချုပ် · ')+lastReportData.selected)};
  report();
 }
 function renderSettings(){
