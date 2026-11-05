@@ -1726,7 +1726,7 @@ let lastCloudRows=new Map();
 let trainRows=[],trainLoading=false;
 const localToday=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const fmtTime=v=>v?String(v).slice(0,5):'—';
-const fmtDate=v=>v?new Date(v+'T00:00:00').toLocaleDateString():'—';
+const formatReportDate=v=>{if(!v)return '—';const raw=String(v);const d=v instanceof Date?v:(/^\d{4}-\d{2}-\d{2}$/.test(raw)?new Date(Number(raw.slice(0,4)),Number(raw.slice(5,7))-1,Number(raw.slice(8,10))):new Date(v));return Number.isNaN(d.getTime())?'—':d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()};const fmtDate=v=>formatReportDate(v);
 function durationMins(a,b){if(!a||!b)return null;let [ah,am]=String(a).slice(0,5).split(':').map(Number),[bh,bm]=String(b).slice(0,5).split(':').map(Number);let n=bh*60+bm-(ah*60+am);if(n<0)n+=1440;return n}
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 async function fetchTrainRows(){if(!sb||!currentUser){trainRows=[];return}const {data,error}=await sb.from('train_time_logs').select('*').order('trip_date',{ascending:false}).order('depart_time',{ascending:false});if(error)throw error;trainRows=data||[]}
@@ -1752,7 +1752,7 @@ async function createTrainReportBlob(){
  ctx.fillStyle='#e8b94f';ctx.fillRect(30,summaryY,width-60,5);
  ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,summaryY+12,790,summaryH,22);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=3;ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='left';ctx.font='bold 31px Arial';ctx.fillText('Train Time In / Time Out',58,summaryY+56);
- ctx.fillStyle='#63758b';ctx.font='22px Arial';ctx.fillText('Train Schedule Report · '+new Date().toLocaleDateString(),58,summaryY+95);
+ ctx.fillStyle='#63758b';ctx.font='22px Arial';ctx.fillText('Train Schedule Report · '+formatReportDate(new Date()),58,summaryY+95);
  const riders=rows.reduce((sum,row)=>sum+Number(row.riders||0),0),completed=rows.filter(row=>row.return_time),minutes=completed.reduce((sum,row)=>sum+(durationMins(row.depart_time,row.return_time)||0),0);
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(838,summaryY+12,332,summaryH,22);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 22px Arial';ctx.fillText('TOTAL RIDERS',1004,summaryY+49);ctx.font='bold 48px Arial';ctx.fillText(String(riders),1004,summaryY+96);
@@ -2203,7 +2203,7 @@ async function createReportBlob(list,titleText){
  // Reference-style department/date panel and total-count panel directly below the banner.
  ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,infoY,805,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='left';ctx.font='bold 31px Arial';let heading=String(titleText||(dep()?dep().en:'Ticket Report'));if(heading.length>34)heading=heading.slice(0,33)+'…';ctx.fillText(heading,60,infoY+49);
- ctx.fillStyle='#63758b';ctx.font='24px Arial';ctx.fillText('Daily Ticket Report · '+new Date().toLocaleDateString(),60,infoY+94);
+ ctx.fillStyle='#63758b';ctx.font='24px Arial';ctx.fillText('Daily Ticket Report · '+formatReportDate(new Date()),60,infoY+94);
  const total=items.reduce((s,t)=>s+(Number(t.quantity)||0),0);
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(850,infoY,320,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 25px Arial';ctx.fillText('TOTAL TICKETS',1010,infoY+43);ctx.font='bold 66px Arial';ctx.fillText(String(total),1010,infoY+110);
@@ -2327,7 +2327,7 @@ async function renderPayroll(){
    const label=d.status==='work'?'Work day':d.status==='off'?'Day off':'Not marked';
    const cardBg=d.status==='off'?'rgba(224,68,82,.14)':'var(--panel2,#102b45)';
    const statusColor=d.status==='off'?'#ff6875':d.status==='work'?'#65d6a7':'var(--muted)';
-   return '<label class="payroll-day-card" data-date="'+d.date+'" style="display:block;min-width:0;border:1px solid '+border+';border-radius:10px;padding:7px;background:'+cardBg+'"><span style="display:block;font-weight:700;margin-bottom:4px;font-size:13px">'+new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',weekday:'short'})+'</span><select class="payroll-day" data-date="'+d.date+'" data-saved-status="'+d.status+'" style="width:100%;padding:6px 5px;font-size:12px;min-height:34px"><option value="" '+(!d.status?'selected':'')+'>Not marked</option><option value="work" '+(d.status==='work'?'selected':'')+'>Work day</option><option value="off" '+(d.status==='off'?'selected':'')+'>Day off</option></select><span class="payroll-day-status" style="display:block;font-size:10px;margin-top:3px;color:'+statusColor+';font-weight:'+(d.status==='off'?'700':'500')+'">'+label+'</span></label>';
+   return '<label class="payroll-day-card" data-date="'+d.date+'" style="display:block;min-width:0;border:1px solid '+border+';border-radius:10px;padding:7px;background:'+cardBg+'"><span style="display:block;font-weight:700;margin-bottom:4px;font-size:13px">'+new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'})+' · '+formatReportDate(d.date)+'</span><select class="payroll-day" data-date="'+d.date+'" data-saved-status="'+d.status+'" style="width:100%;padding:6px 5px;font-size:12px;min-height:34px"><option value="" '+(!d.status?'selected':'')+'>Not marked</option><option value="work" '+(d.status==='work'?'selected':'')+'>Work day</option><option value="off" '+(d.status==='off'?'selected':'')+'>Day off</option></select><span class="payroll-day-status" style="display:block;font-size:10px;margin-top:3px;color:'+statusColor+';font-weight:'+(d.status==='off'?'700':'500')+'">'+label+'</span></label>';
   }).join('')+'</div></div>';
   const work=days.filter(x=>x.status==='work').length;
   const off=days.filter(x=>x.status==='off').length;
@@ -2336,7 +2336,7 @@ async function renderPayroll(){
   const detailRows=days.map(d=>{
    const status=d.status==='work'?'Work day':d.status==='off'?'Day off':'Not marked';
    const pay=d.status==='work'?dayRate:0;
-   return '<tr><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+new Date(d.date+'T12:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+status+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line);text-align:right">'+money(pay)+'</td></tr>';
+   return '<tr><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+formatReportDate(d.date)+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+status+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line);text-align:right">'+money(pay)+'</td></tr>';
   }).join('');
   summary.innerHTML='<div class="summary-row"><span>Salary period</span><b>'+start.value+' → '+end.value+'</b></div><div class="summary-row"><span>Work days</span><b>'+work+' / '+days.length+' days</b></div><div class="summary-row"><span>Days off</span><b>'+off+' days</b></div><div class="summary-row"><span>Not marked</span><b>'+unmarked+' days</b></div><div class="summary-row"><span>Daily wage</span><b>'+money(dayRate)+'</b></div><div class="summary-row"><span>Calculation</span><b>'+work+' × '+money(dayRate)+'</b></div><div style="margin-top:12px;padding:14px;border-radius:14px;background:var(--panel2,#102b45);border:1px solid var(--line)"><span class="subtle">Estimated salary</span><div style="font-size:clamp(25px,6vw,34px);font-weight:900;color:var(--gold)">'+money(amount)+'</div></div><details style="margin-top:12px"><summary style="cursor:pointer;font-weight:750;color:var(--gold);padding:8px 0">View daily wage breakdown ('+days.length+' days)</summary><div style="overflow-x:auto"><table style="width:100%;min-width:300px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">Date</th><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">Attendance</th><th style="text-align:right;padding:7px 5px;border-bottom:1px solid var(--line)">Wage</th></tr></thead><tbody>'+detailRows+'</tbody></table></div></details><p class="subtle" style="font-size:12px">Salary is calculated from saved Work day entries only. Day off and unmarked dates are not included.</p>';
  }
@@ -2421,7 +2421,7 @@ async function renderPayroll(){
    y+=24;
    rows.forEach((row,index)=>{
     ctx.fillStyle=index%2?'#0d2942':'#12334f';ctx.fillRect(54,y,width-108,rowHeight);
-    const dateLabel=new Date(row.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    const dateLabel=new Date(row.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'})+' · '+formatReportDate(row.date);
     const statusLabel=row.status==='work'?'Work day':row.status==='off'?'Day off':'Not marked';
     ctx.fillStyle='#edf4fb';ctx.font='22px Arial';ctx.fillText(dateLabel,68,y+35);
     ctx.fillStyle=row.status==='work'?'#69d6a8':row.status==='off'?'#ff6875':'#b8c6d4';ctx.fillText(statusLabel,430,y+35);
@@ -2429,7 +2429,7 @@ async function renderPayroll(){
     y+=rowHeight;
    });
    y+=36;ctx.fillStyle='#f4d58a';ctx.font='bold 30px Arial';ctx.fillText('TOTAL: '+money(total),width-420,y);
-   ctx.fillStyle='#a9bdcf';ctx.font='18px Arial';ctx.fillText('Calculated from Work day entries only · Generated '+new Date().toLocaleString(),54,height-30);
+   ctx.fillStyle='#a9bdcf';ctx.font='18px Arial';ctx.fillText('Calculated from Work day entries only · Generated '+formatReportDate(new Date())+' '+new Date().toLocaleTimeString(),54,height-30);
    const blob=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error('Could not create payroll image')), 'image/png'));
    const url=URL.createObjectURL(blob),link=document.createElement('a');
    link.href=url;link.download='payroll-'+targetUserId.slice(0,8)+'-'+start.value+'-to-'+end.value+'.png';
@@ -2484,7 +2484,7 @@ function renderMonthly(){
    (list.length?departments:'<div class="report-empty">No ticket records were found for this date range.</div>');
   return true;
  };
- const fDate=value=>new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'Asia/Bangkok'}).format(new Date(value+'T12:00:00+07:00'));
+ const fDate=value=>formatReportDate(value);
  document.getElementById('reportDepartment').onchange=report;
  document.getElementById('makeMonthly').onclick=report;
  document.getElementById('downloadMonthly').onclick=async()=>{const list=calc();if(list)await saveReportList(list,'Monthly Ticket Inventory Report')};
