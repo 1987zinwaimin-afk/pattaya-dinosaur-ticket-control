@@ -1422,7 +1422,7 @@ async function saveTrainDeparture(e){e.preventDefault();const departTime=documen
 async function saveTrainReturn(e){e.preventDefault();const id=document.getElementById('trainReturnTrip').value,returnTime=document.getElementById('trainReturnTime').value;if(!id||!returnTime){alert('Please enter the return time for the active train trip.');return}const btn=e.submitter;btn.disabled=true;try{const {error}=await sb.from('train_time_logs').update({return_time:returnTime,updated_by:currentUser.id,updated_at:new Date().toISOString()}).eq('id',id).is('return_time',null);if(error)throw error;document.getElementById('trainReturnForm').reset();await loadTrainData();alert('Train return recorded. You can now record the next departure.')}catch(err){alert('Could not save return: '+(err.message||err))}finally{btn.disabled=false}}
 function populateOpenTrainTrips(){const sel=document.getElementById('trainReturnTrip');if(!sel)return;const open=trainRows.filter(r=>!r.return_time).sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||'')));const chosen=open[0];sel.innerHTML=chosen?'<option value="'+chosen.id+'">'+escapeHtml(fmtDate(chosen.trip_date)+' · '+fmtTime(chosen.depart_time))+'</option>':'';sel.value=chosen?.id||'';const summary=document.getElementById('trainReturnSummary');if(summary)summary.value=chosen?fmtDate(chosen.trip_date)+' · '+fmtTime(chosen.depart_time)+' · '+chosen.riders+' riders · '+chosen.driver_name:'No active departure';const departCard=document.querySelector('.train-depart-card'),returnCard=document.querySelector('.train-return-card');if(departCard)departCard.style.display=chosen?'none':'';if(returnCard)returnCard.style.display=chosen?'':'none';const departForm=document.getElementById('trainDepartForm');if(departForm)departForm.querySelector('button[type="submit"]').disabled=!!chosen}
 function drawTrainStats(){const today=localToday(),rows=trainRows.filter(r=>r.trip_date===today),riders=rows.reduce((s,r)=>s+Number(r.riders||0),0),mins=rows.reduce((s,r)=>s+(durationMins(r.depart_time,r.return_time)||0),0);const a=document.getElementById('trainToday'),b=document.getElementById('trainRiders'),c=document.getElementById('trainDuration');if(a)a.textContent=rows.length;if(b)b.textContent=riders.toLocaleString();if(c)c.textContent=Math.floor(mins/60)+'h '+String(mins%60).padStart(2,'0')+'m'}
-function drawTrainHistory(){const body=document.getElementById('trainHistory');if(!body)return;const q=(document.getElementById('trainSearch')?.value||'').toLowerCase(),date=document.getElementById('trainFilterDate')?.value||'';const rows=trainRows.filter(r=>(!date||r.trip_date===date)&&(!q||[r.driver_name,r.trip_date,r.depart_time,r.return_time,r.riders].some(v=>String(v??'').toLowerCase().includes(q))));body.innerHTML=rows.length?rows.map((r,i)=>{const mins=durationMins(r.depart_time,r.return_time);return '<tr><td>'+String(i+1)+'</td><td><span style="color:#6ee7a8">'+fmtTime(r.depart_time)+'</span></td><td><span style="color:#ff8795">'+fmtTime(r.return_time)+'</span></td><td>'+r.riders+'</td><td>'+escapeHtml(r.driver_name)+'</td><td>'+(mins===null?'In progress':mins+' min')+'</td><td>'+fmtDate(r.trip_date)+'</td><td><div class="actions" style="gap:4px"><button type="button" data-train-edit="'+r.id+'" class="blue">✎</button><button type="button" data-train-delete="'+r.id+'" class="danger">🗑</button></div></td></tr>'}).join(''):'<tr><td colspan="8" class="subtle">No train records found.</td></tr>';body.querySelectorAll('[data-train-edit]').forEach(b=>b.onclick=()=>editTrainRow(b.dataset.trainEdit));body.querySelectorAll('[data-train-delete]').forEach(b=>b.onclick=()=>deleteTrainRow(b.dataset.trainDelete))}
+function drawTrainHistory(){const body=document.getElementById('trainHistory');if(!body)return;const q=(document.getElementById('trainSearch')?.value||'').toLowerCase(),date=document.getElementById('trainFilterDate')?.value||'';const rows=trainRows.filter(r=>(!date||r.trip_date===date)&&(!q||[r.driver_name,r.trip_date,r.depart_time,r.return_time,r.riders].some(v=>String(v??'').toLowerCase().includes(q))));body.innerHTML=rows.length?rows.map((r,i)=>{const mins=durationMins(r.depart_time,r.return_time);return '<tr><td>'+String(i+1)+'</td><td><span style="color:#6ee7a8">'+fmtTime(r.depart_time)+'</span></td><td><span style="color:#ff8795">'+fmtTime(r.return_time)+'</span></td><td>'+r.riders+'</td><td>'+escapeHtml(r.driver_name)+'</td><td>'+(mins===null?reportText('In progress','กำลังดำเนินการ'):mins+' '+reportText('min','นาที'))+'</td><td>'+fmtDate(r.trip_date)+'</td><td><div class="actions" style="gap:4px"><button type="button" data-train-edit="'+r.id+'" class="blue">✎</button><button type="button" data-train-delete="'+r.id+'" class="danger">🗑</button></div></td></tr>'}).join(''):'<tr><td colspan="8" class="subtle">'+reportText('No train records found.','ไม่พบข้อมูลรถไฟ')+'</td></tr>';body.querySelectorAll('[data-train-edit]').forEach(b=>b.onclick=()=>editTrainRow(b.dataset.trainEdit));body.querySelectorAll('[data-train-delete]').forEach(b=>b.onclick=()=>deleteTrainRow(b.dataset.trainDelete))}
 async function editTrainRow(id){const r=trainRows.find(x=>x.id===id);if(!r)return;const depart=prompt('Departure time (HH:MM)',fmtTime(r.depart_time));if(depart===null)return;const back=prompt('Return time (HH:MM, blank if not returned)',fmtTime(r.return_time)==='—'?'':fmtTime(r.return_time));if(back===null)return;const riders=prompt('Number of riders',String(r.riders));if(riders===null)return;const driver=prompt('Driver name',r.driver_name);if(driver===null)return;const date=prompt('Trip date (YYYY-MM-DD)',r.trip_date);if(date===null)return;if(!/^\d{2}:\d{2}$/.test(depart)|| (back&&!/^\d{2}:\d{2}$/.test(back))||!Number.isInteger(Number(riders))||Number(riders)<0||!driver.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert('Please check the time, date, rider count and driver name.');return}const {error}=await sb.from('train_time_logs').update({depart_time:depart,return_time:back||null,riders:Number(riders),driver_name:driver.trim(),trip_date:date,updated_by:currentUser.id,updated_at:new Date().toISOString()}).eq('id',id);if(error){alert('Edit failed: '+error.message);return}await loadTrainData()}
 async function deleteTrainRow(id){if(!confirm('Delete this train trip record?'))return;const {error}=await sb.from('train_time_logs').delete().eq('id',id);if(error){alert('Delete failed: '+error.message);return}await loadTrainData()}
 
@@ -1757,7 +1757,7 @@ async function renderPayroll(){
  const iso=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
  const money=n=>'฿'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
  const signedInStaffName=(document.getElementById('authName')?.value||'Staff').trim();
- root.innerHTML='<div class="report-page"><section class="panel"><div class="report-heading"><div><h2>'+esc(signedInStaffName)+' · Staff Payroll</h2></div><span class="report-icon">฿</span></div>'+
+ root.innerHTML='<div class="report-page"><section class="panel"><div class="report-heading"><div><h2>'+esc(signedInStaffName)+' · '+reportText('Staff Payroll','เงินเดือนพนักงาน')+'</h2></div><span class="report-icon">฿</span></div>'+
  (owner?'<label for="payrollPerson">Staff / Owner account</label><select id="payrollPerson" style="width:100%;margin:6px 0 14px"><option value="'+esc(currentUser.id)+'">My Owner Payroll</option></select>':'')+
  '<div class="report-filters"><label>'+reportText('Salary period start','วันเริ่มรอบเงินเดือน')+'<input type="date" id="payrollStart" value="'+iso(defaultStart)+'"></label><label>'+reportText('Salary closing date','วันสิ้นสุดรอบเงินเดือน')+'<input type="date" id="payrollEnd" value="'+iso(defaultEnd)+'"></label></div>'+
  '<div id="payrollRateWrap" style="margin:12px 0"><label for="payrollRate">'+reportText('Daily wage (THB)','ค่าจ้างรายวัน (บาท)')+'</label><input id="payrollRate" type="number" min="0" step="0.01" placeholder="Set by Owner" style="width:100%"></div>'+
@@ -1801,12 +1801,12 @@ async function renderPayroll(){
   rate.readOnly=false;rate.disabled=false;
   start.disabled=!owner;end.disabled=!owner;
   document.getElementById('savePayrollSettings').style.display='inline-flex';
-  document.getElementById('savePayrollSettings').textContent=owner?'Save salary settings':'Save my daily wage';
-  document.getElementById('payrollRateWrap').querySelector('label').textContent=owner?'Daily wage (THB)':'My daily wage (THB)';
-  rate.placeholder=owner?'Enter daily wage':'Enter your daily wage (THB)';
+  document.getElementById('savePayrollSettings').textContent=owner?reportText('Save salary settings','บันทึกการตั้งค่าเงินเดือน'):reportText('Save my daily wage','บันทึกค่าจ้างรายวัน');
+  document.getElementById('payrollRateWrap').querySelector('label').textContent=owner?reportText('Daily wage (THB)','ค่าจ้างรายวัน (บาท)'):reportText('My daily wage (THB)','ค่าจ้างรายวันของฉัน (บาท)');
+  rate.placeholder=owner?reportText('Enter daily wage','กรอกค่าจ้างรายวัน'):reportText('Enter your daily wage (THB)','กรอกค่าจ้างรายวันของคุณ (บาท)');
   if(!start.value||!end.value||start.value>end.value){
-   calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';
-   summary.textContent='Choose a valid start date and closing date.';
+   calendar.innerHTML='<p class="auth-error">'+reportText('Please select a valid salary period.','กรุณาเลือกช่วงเงินเดือนที่ถูกต้อง')+'</p>';
+   summary.textContent=reportText('Choose a valid start date and closing date.','กรุณาเลือกวันเริ่มต้นและวันสิ้นสุดที่ถูกต้อง');
    return;
   }
   const {data:rows,error}=await sb.from('payroll_attendance').select('work_date,status,note').eq('user_id',targetUserId).gte('work_date',start.value).lte('work_date',end.value).order('work_date');
@@ -1856,12 +1856,12 @@ async function renderPayroll(){
    const off=value==='off',work=value==='work';
    card.style.borderColor=off?'#e04452':work?'#269b72':'var(--line)';
    card.style.background=off?'rgba(224,68,82,.14)':'var(--panel2,#102b45)';
-   if(statusLabel){statusLabel.textContent=work?'Work day':off?'Day off':'Not marked';statusLabel.style.color=off?'#ff6875':work?'#65d6a7':'var(--muted)';statusLabel.style.fontWeight=off?'700':'500'}
+   if(statusLabel){statusLabel.textContent=work?reportText('Work day','วันทำงาน'):off?reportText('Day off','วันหยุด'):reportText('Not marked','ยังไม่ได้ระบุ');statusLabel.style.color=off?'#ff6875':work?'#65d6a7':'var(--muted)';statusLabel.style.fontWeight=off?'700':'500'}
   };
   paintStatus(status);
   pendingAttendanceSaves++;lastAttendanceSaveError=null;
   const statusNode=document.getElementById('payrollAutoSaveStatus');
-  if(statusNode)statusNode.textContent='Saving '+workDate+'…';
+  if(statusNode)statusNode.textContent=reportText('Saving ','กำลังบันทึก ')+formatReportDate(workDate)+'…';
   attendanceQueue=attendanceQueue.then(async()=>{
    if(status){
     const {error}=await sb.from('payroll_attendance').upsert({user_id:saveForUser,work_date:workDate,status,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:'user_id,work_date'});
@@ -1875,13 +1875,13 @@ async function renderPayroll(){
    select.dataset.savedStatus=status;
   }).then(async()=>{
    pendingAttendanceSaves=Math.max(0,pendingAttendanceSaves-1);
-   if(statusNode)statusNode.textContent='✓ Saved '+workDate+' automatically';
+   if(statusNode)statusNode.textContent='✓ '+reportText('Saved ','บันทึกแล้ว ')+formatReportDate(workDate)+reportText(' automatically',' อัตโนมัติ');
    if(pendingAttendanceSaves===0)await load();
   }).catch(async error=>{
    lastAttendanceSaveError=error;
    pendingAttendanceSaves=Math.max(0,pendingAttendanceSaves-1);
    select.value=oldStatus;paintStatus(oldStatus);
-   if(statusNode)statusNode.textContent='Save failed for '+workDate+': '+error.message;
+   if(statusNode)statusNode.textContent=reportText('Save failed for ','บันทึกไม่สำเร็จสำหรับ ')+formatReportDate(workDate)+': '+error.message;
    if(pendingAttendanceSaves===0)await load().catch(()=>{});
   });
  });
@@ -1936,8 +1936,8 @@ async function renderPayroll(){
   finally{button.disabled=false;button.textContent=reportText('Save monthly payroll image','บันทึกรายงานเงินเดือนประจำเดือน')}
  };
  document.getElementById('refreshPayroll').onclick=()=>load().catch(e=>alert(e.message));
- start.onchange=async()=>{await attendanceQueue;if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
- end.onchange=async()=>{await attendanceQueue;if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">Please select a valid salary period.</p>';summary.textContent='Choose a valid start date and closing date.'}};
+ start.onchange=async()=>{await attendanceQueue;if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">'+reportText('Please select a valid salary period.','กรุณาเลือกช่วงเงินเดือนที่ถูกต้อง')+'</p>';summary.textContent='Choose a valid start date and closing date.'}};
+ end.onchange=async()=>{await attendanceQueue;if(start.value&&end.value&&start.value<=end.value)load().catch(e=>alert(e.message));else{calendar.innerHTML='<p class="auth-error">'+reportText('Please select a valid salary period.','กรุณาเลือกช่วงเงินเดือนที่ถูกต้อง')+'</p>';summary.textContent='Choose a valid start date and closing date.'}};
  if(owner)document.getElementById('payrollPerson').onchange=async()=>{await attendanceQueue;load().catch(e=>alert(e.message))};
  try{await load()}catch(e){calendar.innerHTML='<p class="auth-error">Could not load payroll: '+esc(e.message)+'</p>';summary.textContent='Please refresh and try again.'}
 }
