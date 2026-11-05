@@ -2440,7 +2440,8 @@ function renderMonthly(){
  let requestNo=0,lastReportData=null;
  const calc=async()=>{
   const selected=month.value;
-  if(!selected||selected.length!==7||selected[4]!=='-'||!/^\\d{4}$/.test(selected.slice(0,4))||!/^\\d{2}$/.test(selected.slice(5,7))||Number(selected.slice(5,7))<1||Number(selected.slice(5,7))>12){error.textContent=reportText('Please select a valid month.','ကျေးဇူးပြု၍ မှန်ကန်သောလကိုရွေးချယ်ပါ');return null}
+  const digitsOnly=value=>value.length>0&&Array.from(value).every(ch=>ch>='0'&&ch<='9');
+  if(!selected||selected.length!==7||selected[4]!=='-'||!digitsOnly(selected.slice(0,4))||!digitsOnly(selected.slice(5,7))||Number(selected.slice(5,7))<1||Number(selected.slice(5,7))>12){error.textContent=reportText('Please select a valid month.','ကျေးဇူးပြု၍ မှန်ကန်သောလကိုရွေးချယ်ပါ');return null}
   const [year,monthNumber]=selected.split('-').map(Number);
   const first=new Date(year,monthNumber-1,1),last=new Date(year,monthNumber,0);
   const f=first.getFullYear()+'-'+String(first.getMonth()+1).padStart(2,'0')+'-'+String(first.getDate()).padStart(2,'0');
