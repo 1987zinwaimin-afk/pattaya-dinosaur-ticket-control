@@ -1746,6 +1746,31 @@ async function exportTrainCsv(){try{const blob=await createTrainReportBlob();if(
 async function shareTrainReport(){try{const blob=await createTrainReportBlob();if(!blob)throw new Error('Could not create report image');const selection=getTrainReportSelection(),file=new File([blob],'train-time-'+selection.mode+'-'+selection.period+'.png',{type:'image/png'});if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Train Time '+(selection.mode==='monthly'?'Monthly':'Daily')+' Report'});return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);alert('PNG report downloaded. Open the downloaded image and save it to Gallery/Photos.')}catch(e){if(e.name!=='AbortError')alert('Could not save/share train report image: '+(e.message||e))}}
 function exportTrainCsvData(){const rows=getTrainReportSelection().rows,data=[[reportText('No','ลำดับ'),reportText('Date','วันที่'),reportText('Depart Time','เวลาออกรถ'),reportText('Return Time','เวลากลับรถ'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration minutes','ระยะเวลา (นาที)')],...rows.map((r,i)=>[i+1,r.trip_date,fmtTime(r.depart_time),fmtTime(r.return_time),r.riders,r.driver_name,durationMins(r.depart_time,r.return_time)??''])];const csv=data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='train-time-report-'+getTrainReportSelection().period+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function updateTrainReportMode(){const mode=document.getElementById('trainReportMode')?.value||'daily',date=document.getElementById('trainReportDateWrap'),month=document.getElementById('trainReportMonthWrap');if(date)date.style.display=mode==='daily'?'':'none';if(month)month.style.display=mode==='monthly'?'':'none'}
+let dailySalesAutosaveTimer=null,dailySalesAutosaveBusy=false;
+async function captureDailyTicketSales(){
+ if(!currentUser||!cloudReady||!navigator.onLine||dailySalesAutosaveBusy)return null;
+ dailySalesAutosaveBusy=true;
+ try{
+  const {data,error}=await sb.rpc('capture_daily_ticket_sales');
+  if(error)throw error;
+  return data;
+ }catch(e){
+  console.warn('Daily ticket sales autosave will retry:',e);
+  return null;
+ }finally{dailySalesAutosaveBusy=false}
+}
+function dailySalesVisibilityHandler(){
+ if(document.visibilityState==='visible')captureDailyTicketSales();
+}
+function startDailySalesAutosave(){
+ if(dailySalesAutosaveTimer)clearInterval(dailySalesAutosaveTimer);
+ captureDailyTicketSales();
+ dailySalesAutosaveTimer=setInterval(captureDailyTicketSales,60000);
+ window.removeEventListener('online',captureDailyTicketSales);
+ window.addEventListener('online',captureDailyTicketSales);
+ document.removeEventListener('visibilitychange',dailySalesVisibilityHandler);
+ document.addEventListener('visibilitychange',dailySalesVisibilityHandler);
+}
 function cloudRowForTicket(t){
  return {id:t.id,department:t.department,name:t.name,price:t.price??null,quantity:Number(t.quantity||0),image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()};
 }
@@ -1770,7 +1795,7 @@ async function syncTickets(snapshot){
  try{
   while(syncPending){
    const next=syncPending;syncPending=null;
-   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);lastCloudFingerprint='';const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';}
+   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);await captureDailyTicketSales();lastCloudFingerprint='';const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';}
   }
  }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));syncPending=syncPending||snapshot;setTimeout(()=>{if(!syncBusy&&syncPending)syncTickets(syncPending)},3000);}
  finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
@@ -1838,7 +1863,7 @@ async function loadCloud(){
    cloudRows=reloaded||[];
   }
  }
- tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));const syncBanner=document.getElementById('cloudSyncStatus');if(syncBanner)syncBanner.style.display='none';lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();
+ tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));const syncBanner=document.getElementById('cloudSyncStatus');if(syncBanner)syncBanner.style.display='none';lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();startDailySalesAutosave();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
@@ -2434,7 +2459,7 @@ function renderMonthly(){
   '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+tr('report')+'</button><button id="downloadMonthly" class="report-secondary">⇩ '+reportText('Save image','บันทึกภาพ')+'</button><button class="blue" id="shareMonthly">↗ '+reportText('Share report','แชร์รายงาน')+'</button></div>'+
   '<p id="monthlyError" class="report-error" role="alert" aria-live="polite"></p></section>'+
   '<section id="monthlyResults" class="report-results" aria-live="polite"></section>'+
-  '<p class="report-footnote">'+reportText('This report uses saved daily sales records. The current day appears after its daily record is saved.','ဤအစီရင်ခံစာသည် သိမ်းဆည်းထားသော နေ့စဉ်ရောင်းချမှုမှတ်တမ်းများကို အသုံးပြုသည်။ ယနေ့စာရင်းကို နေ့စဉ်မှတ်တမ်းသိမ်းပြီးနောက် ပြသမည်။')+'</p>'+
+  '<p class="report-footnote">'+reportText('Daily sales are saved automatically and refreshed during the day. Current-month reports include today through the latest saved snapshot.','နေ့စဉ်ရောင်းအားကို အလိုအလျောက်သိမ်းဆည်းပြီး နေ့အတွင်း ပြန်လည်မွမ်းမံသည်။ လက်ရှိလအစီရင်ခံစာတွင် ယနေ့အထိ နောက်ဆုံးသိမ်းထားသောစာရင်း ပါဝင်သည်။')+'</p>'+
  '</div>';
  const month=document.getElementById('reportMonth'),results=document.getElementById('monthlyResults'),error=document.getElementById('monthlyError');
  let requestNo=0,lastReportData=null;
@@ -2444,10 +2469,14 @@ function renderMonthly(){
   if(!selected||selected.length!==7||selected[4]!=='-'||!digitsOnly(selected.slice(0,4))||!digitsOnly(selected.slice(5,7))||Number(selected.slice(5,7))<1||Number(selected.slice(5,7))>12){error.textContent=reportText('Please select a valid month.','ကျေးဇူးပြု၍ မှန်ကန်သောလကိုရွေးချယ်ပါ');return null}
   const [year,monthNumber]=selected.split('-').map(Number);
   const first=new Date(year,monthNumber-1,1),last=new Date(year,monthNumber,0);
+  const today=localToday(),currentMonth=today.slice(0,7);
+  if(selected>currentMonth){error.textContent=reportText('Future months cannot be reported yet.','အနာဂတ်လများအတွက် အစီရင်ခံစာ မထုတ်နိုင်သေးပါ');return null}
+  const reportEnd=selected===currentMonth?new Date(Number(today.slice(0,4)),Number(today.slice(5,7))-1,Number(today.slice(8,10))):last;
   const f=first.getFullYear()+'-'+String(first.getMonth()+1).padStart(2,'0')+'-'+String(first.getDate()).padStart(2,'0');
-  const t=last.getFullYear()+'-'+String(last.getMonth()+1).padStart(2,'0')+'-'+String(last.getDate()).padStart(2,'0');
+  const t=reportEnd.getFullYear()+'-'+String(reportEnd.getMonth()+1).padStart(2,'0')+'-'+String(reportEnd.getDate()).padStart(2,'0');
   error.textContent='';
   const dept=document.getElementById('reportDepartment')?.value||'all';
+  await captureDailyTicketSales();
   const {data,error:dbError}=await sb.from('ticket_daily_sales').select('business_date,ticket_id,department,ticket_name,unit_price,quantity,total_amount').gte('business_date',f).lte('business_date',t).order('business_date',{ascending:true});
   if(dbError)throw dbError;
   const list=(data||[]).filter(x=>dept==='all'||x.department===dept).map(x=>({id:x.ticket_id,department:x.department,name:x.ticket_name,price:x.unit_price,quantity:Number(x.quantity)||0,amount:Number(x.total_amount)||0,businessDate:x.business_date}));
