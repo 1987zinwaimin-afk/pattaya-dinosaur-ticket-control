@@ -1761,6 +1761,25 @@ body.theme-light #side select option{
  #pageContent .actions.ticket-toolbar.playing-toolbar,
  #pageContent .actions.ticket-toolbar.event-toolbar{grid-template-columns:minmax(140px,1fr) minmax(170px,1.2fr) repeat(2,58px)!important}
 }
+
+/* Override legacy inline grid sizing: force every department toolbar into one clean row */
+#pageContent .actions.ticket-toolbar.sale-toolbar,
+#pageContent .actions.ticket-toolbar.entry-toolbar{
+ grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) repeat(3,52px)!important;
+ grid-auto-flow:column!important;
+}
+#pageContent .actions.ticket-toolbar.playing-toolbar,
+#pageContent .actions.ticket-toolbar.event-toolbar{
+ grid-template-columns:minmax(0,1fr) minmax(0,1.12fr) repeat(2,52px)!important;
+ grid-auto-flow:column!important;
+}
+#pageContent .actions.ticket-toolbar > button{grid-column:auto!important;grid-row:1!important}
+@media(max-width:380px){
+ #pageContent .actions.ticket-toolbar.sale-toolbar,
+ #pageContent .actions.ticket-toolbar.entry-toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1.08fr) repeat(3,44px)!important}
+ #pageContent .actions.ticket-toolbar.playing-toolbar,
+ #pageContent .actions.ticket-toolbar.event-toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1.08fr) repeat(2,44px)!important}
+}
 </style>
 </head>
 <body>
