@@ -1635,7 +1635,7 @@ async function loadTrainData(showAlert=false){
   const delay=Math.min(1500*trainLoadRetryCount,7000);
   setTimeout(()=>{
    const body=document.getElementById('trainHistory');
-   if(body&&!document.hidden)loadTrainData(false);
+   if(body&&document.visibilityState==='visible'&&page==='train')loadTrainData(false);
   },delay);
   if(showAlert)alert('Garden Train records are not reachable yet. The page will keep trying automatically. '+(e.message||e));
  }finally{
@@ -1791,9 +1791,10 @@ function listenRealtime(){
  if(cloudChannel)sb.removeChannel(cloudChannel);
  cloudChannel=sb.channel('ticket-control-live-'+(currentUser?.id||'session'))
   .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{await refreshCloudTickets(true)})
-  .subscribe(status=>{console.log('Ticket realtime status:',status)});
+  .on('postgres_changes',{event:'*',schema:'public',table:'train_time_logs'},async()=>{if(page==='train')await loadTrainData(false)})
+  .subscribe(status=>{console.log('Ticket and Garden Train realtime status:',status)});
  if(cloudPollTimer)clearInterval(cloudPollTimer);
- cloudPollTimer=setInterval(()=>refreshCloudTickets(false),1500);
+ cloudPollTimer=setInterval(()=>{refreshCloudTickets(false);if(page==='train'&&document.visibilityState==='visible'&&!trainLoading)loadTrainData(false)},5000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshCloudTickets(true)});
  window.addEventListener('focus',()=>refreshCloudTickets(true));
 }
@@ -2024,6 +2025,9 @@ function handleStaffAppForeground(){
  if(document.visibilityState!=='visible')return;
  if(!currentUser){restoreSavedSession();return}
  if(currentRole!=='staff')return;
+ // Mobile browsers may suspend the first retry while the tab is backgrounded.
+ // Always reload Garden Train records when the Staff app returns to the foreground.
+ if(page==='train'&&document.getElementById('trainHistory'))loadTrainData(false);
  const now=Date.now();
  if(now-staffForegroundNotificationAt<15000)return;
  staffForegroundNotificationAt=now;
