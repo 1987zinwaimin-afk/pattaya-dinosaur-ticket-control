@@ -1377,6 +1377,67 @@ body.theme-light button:focus-visible,body.theme-light input:focus-visible,body.
 @media(max-width:380px){.app-datetime{padding:9px 11px;gap:8px}.app-datetime-caption{font-size:8px}.app-datetime-date span:last-child,.app-datetime-zone{font-size:9px}}
 
 #appWeekdayValue.is-holiday{color:#ff777f!important;font-weight:800!important}#appWeekdayValue.is-special{color:#f2c66d!important;font-weight:800!important}.app-holiday-label{display:block;max-width:280px;margin-top:3px;font-size:10px;line-height:1.3;color:#f2c66d;font-weight:750;overflow-wrap:anywhere}.app-holiday-label.is-holiday{color:#ff777f!important}.app-holiday-label.is-special{color:#f2c66d!important}
+
+/* 2026-11 compact responsive layout: shared Owner and Staff page spacing */
+.wrap{padding:12px 12px 30px}
+.wrap>*{min-width:0}
+.stats{gap:8px;margin:10px 0 12px}
+.stat,.panel{padding:11px;border-radius:16px}
+.stat span{font-size:.78rem;line-height:1.25}
+.stat strong{font-size:1.18rem;margin-top:3px}
+.actions{gap:7px;margin:9px 0 11px}
+.actions button{padding:9px 6px;min-height:44px;border-radius:12px}
+.search{margin:9px 0 12px}
+.search input,.search input[type=search]{min-height:48px;padding:10px 13px;border-radius:13px}
+.cards{gap:9px}
+.ticket{border-radius:15px}
+.ticket img{height:clamp(92px,25vw,132px)}
+.ticket .placeholder{height:clamp(92px,25vw,120px)}
+.ticket-body{padding:10px}
+.ticket h3{font-size:1rem;line-height:1.25;margin:0 0 5px}
+.price{font-size:.9rem;padding:5px 9px;margin:1px 0 7px;border-radius:9px}
+.soldrow{font-size:.86rem;margin:5px 0;gap:4px}
+.qty{font-size:1rem;padding:9px 10px}
+.ticket-actions{gap:6px;margin-top:8px}
+.ticket-actions button{padding:8px 7px;font-size:.84rem;line-height:1.15;border-radius:11px}
+.section-title{gap:8px}
+.section-title h2{font-size:1.1rem;margin:8px 0}
+.summary-row{padding:9px 3px}
+label{font-size:.84rem;margin:8px 0 4px}
+input,select{padding:10px 11px;border-radius:10px}
+.modal{padding:12px}
+.modalbox{padding:15px;border-radius:17px}
+.side{padding:16px 12px}
+.side h2{margin:8px 7px 14px}
+.nav{gap:7px}
+.nav button{min-height:48px;padding:10px 12px;border-radius:13px}
+.notice{padding:9px 11px;margin-bottom:10px;border-radius:12px}
+.empty{padding:28px 14px}
+@media(max-width:520px){
+ .wrap{padding:9px 10px 24px}
+ .stats{gap:6px;margin:8px 0 10px}
+ .stat,.panel{padding:9px;border-radius:14px}
+ .stat span{font-size:.72rem}
+ .stat strong{font-size:1.05rem}
+ .actions{gap:6px;margin:8px 0 10px}
+ .actions button{min-height:42px;padding:8px 4px;font-size:11.5px}
+ .cards{gap:8px}
+ .ticket img{height:clamp(86px,24vw,116px)}
+ .ticket-body{padding:9px}
+ .ticket h3{font-size:.94rem}
+ .price{font-size:.84rem;padding:5px 8px;margin-bottom:6px}
+ .soldrow{font-size:.78rem}
+ .qty{font-size:.94rem;padding:8px}
+ .ticket-actions button{font-size:.78rem;padding:7px 5px}
+ .search{margin:8px 0 10px}
+}
+@media(min-width:760px){
+ .wrap{padding:16px 16px 34px}
+ .stats{margin:12px 0 14px}
+ .cards{gap:12px}
+ .ticket img{height:145px}
+}
+
 </style>
 </head>
 <body>
