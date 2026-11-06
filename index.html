@@ -2084,6 +2084,67 @@ body.theme-light #side select option{
  #pageContent[data-ui-page="train"] .train-row-actions{gap:2px!important}
  #pageContent[data-ui-page="train"] .train-row-actions button{min-width:25px!important;width:25px!important;height:27px!important;min-height:27px!important;padding:2px!important;font-size:10px!important}
 }
+/* 2026-11 compact responsive layout: shared Owner and Staff page spacing */
+.wrap{padding:12px 12px 30px}
+.wrap>*{min-width:0}
+.stats{gap:8px;margin:10px 0 12px}
+.stat,.panel{padding:11px;border-radius:16px}
+.stat span{font-size:.78rem;line-height:1.25}
+.stat strong{font-size:1.18rem;margin-top:3px}
+.actions{gap:7px;margin:9px 0 11px}
+.actions button{padding:9px 6px;min-height:44px;border-radius:12px}
+.search{margin:9px 0 12px}
+.search input,.search input[type=search]{min-height:48px;padding:10px 13px;border-radius:13px}
+.cards{gap:9px}
+.ticket{border-radius:15px}
+.ticket img{height:clamp(92px,25vw,132px)}
+.ticket .placeholder{height:clamp(92px,25vw,120px)}
+.ticket-body{padding:10px}
+.ticket h3{font-size:1rem;line-height:1.25;margin:0 0 5px}
+.price{font-size:.9rem;padding:5px 9px;margin:1px 0 7px;border-radius:9px}
+.soldrow{font-size:.86rem;margin:5px 0;gap:4px}
+.qty{font-size:1rem;padding:9px 10px}
+.ticket-actions{gap:6px;margin-top:8px}
+.ticket-actions button{padding:8px 7px;font-size:.84rem;line-height:1.15;border-radius:11px}
+.section-title{gap:8px}
+.section-title h2{font-size:1.1rem;margin:8px 0}
+.summary-row{padding:9px 3px}
+label{font-size:.84rem;margin:8px 0 4px}
+input,select{padding:10px 11px;border-radius:10px}
+.modal{padding:12px}
+.modalbox{padding:15px;border-radius:17px}
+.side{padding:16px 12px}
+.side h2{margin:8px 7px 14px}
+.nav{gap:7px}
+.nav button{min-height:48px;padding:10px 12px;border-radius:13px}
+.notice{padding:9px 11px;margin-bottom:10px;border-radius:12px}
+.empty{padding:28px 14px}
+@media(max-width:520px){
+ .wrap{padding:9px 10px 24px}
+ .stats{gap:6px;margin:8px 0 10px}
+ .stat,.panel{padding:9px;border-radius:14px}
+ .stat span{font-size:.72rem}
+ .stat strong{font-size:1.05rem}
+ .actions{gap:6px;margin:8px 0 10px}
+ .actions button{min-height:42px;padding:8px 4px;font-size:11.5px}
+ .cards{gap:8px}
+ .ticket img{height:clamp(86px,24vw,116px)}
+ .ticket-body{padding:9px}
+ .ticket h3{font-size:.94rem}
+ .price{font-size:.84rem;padding:5px 8px;margin-bottom:6px}
+ .soldrow{font-size:.78rem}
+ .qty{font-size:.94rem;padding:8px}
+ .ticket-actions button{font-size:.78rem;padding:7px 5px}
+ .search{margin:8px 0 10px}
+}
+@media(min-width:760px){
+ .wrap{padding:16px 16px 34px}
+ .stats{margin:12px 0 14px}
+ .cards{gap:12px}
+ .ticket img{height:145px}
+}
+
+
 </style>
 </head>
 <body>
@@ -3071,66 +3132,6 @@ function monthlyReportBuildHtml(data){
  return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Monthly Ticket Sales Report</title><style>'+
  '@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font:12px/1.45 Arial,sans-serif;color:#14263a;margin:0;background:#fff}header{padding:22px 24px;background:#10243a;color:#fff;border-bottom:5px solid #d8b56d}header h1{font-size:24px;margin:0 0 5px;color:#f3d58c}header p{margin:0;color:#e7edf4}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.kpi{border:1px solid #d8b56d;border-radius:9px;padding:12px}.kpi span{display:block;color:#64748b;font-size:10px}.kpi b{display:block;font-size:20px;margin-top:4px;color:#10243a}.day{margin:18px 0;page-break-inside:avoid}.day h2{font-size:14px;margin:0 0 7px;padding:8px 10px;background:#edf3f8;border-left:4px solid #d8b56d}.day h2 small{float:right;font-size:11px;color:#41566d;font-weight:normal}table{width:100%;border-collapse:collapse;font-size:10px}th,td{padding:6px 7px;border:1px solid #d7e0e8;text-align:left}thead th{background:#10243a;color:#fff}tfoot th{background:#f5e8c7;color:#10243a}.num{text-align:right;white-space:nowrap}.empty{text-align:center;color:#64748b;padding:10px}.monthly{page-break-before:always}.monthly h2{font-size:18px;color:#10243a;border-bottom:2px solid #d8b56d;padding-bottom:7px}.grand{margin:14px 0;padding:14px;background:#10243a;color:#fff;border-radius:8px;display:flex;justify-content:space-between;font-size:15px}.foot{margin-top:18px;color:#64748b;font-size:9px;text-align:center}@media print{.no-print{display:none!important}.day{break-inside:avoid}thead{display:table-header-group}tr{break-inside:avoid}}'+
  '
-/* 2026-11 compact responsive layout: shared Owner and Staff page spacing */
-.wrap{padding:12px 12px 30px}
-.wrap>*{min-width:0}
-.stats{gap:8px;margin:10px 0 12px}
-.stat,.panel{padding:11px;border-radius:16px}
-.stat span{font-size:.78rem;line-height:1.25}
-.stat strong{font-size:1.18rem;margin-top:3px}
-.actions{gap:7px;margin:9px 0 11px}
-.actions button{padding:9px 6px;min-height:44px;border-radius:12px}
-.search{margin:9px 0 12px}
-.search input,.search input[type=search]{min-height:48px;padding:10px 13px;border-radius:13px}
-.cards{gap:9px}
-.ticket{border-radius:15px}
-.ticket img{height:clamp(92px,25vw,132px)}
-.ticket .placeholder{height:clamp(92px,25vw,120px)}
-.ticket-body{padding:10px}
-.ticket h3{font-size:1rem;line-height:1.25;margin:0 0 5px}
-.price{font-size:.9rem;padding:5px 9px;margin:1px 0 7px;border-radius:9px}
-.soldrow{font-size:.86rem;margin:5px 0;gap:4px}
-.qty{font-size:1rem;padding:9px 10px}
-.ticket-actions{gap:6px;margin-top:8px}
-.ticket-actions button{padding:8px 7px;font-size:.84rem;line-height:1.15;border-radius:11px}
-.section-title{gap:8px}
-.section-title h2{font-size:1.1rem;margin:8px 0}
-.summary-row{padding:9px 3px}
-label{font-size:.84rem;margin:8px 0 4px}
-input,select{padding:10px 11px;border-radius:10px}
-.modal{padding:12px}
-.modalbox{padding:15px;border-radius:17px}
-.side{padding:16px 12px}
-.side h2{margin:8px 7px 14px}
-.nav{gap:7px}
-.nav button{min-height:48px;padding:10px 12px;border-radius:13px}
-.notice{padding:9px 11px;margin-bottom:10px;border-radius:12px}
-.empty{padding:28px 14px}
-@media(max-width:520px){
- .wrap{padding:9px 10px 24px}
- .stats{gap:6px;margin:8px 0 10px}
- .stat,.panel{padding:9px;border-radius:14px}
- .stat span{font-size:.72rem}
- .stat strong{font-size:1.05rem}
- .actions{gap:6px;margin:8px 0 10px}
- .actions button{min-height:42px;padding:8px 4px;font-size:11.5px}
- .cards{gap:8px}
- .ticket img{height:clamp(86px,24vw,116px)}
- .ticket-body{padding:9px}
- .ticket h3{font-size:.94rem}
- .price{font-size:.84rem;padding:5px 8px;margin-bottom:6px}
- .soldrow{font-size:.78rem}
- .qty{font-size:.94rem;padding:8px}
- .ticket-actions button{font-size:.78rem;padding:7px 5px}
- .search{margin:8px 0 10px}
-}
-@media(min-width:760px){
- .wrap{padding:16px 16px 34px}
- .stats{margin:12px 0 14px}
- .cards{gap:12px}
- .ticket img{height:145px}
-}
-
 </style></head><body><header><h1>Pattaya Dinosaur Kingdom</h1><p>Monthly Ticket Sales Report · '+e(data.selected)+'</p><p>'+e(fmtDate(data.from))+' – '+e(fmtDate(data.to))+'</p></header>'+
  '<div class="summary"><div class="kpi"><span>TOTAL TICKETS</span><b>'+data.totalQuantity.toLocaleString('en-US')+'</b></div><div class="kpi"><span>TOTAL SALES</span><b>'+fmtMoney(data.totalAmount)+'</b></div><div class="kpi"><span>REPORT DAYS</span><b>'+data.days.length.toLocaleString('en-US')+'</b></div></div>'+
  '<h2>Daily ticket details</h2>'+dailySections+
