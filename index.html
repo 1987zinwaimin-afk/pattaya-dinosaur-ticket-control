@@ -2635,7 +2635,7 @@ document.getElementById('authForm').onsubmit=async e=>{
  finally{submitButton.disabled=false;submitButton.textContent=originalText}
 };
 let restoringSavedSession=false;
-async async function restoreSavedSession(){
+async function restoreSavedSession(){
  if(restoringSavedSession||currentUser)return;
  restoringSavedSession=true;
  const authScreen=document.getElementById('authScreen');
