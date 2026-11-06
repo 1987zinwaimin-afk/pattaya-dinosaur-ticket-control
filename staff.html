@@ -1370,10 +1370,16 @@ body.theme-light button:focus-visible,body.theme-light input:focus-visible,body.
 /* Staff selected navigation button: warm champagne gold with dark readable text */
 #side .nav button.active,#side .nav button.gold,#side button.gold{background:linear-gradient(115deg,#f8df9b 0%,#efc665 48%,#d9a13b 100%)!important;color:#10243a!important;-webkit-text-fill-color:#10243a!important;border:1px solid #ffe6a8!important;box-shadow:0 5px 15px rgba(213,160,57,.25),inset 0 1px rgba(255,255,255,.48)!important}
 #side .nav button.active *,#side .nav button.gold *{color:#10243a!important;-webkit-text-fill-color:#10243a!important}
+
+/* Live Thailand date and time card below the brand logo */
+.app-datetime{width:min(100% - 24px,760px);margin:10px auto 14px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(216,181,109,.55);border-radius:14px;background:linear-gradient(120deg,rgba(16,36,58,.97),rgba(25,51,76,.96));box-shadow:0 5px 18px rgba(16,36,58,.12);color:#fff;box-sizing:border-box}
+.app-datetime-date,.app-datetime-clock{display:flex;flex-direction:column;gap:2px;min-width:0}.app-datetime-clock{text-align:right;align-items:flex-end}.app-datetime-caption{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#d8b56d}.app-datetime-date strong{font-size:clamp(18px,4vw,23px);line-height:1.2;color:#fff;font-variant-numeric:tabular-nums}.app-datetime-clock strong{font-size:clamp(19px,4.5vw,25px);line-height:1.2;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}.app-datetime-date span:last-child,.app-datetime-zone{font-size:10px;color:#c7d3df}.app-datetime-zone{white-space:nowrap}
+@media(max-width:380px){.app-datetime{padding:9px 11px;gap:8px}.app-datetime-caption{font-size:8px}.app-datetime-date span:last-child,.app-datetime-zone{font-size:9px}}
 </style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
+<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
 <div class="staff-install-help" id="staffInstallHelp" hidden role="dialog" aria-modal="true" aria-labelledby="staffInstallHelpTitle">
  <div class="staff-install-panel">
   <button type="button" class="staff-install-close" id="staffInstallClose" aria-label="Close">✕</button>
@@ -2241,4 +2247,16 @@ installUILanguageObserver();applyUILanguage();
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
  new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true});
 })();
-</script></body></html>
+</script>
+<script>
+(function(){
+ const dateEl=document.getElementById('appDateValue'),dayEl=document.getElementById('appWeekdayValue'),timeEl=document.getElementById('appTimeValue');
+ if(!dateEl||!dayEl||!timeEl)return;
+ const dateFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'});
+ const dayFmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',weekday:'long'});
+ const timeFmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
+ function updateThailandDateTime(){const now=new Date();dateEl.textContent=dateFmt.format(now);dayEl.textContent=dayFmt.format(now);timeEl.textContent=timeFmt.format(now).replace(/\s/g,' ').toUpperCase();}
+ updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
+})();
+</script>
+</body></html>
