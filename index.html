@@ -2008,6 +2008,11 @@ body.theme-light #side select option{
 #staffActivityList .staff-activity-status i{display:inline-block!important;width:11px!important;height:11px!important;flex:0 0 11px!important;border-radius:50%!important;background:#fb7185!important;box-shadow:0 0 0 3px #fb718533,0 0 10px #fb7185aa!important}
 #staffActivityList .staff-activity-status.is-active{color:#4ade80!important}
 #staffActivityList .staff-activity-status.is-active i{background:#22c55e!important;box-shadow:0 0 0 3px #22c55e33,0 0 12px #22c55e!important}
+
+/* Owner date/time card: keep its styles in the main application stylesheet */
+.app-datetime{width:min(calc(100% - 24px),760px);margin:10px auto 14px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(216,181,109,.55);border-radius:14px;background:linear-gradient(120deg,rgba(16,36,58,.97),rgba(25,51,76,.96));box-shadow:0 5px 18px rgba(16,36,58,.12);color:#fff;box-sizing:border-box}
+.app-datetime-date,.app-datetime-clock{display:flex;flex-direction:column;gap:2px;min-width:0}.app-datetime-clock{text-align:right;align-items:flex-end}.app-datetime-caption{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#d8b56d}.app-datetime-date strong{font-size:clamp(18px,4vw,23px);line-height:1.2;color:#fff;font-variant-numeric:tabular-nums}.app-datetime-clock strong{font-size:clamp(19px,4.5vw,25px);line-height:1.2;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap}.app-datetime-date span:last-child,.app-datetime-zone{font-size:10px;color:#c7d3df}.app-datetime-zone{white-space:nowrap}
+@media(max-width:380px){.app-datetime{padding:9px 11px;gap:8px}.app-datetime-caption{font-size:8px}.app-datetime-date span:last-child,.app-datetime-zone{font-size:9px}}
 </style>
 </head>
 <body>
@@ -2043,6 +2048,7 @@ body.theme-light #side select option{
 </div>
 <div class="modal" id="actionModal"><div class="modalbox"><h2 id="actionTitle">More options</h2><div id="actionBody"></div><div class="modal-actions"><button id="closeAction">Close</button></div></div></div>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\\/script>')}</script>
 <script>
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
