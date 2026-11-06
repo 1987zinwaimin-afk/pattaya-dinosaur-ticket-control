@@ -1721,8 +1721,11 @@ document.getElementById('authStaffId').addEventListener('input',()=>{
 
 document.getElementById('authForm').onsubmit=async e=>{
  e.preventDefault();
- const name=document.getElementById('authName').value.trim();
- const staffId=document.getElementById('authStaffId').value.trim();
+ const nameInput=document.getElementById('authName');
+ const staffIdInput=document.getElementById('authStaffId');
+ const staffId=staffIdInput.value.trim();
+ if(staffId&&!nameInput.value.trim()&&!nameInput.readOnly)await lookupStaffNameById();
+ const name=nameInput.value.trim();
  const err=document.getElementById('authError');
  if(!staffId||!name){err.textContent='Please enter a Staff ID. Existing IDs fill the name automatically; for a new ID, enter your name.';return}
  if(document.getElementById('authName').dataset.resolvedStaffId&&document.getElementById('authName').dataset.resolvedStaffId!==staffId.toUpperCase()){err.textContent='Staff ID changed. Please verify the ID again.';return}
