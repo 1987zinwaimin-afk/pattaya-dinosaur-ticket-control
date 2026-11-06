@@ -2870,7 +2870,17 @@ function renderMonthly(){
     monthlyByTicket.set(key,{id:x.ticket_id,department:x.department,name,price:x.unit_price==null?null:Number(x.unit_price),quantity:Number(x.quantity)||0,amount:Number(x.total_amount)||0,image:master?.image||master?.imageUrl||null,imageUrl:master?.imageUrl||master?.image||null});
    }
   }
-  const list=[...monthlyByTicket.values()].sort((a,b)=>String(a.department||'').localeCompare(String(b.department||''))||String(a.name||'').localeCompare(String(b.name||'')));
+  // Preserve the exact Owner ticket-card order from the master tickets array.
+  const ownerOrder=new Map();
+  tickets.forEach((ticket,index)=>{
+   const key=[String(ticket.department||''),String(ticket.name||'').trim().toLocaleLowerCase().replace(/\\s+/g,' ')].join('|');
+   if(!ownerOrder.has(key))ownerOrder.set(key,index);
+  });
+  const list=[...monthlyByTicket.values()].sort((a,b)=>{
+   const keyA=[String(a.department||''),String(a.name||'').trim().toLocaleLowerCase().replace(/\\s+/g,' ')].join('|');
+   const keyB=[String(b.department||''),String(b.name||'').trim().toLocaleLowerCase().replace(/\\s+/g,' ')].join('|');
+   return (ownerOrder.get(keyA)??Number.MAX_SAFE_INTEGER)-(ownerOrder.get(keyB)??Number.MAX_SAFE_INTEGER);
+  });
   return {list,f,t,selected};
  };
  const fDate=value=>formatReportDate(value);
