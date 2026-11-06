@@ -580,6 +580,13 @@ input:focus,select:focus,textarea:focus{
 #pageContent[data-ui-page="train"] th{color:var(--gold)!important;font-weight:850!important;background:rgba(216,181,109,.1)!important}
 #pageContent[data-ui-page="train"] tbody td::before{content:none!important;display:none!important}
 #pageContent[data-ui-page="train"] tbody tr:nth-child(even){background:rgba(255,255,255,.035)!important}
+/* Final override: disable the older 760px history-table minimum width */
+#pageContent .panel:has(#trainHistory)>div[style*="overflow:auto"]{overflow-x:hidden!important;overflow-y:visible!important;width:100%!important;max-width:100%!important}
+#pageContent .panel:has(#trainHistory) table{display:table!important;width:100%!important;min-width:0!important;max-width:100%!important;table-layout:fixed!important}
+#pageContent .panel:has(#trainHistory) th,
+#pageContent .panel:has(#trainHistory) td{width:25%!important;min-width:0!important;max-width:25%!important;padding:7px 3px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:clip!important;text-align:center!important;font-size:clamp(10px,2.7vw,13px)!important}
+#pageContent .panel:has(#trainHistory) tbody td:nth-child(3),
+#pageContent .panel:has(#trainHistory) tbody td:nth-child(4){display:table-cell!important;visibility:visible!important}
 /* Hard-fit Garden Train list to phone width: never require horizontal swiping */
 #pageContent[data-ui-page="train"] div[style*="overflow:hidden"][style*="max-width:100%"]{display:block!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
 #pageContent[data-ui-page="train"] div[style*="overflow:auto"]{display:block!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
