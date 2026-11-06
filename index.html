@@ -2457,20 +2457,27 @@ function openBackdateDatePicker(list){
  const maxDate=localYesterday();
  const initialDate=backdateEntryDate&&backdateEntryDate<=maxDate?backdateEntryDate:maxDate;
  const modal=document.createElement('div');modal.className='modal open';modal.style.zIndex='120';
- const toDMY=iso=>{const [y,m,d]=iso.split('-');return d+'/'+m+'/'+y};
- const parseDMY=value=>{const match=value.trim().match(/^(\\d{1,2})[/.\\-](\\d{1,2})[/.\\-](\\d{4})$/);if(!match)return null;const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]);const date=new Date(Date.UTC(year,month-1,day));if(date.getUTCFullYear()!==year||date.getUTCMonth()!==month-1||date.getUTCDate()!==day)return null;return year+'-'+String(month).padStart(2,'0')+'-'+String(day).padStart(2,'0')};
- modal.innerHTML='<div class="modalbox" style="max-width:420px"><h2>↶ Add missed ticket sales</h2><p class="subtle">Choose a previous business date. After confirming, the normal ticket cards will open so you can enter quantities.</p><form id="backdateDateForm"><label>Sales date (DD/MM/YYYY)<input type="text" id="backdateDateValue" required inputmode="numeric" autocomplete="off" placeholder="DD/MM/YYYY" maxlength="10" value="'+toDMY(initialDate)+'" style="width:100%;margin-top:8px"></label><div class="modal-actions"><button type="button" id="backdateDateCancel">Cancel</button><button type="submit" class="gold">OK</button></div></form></div>';
+ const toDMY=iso=>{const [y,m,d]=iso.split('-');return d+'.'+m+'.'+y};
+ modal.innerHTML='<div class="modalbox" style="max-width:420px"><h2>↶ Add missed ticket sales</h2><p class="subtle">Choose a previous business date. After confirming, the normal ticket cards will open so you can enter quantities.</p><form id="backdateDateForm"><label>Sales date</label><div style="position:relative;margin-top:8px"><button type="button" id="backdateCalendarOpen" class="input" style="width:100%;min-height:58px;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:14px 16px"><span id="backdateDateDisplay">'+toDMY(initialDate)+'</span><span aria-hidden="true">▦</span></button><input type="date" id="backdateDateValue" required max="'+maxDate+'" value="'+initialDate+'" aria-label="Choose sales date" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none"></div><div class="modal-actions"><button type="button" id="backdateDateCancel">Cancel</button><button type="submit" class="gold">OK</button></div></form></div>';
  document.body.appendChild(modal);
  const close=()=>modal.remove();
+ const dateInput=modal.querySelector('#backdateDateValue');
  modal.querySelector('#backdateDateCancel').onclick=close;
+ modal.querySelector('#backdateCalendarOpen').onclick=()=>{
+  try{if(typeof dateInput.showPicker==='function')dateInput.showPicker();else dateInput.click()}
+  catch(_){dateInput.click()}
+ };
+ dateInput.addEventListener('change',()=>{
+  if(dateInput.value)modal.querySelector('#backdateDateDisplay').textContent=toDMY(dateInput.value);
+ });
  modal.addEventListener('click',e=>{if(e.target===modal)close()});
  modal.querySelector('#backdateDateForm').onsubmit=async e=>{
   e.preventDefault();
-  const date=parseDMY(modal.querySelector('#backdateDateValue').value),ok=modal.querySelector('button[type="submit"]');
-  if(!date){alert('Please enter a valid date in DD/MM/YYYY format.');return}
-  if(date>localYesterday()){alert('Please select a previous date.');return}
+  const date=dateInput.value,ok=modal.querySelector('button[type="submit"]');
+  if(!date){alert('Please choose a sales date.');return}
+  if(date>maxDate){alert('Please select a previous date.');return}
   ok.disabled=true;
-  try{await loadBackdateSales(date);backdateEntryDate=date;close();const btn=document.getElementById('backdateDateOpen');if(btn)btn.textContent='↶ '+date;render()}
+  try{await loadBackdateSales(date);backdateEntryDate=date;close();const btn=document.getElementById('backdateDateOpen');if(btn)btn.textContent='↶ '+toDMY(date);render()}
   catch(err){alert('Could not load the selected date: '+(err.message||err));ok.disabled=false}
  };
 }
