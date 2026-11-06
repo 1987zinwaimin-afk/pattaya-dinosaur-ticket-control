@@ -2850,7 +2850,23 @@ function renderMonthly(){
    sb.from('ticket_manual_sales').select('business_date,ticket_id,department,ticket_name,unit_price,quantity,total_amount').gte('business_date',f).lte('business_date',t).order('business_date',{ascending:true})
   ]);
   if(dbError)throw dbError;if(manualError)throw manualError;
-  const list=[...(data||[]),...(manualData||[])].filter(x=>dept==='all'||x.department===dept).map(x=>({id:x.ticket_id,department:x.department,name:x.ticket_name,price:x.unit_price,quantity:Number(x.quantity)||0,amount:Number(x.total_amount)||0,businessDate:x.business_date}));
+  // Monthly report: combine the same ticket type across all days into one row.
+  // Keep the daily source rows untouched in Supabase; this is report-only aggregation.
+  const sourceRows=[...(data||[]),...(manualData||[])].filter(x=>dept==='all'||x.department===dept);
+  const monthlyByTicket=new Map();
+  for(const x of sourceRows){
+   const name=String(x.ticket_name||'Ticket').trim();
+   const price=x.unit_price==null?null:Number(x.unit_price);
+   const key=[String(x.department||''),String(x.ticket_id||''),x.ticket_id?'' : name.toLocaleLowerCase(),price==null?'':String(price)].join('|');
+   const prior=monthlyByTicket.get(key);
+   if(prior){
+    prior.quantity+=Number(x.quantity)||0;
+    prior.amount+=Number(x.total_amount)||0;
+   }else{
+    monthlyByTicket.set(key,{id:x.ticket_id,department:x.department,name,price,quantity:Number(x.quantity)||0,amount:Number(x.total_amount)||0});
+   }
+  }
+  const list=[...monthlyByTicket.values()].sort((a,b)=>String(a.department||'').localeCompare(String(b.department||''))||String(a.name||'').localeCompare(String(b.name||'')));
   return {list,f,t,selected};
  };
  const fDate=value=>formatReportDate(value);
