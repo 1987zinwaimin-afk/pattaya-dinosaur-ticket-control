@@ -2919,6 +2919,7 @@ if(file){
 let obj={id:ticketId,department:page,name,price:priceText===''?null:Number(priceText),quantity,image:imageUrl,imageUrl,imagePath,location:old?.location||'',createdAt:old?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),createdBy:old?.createdBy||currentUser.id};if(old){tickets=tickets.map(t=>t.id===ticketId?obj:t)}else tickets.push(obj);save();document.getElementById('ticketModal').classList.remove('open');render()};
 async function createReportBlob(list,titleText,periodLabel){
  const items=Array.isArray(list)?list:[],width=1200,pad=30,gap=18,cols=2,cardW=(width-pad*2-gap)/2,cardH=142;
+ if(items.some(t=>t.department==='event'))await refreshEventLocations(true);
  const rows=Math.max(1,Math.ceil(items.length/cols)),bannerH=205,infoY=225,infoH=190,cardsY=435,height=cardsY+rows*(cardH+gap)+86;
  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
  const ctx=canvas.getContext('2d');ctx.fillStyle='#071a33';ctx.fillRect(0,0,width,height);
