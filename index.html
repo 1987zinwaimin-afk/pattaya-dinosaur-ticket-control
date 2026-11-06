@@ -2482,7 +2482,7 @@ async function clearBackdateTicketSales(ticketId){
  try{
   const [{error:dailyError},{error:manualError}]=await Promise.all([
    sb.from('ticket_daily_sales').update({quantity:0}).eq('business_date',backdateEntryDate).eq('ticket_id',ticketId),
-   sb.from('ticket_manual_sales').update({quantity:0}).eq('business_date',backdateEntryDate).eq('ticket_id',ticketId)
+   sb.from('ticket_manual_sales').delete().eq('business_date',backdateEntryDate).eq('ticket_id',ticketId)
   ]);
   if(dailyError)throw dailyError;
   if(manualError)throw manualError;
