@@ -580,6 +580,15 @@ input:focus,select:focus,textarea:focus{
 #pageContent[data-ui-page="train"] th{color:var(--gold)!important;font-weight:850!important;background:rgba(216,181,109,.1)!important}
 #pageContent[data-ui-page="train"] tbody td::before{content:none!important;display:none!important}
 #pageContent[data-ui-page="train"] tbody tr:nth-child(even){background:rgba(255,255,255,.035)!important}
+/* Compact Garden Train history: all four columns visible at a glance */
+#pageContent[data-ui-page="train"]>.panel:last-child>div[style*="overflow:auto"]{overflow-x:hidden!important;overflow-y:visible!important}
+#pageContent[data-ui-page="train"]>.panel:last-child table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+#pageContent[data-ui-page="train"]>.panel:last-child th,
+#pageContent[data-ui-page="train"]>.panel:last-child td{height:38px!important;min-height:0!important;padding:5px 4px!important;line-height:1.15!important;font-size:clamp(10px,2.6vw,14px)!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;vertical-align:middle!important}
+#pageContent[data-ui-page="train"]>.panel:last-child th{height:36px!important}
+#pageContent[data-ui-page="train"]>.panel:last-child tbody tr{height:38px!important}
+#pageContent[data-ui-page="train"]>.panel:last-child td span{font-size:inherit!important;line-height:inherit!important}
+#pageContent[data-ui-page="train"]>.panel:last-child{padding-bottom:10px!important}
 @media(max-width:380px){
  #pageContent[data-ui-page="train"] .form-grid{grid-template-columns:1fr}
  #pageContent[data-ui-page="train"] .train-depart-card,
