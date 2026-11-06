@@ -2865,17 +2865,21 @@ function monthlyReportDownloadExcel(data){
  });
  daily.push(row([cell('MONTHLY GRAND TOTAL'),cell(''),cell(''),cell(''),cell(data.totalQuantity,'Number'),cell(data.totalAmount,'Number')]));
  const monthly=[row([cell('Pattaya Dinosaur Kingdom · Monthly Totals by Ticket Type')]),row([cell('Month'),cell(data.selected)]),row([cell('Department'),cell('Ticket type'),cell('Unit price (THB)'),cell('Total tickets'),cell('Total sales (THB)')])];
- data.monthlyList.forEach(item=>monthly.push(row([cell(item.departmentLabel),cell(item.name),cell(item.priceVaries?'Varies':Number(item.price||0),'Number'),cell(item.quantity,'Number'),cell(item.amount,'Number')])));
+ data.monthlyList.forEach(item=>monthly.push(row([cell(item.departmentLabel),cell(item.name),item.priceVaries?cell('Varies'):cell(Number(item.price||0),'Number'),cell(item.quantity,'Number'),cell(item.amount,'Number')])));
  monthly.push(row([cell('MONTHLY GRAND TOTAL'),cell(''),cell(''),cell(data.totalQuantity,'Number'),cell(data.totalAmount,'Number')]));
  const workbook='<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10"/></Style></Styles><Worksheet ss:Name="Daily Details"><Table>'+daily.join('')+'</Table></Worksheet><Worksheet ss:Name="Monthly Totals"><Table>'+monthly.join('')+'</Table></Worksheet></Workbook>';
  const blob=new Blob([workbook],{type:'application/vnd.ms-excel;charset=utf-8'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pattaya-ticket-report-'+data.selected+'.xls';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
-function monthlyReportPrint(data){
- const win=window.open('','_blank');
- if(!win){alert(reportText('Please allow pop-ups to save the PDF report.','PDF အစီရင်ခံစာသိမ်းရန် Pop-up ခွင့်ပြုပါ'));return}
+function monthlyReportPrint(data,win){
+ if(!win||win.closed)return;
  win.document.open();win.document.write(monthlyReportBuildHtml(data));win.document.close();
- win.onload=()=>setTimeout(()=>{win.focus();win.print()},350);
+ setTimeout(()=>{try{win.focus();win.print()}catch(e){console.warn('Could not open print dialog',e)}},500);
+}
+function monthlyReportOpenPrintWindow(){
+ const win=window.open('','_blank');
+ if(!win)alert(reportText('Please allow pop-ups to save the PDF report.','PDF အစီရင်ခံစာသိမ်းရန် Pop-up ခွင့်ပြုပါ'));
+ return win;
 }
 function renderMonthly(){
  const root=document.getElementById('pageContent');
@@ -2965,8 +2969,8 @@ function renderMonthly(){
  month.onchange=report;
  document.getElementById('reportDepartment').onchange=report;
  document.getElementById('makeMonthly').onclick=report;
- document.getElementById('downloadMonthly').onclick=async()=>{const data=await getFreshReport();if(data)monthlyReportPrint(data)};
- document.getElementById('shareMonthly').onclick=async()=>{const data=await getFreshReport();if(data)monthlyReportPrint(data)};
+ document.getElementById('downloadMonthly').onclick=async()=>{const win=monthlyReportOpenPrintWindow();if(!win)return;const data=await getFreshReport();if(data)monthlyReportPrint(data,win);else win.close()};
+ document.getElementById('shareMonthly').onclick=async()=>{const win=monthlyReportOpenPrintWindow();if(!win)return;const data=await getFreshReport();if(data)monthlyReportPrint(data,win);else win.close()};
  document.getElementById('excelMonthly').onclick=async()=>{const data=await getFreshReport();if(data)monthlyReportDownloadExcel(data)};
  report();
 }
