@@ -2016,6 +2016,14 @@ body.theme-light #side select option{
 
 /* Live Thailand date and time card */
 .app-datetime{width:calc(100% - 24px);max-width:760px;margin:10px auto 14px;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(216,181,109,.55);border-radius:14px;background:linear-gradient(120deg,rgba(16,36,58,.97),rgba(25,51,76,.96));color:#fff;box-sizing:border-box}.app-datetime-date,.app-datetime-clock{display:flex;flex-direction:column;gap:2px;min-width:0}.app-datetime-clock{text-align:right;align-items:flex-end}.app-datetime-caption{font-size:9px;letter-spacing:1.2px;font-weight:800;color:#d8b56d}.app-datetime-date strong{font-size:clamp(18px,4vw,23px)}.app-datetime-clock strong{font-size:clamp(19px,4.5vw,25px);white-space:nowrap}.app-datetime-date span:last-child,.app-datetime-zone{font-size:10px;color:#c7d3df}@media(max-width:380px){.app-datetime{padding:9px 11px;gap:8px}}
+/* Mobile spacing: keep the content close to the Thailand clock without crowding */
+@media(max-width:700px){
+ #appDateTime{margin:8px auto 2px!important}
+ main.wrap{padding-top:3px!important}
+ #stats{margin-top:3px!important}
+ #pageContent>.section-title{margin-top:0!important}
+ #pageContent>.section-title h2{margin-top:0!important}
+}
 </style>
 </head>
 <body>
