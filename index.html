@@ -2927,7 +2927,8 @@ if(file){
  if(uploadError){alert('Image upload failed: '+uploadError.message);return}
  const {data:urlData}=sb.storage.from('ticket-images').getPublicUrl(imagePath);imageUrl=urlData.publicUrl;
 }
-if(page==='event'&&!activeEventLocationNo){alert('Please choose an Event Location first.');return}\nlet obj={id:ticketId,department:page,name,price:priceText===''?null:Number(priceText),quantity,image:imageUrl,imageUrl,imagePath,location:page==='event'?'event:'+activeEventLocationNo:(old?.location||''),createdAt:old?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),createdBy:old?.createdBy||currentUser.id};if(old){tickets=tickets.map(t=>t.id===ticketId?obj:t)}else tickets.push(obj);save();document.getElementById('ticketModal').classList.remove('open');render()};
+if(page==='event'&&!activeEventLocationNo){alert('Please choose an Event Location first.');return}
+let obj={id:ticketId,department:page,name,price:priceText===''?null:Number(priceText),quantity,image:imageUrl,imageUrl,imagePath,location:page==='event'?'event:'+activeEventLocationNo:(old?.location||''),createdAt:old?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),createdBy:old?.createdBy||currentUser.id};if(old){tickets=tickets.map(t=>t.id===ticketId?obj:t)}else tickets.push(obj);save();document.getElementById('ticketModal').classList.remove('open');render()};
 async function createReportBlob(list,titleText,periodLabel){
  const items=Array.isArray(list)?list:[],width=1200,pad=30,gap=18,cols=2,cardW=(width-pad*2-gap)/2,cardH=142;
  if(items.some(t=>t.department==='event'))await refreshEventLocations(true);
