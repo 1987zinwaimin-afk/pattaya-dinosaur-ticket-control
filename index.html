@@ -2764,7 +2764,7 @@ function eventLocationName(n){return reportText('Event '+n,'กิจกรร�
 function renderEventLocationsHtml(){
  return '<section class="panel" id="eventLocationsPanel" style="margin:0 0 14px;padding:14px;border:1px solid rgba(232,185,79,.45)"><div class="section-title"><h2 style="margin:0;color:var(--gold)">📍 '+reportText('Event Locations','สถานที่จัดงาน')+'</h2><span class="subtle">'+reportText('Owner and Staff can edit these shared locations','Owner และ Staff สามารถแก้ไขสถานที่ร่วมกันได้')+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin-top:12px">'+[1,2,3].map(n=>'<div class="panel" style="padding:10px;background:rgba(8,28,48,.55)"><label for="eventLocationInput'+n+'" style="display:block;margin:0 0 6px;color:var(--gold);font-weight:700">'+eventLocationName(n)+'</label><input id="eventLocationInput'+n+'" maxlength="160" autocomplete="off" placeholder="'+reportText('Enter place name','สถานที่จัดงาน')+'" value="'+esc(eventLocationRows.find(x=>Number(x.event_no)===n)?.location||'')+'" style="width:100%;box-sizing:border-box"><button type="button" class="gold" id="saveEventLocation'+n+'" style="width:100%;margin-top:8px">✓ '+reportText('Save location','บันทึกสถานที่')+'</button></div>').join('')+'</div><p id="eventLocationStatus" class="subtle" aria-live="polite" style="margin:10px 0 0">'+reportText('Shared locations sync between Owner and Staff.','สถานที่จะแสดงร่วมกันระหว่าง Owner และ Staff')+'</p></section>';
 }
-async async function refreshEventLocations(force=false){
+async function refreshEventLocations(force=false){
  if(!currentUser||!sb||eventLocationRefreshBusy)return;
  eventLocationRefreshBusy=true;
  try{
@@ -2928,7 +2928,7 @@ if(file){
  const {data:urlData}=sb.storage.from('ticket-images').getPublicUrl(imagePath);imageUrl=urlData.publicUrl;
 }
 if(page==='event'&&!activeEventLocationNo){alert('Please choose an Event Location first.');return}\nlet obj={id:ticketId,department:page,name,price:priceText===''?null:Number(priceText),quantity,image:imageUrl,imageUrl,imagePath,location:page==='event'?'event:'+activeEventLocationNo:(old?.location||''),createdAt:old?old.createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),createdBy:old?.createdBy||currentUser.id};if(old){tickets=tickets.map(t=>t.id===ticketId?obj:t)}else tickets.push(obj);save();document.getElementById('ticketModal').classList.remove('open');render()};
-async async function createReportBlob(list,titleText,periodLabel){
+async function createReportBlob(list,titleText,periodLabel){
  const items=Array.isArray(list)?list:[],width=1200,pad=30,gap=18,cols=2,cardW=(width-pad*2-gap)/2,cardH=142;
  if(items.some(t=>t.department==='event'))await refreshEventLocations(true);
  const rows=Math.max(1,Math.ceil(items.length/cols)),bannerH=205,infoY=225,infoH=190,cardsY=435,height=cardsY+rows*(cardH+gap)+86;
