@@ -1,0 +1,37 @@
+{
+  "id": "/event-staff.html",
+  "name": "Pattaya Dinosaur Kingdom Event Staff",
+  "short_name": "Dino Event",
+  "description": "Dedicated Event Staff ticket portal for Pattaya Dinosaur Kingdom.",
+  "start_url": "/event-staff.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "background_color": "#07172b",
+  "theme_color": "#07172b",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/staff-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/file_000000006da082119bbf212e4f6fad52.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/file_000000006da082119bbf212e4f6fad52.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
