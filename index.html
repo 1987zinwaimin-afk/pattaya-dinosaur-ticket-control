@@ -2108,30 +2108,32 @@ function openTrainScanImport(){
   line.innerHTML='<label>Time In<input type="time" data-field="in" required></label><label>Time Out<input type="time" data-field="out"></label><label>Riders<input type="number" data-field="riders" min="0" step="1" required></label><label>Driver Name<input type="text" data-field="driver" maxlength="100" required></label><button type="button" class="danger" data-remove style="grid-column:1/-1">Remove row</button>';
   for(const key of ['in','out','riders','driver'])line.querySelector('[data-field="'+key+'"]').value=row[key]??'';
   line.querySelector('[data-remove]').onclick=()=>line.remove();rowsHost.appendChild(line);
+  if(row.notes){const note=document.createElement('p');note.className='subtle';note.style.cssText='grid-column:1/-1;color:#e8b85e;font-size:13px;margin:0';note.textContent='⚠ Review: '+row.notes;line.appendChild(note)}
  }
  modal.querySelector('#trainScanAdd').onclick=()=>addRow();
  modal.querySelector('#trainScanRead').onclick=async()=>{
   if(!selectedFile){alert('Please choose a photo first.');return}
-  status.textContent='Loading handwriting OCR engine…';
+  const readBtn=modal.querySelector('#trainScanRead');readBtn.disabled=true;readBtn.textContent='Reading handwriting…';
+  status.textContent='Preparing photo securely for AI handwriting recognition…';
   try{
-   if(!window.Tesseract){await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';script.onload=resolve;script.onerror=()=>reject(new Error('Could not load OCR engine. Check internet connection.'));document.head.appendChild(script)})}
-   status.textContent='Reading the photo… This may take a little while.';
-   const result=await window.Tesseract.recognize(selectedFile,'eng+tha',{logger:m=>{if(m.status==='recognizing text')status.textContent='Reading handwriting… '+Math.round((m.progress||0)*100)+'%'}});
-   const text=result.data?.text||'';
-   const time=/\b([01]?\d|2[0-3])\s*[:.]\s*([0-5]\d)\b/g;
-   const found=[...text.matchAll(time)].map(m=>String(m[1]).padStart(2,'0')+':'+m[2]);
-   const lines=text.split(/\n+/).map(x=>x.trim()).filter(Boolean);
-   const parsed=[];
-   for(let i=0;i+1<found.length;i+=2){
-    const nearby=lines.join(' ');
-    const ridersMatch=nearby.match(/\b(\d{1,2})\b/);
-    parsed.push({in:found[i],out:found[i+1],riders:'',driver:''});
-   }
+   const imageData=await new Promise((resolve,reject)=>{
+    const img=new Image(),url=URL.createObjectURL(selectedFile);
+    img.onload=()=>{try{const max=1800,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));const canvas=document.createElement('canvas');canvas.width=Math.round(img.naturalWidth*scale);canvas.height=Math.round(img.naturalHeight*scale);const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);resolve(canvas.toDataURL('image/jpeg',0.88).split(',')[1])}catch(e){URL.revokeObjectURL(url);reject(e)}};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not open the selected image'))};img.src=url;
+   });
+   status.textContent='AI is reading Time In, Time Out, Riders and Driver Name…';
+   const {data,error}=await sb.functions.invoke('train-sheet-ocr',{body:{image_base64:imageData,mime_type:'image/jpeg'}});
+   if(error)throw error;
+   if(data?.error)throw new Error(data.error);
+   const parsed=Array.isArray(data?.rows)?data.rows:[];
    rowsHost.innerHTML='';
-   parsed.forEach(addRow);
+   parsed.forEach(row=>addRow(row));
    if(!parsed.length)addRow();
-   status.textContent='OCR found '+found.length+' possible time values and prepared '+parsed.length+' row(s). Riders and Driver Name must be checked/entered manually. Handwriting recognition may be inaccurate; compare against the original photo.';
-  }catch(error){console.error('Train sheet OCR failed',error);status.textContent='OCR could not read this image: '+(error.message||error);if(!rowsHost.children.length)addRow()}
+   const uncertain=parsed.filter(r=>!r.in||!r.out||!r.riders||!r.driver||r.notes);
+   status.textContent='AI read '+parsed.length+' row(s). '+uncertain.length+' row(s) need careful review. Check every field against the original photo before importing.';
+   if(!parsed.length)status.textContent='No table rows could be read. Try a clearer, straight-on photo with the full table visible.';
+  }catch(error){console.error('Train sheet AI OCR failed',error);status.textContent='AI Scan failed: '+(error.message||error);if(!rowsHost.children.length)addRow()}
+  finally{readBtn.disabled=false;readBtn.textContent='🔎 Read photo (AI OCR)'}
  };
  modal.querySelector('#trainScanImport').onclick=async()=>{
   const tripDate=modal.querySelector('#trainScanDate').value;
