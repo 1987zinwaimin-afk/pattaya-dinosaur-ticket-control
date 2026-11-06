@@ -1402,6 +1402,8 @@ body.theme-light button:focus-visible,body.theme-light input:focus-visible,body.
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-staff-auth-v1'}});
+// Ask the browser to preserve this installed app's local session storage where supported.
+try{if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}catch(storageError){console.warn('Persistent storage request unavailable:',storageError)}
 let authMode="signin",currentUser=null,currentRole="staff",currentStaffId=null,cloudReady=false,cloudChannel=null;
 const STAFF_MODE=true;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန',icon:'🎪'}];
@@ -1614,7 +1616,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  // Reuse the profile already checked during login to avoid a second blocking database request.
  const profileResult=knownProfile?{data:knownProfile,error:null}:await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle();
  const profile=profileResult.data,profileError=profileResult.error;
- if(profileError||!profile){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='Staff profile is not ready. Please try again.';return}
+ if(profileError||!profile){currentUser=null;throw profileError||new Error('Staff profile is not ready yet. Your saved login is kept; please reopen the app or retry.');}
  if(profile.is_archived){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
  currentRole=profile.role;currentStaffId=profile.staff_id||null;
  if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
@@ -1769,22 +1771,34 @@ async function restoreSavedSession(){
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
   if(!data.session)return;
-  const {data:profile,error:profileError}=await sb.from('profiles').select('display_name,role,avatar_url,is_archived,staff_id').eq('id',data.session.user.id).maybeSingle();
-  if(profileError)throw profileError;
+  let profile=null,lastProfileError=null;
+  // A freshly reopened phone may need a moment for the network/profile query to become available.
+  for(let attempt=0;attempt<3;attempt++){
+   const result=await sb.from('profiles').select('display_name,role,avatar_url,is_archived,staff_id').eq('id',data.session.user.id).maybeSingle();
+   if(!result.error&&result.data){profile=result.data;break}
+   lastProfileError=result.error||new Error('Staff profile is not ready yet.');
+   if(attempt<2)await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)));
+  }
   if(profile?.is_archived){await sb.auth.signOut();document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
    document.getElementById('authStaffId').value=profile.staff_id||'';
    document.getElementById('staffDepartment').value=localStorage.getItem('tctl-staff-department')||'all';
    await startCloudSession(data.session,true,profile,'app_open');
-  }else{
+  }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
+  }else{
+   // Do not destroy a valid persisted session just because the profile request is temporarily unavailable.
+   console.warn('Saved Staff session profile is temporarily unavailable:',lastProfileError?.message||'No profile returned');
+   document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.';
   }
- }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Could not restore saved session. Please continue once again.'}finally{restoringSavedSession=false}
+ }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.'}finally{restoringSavedSession=false}
 }
 let staffForegroundNotificationAt=0;
 function handleStaffAppForeground(){
- if(document.visibilityState!=='visible'||!currentUser||currentRole!=='staff')return;
+ if(document.visibilityState!=='visible')return;
+ if(!currentUser){restoreSavedSession();return}
+ if(currentRole!=='staff')return;
  const now=Date.now();
  if(now-staffForegroundNotificationAt<15000)return;
  staffForegroundNotificationAt=now;
