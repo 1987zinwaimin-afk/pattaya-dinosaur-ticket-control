@@ -2788,8 +2788,8 @@ async function refreshEventLocations(force=false){
   (legacy||[]).filter(x=>String(x.location||'').trim()).forEach(x=>eventLocationRows.push({id:String(x.event_no),location:String(x.location),legacy:true}));
   const status=document.getElementById('eventLocationStatus');
   const list=document.getElementById('eventLocationList');
-  if(list)list.innerHTML=eventLocationRows.length?eventLocationRows.map(x=>{const rows=tickets.filter(t=>t.department==='event'&&String(t.location||'')==='event:'+String(x.id));const qty=rows.reduce((n,t)=>n+Number(t.quantity||0),0),amount=rows.reduce((n,t)=>n+Number(t.quantity||0)*Number(t.price||0),0);return '<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px"><div style="min-width:0"><b>📍 '+esc(x.location)+'</b><div class="subtle">'+(x.staff_id?'Event Staff ID: '+esc(x.staff_id):x.legacy?'Existing Event Location':'Owner / Event Staff')+'</div><div style="margin-top:5px;color:var(--gold);font-weight:800">'+qty.toLocaleString()+' tickets · ฿'+amount.toLocaleString(undefined,{maximumFractionDigits:2})+'</div></div><button type="button" data-open-event-location="'+esc(x.id)+'" class="blue">View Page</button></div>'}).join(''):'<p class="subtle">No Event Locations created yet.</p>';
-  if(list)list.querySelectorAll('[data-open-event-location]').forEach(button=>button.onclick=()=>{activeEventLocationNo=String(button.dataset.openEventLocation||'');go('event')});
+  if(list)list.innerHTML=eventLocationRows.length?eventLocationRows.map(x=>{const rows=tickets.filter(t=>t.department==='event'&&String(t.location||'')==='event:'+String(x.id));const qty=rows.reduce((n,t)=>n+Number(t.quantity||0),0),amount=rows.reduce((n,t)=>n+Number(t.quantity||0)*Number(t.price||0),0);return '<div class="panel" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:12px"><div style="min-width:0;flex:1 1 170px"><b>📍 '+esc(x.location)+'</b><div class="subtle">'+(x.staff_id?'Event Staff ID: '+esc(x.staff_id):x.legacy?'Existing Event Location':'Owner / Event Staff')+'</div><div style="margin-top:5px;color:var(--gold);font-weight:800">'+qty.toLocaleString()+' tickets · ฿'+amount.toLocaleString(undefined,{maximumFractionDigits:2})+'</div></div><div style="display:flex;flex-wrap:wrap;gap:7px"><button type="button" data-open-event-location="'+esc(x.id)+'" class="blue">View Page</button>'+(currentRole==='owner'?'<button type="button" data-edit-event-location="'+esc(x.id)+'" class="gold">✎ Edit</button><button type="button" data-delete-event-location="'+esc(x.id)+'" class="danger">🗑 Delete</button>':'')+'</div></div>'}).join(''):'<p class="subtle">No Event Locations created yet.</p>';
+  if(list){list.querySelectorAll('[data-open-event-location]').forEach(button=>button.onclick=()=>{activeEventLocationNo=String(button.dataset.openEventLocation||'');go('event')});list.querySelectorAll('[data-edit-event-location]').forEach(button=>button.onclick=()=>editEventLocation(button.dataset.editEventLocation));list.querySelectorAll('[data-delete-event-location]').forEach(button=>button.onclick=()=>deleteEventLocation(button.dataset.deleteEventLocation));}
   if(page==='event'&&!activeEventLocationNo){
    const chooser=document.querySelector('.event-location-modal-options');
    if(chooser)chooser.innerHTML=eventLocationRows.map(x=>'<button type="button" class="event-location-modal-option" data-event-location="'+esc(x.id)+'"><span class="event-location-number">🎪</span><span class="event-location-copy"><b>'+esc(x.location)+'</b><small>'+(x.staff_id?'Event Staff · '+esc(x.staff_id):'Event Ticket Location')+'</small></span><span class="event-location-action">Open Tickets →</span></button>').join('')||'<p class="subtle">Create an Event Location in Settings first.</p>';
@@ -2812,6 +2812,41 @@ async function createEventLocation(name,staffId=''){
  const row={id:data.id,location:data.location_name,staff_id:data.staff_id||'',created_by:data.created_by,created_at:data.created_at};
  eventLocationRows.unshift(row);
  return row;
+}
+async function editEventLocation(id){
+ if(currentRole!=='owner'){alert('Only the Owner can edit Event Locations.');return}
+ const row=eventLocationRows.find(x=>String(x.id)===String(id));if(!row)return;
+ const next=prompt('Edit Event Location name:',row.location);if(next===null)return;
+ const location=String(next).trim();if(!location){alert('Location name cannot be empty.');return}
+ if(location.length>160){alert('Location name must be 160 characters or fewer.');return}
+ try{
+  const table=row.legacy?'event_locations':'event_location_sessions';
+  let query=sb.from(table).update(row.legacy?{location}:{location_name:location});
+  query=row.legacy?query.eq('event_no',Number(id)):query.eq('id',id);
+  if(!row.legacy)query=query.eq('is_archived',false);
+  const {error}=await query;if(error)throw error;
+  if(String(activeEventLocationNo)===String(id)){const selected=document.getElementById('selectedEventLocationName');if(selected)selected.textContent='📍 '+location}
+  await refreshEventLocations(true);
+  const status=document.getElementById('eventLocationStatus');if(status)status.textContent='Updated: '+location;
+ }catch(error){console.error('Edit Event Location failed:',error);alert('Could not update Event Location: '+(error.message||error))}
+}
+async function deleteEventLocation(id){
+ if(currentRole!=='owner'){alert('Only the Owner can delete Event Locations.');return}
+ const row=eventLocationRows.find(x=>String(x.id)===String(id));if(!row)return;
+ const ticketCount=tickets.filter(t=>t.department==='event'&&String(t.location||'')==='event:'+String(id)).reduce((n,t)=>n+Number(t.quantity||0),0);
+ const message='Delete Event Location "'+row.location+'"?'+(ticketCount?'\\n\\nExisting ticket records ('+ticketCount+' tickets) will be kept and will not be deleted.':'\\n\\nExisting ticket records, if any, will be kept.');
+ if(!confirm(message))return;
+ try{
+  // Archive/hide the location instead of deleting its row, so historical tickets remain intact.
+  const table=row.legacy?'event_locations':'event_location_sessions';
+  let query=sb.from(table).update(row.legacy?{location:''}:{is_archived:true});
+  query=row.legacy?query.eq('event_no',Number(id)):query.eq('id',id);
+  if(!row.legacy)query=query.eq('is_archived',false);
+  const {error}=await query;if(error)throw error;
+  if(String(activeEventLocationNo)===String(id))activeEventLocationNo='';
+  await refreshEventLocations(true);
+  const status=document.getElementById('eventLocationStatus');if(status)status.textContent='Location deleted. Existing ticket records were kept.';
+ }catch(error){console.error('Delete Event Location failed:',error);alert('Could not delete Event Location: '+(error.message||error))}
 }
 async function bindEventLocationManager(){
  const btn=document.getElementById('createEventLocationBtn');
