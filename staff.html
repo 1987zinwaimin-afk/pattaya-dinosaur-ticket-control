@@ -1804,7 +1804,7 @@ async function recordStaffActivity(active,firstLogin){
  const displayName=(document.getElementById('authName')?.value||currentUser.user_metadata?.display_name||'Staff').trim();
  const staffId=currentStaffId;
  if(!staffId)return;
- const row={normalized_name:staffId.toUpperCase(),display_name:displayName,staff_id:staffId,department:selectedStaffDepartment||'all',user_id:currentUser.id,last_seen:new Date().toISOString(),is_active:!!active,updated_at:new Date().toISOString()};
+ const row={normalized_name:staffId.toUpperCase(),display_name:displayName,staff_id:staffId,department:selectedStaffDepartment||'all',event_location:selectedStaffDepartment==='event'?(staffEventLocations.find(x=>String(x.id)===String(selectedStaffEventLocationId))?.location_name||null):null,user_id:currentUser.id,last_seen:new Date().toISOString(),is_active:!!active,updated_at:new Date().toISOString()};
  if(firstLogin)row.logged_in_at=new Date().toISOString();
  const {error}=await sb.from('staff_login_activity').upsert(row,{onConflict:'normalized_name'});
  if(error){console.error('Staff activity update failed:',error);if(firstLogin)throw new Error('Login succeeded, but Owner activity could not be saved: '+error.message);}
