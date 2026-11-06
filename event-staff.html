@@ -1914,7 +1914,7 @@ async function lookupStaffNameById(){
  if(hint)hint.textContent='Checking Event Staff ID…';
  if(err)err.textContent='';
  if(!staffId){
-  if(hint)hint.textContent='Enter an Event Staff ID created by Owner. The registered name will fill automatically.';
+  if(hint)hint.textContent='Enter your own Event Staff ID. If it is new, enter your preferred name to register.';
   return;
  }
  if(staffId.length<2||staffId.length>32||!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(staffId)){
@@ -1936,8 +1936,8 @@ async function lookupStaffNameById(){
   }else{
    nameInput.value='';
    nameInput.readOnly=false;
-   nameInput.placeholder='Enter your registered Event Staff name';
-   if(hint)hint.textContent='This Event Staff ID has not been created by Owner. Please contact Owner.';
+   nameInput.placeholder='Enter your preferred Event Staff name';
+   if(hint)hint.textContent='New Event Staff ID available. Enter your preferred name to create your account.';
   }
  }catch(error){
   if(sequence!==staffNameLookupSequence)return;
@@ -1953,9 +1953,9 @@ document.getElementById('authStaffId').addEventListener('input',()=>{
  clearTimeout(staffNameLookupTimer);
  const name=document.getElementById('authName');
  name.value='';name.readOnly=false;name.dataset.resolvedStaffId='';
- name.placeholder='Enter your registered Event Staff name';
+ name.placeholder='Enter your preferred Event Staff name';
  const hint=document.getElementById('authNameHint');
- if(hint)hint.textContent='Enter an Event Staff ID created by Owner. The registered name will fill automatically.';
+ if(hint)hint.textContent='Enter your own Event Staff ID. If it is new, enter your preferred name to register.';
  staffNameLookupTimer=setTimeout(()=>{if(document.activeElement!==document.getElementById('authStaffId'))lookupStaffNameById()},650);
 });
 
@@ -1967,9 +1967,9 @@ document.getElementById('authForm').onsubmit=async e=>{
  if(staffId&&!nameInput.value.trim()&&!nameInput.readOnly)await lookupStaffNameById();
  const name=nameInput.value.trim();
  const err=document.getElementById('authError');
- if(!staffId||!name){err.textContent='Please enter your Event Staff ID and registered name.';return}
+ if(!staffId||!name){err.textContent='Please enter your preferred Event Staff ID and name.';return}
  if(document.getElementById('authName').dataset.resolvedStaffId&&document.getElementById('authName').dataset.resolvedStaffId!==staffId.toUpperCase()){err.textContent='Staff ID changed. Please verify the ID again.';return}
- err.textContent='Checking Staff ID…';
+ err.textContent='Checking Event Staff ID…';
  try{
   // Reuse the saved anonymous identity after a failed attempt; never create a new Auth user on every retry.
   const {data:existingSession,error:sessionError}=await sb.auth.getSession();
