@@ -2773,6 +2773,10 @@ async function refreshEventLocations(force=false){
   const rows=data||[];
   eventLocationRows=[1,2,3].map(n=>{const row=rows.find(x=>Number(x.event_no)===n);return {event_no:n,location:String(row?.location||''),updated_at:row?.updated_at||null}});
   if(page==='event'){
+   document.querySelectorAll('[data-event-location]').forEach(button=>{const n=Number(button.dataset.eventLocation),loc=eventLocationRows[n-1]?.location||'';button.disabled=!loc;button.style.cursor=loc?'pointer':'not-allowed';button.style.opacity=loc?'1':'.58';button.innerHTML='<div style="font-size:28px">🎪</div><b style="color:var(--gold);font-size:1.05rem">'+eventLocationName(n)+'</b><div class="subtle">'+(loc?esc(loc):reportText('Set location name above and Save','အပေါ်မှာ နေရာအမည်ဖြည့်ပြီး Save လုပ်ပါ'))+'</div><strong style="display:block;margin-top:8px">'+(loc?reportText('Open Ticket Cards →','လက်မှတ်များဖွင့်ရန် →'):reportText('Not configured','မသတ်မှတ်ရသေး'))+'</strong>'});
+   const selectedName=document.getElementById('selectedEventLocationName');if(selectedName&&activeEventLocationNo)selectedName.textContent=eventLocationRows[activeEventLocationNo-1]?.location||eventLocationName(activeEventLocationNo);
+  }
+  if(page==='event'){
    [1,2,3].forEach(n=>{const input=document.getElementById('eventLocationInput'+n);if(input&&(force||document.activeElement!==input))input.value=eventLocationRows[n-1].location});
   }
   const status=document.getElementById('eventLocationStatus');if(status)status.textContent=reportText('Shared locations synced.','สถานที่များ Sync ပြီးပါပြီ');
@@ -2804,7 +2808,7 @@ function renderEventLocationChooserHtml(){
 }
 function renderSelectedEventLocationHtml(){
  const row=eventLocationRows.find(x=>Number(x.event_no)===activeEventLocationNo),name=row?.location||eventLocationName(activeEventLocationNo);
- return '<section class="panel" style="margin:0 0 14px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div class="subtle">🎪 '+reportText('Selected Event Location','ရွေးချယ်ထားသော ပွဲနေရာ')+'</div><h2 style="margin:4px 0;color:var(--gold)">'+esc(name)+'</h2><div class="subtle">'+eventLocationName(activeEventLocationNo)+' · '+reportText('Separate ticket quantities and reports','လက်မှတ်အရေအတွက်နှင့် Report သီးခြား')+'</div></div><button type="button" class="blue" id="backEventLocations">← '+reportText('Change location','ပွဲနေရာပြောင်းရန်')+'</button></section>';
+ return '<section class="panel" style="margin:0 0 14px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><div class="subtle">🎪 '+reportText('Selected Event Location','ရွေးချယ်ထားသော ပွဲနေရာ')+'</div><h2 id="selectedEventLocationName" style="margin:4px 0;color:var(--gold)">'+esc(name)+'</h2><div class="subtle">'+eventLocationName(activeEventLocationNo)+' · '+reportText('Separate ticket quantities and reports','လက်မှတ်အရေအတွက်နှင့် Report သီးခြား')+'</div></div><button type="button" class="blue" id="backEventLocations">← '+reportText('Change location','ပွဲနေရာပြောင်းရန်')+'</button></section>';
 }
 function bindEventLocationManager(){
  [1,2,3].forEach(n=>{const button=document.getElementById('saveEventLocation'+n);if(button)button.onclick=()=>saveEventLocation(n)});
