@@ -2048,6 +2048,32 @@ body.theme-light #side select option{
 }
 
 #appWeekdayValue.is-holiday{color:#ff777f!important;font-weight:800!important}#appWeekdayValue.is-special{color:#f2c66d!important;font-weight:800!important}.app-holiday-label{display:block;max-width:280px;margin-top:3px;font-size:10px;line-height:1.3;color:#f2c66d;font-weight:750;overflow-wrap:anywhere}.app-holiday-label.is-holiday{color:#ff777f!important}.app-holiday-label.is-special{color:#f2c66d!important}
+
+/* Garden Train: tighter mobile spacing for forms, controls and history tools */
+@media(max-width:600px){
+ #pageContent[data-ui-page="train"]{gap:9px!important}
+ #pageContent[data-ui-page="train"]>.cards{gap:8px!important;margin-bottom:9px!important}
+ #pageContent[data-ui-page="train"]>.cards>.panel{padding:11px!important;border-radius:16px!important}
+ #pageContent[data-ui-page="train"] .train-depart-card,#pageContent[data-ui-page="train"] .train-return-card{padding:11px!important}
+ #pageContent[data-ui-page="train"] .train-depart-card h3,#pageContent[data-ui-page="train"] .train-return-card h3{font-size:15px!important;margin-bottom:8px!important}
+ #pageContent[data-ui-page="train"] .form-grid{gap:6px 8px!important}
+ #pageContent[data-ui-page="train"] .form-grid label{font-size:11px!important;line-height:1.15!important}
+ #pageContent[data-ui-page="train"] .form-grid input,#pageContent[data-ui-page="train"] .form-grid select,#pageContent[data-ui-page="train"] #trainReturnTrip{height:39px!important;min-height:39px!important;padding:6px 9px!important;margin-top:3px!important;font-size:14px!important;border-radius:10px!important}
+ #pageContent[data-ui-page="train"] .form-grid button{height:41px!important;min-height:41px!important;padding:7px 9px!important;font-size:13px!important;border-radius:11px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory){margin-top:8px!important;padding:11px!important;border-radius:17px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.section-title{gap:7px!important;margin-bottom:8px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.section-title h3{font-size:16px!important;margin-bottom:2px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.section-title .subtle{font-size:11px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory) .actions{gap:6px!important;margin:7px 0!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory) .actions input{height:36px!important;min-height:36px!important;padding:5px 8px!important;font-size:12px!important;border-radius:10px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory) .actions button{height:38px!important;min-height:38px!important;padding:6px 5px!important;font-size:11px!important;line-height:1.15!important;border-radius:10px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.panel{margin-top:8px!important;padding:9px!important;border-radius:14px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.panel .form-grid{gap:6px 8px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.panel label{font-size:11px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.panel input,#pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.panel select{height:38px!important;min-height:38px!important;padding:6px 8px!important;font-size:13px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory)>.panel p{font-size:11px!important;line-height:1.3!important;margin-top:6px!important}
+ #pageContent[data-ui-page="train"]>.panel:has(#trainHistory) table th,#pageContent[data-ui-page="train"]>.panel:has(#trainHistory) table td{height:34px!important;padding:5px 2px!important;font-size:11px!important}
+}
 </style>
 </head>
 <body>
