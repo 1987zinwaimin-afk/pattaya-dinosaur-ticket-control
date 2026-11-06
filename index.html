@@ -2503,11 +2503,14 @@ function listenRealtime(){
  if(cloudChannel)sb.removeChannel(cloudChannel);
  cloudChannel=sb.channel('ticket-control-live-'+(currentUser?.id||'session'))
   .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{await refreshCloudTickets(true)})
-  .subscribe(status=>{console.log('Ticket realtime status:',status)});
+  // Staff login rows are written by the separate Staff website. Listen for the
+  // database event so the Owner gets the notice immediately, not only on polling.
+  .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{if(currentRole==='owner')pollStaffLoginNotifications()})
+  .subscribe(status=>{console.log('Ticket / Staff activity realtime status:',status)});
  if(cloudPollTimer)clearInterval(cloudPollTimer);
  cloudPollTimer=setInterval(()=>refreshCloudTickets(false),1500);
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshCloudTickets(true)});
- window.addEventListener('focus',()=>refreshCloudTickets(true));
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){refreshCloudTickets(true);if(currentRole==='owner')pollStaffLoginNotifications()}});
+ window.addEventListener('focus',()=>{refreshCloudTickets(true);if(currentRole==='owner')pollStaffLoginNotifications()});
 }
 let staffNotifyTimer=null,staffNotifyBaseline=false,staffNotifySeen={},staffNotifyStartedAt=0,staffNotifyAudioContext=null;
 function getStaffNotifyPrefs(){try{return Object.assign({style:'3',sound:'bell',background:'both'},JSON.parse(localStorage.getItem('tctl-staff-notify-prefs-v1')||'{}'))}catch(e){return {style:'3',sound:'bell',background:'both'}}}
