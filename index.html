@@ -3138,4 +3138,22 @@ installUILanguageObserver();applyUILanguage();
  <div class="entry-counter-grid" id="entryCounterGrid"></div>
  <div id="entryCounterDock"><div id="entryCounterTotal">0 tickets<small>Auto-saved to Entry Ticket</small></div><button class="gold" type="button" id="entryCounterClear">Clear All</button></div>
 </div>
+<!-- Owner page safety cleanup: remove leaked CSS patch text from rendered content -->
+<script>
+(function(){
+ const marker='HARD FIX: one equal-width row';
+ function removeLeakedCss(){
+  const root=document.body;if(!root)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const remove=[];
+  while(walker.nextNode()){
+   const node=walker.currentNode;
+   if(node.nodeValue&&node.nodeValue.includes(marker))remove.push(node);
+  }
+  remove.forEach(node=>{const parent=node.parentElement;if(parent&&parent!==root&&parent.children.length===0&&parent.textContent.includes(marker))parent.remove();else node.remove();});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',removeLeakedCss,{once:true});else removeLeakedCss();
+ new MutationObserver(removeLeakedCss).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body></html>
