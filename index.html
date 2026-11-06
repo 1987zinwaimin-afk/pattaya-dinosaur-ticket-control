@@ -2789,9 +2789,11 @@ async function refreshEventLocations(force=false){
   const status=document.getElementById('eventLocationStatus');
   const list=document.getElementById('eventLocationList');
   if(list)list.innerHTML=eventLocationRows.length?eventLocationRows.map(x=>{const rows=tickets.filter(t=>t.department==='event'&&String(t.location||'')==='event:'+String(x.id));const qty=rows.reduce((n,t)=>n+Number(t.quantity||0),0),amount=rows.reduce((n,t)=>n+Number(t.quantity||0)*Number(t.price||0),0);return '<div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px"><div style="min-width:0"><b>📍 '+esc(x.location)+'</b><div class="subtle">'+(x.staff_id?'Event Staff ID: '+esc(x.staff_id):x.legacy?'Existing Event Location':'Owner / Event Staff')+'</div><div style="margin-top:5px;color:var(--gold);font-weight:800">'+qty.toLocaleString()+' tickets · ฿'+amount.toLocaleString(undefined,{maximumFractionDigits:2})+'</div></div><button type="button" data-open-event-location="'+esc(x.id)+'" class="blue">View Page</button></div>'}).join(''):'<p class="subtle">No Event Locations created yet.</p>';
+  if(list)list.querySelectorAll('[data-open-event-location]').forEach(button=>button.onclick=()=>{activeEventLocationNo=String(button.dataset.openEventLocation||'');go('event')});
   if(page==='event'&&!activeEventLocationNo){
    const chooser=document.querySelector('.event-location-modal-options');
    if(chooser)chooser.innerHTML=eventLocationRows.map(x=>'<button type="button" class="event-location-modal-option" data-event-location="'+esc(x.id)+'"><span class="event-location-number">🎪</span><span class="event-location-copy"><b>'+esc(x.location)+'</b><small>'+(x.staff_id?'Event Staff · '+esc(x.staff_id):'Event Ticket Location')+'</small></span><span class="event-location-action">Open Tickets →</span></button>').join('')||'<p class="subtle">Create an Event Location in Settings first.</p>';
+   if(chooser)chooser.querySelectorAll('[data-event-location]').forEach(button=>button.onclick=()=>{activeEventLocationNo=String(button.dataset.eventLocation||'');render()});
   }
   const selectedName=document.getElementById('selectedEventLocationName');
   if(selectedName&&activeEventLocationNo)selectedName.textContent=eventLocationLabel(activeEventLocationNo);
