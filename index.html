@@ -3286,7 +3286,7 @@ installUILanguageObserver();applyUILanguage();
  const dateFmt=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'});
  const dayFmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',weekday:'long'});
  const timeFmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
- function updateThailandDateTime(){const now=new Date();dateEl.textContent=dateFmt.format(now);dayEl.textContent=dayFmt.format(now);timeEl.textContent=timeFmt.format(now).replace(/\s/g,' ').toUpperCase();}
+ function updateThailandDateTime(){const now=new Date();dateEl.textContent=dateFmt.format(now).replace(/\//g,'.');dayEl.textContent=dayFmt.format(now);timeEl.textContent=timeFmt.format(now).replace(/\s/g,' ').toUpperCase();}
  updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
 })();
 </script>
