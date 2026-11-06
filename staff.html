@@ -1438,6 +1438,39 @@ input,select{padding:10px 11px;border-radius:10px}
  .ticket img{height:145px}
 }
 
+
+/* Garden Train history: restore the same real table layout as Owner.
+   Override legacy mobile card-table rules that hide the header and inject wrong labels. */
+#pageContent[data-ui-page="train"] .train-history-table-wrap{
+  display:block!important;width:100%!important;max-width:100%!important;
+  overflow-x:auto!important;overflow-y:hidden!important;
+  -webkit-overflow-scrolling:touch!important;border:1px solid rgba(113,157,190,.35)!important;
+  border-radius:12px!important;background:rgba(8,29,48,.22)!important
+}
+#pageContent[data-ui-page="train"] .train-history-table-wrap table{
+  display:table!important;width:100%!important;min-width:620px!important;
+  table-layout:auto!important;border-collapse:collapse!important;border-spacing:0!important
+}
+#pageContent[data-ui-page="train"] .train-history-table-wrap thead{
+  display:table-header-group!important;position:static!important;width:auto!important;height:auto!important;
+  margin:0!important;padding:0!important;overflow:visible!important;clip:auto!important;
+  white-space:normal!important;border:0!important
+}
+#pageContent[data-ui-page="train"] .train-history-table-wrap tbody{display:table-row-group!important}
+#pageContent[data-ui-page="train"] .train-history-table-wrap tbody tr{display:table-row!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+#pageContent[data-ui-page="train"] .train-history-table-wrap th,
+#pageContent[data-ui-page="train"] .train-history-table-wrap td{
+  display:table-cell!important;position:static!important;padding:12px 10px!important;
+  white-space:nowrap!important;text-align:center!important;vertical-align:middle!important;
+  border-bottom:1px solid rgba(113,157,190,.28)!important;font-size:13px!important
+}
+#pageContent[data-ui-page="train"] .train-history-table-wrap td::before{content:none!important;display:none!important}
+#pageContent[data-ui-page="train"] .train-history-table-wrap .train-row-actions{display:flex!important;justify-content:center!important;gap:6px!important}
+@media(max-width:420px){
+ #pageContent[data-ui-page="train"] .train-history-table-wrap table{min-width:620px!important}
+ #pageContent[data-ui-page="train"] .train-history-table-wrap th,
+ #pageContent[data-ui-page="train"] .train-history-table-wrap td{padding:10px 8px!important;font-size:12px!important}
+}
 </style>
 </head>
 <body>
