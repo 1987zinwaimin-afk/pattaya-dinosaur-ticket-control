@@ -2822,74 +2822,124 @@ async function renderPayroll(){
  try{await load()}catch(e){calendar.innerHTML='<p class="auth-error">Could not load payroll: '+esc(e.message)+'</p>';summary.textContent='Please refresh and try again.'}
 }
 
+function monthlyReportEscape(value){
+ return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function monthlyReportMoney(value){
+ return '฿'+Number(value||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+function monthlyReportDateList(from,to){
+ const out=[],parts=String(from).split('-').map(Number),end=String(to).split('-').map(Number);
+ const d=new Date(parts[0],parts[1]-1,parts[2]),last=new Date(end[0],end[1]-1,end[2]);
+ while(d<=last){
+  out.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'));
+  d.setDate(d.getDate()+1);
+ }
+ return out;
+}
+function monthlyReportBuildHtml(data){
+ const e=monthlyReportEscape,fmtDate=v=>formatReportDate(v),fmtMoney=v=>monthlyReportMoney(v);
+ const dailySections=data.days.map(day=>{
+  const lines=day.items.length?day.items.map(item=>'<tr><td>'+e(item.departmentLabel)+'</td><td>'+e(item.name)+'</td><td class="num">'+Number(item.price||0).toLocaleString('en-US')+'</td><td class="num">'+Number(item.quantity||0).toLocaleString('en-US')+'</td><td class="num">'+fmtMoney(item.amount)+'</td></tr>').join(''):'<tr><td colspan="5" class="empty">No ticket sales recorded for this date</td></tr>';
+  return '<section class="day"><h2>'+e(fmtDate(day.date))+' <small>'+day.quantity.toLocaleString('en-US')+' tickets · '+fmtMoney(day.amount)+'</small></h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Tickets</th><th>Sales (THB)</th></tr></thead><tbody>'+lines+'</tbody><tfoot><tr><th colspan="3">Daily total</th><th class="num">'+day.quantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(day.amount)+'</th></tr></tfoot></table></section>';
+ }).join('');
+ const monthlyRows=data.monthlyList.map(item=>'<tr><td>'+e(item.departmentLabel)+'</td><td>'+e(item.name)+'</td><td class="num">'+(item.priceVaries?'Varies':Number(item.price||0).toLocaleString('en-US'))+'</td><td class="num">'+Number(item.quantity||0).toLocaleString('en-US')+'</td><td class="num">'+fmtMoney(item.amount)+'</td></tr>').join('');
+ return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Monthly Ticket Sales Report</title><style>'+
+ '@page{size:A4 portrait;margin:14mm}*{box-sizing:border-box}body{font:12px/1.45 Arial,sans-serif;color:#14263a;margin:0;background:#fff}header{padding:22px 24px;background:#10243a;color:#fff;border-bottom:5px solid #d8b56d}header h1{font-size:24px;margin:0 0 5px;color:#f3d58c}header p{margin:0;color:#e7edf4}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}.kpi{border:1px solid #d8b56d;border-radius:9px;padding:12px}.kpi span{display:block;color:#64748b;font-size:10px}.kpi b{display:block;font-size:20px;margin-top:4px;color:#10243a}.day{margin:18px 0;page-break-inside:avoid}.day h2{font-size:14px;margin:0 0 7px;padding:8px 10px;background:#edf3f8;border-left:4px solid #d8b56d}.day h2 small{float:right;font-size:11px;color:#41566d;font-weight:normal}table{width:100%;border-collapse:collapse;font-size:10px}th,td{padding:6px 7px;border:1px solid #d7e0e8;text-align:left}thead th{background:#10243a;color:#fff}tfoot th{background:#f5e8c7;color:#10243a}.num{text-align:right;white-space:nowrap}.empty{text-align:center;color:#64748b;padding:10px}.monthly{page-break-before:always}.monthly h2{font-size:18px;color:#10243a;border-bottom:2px solid #d8b56d;padding-bottom:7px}.grand{margin:14px 0;padding:14px;background:#10243a;color:#fff;border-radius:8px;display:flex;justify-content:space-between;font-size:15px}.foot{margin-top:18px;color:#64748b;font-size:9px;text-align:center}@media print{.no-print{display:none!important}.day{break-inside:avoid}thead{display:table-header-group}tr{break-inside:avoid}}'+
+ '</style></head><body><header><h1>Pattaya Dinosaur Kingdom</h1><p>Monthly Ticket Sales Report · '+e(data.selected)+'</p><p>'+e(fmtDate(data.from))+' – '+e(fmtDate(data.to))+'</p></header>'+
+ '<div class="summary"><div class="kpi"><span>TOTAL TICKETS</span><b>'+data.totalQuantity.toLocaleString('en-US')+'</b></div><div class="kpi"><span>TOTAL SALES</span><b>'+fmtMoney(data.totalAmount)+'</b></div><div class="kpi"><span>REPORT DAYS</span><b>'+data.days.length.toLocaleString('en-US')+'</b></div></div>'+
+ '<h2>Daily ticket details</h2>'+dailySections+
+ '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
+ '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p></body></html>';
+}
+function monthlyReportDownloadExcel(data){
+ const xmlEscape=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+ const cell=(value,type='String',style='')=>'<Cell'+(style?' ss:StyleID="'+style+'"':'')+'><Data ss:Type="'+type+'">'+xmlEscape(value)+'</Data></Cell>';
+ const row=values=>'<Row>'+values.join('')+'</Row>';
+ const daily=[row([cell('Pattaya Dinosaur Kingdom · Daily Ticket Details')]),row([cell('Month'),cell(data.selected)]),row([cell('Date'),cell('Department'),cell('Ticket type'),cell('Unit price (THB)'),cell('Tickets'),cell('Sales (THB)')])];
+ data.days.forEach(day=>{
+  if(day.items.length){
+   day.items.forEach(item=>daily.push(row([cell(day.date),cell(item.departmentLabel),cell(item.name),cell(Number(item.price||0),'Number'),cell(Number(item.quantity||0),'Number'),cell(Number(item.amount||0),'Number')])));
+  }else daily.push(row([cell(day.date),cell('—'),cell('No ticket sales'),cell(0,'Number'),cell(0,'Number'),cell(0,'Number')]));
+  daily.push(row([cell(day.date+' DAILY TOTAL'),cell(''),cell(''),cell(''),cell(day.quantity,'Number'),cell(day.amount,'Number')]));
+ });
+ daily.push(row([cell('MONTHLY GRAND TOTAL'),cell(''),cell(''),cell(''),cell(data.totalQuantity,'Number'),cell(data.totalAmount,'Number')]));
+ const monthly=[row([cell('Pattaya Dinosaur Kingdom · Monthly Totals by Ticket Type')]),row([cell('Month'),cell(data.selected)]),row([cell('Department'),cell('Ticket type'),cell('Unit price (THB)'),cell('Total tickets'),cell('Total sales (THB)')])];
+ data.monthlyList.forEach(item=>monthly.push(row([cell(item.departmentLabel),cell(item.name),cell(item.priceVaries?'Varies':Number(item.price||0),'Number'),cell(item.quantity,'Number'),cell(item.amount,'Number')])));
+ monthly.push(row([cell('MONTHLY GRAND TOTAL'),cell(''),cell(''),cell(data.totalQuantity,'Number'),cell(data.totalAmount,'Number')]));
+ const workbook='<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10"/></Style></Styles><Worksheet ss:Name="Daily Details"><Table>'+daily.join('')+'</Table></Worksheet><Worksheet ss:Name="Monthly Totals"><Table>'+monthly.join('')+'</Table></Worksheet></Workbook>';
+ const blob=new Blob([workbook],{type:'application/vnd.ms-excel;charset=utf-8'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pattaya-ticket-report-'+data.selected+'.xls';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+}
+function monthlyReportPrint(data){
+ const win=window.open('','_blank');
+ if(!win){alert(reportText('Please allow pop-ups to save the PDF report.','PDF အစီရင်ခံစာသိမ်းရန် Pop-up ခွင့်ပြုပါ'));return}
+ win.document.open();win.document.write(monthlyReportBuildHtml(data));win.document.close();
+ win.onload=()=>setTimeout(()=>{win.focus();win.print()},350);
+}
 function renderMonthly(){
  const root=document.getElementById('pageContent');
  root.dataset.uiPage='monthly';
  const now=new Date(),selectedMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
  root.innerHTML='<div class="report-page">'+
-  '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">'+reportText('TICKET CONTROL · REPORTS','ระบบควบคุมตั๋ว · รายงาน')+'</span><h2>'+tr('report')+'</h2><p class="subtle">'+reportText('Daily sales history for any selected month','ရွေးချယ်ထားသောလ၏ နေ့စဉ်ရောင်းချမှုမှတ်တမ်း')+'</p></div><span class="report-icon">▤</span></div>'+
+  '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">'+reportText('TICKET CONTROL · REPORTS','စနစ်ထိန်းချုပ်မှု · အစီရင်ခံစာ')+'</span><h2>'+reportText('Monthly Ticket Report','လစဉ်လက်မှတ်အစီရင်ခံစာ')+'</h2><p class="subtle">'+reportText('Daily ticket-type details and automatic monthly totals','နေ့စဉ်လက်မှတ်အမျိုးအစားအသေးစိတ်နှင့် လစဉ်စုစုပေါင်း')+'</p></div><span class="report-icon">▤</span></div>'+
   '<div class="report-filters"><label>'+reportText('Select month','လကိုရွေးချယ်ပါ')+'<input type="month" id="reportMonth" value="'+selectedMonth+'"></label></div>'+
-  '<div class="report-department-filter"><label for="reportDepartment">'+reportText('Department','แผนก')+'</label><select id="reportDepartment"><option value="all">'+reportText('All Departments','ทุกแผนก')+'</option>'+DEPTS.map(d=>'<option value="'+esc(d.id)+'">'+esc(d[lang]||d.en)+'</option>').join('')+'</select></div>'+
-  '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+tr('report')+'</button><button id="downloadMonthly" class="report-secondary">⇩ '+reportText('Save image','บันทึกภาพ')+'</button><button class="blue" id="shareMonthly">↗ '+reportText('Share report','แชร์รายงาน')+'</button></div>'+
+  '<div class="report-department-filter"><label for="reportDepartment">'+reportText('Department','ဌာန')+'</label><select id="reportDepartment"><option value="all">'+reportText('All Departments','ဌာနအားလုံး')+'</option>'+DEPTS.map(d=>'<option value="'+esc(d.id)+'">'+esc(d[lang]||d.en)+'</option>').join('')+'</select></div>'+
+  '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+reportText('Generate report','အစီရင်ခံစာထုတ်ရန်')+'</button><button id="downloadMonthly" class="report-secondary">⇩ '+reportText('Save PDF','PDF သိမ်းရန်')+'</button><button class="blue" id="shareMonthly">↗ '+reportText('Share / Print PDF','PDF မျှဝေ / ပရင့်')+'</button><button id="excelMonthly" class="report-secondary">▦ '+reportText('Export Excel','Excel ထုတ်ရန်')+'</button></div>'+
   '<p id="monthlyError" class="report-error" role="alert" aria-live="polite"></p></section>'+
   '<section id="monthlyResults" class="report-results" aria-live="polite"></section>'+
-  '<p class="report-footnote">'+reportText('Daily sales are saved automatically and refreshed during the day. Current-month reports include today through the latest saved snapshot.','နေ့စဉ်ရောင်းအားကို အလိုအလျောက်သိမ်းဆည်းပြီး နေ့အတွင်း ပြန်လည်မွမ်းမံသည်။ လက်ရှိလအစီရင်ခံစာတွင် ယနေ့အထိ နောက်ဆုံးသိမ်းထားသောစာရင်း ပါဝင်သည်။')+'</p>'+
+  '<p class="report-footnote">'+reportText('Daily sales are saved automatically. The current month includes records through today; completed months include every calendar day.','နေ့စဉ်ရောင်းအားကို အလိုအလျောက်သိမ်းထားသည်။ လက်ရှိလတွင် ယနေ့အထိနှင့် ပြီးဆုံးသောလများတွင် ရက်အားလုံး ပါဝင်သည်။')+'</p>'+
  '</div>';
  const month=document.getElementById('reportMonth'),results=document.getElementById('monthlyResults'),error=document.getElementById('monthlyError');
  let requestNo=0,lastReportData=null;
  const calc=async()=>{
   const selected=month.value;
   const digitsOnly=value=>value.length>0&&Array.from(value).every(ch=>ch>='0'&&ch<='9');
-  if(!selected||selected.length!==7||selected[4]!=='-'||!digitsOnly(selected.slice(0,4))||!digitsOnly(selected.slice(5,7))||Number(selected.slice(5,7))<1||Number(selected.slice(5,7))>12){error.textContent=reportText('Please select a valid month.','ကျေးဇူးပြု၍ မှန်ကန်သောလကိုရွေးချယ်ပါ');return null}
+  if(!selected||selected.length!==7||selected[4]!=='-'||!digitsOnly(selected.slice(0,4))||!digitsOnly(selected.slice(5,7))||Number(selected.slice(5,7))<1||Number(selected.slice(5,7))>12){error.textContent=reportText('Please select a valid month.','မှန်ကန်သောလကိုရွေးချယ်ပါ');return null}
   const [year,monthNumber]=selected.split('-').map(Number);
   const first=new Date(year,monthNumber-1,1),last=new Date(year,monthNumber,0);
   const today=localToday(),currentMonth=today.slice(0,7);
-  if(selected>currentMonth){error.textContent=reportText('Future months cannot be reported yet.','အနာဂတ်လများအတွက် အစီရင်ခံစာ မထုတ်နိုင်သေးပါ');return null}
+  if(selected>currentMonth){error.textContent=reportText('Future months cannot be reported yet.','အနာဂတ်လအတွက် အစီရင်ခံစာ မထုတ်နိုင်သေးပါ');return null}
   const reportEnd=selected===currentMonth?new Date(Number(today.slice(0,4)),Number(today.slice(5,7))-1,Number(today.slice(8,10))):last;
-  const f=first.getFullYear()+'-'+String(first.getMonth()+1).padStart(2,'0')+'-'+String(first.getDate()).padStart(2,'0');
-  const t=reportEnd.getFullYear()+'-'+String(reportEnd.getMonth()+1).padStart(2,'0')+'-'+String(reportEnd.getDate()).padStart(2,'0');
+  const from=first.getFullYear()+'-'+String(first.getMonth()+1).padStart(2,'0')+'-'+String(first.getDate()).padStart(2,'0');
+  const to=reportEnd.getFullYear()+'-'+String(reportEnd.getMonth()+1).padStart(2,'0')+'-'+String(reportEnd.getDate()).padStart(2,'0');
   error.textContent='';
   const dept=document.getElementById('reportDepartment')?.value||'all';
   await captureDailyTicketSales();
   const [{data,error:dbError},{data:manualData,error:manualError}]=await Promise.all([
-   sb.from('ticket_daily_sales').select('business_date,ticket_id,department,ticket_name,unit_price,quantity,total_amount').gte('business_date',f).lte('business_date',t).order('business_date',{ascending:true}),
-   sb.from('ticket_manual_sales').select('business_date,ticket_id,department,ticket_name,unit_price,quantity,total_amount').gte('business_date',f).lte('business_date',t).order('business_date',{ascending:true})
+   sb.from('ticket_daily_sales').select('business_date,ticket_id,department,ticket_name,unit_price,quantity,total_amount').gte('business_date',from).lte('business_date',to).order('business_date',{ascending:true}),
+   sb.from('ticket_manual_sales').select('business_date,ticket_id,department,ticket_name,unit_price,quantity,total_amount').gte('business_date',from).lte('business_date',to).order('business_date',{ascending:true})
   ]);
   if(dbError)throw dbError;if(manualError)throw manualError;
-  // Monthly report: combine the same ticket type across all days into one row.
-  // Keep the daily source rows untouched in Supabase; this is report-only aggregation.
   const sourceRows=[...(data||[]),...(manualData||[])].filter(x=>dept==='all'||x.department===dept);
-  const monthlyByTicket=new Map();
-  for(const x of sourceRows){
-   const name=String(x.ticket_name||'Ticket').trim();
-   const normalizedName=name.toLocaleLowerCase().replace(/\\s+/g,' ');
-   // Merge by department + ticket name, not daily snapshot ID or price.
-   const key=[String(x.department||''),normalizedName].join('|');
-   const prior=monthlyByTicket.get(key);
-   if(prior){
-    prior.quantity+=Number(x.quantity)||0;
-    prior.amount+=Number(x.total_amount)||0;
-    if(prior.price==null&&x.unit_price!=null)prior.price=Number(x.unit_price);
-    if(!prior.id&&x.ticket_id)prior.id=x.ticket_id;
-   }else{
-    const master=tickets.find(ticket=>String(ticket.department||'')===String(x.department||'')&&String(ticket.name||'').trim().toLocaleLowerCase().replace(/\\s+/g,' ')===normalizedName);
-    monthlyByTicket.set(key,{id:x.ticket_id,department:x.department,name,price:x.unit_price==null?null:Number(x.unit_price),quantity:Number(x.quantity)||0,amount:Number(x.total_amount)||0,image:master?.image||master?.imageUrl||null,imageUrl:master?.imageUrl||master?.image||null});
-   }
-  }
-  // Preserve the exact Owner ticket-card order from the master tickets array.
+  const departmentLabel=id=>{const d=DEPTS.find(item=>item.id===id);return d?(d[lang]||d.en):String(id||'—')};
+  const normalizeName=name=>String(name||'Ticket').trim().toLocaleLowerCase().replace(/\s+/g,' ');
+  const dailyMap=new Map(),monthlyMap=new Map();
+  sourceRows.forEach(x=>{
+   const date=String(x.business_date||'').slice(0,10),name=String(x.ticket_name||'Ticket').trim(),price=x.unit_price==null?0:Number(x.unit_price)||0;
+   if(!date)return;
+   const key=[String(x.department||''),normalizeName(name),String(price)].join('|');
+   const dayKey=date+'|'+key;
+   let dayItem=dailyMap.get(dayKey);
+   if(!dayItem){dayItem={date,department:x.department,name,departmentLabel:departmentLabel(x.department),price,quantity:0,amount:0};dailyMap.set(dayKey,dayItem)}
+   dayItem.quantity+=Number(x.quantity)||0;dayItem.amount+=Number(x.total_amount)||0;
+   const monthKey=[String(x.department||''),normalizeName(name)].join('|');
+   let monthItem=monthlyMap.get(monthKey);
+   if(!monthItem){monthItem={department:x.department,name,departmentLabel:departmentLabel(x.department),price,prices:new Set(),quantity:0,amount:0};monthlyMap.set(monthKey,monthItem)}
+   monthItem.prices.add(price);monthItem.quantity+=Number(x.quantity)||0;monthItem.amount+=Number(x.total_amount)||0;
+  });
   const ownerOrder=new Map();
-  tickets.forEach((ticket,index)=>{
-   const key=[String(ticket.department||''),String(ticket.name||'').trim().toLocaleLowerCase().replace(/\\s+/g,' ')].join('|');
-   if(!ownerOrder.has(key))ownerOrder.set(key,index);
+  tickets.forEach((ticket,index)=>{const key=[String(ticket.department||''),normalizeName(ticket.name)].join('|');if(!ownerOrder.has(key))ownerOrder.set(key,index)});
+  const sortItems=(a,b)=>(ownerOrder.get([String(a.department||''),normalizeName(a.name)].join('|'))??Number.MAX_SAFE_INTEGER)-(ownerOrder.get([String(b.department||''),normalizeName(b.name)].join('|'))??Number.MAX_SAFE_INTEGER)||a.name.localeCompare(b.name);
+  const monthlyList=[...monthlyMap.values()].map(item=>({...item,priceVaries:item.prices.size>1})).sort(sortItems);
+  const days=monthlyReportDateList(from,to).map(date=>{
+   const items=[...dailyMap.values()].filter(item=>item.date===date).sort(sortItems);
+   const quantity=items.reduce((sum,item)=>sum+item.quantity,0),amount=items.reduce((sum,item)=>sum+item.amount,0);
+   return {date,items,quantity,amount};
   });
-  const list=[...monthlyByTicket.values()].sort((a,b)=>{
-   const keyA=[String(a.department||''),String(a.name||'').trim().toLocaleLowerCase().replace(/\\s+/g,' ')].join('|');
-   const keyB=[String(b.department||''),String(b.name||'').trim().toLocaleLowerCase().replace(/\\s+/g,' ')].join('|');
-   return (ownerOrder.get(keyA)??Number.MAX_SAFE_INTEGER)-(ownerOrder.get(keyB)??Number.MAX_SAFE_INTEGER);
-  });
-  return {list,f,t,selected};
+  const totalQuantity=days.reduce((sum,day)=>sum+day.quantity,0),totalAmount=days.reduce((sum,day)=>sum+day.amount,0);
+  return {selected,from,to,days,monthlyList,totalQuantity,totalAmount};
  };
- const fDate=value=>formatReportDate(value);
  const report=async()=>{
   const thisRequest=++requestNo;
   results.innerHTML='<div class="report-empty">'+reportText('Loading daily sales records…','နေ့စဉ်စာရင်းများကို ဖတ်နေသည်…')+'</div>';
@@ -2897,27 +2947,27 @@ function renderMonthly(){
    const data=await calc();if(thisRequest!==requestNo)return false;
    if(!data){results.innerHTML='';lastReportData=null;return false}
    lastReportData=data;
-   const {list,f,t}=data;
-   const quantity=list.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
-   const value=list.reduce((sum,x)=>sum+(Number(x.amount)||0),0);
-   const departments=DEPTS.map(d=>{
-    const rows=list.filter(x=>x.department===d.id);
-    const qty=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
-    const amount=rows.reduce((sum,x)=>sum+(Number(x.amount)||0),0);
-    return '<article class="report-dept"><div class="report-dept-title"><span class="report-dept-icon">'+d.icon+'</span><strong>'+esc(d[lang]||d.en)+'</strong></div><div class="report-dept-stats"><div><small>'+reportText('Ticket records','รายการตั๋ว')+'</small><b>'+rows.length.toLocaleString()+'</b></div><div><small>'+reportText('Tickets sold','จำนวนตั๋วที่ขาย')+'</small><b>'+qty.toLocaleString()+'</b></div><div><small>'+reportText('Sales total','ยอดขายรวม')+'</small><b>'+money(amount)+'</b></div></div></article>';
+   const fmtDate=v=>formatReportDate(v),fmtMoney=v=>monthlyReportMoney(v);
+   const dailyCards=data.days.map(day=>{
+    const rows=day.items.length?day.items.map(item=>'<tr><td>'+esc(item.name)+'</td><td>'+esc(item.departmentLabel)+'</td><td class="num">'+Number(item.quantity).toLocaleString()+'</td><td class="num">'+fmtMoney(item.amount)+'</td></tr>').join(''):'<tr><td colspan="4" class="report-empty">'+reportText('No ticket sales','မရောင်းရပါ')+'</td></tr>';
+    return '<article class="report-dept" style="margin:10px 0"><div class="report-dept-title"><strong>'+fmtDate(day.date)+'</strong><span style="margin-left:auto">'+day.quantity.toLocaleString()+' '+reportText('tickets','စောင်')+' · '+fmtMoney(day.amount)+'</span></div><div style="overflow:auto"><table style="width:100%;min-width:520px;border-collapse:collapse"><thead><tr><th>'+reportText('Ticket type','လက်မှတ်အမျိုးအစား')+'</th><th>'+reportText('Department','ဌာန')+'</th><th class="num">'+reportText('Quantity','အရေအတွက်')+'</th><th class="num">'+reportText('Sales','ရောင်းရငွေ')+'</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><th colspan="2">'+reportText('Daily total','တစ်ရက်တာစုစုပေါင်း')+'</th><th class="num">'+day.quantity.toLocaleString()+'</th><th class="num">'+fmtMoney(day.amount)+'</th></tr></tfoot></table></div></article>';
    }).join('');
-   results.innerHTML='<div class="report-range"><span>'+reportText('REPORT PERIOD · ','ช่วงเวลารายงาน · ')+esc((document.getElementById('reportDepartment')?.selectedOptions[0]?.textContent)||reportText('All Departments','All Departments'))+'</span><strong>'+fDate(f)+' – '+fDate(t)+'</strong></div>'+
-    '<div class="report-kpis"><article class="report-kpi"><span>'+reportText('Ticket records','รายการตั๋ว')+'</span><strong>'+list.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>'+reportText('Tickets sold','จำนวนตั๋วที่ขาย')+'</span><strong>'+quantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>'+reportText('Sales total','ยอดขายรวม')+'</span><strong>'+money(value)+'</strong></article></div>'+
-    '<div class="report-section-title"><h3>'+reportText('Department breakdown','สรุปแยกตามแผนก')+'</h3><span>'+DEPTS.length+reportText(' departments',' แผนก')+'</span></div>'+
-    (list.length?departments:'<div class="report-empty">'+reportText('No daily sales records were found for the selected month.','ရွေးချယ်ထားသောလအတွက် နေ့စဉ်ရောင်းချမှုမှတ်တမ်း မတွေ့ပါ')+'</div>');
+   const monthlyRows=data.monthlyList.map(item=>'<tr><td>'+esc(item.name)+'</td><td>'+esc(item.departmentLabel)+'</td><td class="num">'+(item.priceVaries?reportText('Varies','ဈေးနှုန်းပြောင်းလဲ'):'฿'+Number(item.price||0).toLocaleString())+'</td><td class="num">'+item.quantity.toLocaleString()+'</td><td class="num">'+fmtMoney(item.amount)+'</td></tr>').join('');
+   results.innerHTML='<div class="report-range"><span>'+reportText('REPORT PERIOD · ','အစီရင်ခံစာကာလ · ')+esc(data.selected)+'</span><strong>'+fmtDate(data.from)+' – '+fmtDate(data.to)+'</strong></div>'+
+    '<div class="report-kpis"><article class="report-kpi"><span>'+reportText('Total days','ရက်ပေါင်း')+'</span><strong>'+data.days.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>'+reportText('Total tickets','လက်မှတ်စုစုပေါင်း')+'</span><strong>'+data.totalQuantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>'+reportText('Monthly sales total','လစဉ်ရောင်းရငွေ')+'</span><strong>'+fmtMoney(data.totalAmount)+'</strong></article></div>'+
+    '<div class="report-section-title"><h3>'+reportText('Daily ticket details','နေ့စဉ်လက်မှတ်အသေးစိတ်')+'</h3><span>'+data.days.length+reportText(' days',' ရက်')+'</span></div>'+dailyCards+
+    '<div class="report-section-title"><h3>'+reportText('Monthly total by ticket type','လက်မှတ်အမျိုးအစားအလိုက် လချုပ်')+'</h3><span>'+data.monthlyList.length+reportText(' ticket types',' မျိုး')+'</span></div>'+
+    '<div style="overflow:auto"><table style="width:100%;min-width:620px;border-collapse:collapse"><thead><tr><th>'+reportText('Ticket type','လက်မှတ်အမျိုးအစား')+'</th><th>'+reportText('Department','ဌာန')+'</th><th>'+reportText('Unit price','တစ်စောင်ဈေး')+'</th><th class="num">'+reportText('Total tickets','စုစုပေါင်းစောင်')+'</th><th class="num">'+reportText('Total sales','စုစုပေါင်းရောင်းရငွေ')+'</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">'+reportText('MONTHLY GRAND TOTAL','တစ်လလုံးစုစုပေါင်း')+'</th><th class="num">'+data.totalQuantity.toLocaleString()+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table></div>';
    return true;
   }catch(e){if(thisRequest!==requestNo)return false;lastReportData=null;results.innerHTML='';error.textContent=reportText('Could not load daily sales: ','နေ့စဉ်စာရင်းဖတ်မရပါ: ')+(e.message||e);return false}
  };
+ const getFreshReport=async()=>{if(lastReportData&&lastReportData.selected===month.value)return lastReportData;return await report()?lastReportData:null};
  month.onchange=report;
  document.getElementById('reportDepartment').onchange=report;
  document.getElementById('makeMonthly').onclick=report;
- document.getElementById('downloadMonthly').onclick=async()=>{if(await report()&&lastReportData)await saveReportList(lastReportData.list,'Monthly Ticket Sales Report',reportText('Monthly report · ','လချုပ် · ')+lastReportData.selected)};
- document.getElementById('shareMonthly').onclick=async()=>{if(await report()&&lastReportData)await shareReportList(lastReportData.list,'Monthly Ticket Sales Report',reportText('Monthly report · ','လချုပ် · ')+lastReportData.selected)};
+ document.getElementById('downloadMonthly').onclick=async()=>{const data=await getFreshReport();if(data)monthlyReportPrint(data)};
+ document.getElementById('shareMonthly').onclick=async()=>{const data=await getFreshReport();if(data)monthlyReportPrint(data)};
+ document.getElementById('excelMonthly').onclick=async()=>{const data=await getFreshReport();if(data)monthlyReportDownloadExcel(data)};
  report();
 }
 function renderSettings(){
