@@ -2123,8 +2123,10 @@ async function loadStaffEventLocations(){
   staffEventLocations=[...ownerLocations,...staffLocations.filter(x=>!ownerLocations.some(o=>String(o.id)===String(x.id)))];
   // Backfill any older Event Staff locations too. A newly created location
   // receives all six Owner templates, while its quantities always start at 0.
+  let addedTemplateCount=0;
   for(const location of staffEventLocations){
    const added=await ensureStaffEventLocationTickets(location.id);
+   addedTemplateCount+=added;
    if(added)console.log('Loaded '+added+' Owner Event Ticket templates for '+location.location_name);
   }
   const previous=String(selectedStaffEventLocationId||'');
@@ -2140,8 +2142,7 @@ async function loadStaffEventLocations(){
    select.innerHTML='<option value="">Select your Event Location</option>'+staffEventLocations.map(x=>'<option value="'+escapeHtml(x.id)+'" '+(String(x.id)===String(selectedStaffEventLocationId)?'selected':'')+'>'+escapeHtml(x.location_name)+(x.isOwnerLocation?' · Owner':' · Event Staff')+'</option>').join('');
    select.value=selectedStaffEventLocationId;
   }
-  if(previous!==String(selectedStaffEventLocationId||'')&&page==='event')render();
-  else if(page==='event')render();
+  if(page==='event'&&(previous!==String(selectedStaffEventLocationId||'')||addedTemplateCount>0))render();
  }catch(error){
   const status=document.getElementById('staffEventLocationStatus');
   if(status)status.textContent='Could not load Owner Event Tickets: '+(error.message||error);
