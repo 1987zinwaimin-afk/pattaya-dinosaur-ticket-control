@@ -2125,4 +2125,31 @@ document.getElementById('language').onchange=e=>{lang=e.target.value;localStorag
 })();
 
 installUILanguageObserver();applyUILanguage();
+</script>
+<!-- Staff-only safety cleanup: remove accidentally rendered CSS patch text without touching ticket data or Owner UI. -->
+<script>
+(function(){
+ const markers=[
+  '/* Staff sidebar language and gold action button polish */',
+  '#side .nav button.active, #side .nav button.gold',
+  'HARD FIX: one equal-width row'
+ ];
+ function removeLeakedStaffCss(){
+  if(!document.body)return;
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  while(walker.nextNode()){
+   const node=walker.currentNode;
+   if(node.nodeValue&&markers.some(marker=>node.nodeValue.includes(marker)))nodes.push(node);
+  }
+  nodes.forEach(node=>{
+   const parent=node.parentElement;
+   if(parent&&parent!==document.body&&parent.children.length===0)parent.remove();
+   else node.remove();
+  });
+ }
+ const run=()=>removeLeakedStaffCss();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
+ new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true});
+})();
 </script></body></html>
