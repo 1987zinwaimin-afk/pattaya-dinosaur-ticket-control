@@ -1930,9 +1930,9 @@ async function lookupStaffNameById(){
    nameInput.value=String(data);
    nameInput.readOnly=true;
    nameInput.setAttribute('aria-readonly','true');
-   nameInput.placeholder='Registered Staff name';
+   nameInput.placeholder='Registered Event Staff name';
    nameInput.dataset.resolvedStaffId=staffId.toUpperCase();
-   if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name filled automatically.';
+   if(hint)hint.textContent='✓ Event Staff account verified. Registered name filled automatically.';
   }else{
    nameInput.value='';
    nameInput.readOnly=false;
@@ -1953,9 +1953,9 @@ document.getElementById('authStaffId').addEventListener('input',()=>{
  clearTimeout(staffNameLookupTimer);
  const name=document.getElementById('authName');
  name.value='';name.readOnly=false;name.dataset.resolvedStaffId='';
- name.placeholder='Enter your name';
+ name.placeholder='Enter your registered Event Staff name';
  const hint=document.getElementById('authNameHint');
- if(hint)hint.textContent='Enter an existing Staff ID to fill the registered name automatically. For a new ID, enter any available number and your name.';
+ if(hint)hint.textContent='Enter an Event Staff ID created by Owner. The registered name will fill automatically.';
  staffNameLookupTimer=setTimeout(()=>{if(document.activeElement!==document.getElementById('authStaffId'))lookupStaffNameById()},650);
 });
 
