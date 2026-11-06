@@ -2886,7 +2886,7 @@ document.getElementById('ticketActionProceed').onclick=()=>{
  const t=tickets.find(x=>x.id===pending.id);if(!t)return;
  if(pending.action==='clear'){t.quantity=0;t.updatedAt=new Date().toISOString();save();render();return}
  tickets=tickets.filter(x=>x.id!==t.id);
- if(currentUser&&cloudReady){sb.from('tickets').delete().eq('id',t.id).then(({error})=>{if(error)showCloudError(error.message)});if(t.imagePath)sb.storage.from('ticket-images').remove([t.imagePath])}
+ if(currentUser&&cloudReady){sb.from('tickets').delete().eq('id',t.id).then(({error})=>{if(error){showCloudError(error.message);return}if(t.imagePath)sb.from('tickets').select('id').eq('image_path',t.imagePath).limit(1).then(({data,error:lookupError})=>{if(lookupError){console.warn('Could not check shared ticket image references; image retained.',lookupError);return}if(!data?.length)sb.storage.from('ticket-images').remove([t.imagePath])})})}
  save();render();
 };
 function openTicket(id){let t=tickets.find(x=>x.id===id);document.getElementById('ticketForm').reset();document.getElementById('editId').value=id||'';document.getElementById('ticketInitial').value=t?t.quantity:0;document.getElementById('ticketName').value=t?t.name:'';document.getElementById('ticketPrice').value=t&&t.price!==null?t.price:'';document.getElementById('modalTitle').textContent=t?tr('editTitle'):tr('newTitle');const eventDeptForForm=(t&&t.department)||((STAFF_MODE&&selectedStaffDepartment==='all')?document.getElementById('ticketDepartment').value:(STAFF_MODE?selectedStaffDepartment:page));document.getElementById('ticketModal').classList.add('open')}
