@@ -1391,7 +1391,7 @@ body.theme-light button:focus-visible,body.theme-light input:focus-visible,body.
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
-<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="all">All Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
+<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><small id="authNameHint" class="subtle" aria-live="polite">Enter an existing Staff ID to fill the registered name automatically. For a new ID, enter any available number and your name.</small><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option><option value="all">All Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
 
@@ -1648,12 +1648,84 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  }catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
  Promise.allSettled(backgroundTasks);
 }
+// Staff ID lookup: existing IDs fill the registered name; new IDs remain available for self-registration.
+let staffNameLookupTimer=null,staffNameLookupSequence=0;
+async function ensureStaffLookupSession(){
+ const {data,error}=await sb.auth.getSession();
+ if(error)throw error;
+ if(data?.session)return data.session;
+ const {data:created,error:createError}=await sb.auth.signInAnonymously({options:{data:{display_name:'Staff'}}});
+ if(createError)throw createError;
+ if(!created?.session)throw new Error('Could not start a secure staff lookup session. Please try again.');
+ return created.session;
+}
+async function lookupStaffNameById(){
+ const idInput=document.getElementById('authStaffId');
+ const nameInput=document.getElementById('authName');
+ const hint=document.getElementById('authNameHint');
+ const err=document.getElementById('authError');
+ const staffId=idInput.value.trim();
+ const sequence=++staffNameLookupSequence;
+ nameInput.value='';
+ nameInput.readOnly=false;
+ nameInput.removeAttribute('aria-readonly');
+ nameInput.placeholder='Enter your name';
+ nameInput.dataset.resolvedStaffId='';
+ if(hint)hint.textContent='Checking Staff ID…';
+ if(err)err.textContent='';
+ if(!staffId){
+  if(hint)hint.textContent='Enter an existing Staff ID to fill the registered name automatically. For a new ID, enter any available number and your name.';
+  return;
+ }
+ if(staffId.length<2||staffId.length>32||!/^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(staffId)){
+  if(hint)hint.textContent='Staff ID must be 2–32 characters using letters, numbers, hyphens or underscores.';
+  return;
+ }
+ try{
+  await ensureStaffLookupSession();
+  const {data,error}=await sb.rpc('lookup_staff_name_by_id',{p_staff_id:staffId});
+  if(sequence!==staffNameLookupSequence||idInput.value.trim().toUpperCase()!==staffId.toUpperCase())return;
+  if(error)throw error;
+  if(data){
+   nameInput.value=String(data);
+   nameInput.readOnly=true;
+   nameInput.setAttribute('aria-readonly','true');
+   nameInput.placeholder='Registered Staff name';
+   nameInput.dataset.resolvedStaffId=staffId.toUpperCase();
+   if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name filled automatically.';
+  }else{
+   nameInput.value='';
+   nameInput.readOnly=false;
+   nameInput.placeholder='Enter your name for this new Staff ID';
+   if(hint)hint.textContent='New Staff ID available. Enter your name to create the account.';
+  }
+ }catch(error){
+  if(sequence!==staffNameLookupSequence)return;
+  if(hint)hint.textContent='Could not verify this ID right now. Check your connection and try again.';
+  if(err)err.textContent=error.message||'Could not check Staff ID.';
+ }
+}
+document.getElementById('authStaffId').addEventListener('blur',lookupStaffNameById);
+document.getElementById('authStaffId').addEventListener('keydown',event=>{
+ if(event.key==='Enter'){event.preventDefault();lookupStaffNameById().then(()=>{const name=document.getElementById('authName');if(!name.readOnly)name.focus()})}
+});
+document.getElementById('authStaffId').addEventListener('input',()=>{
+ clearTimeout(staffNameLookupTimer);
+ const name=document.getElementById('authName');
+ name.value='';name.readOnly=false;name.dataset.resolvedStaffId='';
+ name.placeholder='Enter your name';
+ const hint=document.getElementById('authNameHint');
+ if(hint)hint.textContent='Enter an existing Staff ID to fill the registered name automatically. For a new ID, enter any available number and your name.';
+ staffNameLookupTimer=setTimeout(()=>{if(document.activeElement!==document.getElementById('authStaffId'))lookupStaffNameById()},650);
+});
+
 document.getElementById('authForm').onsubmit=async e=>{
  e.preventDefault();
  const name=document.getElementById('authName').value.trim();
  const staffId=document.getElementById('authStaffId').value.trim();
  const err=document.getElementById('authError');
- if(!staffId||!name){err.textContent='Please enter Staff ID and Name.';return}
+ if(!staffId||!name){err.textContent='Please enter a Staff ID. Existing IDs fill the name automatically; for a new ID, enter your name.';return}
+ if(document.getElementById('authName').dataset.resolvedStaffId&&document.getElementById('authName').dataset.resolvedStaffId!==staffId.toUpperCase()){err.textContent='Staff ID changed. Please verify the ID again.';return}
  err.textContent='Checking Staff ID…';
  try{
   // Reuse the saved anonymous identity after a failed attempt; never create a new Auth user on every retry.
