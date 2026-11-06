@@ -2852,7 +2852,7 @@ function monthlyReportBuildHtml(data){
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p></body></html>';
 }
-function monthlyReportDownloadExcel(data){
+function monthlyReportExcelContent(data){
  const xmlEscape=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
  const cell=(value,type='String',style='')=>'<Cell'+(style?' ss:StyleID="'+style+'"':'')+'><Data ss:Type="'+type+'">'+xmlEscape(value)+'</Data></Cell>';
  const row=values=>'<Row>'+values.join('')+'</Row>';
@@ -2868,6 +2868,11 @@ function monthlyReportDownloadExcel(data){
  data.monthlyList.forEach(item=>monthly.push(row([cell(item.departmentLabel),cell(item.name),item.priceVaries?cell('Varies'):cell(Number(item.price||0),'Number'),cell(item.quantity,'Number'),cell(item.amount,'Number')])));
  monthly.push(row([cell('MONTHLY GRAND TOTAL'),cell(''),cell(''),cell(data.totalQuantity,'Number'),cell(data.totalAmount,'Number')]));
  const workbook='<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10"/></Style></Styles><Worksheet ss:Name="Daily Details"><Table>'+daily.join('')+'</Table></Worksheet><Worksheet ss:Name="Monthly Totals"><Table>'+monthly.join('')+'</Table></Worksheet></Workbook>';
+
+ return '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet" xmlns:html="http://www.w3.org/TR/REC-html40"><Styles><Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Font ss:FontName="Arial" ss:Size="10"/></Style></Styles><Worksheet ss:Name="Daily Details"><Table>'+daily.join('')+'</Table></Worksheet><Worksheet ss:Name="Monthly Totals"><Table>'+monthly.join('')+'</Table></Worksheet></Workbook>';
+}
+function monthlyReportDownloadExcel(data){
+ const workbook=monthlyReportExcelContent(data);
  const blob=new Blob([workbook],{type:'application/vnd.ms-excel;charset=utf-8'});
  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pattaya-ticket-report-'+data.selected+'.xls';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
@@ -2886,10 +2891,10 @@ function renderMonthly(){
  root.dataset.uiPage='monthly';
  const now=new Date(),selectedMonth=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
  root.innerHTML='<div class="report-page">'+
-  '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">'+reportText('TICKET CONTROL · REPORTS','စနစ်ထိန်းချုပ်မှု · အစီရင်ခံစာ')+'</span><h2>'+reportText('Monthly Ticket Report','လစဉ်လက်မှတ်အစီရင်ခံစာ')+'</h2><p class="subtle">'+reportText('Daily ticket-type details and automatic monthly totals','နေ့စဉ်လက်မှတ်အမျိုးအစားအသေးစိတ်နှင့် လစဉ်စုစုပေါင်း')+'</p></div><span class="report-icon">▤</span></div>'+
+  '<section class="panel report-hero"><div class="report-heading"><div><span class="report-eyebrow">'+reportText('TICKET CONTROL · REPORTS','စနစ်ထိန်းချုပ်မှု · အစီရင်ခံစာ')+'</span><h2>'+reportText('Monthly Ticket Report','လစဉ်လက်မှတ်အစီရင်ခံစာ')+'</h2><p class="subtle">'+reportText('Monthly ticket sales summary','လစဉ်လက်မှတ်ရောင်းအားအကျဉ်းချုပ်')+'</p></div><span class="report-icon">▤</span></div>'+
   '<div class="report-filters"><label>'+reportText('Select month','လကိုရွေးချယ်ပါ')+'<input type="month" id="reportMonth" value="'+selectedMonth+'"></label></div>'+
   '<div class="report-department-filter"><label for="reportDepartment">'+reportText('Department','ဌာန')+'</label><select id="reportDepartment"><option value="all">'+reportText('All Departments','ဌာနအားလုံး')+'</option>'+DEPTS.map(d=>'<option value="'+esc(d.id)+'">'+esc(d[lang]||d.en)+'</option>').join('')+'</select></div>'+
-  '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+reportText('Generate report','အစီရင်ခံစာထုတ်ရန်')+'</button><button id="downloadMonthly" class="report-secondary">⇩ '+reportText('Save PDF','PDF သိမ်းရန်')+'</button><button class="blue" id="shareMonthly">↗ '+reportText('Share / Print PDF','PDF မျှဝေ / ပရင့်')+'</button><button id="excelMonthly" class="report-secondary">▦ '+reportText('Export Excel','Excel ထုတ်ရန်')+'</button></div>'+
+  '<div class="report-actions"><button class="gold" id="makeMonthly">▤ '+reportText('Generate report','အစီရင်ခံစာထုတ်ရန်')+'</button><button id="downloadMonthly" class="report-secondary">⇩ '+reportText('Save Report · PDF','အစီရင်ခံစာသိမ်းရန် · PDF')+'</button><button class="blue" id="shareMonthly">↗ '+reportText('Share Report · Excel','အစီရင်ခံစာမျှဝေရန် · Excel')+'</button></div>'+
   '<p id="monthlyError" class="report-error" role="alert" aria-live="polite"></p></section>'+
   '<section id="monthlyResults" class="report-results" aria-live="polite"></section>'+
   '<p class="report-footnote">'+reportText('Daily sales are saved automatically. The current month includes records through today; completed months include every calendar day.','နေ့စဉ်ရောင်းအားကို အလိုအလျောက်သိမ်းထားသည်။ လက်ရှိလတွင် ယနေ့အထိနှင့် ပြီးဆုံးသောလများတွင် ရက်အားလုံး ပါဝင်သည်။')+'</p>'+
@@ -2951,17 +2956,17 @@ function renderMonthly(){
    const data=await calc();if(thisRequest!==requestNo)return false;
    if(!data){results.innerHTML='';lastReportData=null;return false}
    lastReportData=data;
-   const fmtDate=v=>formatReportDate(v),fmtMoney=v=>monthlyReportMoney(v);
-   const dailyCards=data.days.map(day=>{
-    const rows=day.items.length?day.items.map(item=>'<tr><td>'+esc(item.name)+'</td><td>'+esc(item.departmentLabel)+'</td><td class="num">'+Number(item.quantity).toLocaleString()+'</td><td class="num">'+fmtMoney(item.amount)+'</td></tr>').join(''):'<tr><td colspan="4" class="report-empty">'+reportText('No ticket sales','မရောင်းရပါ')+'</td></tr>';
-    return '<article class="report-dept" style="margin:10px 0"><div class="report-dept-title"><strong>'+fmtDate(day.date)+'</strong><span style="margin-left:auto">'+day.quantity.toLocaleString()+' '+reportText('tickets','စောင်')+' · '+fmtMoney(day.amount)+'</span></div><div style="overflow:auto"><table style="width:100%;min-width:520px;border-collapse:collapse"><thead><tr><th>'+reportText('Ticket type','လက်မှတ်အမျိုးအစား')+'</th><th>'+reportText('Department','ဌာန')+'</th><th class="num">'+reportText('Quantity','အရေအတွက်')+'</th><th class="num">'+reportText('Sales','ရောင်းရငွေ')+'</th></tr></thead><tbody>'+rows+'</tbody><tfoot><tr><th colspan="2">'+reportText('Daily total','တစ်ရက်တာစုစုပေါင်း')+'</th><th class="num">'+day.quantity.toLocaleString()+'</th><th class="num">'+fmtMoney(day.amount)+'</th></tr></tfoot></table></div></article>';
+   const quantity=data.totalQuantity,value=data.totalAmount;
+   const departments=DEPTS.map(d=>{
+    const rows=data.monthlyList.filter(x=>x.department===d.id);
+    const qty=rows.reduce((sum,x)=>sum+(Number(x.quantity)||0),0);
+    const amount=rows.reduce((sum,x)=>sum+(Number(x.amount)||0),0);
+    return '<article class="report-dept"><div class="report-dept-title"><span class="report-dept-icon">'+d.icon+'</span><strong>'+esc(d[lang]||d.en)+'</strong></div><div class="report-dept-stats"><div><small>'+reportText('Ticket types','လက်မှတ်အမျိုးအစား')+'</small><b>'+rows.length.toLocaleString()+'</b></div><div><small>'+reportText('Tickets sold','ရောင်းရလက်မှတ်')+'</small><b>'+qty.toLocaleString()+'</b></div><div><small>'+reportText('Sales total','ရောင်းရငွေ')+'</small><b>'+monthlyReportMoney(amount)+'</b></div></div></article>';
    }).join('');
-   const monthlyRows=data.monthlyList.map(item=>'<tr><td>'+esc(item.name)+'</td><td>'+esc(item.departmentLabel)+'</td><td class="num">'+(item.priceVaries?reportText('Varies','ဈေးနှုန်းပြောင်းလဲ'):'฿'+Number(item.price||0).toLocaleString())+'</td><td class="num">'+item.quantity.toLocaleString()+'</td><td class="num">'+fmtMoney(item.amount)+'</td></tr>').join('');
-   results.innerHTML='<div class="report-range"><span>'+reportText('REPORT PERIOD · ','အစီရင်ခံစာကာလ · ')+esc(data.selected)+'</span><strong>'+fmtDate(data.from)+' – '+fmtDate(data.to)+'</strong></div>'+
-    '<div class="report-kpis"><article class="report-kpi"><span>'+reportText('Total days','ရက်ပေါင်း')+'</span><strong>'+data.days.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>'+reportText('Total tickets','လက်မှတ်စုစုပေါင်း')+'</span><strong>'+data.totalQuantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>'+reportText('Monthly sales total','လစဉ်ရောင်းရငွေ')+'</span><strong>'+fmtMoney(data.totalAmount)+'</strong></article></div>'+
-    '<div class="report-section-title"><h3>'+reportText('Daily ticket details','နေ့စဉ်လက်မှတ်အသေးစိတ်')+'</h3><span>'+data.days.length+reportText(' days',' ရက်')+'</span></div>'+dailyCards+
-    '<div class="report-section-title"><h3>'+reportText('Monthly total by ticket type','လက်မှတ်အမျိုးအစားအလိုက် လချုပ်')+'</h3><span>'+data.monthlyList.length+reportText(' ticket types',' မျိုး')+'</span></div>'+
-    '<div style="overflow:auto"><table style="width:100%;min-width:620px;border-collapse:collapse"><thead><tr><th>'+reportText('Ticket type','လက်မှတ်အမျိုးအစား')+'</th><th>'+reportText('Department','ဌာန')+'</th><th>'+reportText('Unit price','တစ်စောင်ဈေး')+'</th><th class="num">'+reportText('Total tickets','စုစုပေါင်းစောင်')+'</th><th class="num">'+reportText('Total sales','စုစုပေါင်းရောင်းရငွေ')+'</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">'+reportText('MONTHLY GRAND TOTAL','တစ်လလုံးစုစုပေါင်း')+'</th><th class="num">'+data.totalQuantity.toLocaleString()+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table></div>';
+   results.innerHTML='<div class="report-range"><span>'+reportText('REPORT PERIOD · ','အစီရင်ခံစာကာလ · ')+esc((document.getElementById('reportDepartment')?.selectedOptions[0]?.textContent)||reportText('All Departments','ဌာနအားလုံး'))+'</span><strong>'+formatReportDate(data.from)+' – '+formatReportDate(data.to)+'</strong></div>'+
+    '<div class="report-kpis"><article class="report-kpi"><span>'+reportText('Ticket types','လက်မှတ်အမျိုးအစား')+'</span><strong>'+data.monthlyList.length.toLocaleString()+'</strong></article><article class="report-kpi"><span>'+reportText('Tickets sold','ရောင်းရလက်မှတ်')+'</span><strong>'+quantity.toLocaleString()+'</strong></article><article class="report-kpi report-kpi-gold"><span>'+reportText('Sales total','ရောင်းရငွေစုစုပေါင်း')+'</span><strong>'+monthlyReportMoney(value)+'</strong></article></div>'+
+    '<div class="report-section-title"><h3>'+reportText('Department breakdown','ဌာနအလိုက် စုစုပေါင်း')+'</h3><span>'+DEPTS.length+reportText(' departments',' ဌာန')+'</span></div>'+
+    (data.monthlyList.length?departments:'<div class="report-empty">'+reportText('No daily sales records were found for the selected month.','ရွေးချယ်ထားသောလအတွက် နေ့စဉ်ရောင်းအားမှတ်တမ်း မတွေ့ပါ')+'</div>');
    return true;
   }catch(e){if(thisRequest!==requestNo)return false;lastReportData=null;results.innerHTML='';error.textContent=reportText('Could not load daily sales: ','နေ့စဉ်စာရင်းဖတ်မရပါ: ')+(e.message||e);return false}
  };
@@ -2970,8 +2975,7 @@ function renderMonthly(){
  document.getElementById('reportDepartment').onchange=report;
  document.getElementById('makeMonthly').onclick=report;
  document.getElementById('downloadMonthly').onclick=async()=>{const win=monthlyReportOpenPrintWindow();if(!win)return;const data=await getFreshReport();if(data)monthlyReportPrint(data,win);else win.close()};
- document.getElementById('shareMonthly').onclick=async()=>{const win=monthlyReportOpenPrintWindow();if(!win)return;const data=await getFreshReport();if(data)monthlyReportPrint(data,win);else win.close()};
- document.getElementById('excelMonthly').onclick=async()=>{const data=await getFreshReport();if(data)monthlyReportDownloadExcel(data)};
+ document.getElementById('shareMonthly').onclick=async()=>{const data=await getFreshReport();if(data)await monthlyReportShareExcel(data)};
  report();
 }
 function renderSettings(){
