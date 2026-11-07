@@ -3877,7 +3877,7 @@ installUILanguageObserver();applyUILanguage();
   dateEl.textContent=dateFmt.format(now).replace(/\//g,'.');dayEl.textContent=weekday;
   dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);
   if(holidayEl){const label=holiday||observance||(weekend?'Weekend':'');holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);}
-  timeEl.textContent=timeFmt.format(now).toUpperCase();
+  const thailandClock=new Date(now.getTime()+7*60*60*1000),clockHour=thailandClock.getUTCHours(),clockMinute=String(thailandClock.getUTCMinutes()).padStart(2,'0'),clockSecond=String(thailandClock.getUTCSeconds()).padStart(2,'0'),clockPeriod=clockHour>=12?'PM':'AM',clockHour12=clockHour%12||12;timeEl.textContent=String(clockHour12)+':'+clockMinute+':'+clockSecond+' '+clockPeriod;
  }
  updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
 })();
