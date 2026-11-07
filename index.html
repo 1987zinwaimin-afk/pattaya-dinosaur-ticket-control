@@ -3582,7 +3582,7 @@ async function loadEventStaffAccounts(){
   const authIds=[...new Set(data.map(r=>r.auth_user_id).filter(Boolean))];
   let profiles=[];
   if(authIds.length){
-   const {data:p,error:pe}=await sb.from('profiles').select('id,display_name,avatar_url,staff_id').in('id',authIds);
+   const {data:p,error:pe}=await withStaffDataTimeout(sb.from('profiles').select('id,display_name,avatar_url,staff_id').in('id',authIds),'Event Staff profiles');
    if(pe)throw pe;
    profiles=p||[];
   }
@@ -3741,13 +3741,13 @@ async function loadStaffActivity(){
   const names=[...new Set(rows.map(r=>r.display_name).filter(Boolean))];
   let profiles=[];
   if(ids.length){
-   const {data:p,error:pe}=await sb.from('profiles').select('id,display_name,avatar_url,role,staff_id').in('id',ids);
+   const {data:p,error:pe}=await withStaffDataTimeout(sb.from('profiles').select('id,display_name,avatar_url,role,staff_id').in('id',ids),'Staff profiles');
    if(pe)throw pe;
    profiles=p||[];
   }
   let nameProfiles=[];
   if(names.length){
-   const {data:np,error:npe}=await sb.from('profiles').select('id,display_name,avatar_url,role').eq('role','staff').in('display_name',names);
+   const {data:np,error:npe}=await withStaffDataTimeout(sb.from('profiles').select('id,display_name,avatar_url,role').eq('role','staff').in('display_name',names),'Staff profile names');
    if(npe)throw npe;
    nameProfiles=np||[];
   }
