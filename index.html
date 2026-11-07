@@ -2486,7 +2486,7 @@ async function loadCloud(){
  }catch(e){console.warn('Could not inspect local ticket caches',e)}
  // Do not write a duplicate backup to localStorage; it can exceed mobile browser quota.
  // Read existing cache/backup if present, but leave them untouched.
- const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+ const {data,error}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
  if(error)throw error;
  let cloudRows=data||[];
  // One-time recovery: when the cloud table is empty but this browser has tickets, migrate that local copy to Cloud.
@@ -2513,7 +2513,7 @@ async function loadCloud(){
   if(recovered.length){
    const {error:migrateError}=await sb.from('tickets').upsert(recovered,{onConflict:'id'});
    if(migrateError)throw new Error('Cloud is empty and local tickets were found, but recovery upload failed: '+migrateError.message);
-   const {data:reloaded,error:reloadError}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+   const {data:reloaded,error:reloadError}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
    if(reloadError)throw reloadError;
    cloudRows=reloaded||[];
   }
@@ -2531,7 +2531,7 @@ async function refreshCloudTickets(force=false){
  if(cloudLoadBusy)return;
  cloudLoadBusy=true;
  try{
-  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+  const {data,error}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
   if(error)throw error;
   const rows=data||[];
   const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));
@@ -3523,7 +3523,7 @@ function renderSettings(){
     const row=cloudRowForTicket(t);row.created_by=currentUser.id;row.updated_by=currentUser.id;recovered.push(row);
    }
    const {error}=await sb.from('tickets').upsert(recovered,{onConflict:'id'});if(error)throw error;
-   const {data,error:readError}=await sb.from('tickets').select('*').order('created_at',{ascending:true});if(readError)throw readError;
+   const {data,error:readError}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});if(readError)throw readError;
    const rows=data||[];tickets=rows.map(mapCloud);lastCloudRows=new Map(rows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(e){}render();
    out.textContent='Restore complete. Imported '+recovered.length+' ticket records to Ticket Control Live. Cloud now contains '+rows.length+' ticket records.';
   }catch(e){out.textContent='Restore failed: '+(e.message||e)+'. No existing Cloud rows were intentionally deleted.'}
@@ -3835,7 +3835,7 @@ installUILanguageObserver();applyUILanguage();
    const {data:profile,error:profileError}=await client.from('profiles').select('role').eq('id',sessionData.session.user.id).maybeSingle();
    if(profileError)throw profileError;
    if(profile?.role!=='owner')throw new Error('The current signed-in account is not the Owner account.');
-   const {data:rows,error}=await client.from('tickets').select('*').order('created_at',{ascending:true});
+   const {data:rows,error}=await client.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
    if(error)throw error;
    const tickets=rows||[],depts=[['sale','🎟️','Sale Ticket Department'],['entry','🎫','Entry Ticket Department'],['playing','🎮','Playing Ticket Department'],['event','🎪','Event Ticket Department']];
    const money=n=>'฿'+Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
