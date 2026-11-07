@@ -1645,6 +1645,36 @@ main.wrap{padding-top:5px!important;padding-bottom:24px!important}
  #ticketCards>.ticket .ticket-quantity-highlight small{font-size:9px!important}
  #ticketCards>.ticket .ticket-actions{gap:5px!important}
 }
+
+/* Compact, content-height Event Staff cards: avoid stretched blank space and oversized controls */
+#ticketCards{align-items:start!important;grid-auto-rows:max-content!important;row-gap:9px!important}
+#ticketCards>.ticket{align-self:start!important;height:auto!important;min-height:0!important}
+#ticketCards>.ticket>.ticket-body{flex:0 0 auto!important;height:auto!important;min-height:0!important;justify-content:flex-start!important;gap:5px!important;padding:8px!important}
+#ticketCards>.ticket .ticket-body h3{min-height:0!important;height:auto!important;margin:0 0 3px!important;line-height:1.2!important}
+#ticketCards>.ticket .price{min-height:29px!important;height:auto!important;margin:0 0 3px!important;padding:5px 9px!important;font-size:clamp(12px,3vw,14px)!important}
+#ticketCards>.ticket .soldrow{height:40px!important;min-height:40px!important;margin:2px 0 4px!important}
+#ticketCards>.ticket .ticket-quantity-highlight{height:40px!important;min-height:40px!important;padding:4px 8px!important;gap:4px!important}
+#ticketCards>.ticket .ticket-quantity-highlight span{font-size:clamp(9px,2.5vw,11px)!important}
+#ticketCards>.ticket .ticket-quantity-highlight strong{font-size:clamp(18px,4.6vw,22px)!important}
+#ticketCards>.ticket .ticket-quantity-highlight small{font-size:clamp(8px,2vw,9px)!important}
+#ticketCards>.ticket input.qty{height:38px!important;min-height:38px!important;padding:6px 9px!important;font-size:14px!important}
+#ticketCards>.ticket .ticket-actions{margin:3px 0 0!important;gap:6px!important}
+#ticketCards>.ticket .ticket-actions button{min-height:36px!important;padding:5px 4px!important;font-size:clamp(10px,2.6vw,12px)!important}
+#ticketCards>.ticket .morebox{margin-top:5px!important}
+@media(max-width:520px){
+ #ticketCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ #ticketCards>.ticket>.ticket-body{padding:8px!important}
+ #ticketCards>.ticket>div:first-child:has(>img),
+ #ticketCards>.ticket .ticket-preview-image,
+ #ticketCards>.ticket>.placeholder{height:clamp(88px,23vw,116px)!important}
+}
+@media(max-width:360px){
+ #ticketCards>.ticket>.ticket-body{padding:7px!important}
+ #ticketCards>.ticket .ticket-quantity-highlight{padding:4px 6px!important;gap:3px!important}
+ #ticketCards>.ticket .ticket-quantity-highlight span{font-size:8px!important}
+ #ticketCards>.ticket .ticket-quantity-highlight small{font-size:7px!important}
+}
+
 </style>
 </head>
 <body>
