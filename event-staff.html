@@ -2247,6 +2247,9 @@ async function createReportBlob(list,titleText){
  ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,infoY,805,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='left';ctx.font='bold 31px Arial';let heading=String(lang==='th'?({ 'Monthly Ticket Inventory Report':'รายงานสต็อกตั๋วประจำเดือน','Ticket Report':'รายงานตั๋ว','All Ticket Departments':'ทุกแผนก' }[titleText]||(dep()?(dep()[lang]||dep().en):'รายงานตั๋ว')):(titleText||(dep()?dep().en:'Ticket Report')));if(heading.length>34)heading=heading.slice(0,33)+'…';ctx.fillText(heading,60,infoY+49);
  ctx.fillStyle='#63758b';ctx.font='24px Arial';ctx.fillText(reportText('Daily Ticket Report · ','รายงานตั๋วประจำวัน · ')+formatReportDate(new Date()),60,infoY+94);
+ // Include the active Event Location in the exported PNG, not only in the on-screen page.
+ const activeReportLocation=(page==='event'||items.some(t=>t.department==='event'))?(staffEventLocations.find(x=>String(x.id)===String(selectedStaffEventLocationId))?.location_name||''):'';
+ if(activeReportLocation){ctx.fillStyle='#63758b';ctx.font='bold 20px Arial';const locLabel=reportText('Event Location: ','สถานที่จัดงาน: ');let locText=locLabel+String(activeReportLocation);while(ctx.measureText(locText).width>745&&locText.length>12)locText=locText.slice(0,-2)+'…';ctx.fillText(locText,60,infoY+128);}
  const total=items.reduce((s,t)=>s+(Number(t.quantity)||0),0);
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(850,infoY,320,infoH,24);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.lineWidth=4;ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 25px Arial';ctx.fillText(reportText('TOTAL TICKETS','จำนวนตั๋วทั้งหมด'),1010,infoY+43);ctx.font='bold 66px Arial';ctx.fillText(String(total),1010,infoY+110);
