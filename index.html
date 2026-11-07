@@ -2534,18 +2534,20 @@ async function enableStaffLoginNotifications(){try{if(!currentUser||currentRole!
 function showStaffLoginNotice(row){const p=getStaffNotifyPrefs();const depts={sale:'Sale Ticket Department',entry:'Entry Ticket Department',playing:'Playing Ticket Department',event:'Event Ticket Department',all:'All Departments'};const msg=(row.display_name||'Staff')+(row.staff_id?' · ID '+row.staff_id:'')+' logged in — '+(depts[row.department]||row.department||'Unknown Department');playStaffLoginTone(p.sound);let toast=document.getElementById('staffLoginToast');if(!toast){toast=document.createElement('div');toast.id='staffLoginToast';document.body.appendChild(toast)}const base='position:fixed;z-index:99999;max-width:min(420px,calc(100vw - 28px));padding:16px 18px;color:#f4f7fb;font-weight:750;box-shadow:0 10px 35px #0009;';const styles={'3':'right:14px;top:14px;border:1px solid #f4ca70;border-radius:16px;background:linear-gradient(135deg,#123b58ee,#071a2cee);','6':'right:14px;top:14px;border:1px solid #45c5e8;border-radius:999px;background:#071a2cf2;padding:12px 18px;','2':'left:50%;top:35%;transform:translate(-50%,-35%);width:min(360px,calc(100vw - 32px));text-align:center;border:2px solid #f4ca70;border-radius:22px;background:#071a2cf7;padding:28px 20px;','5':'left:0;top:20%;bottom:20%;width:min(340px,calc(100vw - 45px));border:1px solid #f4ca70;border-radius:0 20px 20px 0;background:#071a2cf7;padding:22px 18px;'};toast.style.cssText=base+(styles[p.style]||styles['3']);toast.textContent=(p.style==='2'?'🔔 NEW STAFF LOGIN\n\n':'🔔 Staff Login: ')+msg;toast.style.whiteSpace='pre-line';toast.style.display='block';clearTimeout(window.staffLoginToastTimer);window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},p.style==='2'?9000:7000);if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||p.background==='both')){try{new Notification('Staff Login',{body:msg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}}}
 async function pollStaffLoginNotifications(){if(!sb||!currentUser||currentRole!=='owner')return;try{const {data,error}=await sb.from('staff_login_activity').select('normalized_name,display_name,staff_id,department,logged_in_at,last_seen,is_active').order('logged_in_at',{ascending:false});if(error)throw error;const rows=data||[];if(!staffNotifyBaseline){rows.forEach(r=>staffNotifySeen[r.normalized_name]=r.logged_in_at||'');staffNotifyBaseline=true;return}for(const r of rows){const key=r.normalized_name||'';if(!key)continue;const stamp=r.logged_in_at||'';if(Object.prototype.hasOwnProperty.call(staffNotifySeen,key)){if(stamp&&stamp!==(staffNotifySeen[key]||''))showStaffLoginNotice(r)}else if(stamp&&Date.parse(stamp)>=staffNotifyStartedAt-2000){showStaffLoginNotice(r)}staffNotifySeen[key]=stamp}}catch(e){console.warn('Staff login notification check failed',e.message)}}
 let eventStaffNotifyBaseline=false,eventStaffNotifySeen={},eventStaffNotifyStartedAt=0;
-function showEventStaffLoginNotice(row){
+function showEventStaffActivityNotice(row,loggedIn){
  const name=row.display_name||'Event Staff',id=row.event_staff_id||'';
- const message='🟢 EVENT STAFF LOGIN\\n'+name+(id?' · ID '+id:'')+'\\nDepartment: Event Ticket\\nTime: '+new Date(row.logged_in_at||Date.now()).toLocaleString('en-GB',{timeZone:'Asia/Bangkok'})+' (Thailand Time)';
+ const color=loggedIn?'#35b978':'#e35b65',label=loggedIn?'🟢 EVENT STAFF LOGIN':'🔴 EVENT STAFF LOGOUT';
+ const when=loggedIn?(row.logged_in_at||Date.now()):(row.last_seen||Date.now());
+ const message=label+'\\n'+name+(id?' · ID '+id:'')+'\\nDepartment: Event Ticket\\nTime: '+new Date(when).toLocaleString('en-GB',{timeZone:'Asia/Bangkok'})+' (Thailand Time)';
  playStaffLoginTone(getStaffNotifyPrefs().sound);
  let toast=document.getElementById('eventStaffLoginToast');
  if(!toast){toast=document.createElement('div');toast.id='eventStaffLoginToast';document.body.appendChild(toast)}
- toast.style.cssText='position:fixed;z-index:100000;right:14px;top:14px;max-width:min(420px,calc(100vw - 28px));padding:16px 18px;color:#f4fff8;font-weight:800;white-space:pre-line;border:2px solid #35b978;border-radius:16px;background:linear-gradient(135deg,#075b3bee,#062b24f5);box-shadow:0 10px 35px #0009';
+ toast.style.cssText='position:fixed;z-index:100000;right:14px;top:14px;max-width:min(420px,calc(100vw - 28px));padding:16px 18px;color:#f4fff8;font-weight:800;white-space:pre-line;border:2px solid '+color+';border-radius:16px;background:linear-gradient(135deg,'+(loggedIn?'#075b3bee,#062b24f5':'#68232bee,#301018f5')+');box-shadow:0 10px 35px #0009';
  toast.textContent=message;toast.style.display='block';
  clearTimeout(window.eventStaffLoginToastTimer);
  window.eventStaffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},9000);
  if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||getStaffNotifyPrefs().background==='both')){
-  try{new Notification('🟢 EVENT STAFF LOGIN',{body:name+(id?' · ID '+id:'')+' — Event Ticket',icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'event-staff-login-'+(id||name)})}catch(e){}
+  try{new Notification(label,{body:name+(id?' · ID '+id:'')+' — Event Ticket',icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'event-staff-'+(loggedIn?'login':'logout')+'-'+(id||name)+'-'+String(when)})}catch(e){}
  }
 }
 async function pollEventStaffLoginNotifications(){
@@ -2554,14 +2556,17 @@ async function pollEventStaffLoginNotifications(){
   const {data,error}=await sb.from('event_staff_login_activity').select('event_staff_id,display_name,logged_in_at,last_seen,is_active').order('logged_in_at',{ascending:false});
   if(error)throw error;
   const rows=data||[];
-  if(!eventStaffNotifyBaseline){rows.forEach(r=>eventStaffNotifySeen[r.event_staff_id]=r.logged_in_at||'');eventStaffNotifyBaseline=true;return}
+  if(!eventStaffNotifyBaseline){rows.forEach(r=>eventStaffNotifySeen[r.event_staff_id]={logged_in_at:r.logged_in_at||'',is_active:!!r.is_active});eventStaffNotifyBaseline=true;return}
   for(const row of rows){
    const key=row.event_staff_id||'',stamp=row.logged_in_at||'';
    if(!key)continue;
-   if(Object.prototype.hasOwnProperty.call(eventStaffNotifySeen,key)){
-    if(stamp&&stamp!==(eventStaffNotifySeen[key]||''))showEventStaffLoginNotice(row);
-   }else if(stamp&&Date.parse(stamp)>=eventStaffNotifyStartedAt-2000)showEventStaffLoginNotice(row);
-   eventStaffNotifySeen[key]=stamp;
+   const previous=eventStaffNotifySeen[key];
+   if(previous){
+    if(stamp&&stamp!==previous.logged_in_at)showEventStaffActivityNotice(row,true);
+    else if(previous.is_active&&!row.is_active)showEventStaffActivityNotice(row,false);
+    else if(!previous.is_active&&row.is_active)showEventStaffActivityNotice(row,true);
+   }else if(stamp&&Date.parse(stamp)>=eventStaffNotifyStartedAt-2000)showEventStaffActivityNotice(row,true);
+   eventStaffNotifySeen[key]={logged_in_at:stamp,is_active:!!row.is_active};
   }
  }catch(e){console.warn('Event Staff login notification check failed',e.message)}
 }
