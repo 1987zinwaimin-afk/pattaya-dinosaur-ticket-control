@@ -2140,7 +2140,7 @@ async function loadStaffEventLocations(){
   const status=document.getElementById('staffEventLocationStatus');
   if(status&&current)status.textContent='Your Event Location: '+current.location_name+'. Owner can view all Event Locations. All 6 Owner ticket types, images and prices are loaded; quantities start at 0.';
   else if(status)status.textContent='Create your Event Location to load the Owner ticket types, images and prices. Owner can view all Event Locations.';
-  if(page==='event'&&(previous!==String(selectedStaffEventLocationId||'')||addedTemplateCount>0))render();
+  if(page==='event')render(); // Re-render after async location loading so the assigned location name replaces the create-location form.
  }catch(error){
   const status=document.getElementById('staffEventLocationStatus');
   if(status)status.textContent='Could not load your Event Location: '+(error.message||error);
