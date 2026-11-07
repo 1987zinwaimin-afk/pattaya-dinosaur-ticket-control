@@ -1582,6 +1582,31 @@ main.wrap{padding-top:5px!important;padding-bottom:24px!important}
  #stats .stat span{font-size:clamp(9px,2.5vw,11px)!important}
  #stats .stat strong{font-size:clamp(17px,4.6vw,21px)!important}
 }
+
+/* Event Staff mobile ticket cards: compact, balanced controls without changing ticket logic */
+@media(max-width:520px){
+ #pageContent .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important}
+ #pageContent .ticket{min-width:0!important;border-radius:15px!important;overflow:hidden!important}
+ #pageContent .ticket img{height:clamp(88px,23vw,108px)!important;object-fit:cover!important}
+ #pageContent .ticket .ticket-body{padding:8px!important;min-width:0!important}
+ #pageContent .ticket h3{font-size:clamp(12px,3.35vw,15px)!important;line-height:1.22!important;margin:0 0 5px!important;min-height:0!important}
+ #pageContent .ticket .price{min-height:34px!important;margin:2px 0 6px!important;padding:5px 9px!important;font-size:clamp(12px,3.3vw,14px)!important;border-radius:10px!important}
+ #pageContent .ticket .soldrow{margin:5px 0 7px!important}
+ #pageContent .ticket .ticket-quantity-highlight{min-height:43px!important;padding:6px 7px!important;gap:4px!important;border-radius:10px!important}
+ #pageContent .ticket .ticket-quantity-highlight span{font-size:clamp(9px,2.65vw,11px)!important;letter-spacing:0!important}
+ #pageContent .ticket .ticket-quantity-highlight strong{font-size:clamp(19px,5vw,24px)!important}
+ #pageContent .ticket .ticket-quantity-highlight small{font-size:clamp(8px,2.25vw,9px)!important}
+ #pageContent .ticket .qty{min-height:43px!important;height:43px!important;padding:7px 9px!important;font-size:14px!important;border-radius:11px!important}
+ #pageContent .ticket-actions{display:flex!important;gap:5px!important;margin-top:7px!important;align-items:stretch!important}
+ #pageContent .ticket-actions button{flex:1 1 0!important;min-width:0!important;min-height:39px!important;padding:6px 3px!important;font-size:clamp(10px,2.7vw,12px)!important;line-height:1.15!important;border-radius:10px!important;white-space:normal!important;overflow-wrap:anywhere!important}
+ #pageContent .morebox{gap:5px!important;margin-top:6px!important}
+ #pageContent .morebox button{min-height:36px!important;padding:6px 3px!important;font-size:11px!important}
+ #pageContent .ticket .ticket-quantity-highlight small{white-space:nowrap!important}
+}
+@media(max-width:360px){
+ #pageContent .ticket .ticket-body{padding:7px!important}
+ #pageContent .ticket-actions button{font-size:10px!important}
+}
 </style>
 </head>
 <body>
@@ -2612,6 +2637,15 @@ installUILanguageObserver();applyUILanguage();
  const keyPartsFmt=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'});
  const official={'2026-01-01':'New Year’s Day','2026-01-02':'Additional New Year Holiday','2026-03-03':'Makha Bucha Day','2026-04-06':'Chakri Memorial Day','2026-04-13':'Songkran Festival','2026-04-14':'Songkran Festival','2026-04-15':'Songkran Festival','2026-05-01':'National Labour Day','2026-05-04':'Coronation Day','2026-05-31':'Visakha Bucha Day','2026-06-01':'Substitution for Visakha Bucha Day','2026-06-03':'Queen Suthida’s Birthday','2026-07-28':'King Maha Vajiralongkorn’s Birthday','2026-07-29':'Asarnha Bucha Day','2026-08-12':'Queen Sirikit The Queen Mother’s Birthday · Mother’s Day','2026-10-13':'King Bhumibol Adulyadej Memorial Day','2026-10-23':'King Chulalongkorn Memorial Day','2026-12-05':'King Bhumibol’s Birthday · National Day · Father’s Day','2026-12-07':'Substitution for 5 December Holiday','2026-12-10':'Constitution Day','2026-12-31':'New Year’s Eve'};
  const special={'2026-01-10':'Thailand National Children’s Day','2026-01-16':'Thailand Teachers’ Day','2026-05-13':'Royal Ploughing Ceremony Day · Government offices only','2026-07-30':'Khao Phansa · Buddhist Lent begins','2026-10-26':'Ok Phansa · End of Buddhist Lent','2026-11-24':'Loy Krathong Festival'};
+ function updateClockOnly(){
+  try{
+   const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}).formatToParts(new Date());
+   const values=Object.fromEntries(parts.map(p=>[p.type,p.value]));
+   timeEl.textContent=String(Number(values.hour))+':'+values.minute+':'+values.second+' '+values.dayPeriod;
+  }catch(error){console.error('Thailand live clock update failed:',error);timeEl.textContent='--:--:-- --';}
+ }
+ updateClockOnly();
+ window.setInterval(updateClockOnly,1000);
  function updateThailandDateTime(){
   const now=new Date(),dateParts=Object.fromEntries(keyPartsFmt.formatToParts(now).map(p=>[p.type,p.value])),key=dateParts.year+'-'+dateParts.month+'-'+dateParts.day,thai=lang==='th',locale=thai?'th-TH-u-nu-latn':'en-US',weekday=new Intl.DateTimeFormat(locale,{timeZone:'Asia/Bangkok',weekday:'long'}).format(now),dateText=new Intl.DateTimeFormat(thai?'th-TH-u-nu-latn':'en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'}).format(now),timeText=(function(){const thailandClock=new Date(now.getTime()+7*60*60*1000);return String(thailandClock.getUTCHours()).padStart(2,'0')+':'+String(thailandClock.getUTCMinutes()).padStart(2,'0')+':'+String(thailandClock.getUTCSeconds()).padStart(2,'0')})(),day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
   dateEl.textContent=dateText.replaceAll('/','.');dayEl.textContent=weekday;
