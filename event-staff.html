@@ -2620,7 +2620,7 @@ installUILanguageObserver();applyUILanguage();
 
 <script>
 /* Event lifecycle: one location-session row represents one event; ticket rows remain linked to its stable ID. */
-function eventTodayBangkok(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())}
+function eventTodayBangkok(){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const v={};parts.forEach(p=>{v[p.type]=p.value});return v.year+'-'+v.month+'-'+v.day}
 function eventInclusiveDays(start,end){if(!start||!end)return 0;const a=Date.parse(start+'T00:00:00Z'),b=Date.parse(end+'T00:00:00Z');return Number.isFinite(a)&&Number.isFinite(b)&&b>=a?Math.floor((b-a)/86400000)+1:0}
 async function prepareEventSessionAfterLogin(){
  if(!currentUser||!currentStaffId)return;
@@ -2691,7 +2691,7 @@ window.setInterval(async()=>{
   const {data:expired,error}=await sb.from('event_location_sessions').select('id').eq('staff_id',currentStaffId).eq('created_by',currentUser.id).eq('is_archived',false).lt('event_end_date',today);
   if(error)throw error;
   for(const row of expired||[]){const {error:updateError}=await sb.from('event_location_sessions').update({is_archived:true,event_completed_at:new Date().toISOString()}).eq('id',row.id).eq('created_by',currentUser.id);if(updateError)throw updateError;}
-  if(expired?.length&&page==='event'){selectedStaffEventLocationId='';render();}
+  if(expired?.length&&page==='event'){selectedStaffEventLocationId='';page='history';render();}
  }catch(e){console.warn('Automatic Event History archive check failed:',e)}
 },60000);
 </script>
