@@ -2171,6 +2171,36 @@ input,select{padding:10px 11px;border-radius:10px}
 #pageContent[data-ui-page="staff"] select{min-height:36px!important;padding:7px 9px!important;font-size:12px!important;border-radius:9px!important}
 @media(min-width:600px){#pageContent[data-ui-page="staff"]{gap:10px!important}#pageContent[data-ui-page="staff"]>.panel{padding:12px 14px!important}}
 </style>
+
+<style id="owner-staff-database-compact-v2">
+/* Owner Staff Database: compact page spacing while preserving every control and handler. */
+#pageContent[data-ui-page="staff"]{gap:7px!important}
+#pageContent[data-ui-page="staff"]>.panel{padding:9px 10px!important;border-radius:13px!important}
+#pageContent[data-ui-page="staff"]>.panel[style*="margin"]{margin:0!important}
+#pageContent[data-ui-page="staff"]>.panel h2{font-size:18px!important;margin:0 0 5px!important}
+#pageContent[data-ui-page="staff"]>.panel h3{font-size:14px!important;line-height:1.2!important;margin:0 0 5px!important}
+#pageContent[data-ui-page="staff"]>.panel p{font-size:12px!important;line-height:1.35!important;margin:4px 0 7px!important}
+#pageContent[data-ui-page="staff"]>.panel .subtle{font-size:11px!important;line-height:1.3!important}
+#pageContent[data-ui-page="staff"]>.panel .actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important;margin:7px 0 0!important}
+#pageContent[data-ui-page="staff"]>.panel .actions button{min-width:0!important;width:100%!important;min-height:34px!important;padding:6px 7px!important;font-size:11px!important;line-height:1.2!important;border-radius:9px!important;white-space:normal!important}
+#pageContent[data-ui-page="staff"]>.panel .notice{padding:7px 9px!important;margin:5px 0!important;font-size:11px!important;line-height:1.35!important;border-radius:10px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList{padding:7px!important;border-radius:12px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList>div{gap:7px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList>div>div{padding:8px!important;border-radius:12px!important}
+#pageContent[data-ui-page="staff"] #staffActivityList img{width:54px!important;height:54px!important;flex-basis:54px!important}
+#pageContent[data-ui-page="staff"] .section-title{gap:6px!important;margin:5px 0!important;align-items:center!important}
+#pageContent[data-ui-page="staff"] .section-title .actions{display:flex!important;flex-wrap:wrap!important;gap:5px!important;margin:0!important}
+#pageContent[data-ui-page="staff"] .section-title .actions button{width:auto!important;min-height:32px!important;padding:5px 7px!important;font-size:10px!important}
+#pageContent[data-ui-page="staff"] #staffProfileModal .modalbox{padding:13px!important}
+#pageContent[data-ui-page="staff"] #staffProfileForm label{margin:6px 0 3px!important;font-size:12px!important}
+#pageContent[data-ui-page="staff"] #staffProfileForm input{min-height:35px!important;padding:6px 8px!important;font-size:12px!important}
+@media(max-width:420px){
+ #pageContent[data-ui-page="staff"]>.panel{padding:8px!important}
+ #pageContent[data-ui-page="staff"]>.panel .actions button{font-size:10px!important;padding:6px 5px!important}
+ #pageContent[data-ui-page="staff"] #staffActivityList>div>div>div:first-child{grid-template-columns:52px minmax(0,1fr)!important;gap:8px!important}
+}
+</style>
+
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
