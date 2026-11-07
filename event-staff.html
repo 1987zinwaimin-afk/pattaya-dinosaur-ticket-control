@@ -2057,19 +2057,23 @@ let restoringSavedSession=false;
 async function restoreSavedSession(){
  if(restoringSavedSession||currentUser)return;
  restoringSavedSession=true;
+ const authScreen=document.getElementById('authScreen');
+ const authError=document.getElementById('authError');
  try{
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
-  if(!data.session)return;
+  if(!data.session){authScreen.style.display='grid';return}
+  // A saved session exists: keep the login form hidden while it is being restored.
+  authScreen.style.display='none';
   let profile=null,lastProfileError=null;
-  // A freshly reopened phone may need a moment for the network/profile query to become available.
-  for(let attempt=0;attempt<3;attempt++){
+  // Allow mobile browsers and slow connections more time to restore the persisted profile.
+  for(let attempt=0;attempt<6;attempt++){
    const result=await sb.from('profiles').select('display_name,role,avatar_url,is_archived,staff_id').eq('id',data.session.user.id).maybeSingle();
    if(!result.error&&result.data){profile=result.data;break}
    lastProfileError=result.error||new Error('Staff profile is not ready yet.');
-   if(attempt<2)await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)));
+   if(attempt<5)await new Promise(resolve=>setTimeout(resolve,900));
   }
-  if(profile?.is_archived){await sb.auth.signOut();document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
+  if(profile?.is_archived){await sb.auth.signOut();authScreen.style.display='grid';authError.textContent='This staff account has been removed by Owner. Please contact Owner.';return}
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
    document.getElementById('authStaffId').value=profile.staff_id||'';
@@ -2077,12 +2081,19 @@ async function restoreSavedSession(){
    await startCloudSession(data.session,true,profile,'app_open');
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
+   authScreen.style.display='grid';
   }else{
-   // Do not destroy a valid persisted session just because the profile request is temporarily unavailable.
-   console.warn('Saved Staff session profile is temporarily unavailable:',lastProfileError?.message||'No profile returned');
-   document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.';
+   // Keep the persisted session and do not force a fresh login for a temporary network failure.
+   console.warn('Saved Event Staff session profile is temporarily unavailable:',lastProfileError?.message||'No profile returned');
+   authScreen.style.display='none';
+   document.getElementById('pageContent').innerHTML='<div class="panel" style="margin:16px 0;text-align:center"><strong>Restoring your Event Staff session…</strong><p class="subtle">Your login is saved. Please check the internet connection; the app will retry when reopened.</p><button type="button" class="gold" onclick="restoreSavedSession()">Retry connection</button></div>';
   }
- }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.'}finally{restoringSavedSession=false}
+ }catch(e){
+  console.error('Could not restore saved Event Staff session',e);
+  // Do not sign out or show the login form merely because the network is temporarily unavailable.
+  authScreen.style.display='none';
+  document.getElementById('pageContent').innerHTML='<div class="panel" style="margin:16px 0;text-align:center"><strong>Event Staff session is saved</strong><p class="subtle">Please check the internet connection and retry. You do not need to log in again.</p><button type="button" class="gold" onclick="restoreSavedSession()">Retry connection</button></div>';
+ }finally{restoringSavedSession=false}
 }
 let staffForegroundNotificationAt=0;
 function handleStaffAppForeground(){
