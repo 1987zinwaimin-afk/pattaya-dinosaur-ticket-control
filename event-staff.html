@@ -2171,7 +2171,8 @@ async function loadStaffEventLocations(){
   const status=document.getElementById('staffEventLocationStatus');
   if(status&&current)status.textContent='Your Event Location: '+current.location_name+'. Owner can view all Event Locations. All 6 Owner ticket types, images and prices are loaded; quantities start at 0.';
   else if(status)status.textContent='Create your Event Location to load the Owner ticket types, images and prices. Owner can view all Event Locations.';
-  if(page==='event')render(); // Re-render after async location loading so the assigned location name replaces the create-location form.
+  // Do not call render() here: renderDept() starts this async loader, so re-rendering here creates a loop and replaces the focused location input while the user is typing.
+  // Update the existing status in place; keep the Add Event Location input mounted and usable.
  }catch(error){
   const status=document.getElementById('staffEventLocationStatus');
   if(status)status.textContent='Could not load your Event Location: '+(error.message||error);
