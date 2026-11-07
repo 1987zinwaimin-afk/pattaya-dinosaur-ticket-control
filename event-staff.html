@@ -1751,7 +1751,7 @@ async function ensureStaffEventLocationTickets(locationId){
  // original ticket images in Storage; each location gets its own ticket rows
  // and independent quantity counters.
  const [{data:templates,error:templateError},{data:existing,error:existingError}]=await Promise.all([
-  sb.from('tickets').select('name,price,image_path,image_url').eq('department','event').eq('location','event:1').order('created_at',{ascending:true}),
+  sb.from('tickets').select('name,price,image_path,image_url,sort_order').eq('department','event').eq('location','event:1').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true}),
   sb.from('tickets').select('name').eq('department','event').eq('location',locationKey)
  ]);
  if(templateError)throw templateError;if(existingError)throw existingError;
@@ -1761,7 +1761,7 @@ async function ensureStaffEventLocationTickets(locationId){
  if(!missing.length)return 0;
  const rows=missing.map(t=>({
   id:crypto.randomUUID(),department:'event',name:t.name,price:t.price===null?null:Number(t.price),
-  quantity:0,image_path:t.image_path||null,image_url:t.image_url||null,location:locationKey,
+  quantity:0,image_path:t.image_path||null,image_url:t.image_url||null,sort_order:Number(t.sort_order||0),location:locationKey,
   created_by:currentUser.id,updated_by:currentUser.id
  }));
  const {data:inserted,error:insertError}=await sb.from('tickets').insert(rows).select('*');
@@ -1781,7 +1781,7 @@ async function loadCloud(){
  try{localTicketsBeforeCloud=JSON.parse(localStorage.getItem('tctl-new-tickets')||'[]');if(!Array.isArray(localTicketsBeforeCloud))localTicketsBeforeCloud=[]}catch(e){console.warn('Could not parse local ticket cache',e)}
  // Do not write a duplicate backup to localStorage; it can exceed mobile browser quota.
  // Read existing cache/backup if present, but leave them untouched.
- const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+ const {data,error}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
  if(error)throw error;
  let cloudRows=data||[];
  // One-time recovery: when the cloud table is empty but this browser has tickets, migrate that local copy to Cloud.
@@ -1808,7 +1808,7 @@ async function loadCloud(){
   if(recovered.length){
    const {error:migrateError}=await sb.from('tickets').upsert(recovered,{onConflict:'id'});
    if(migrateError)throw new Error('Cloud is empty and local tickets were found, but recovery upload failed: '+migrateError.message);
-   const {data:reloaded,error:reloadError}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+   const {data:reloaded,error:reloadError}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
    if(reloadError)throw reloadError;
    cloudRows=reloaded||[];
   }
@@ -1826,7 +1826,7 @@ async function refreshCloudTickets(force=false){
  if(cloudLoadBusy)return;
  cloudLoadBusy=true;
  try{
-  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+  const {data,error}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
   if(error)throw error;
   const rows=data||[];
   const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));
