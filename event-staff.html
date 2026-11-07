@@ -1565,6 +1565,8 @@ input,select{padding:10px 11px;border-radius:10px}
 #pageContent .panel:has(#trainHistory) .train-history-table-wrap .train-row-actions{display:flex!important;justify-content:center!important;align-items:center!important;gap:4px!important;flex-wrap:nowrap!important}
 #pageContent .panel:has(#trainHistory) .train-history-table-wrap .train-row-actions button{width:27px!important;min-width:24px!important;height:27px!important;min-height:27px!important;padding:2px!important}
 
+/* Avoid flashing the login form while restoring a saved Event Staff session */
+#authScreen{display:none}
 /* Event Staff: precisely align date card and ticket summary spacing */
 #appDateTime.app-datetime{margin:6px auto 0!important;padding:9px 12px!important;min-height:0!important}
 main.wrap{padding-top:5px!important;padding-bottom:24px!important}
