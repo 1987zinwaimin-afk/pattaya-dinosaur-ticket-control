@@ -2557,7 +2557,7 @@ async function refreshCloudTickets(force=false){
 function listenRealtime(){
  if(cloudChannel)sb.removeChannel(cloudChannel);
  cloudChannel=sb.channel('ticket-control-live-'+(currentUser?.id||'session'))
-  .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{await refreshCloudTickets(true)})
+  .on('postgres_changes',{event:'*',schema:'public',table:'tickets'},async()=>{await refreshCloudTickets(true);if(currentRole==='owner')await refreshEventLocations(true)})
   .on('postgres_changes',{event:'*',schema:'public',table:'event_locations'},()=>{refreshEventLocations(true)})
   .on('postgres_changes',{event:'*',schema:'public',table:'event_location_sessions'},()=>{if(currentRole==='owner')refreshEventLocations(true)})
   // Staff login rows are written by the separate Staff website. Listen for the
@@ -2566,7 +2566,7 @@ function listenRealtime(){
   .on('postgres_changes',{event:'*',schema:'public',table:'event_staff_login_activity'},()=>{if(currentRole==='owner')pollEventStaffLoginNotifications()})
   .subscribe(status=>{console.log('Ticket / Staff activity realtime status:',status)});
  if(cloudPollTimer)clearInterval(cloudPollTimer);
- cloudPollTimer=setInterval(()=>{refreshCloudTickets(false);refreshEventLocations(false)},3000);
+ cloudPollTimer=setInterval(async()=>{await refreshCloudTickets(false);if(currentRole==='owner')await refreshEventLocations(false)},3000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){refreshCloudTickets(true);refreshEventLocations(true);if(currentRole==='owner')pollStaffLoginNotifications()}});
  window.addEventListener('focus',()=>{refreshCloudTickets(true);refreshEventLocations(true);if(currentRole==='owner')pollStaffLoginNotifications()});
 }
