@@ -1928,9 +1928,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  backgroundTasks.push((async()=>{try{const {data:themeRow,error:themeError}=await sb.from('theme_preferences').select('theme').eq('preference_key','staff:'+currentUser.id).maybeSingle();if(themeError)throw themeError;if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme-staff',theme);applyTheme()}}catch(e){console.warn('Staff theme could not be loaded:',e)}})());
  backgroundTasks.push((async()=>{try{await recordStaffActivity(true,true)}catch(e){console.error('Staff activity update failed:',e)}})());
  if(notifyOwnerPush)backgroundTasks.push(sendStaffOwnerNotification(notificationType));
- if(notifyOwnerPush&&previousDepartment&&previousDepartment!==selectedStaffDepartment){
-  backgroundTasks.push(sendStaffOwnerNotification('department_changed',{department_from:previousDepartment,department_to:selectedStaffDepartment}));
- }
+ // Event Staff is locked to the Event department; no department-switch notification is needed here.
  if(window.staffActivityTimer)clearInterval(window.staffActivityTimer);
  window.staffActivityTimer=setInterval(()=>recordStaffActivity(true,false),30000);
  const sharedProfile=profile;
