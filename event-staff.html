@@ -2080,7 +2080,16 @@ async function restoreSavedSession(){
    document.getElementById('authName').value=profile.display_name||'';
    document.getElementById('authStaffId').value=profile.staff_id||'';
    document.getElementById('staffDepartment').value='event';
-   await startCloudSession(data.session,true,profile,'app_open');
+   try{
+    await startCloudSession(data.session,true,profile,'app_open');
+   }catch(startError){
+    // A failed cloud/account check must not leave currentUser set; otherwise Retry
+    // exits immediately and the saved session can never be restored in this tab.
+    currentUser=null;
+    currentRole=null;
+    currentStaffId=null;
+    throw startError;
+   }
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
    authScreen.style.display='grid';
@@ -2094,7 +2103,8 @@ async function restoreSavedSession(){
   console.error('Could not restore saved Event Staff session',e);
   // Do not sign out or show the login form merely because the network is temporarily unavailable.
   authScreen.style.display='none';
-  document.getElementById('pageContent').innerHTML='<div class="panel" style="margin:16px 0;text-align:center"><strong>Event Staff session is saved</strong><p class="subtle">Please check the internet connection and retry. You do not need to log in again.</p><button type="button" class="gold" onclick="restoreSavedSession()">Retry connection</button></div>';
+  const safeMessage=String(e?.message||e||'Connection error').replace(/[<>&"]/g,ch=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[ch]));
+  document.getElementById('pageContent').innerHTML='<div class="panel" style="margin:16px 0;text-align:center"><strong>Event Staff session is saved</strong><p class="subtle">The saved login is still on this device. Connection or account verification did not finish. Please retry; you do not need to log in again.</p><p class="subtle" style="font-size:12px;opacity:.8">Details: '+safeMessage+'</p><button type="button" class="gold" onclick="restoreSavedSession()">Retry connection</button></div>';
  }finally{restoringSavedSession=false}
 }
 let staffForegroundNotificationAt=0;
