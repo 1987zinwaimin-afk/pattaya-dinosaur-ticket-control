@@ -1836,20 +1836,39 @@ async function sendStaffOwnerNotification(eventType='app_open',details={}){
 
 async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null,notificationType='login'){
  currentUser=session.user;
- // Reuse the profile already checked during login to avoid a second blocking database request.
- const profileResult=knownProfile?{data:knownProfile,error:null}:await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle();
- const profile=profileResult.data,profileError=profileResult.error;
- if(profileError||!profile){currentUser=null;throw profileError||new Error('Staff profile is not ready yet. Your saved login is kept; please reopen the app or retry.');}
- if(profile.is_archived){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
- currentRole=profile.role;currentStaffId=profile.staff_id||null;
- if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
  const enteredName=document.getElementById('authName').value.trim();
  const enteredStaffId=document.getElementById('authStaffId').value.trim();
- if(!profile.staff_id||enteredStaffId.toUpperCase()!==profile.staff_id.toUpperCase()){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session is not linked to the entered Staff ID. Please sign out and continue with your assigned ID.';return}
- if(enteredName&&profile.display_name&&enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase()){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different staff name. Please sign out and continue with your name.';return}
+ const requestedDepartment=document.getElementById('staffDepartment').value||'all';
+ // Read the active identity and automatically replace a stale anonymous session on shared staff phones.
+ let profile=knownProfile;
+ if(!profile){
+  const profileResult=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle();
+  if(profileResult.error||!profileResult.data){currentUser=null;throw profileResult.error||new Error('Staff profile is not ready yet. Your saved login is kept; please retry.');}
+  profile=profileResult.data;
+ }
+ if(profile.is_archived){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This staff account has been removed by Owner. Please contact Owner.';return}
+ if(profile.role!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
+ if(!profile.staff_id||String(profile.staff_id).toUpperCase()!==enteredStaffId.toUpperCase()||(enteredName&&profile.display_name&&enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase())){
+  // The lookup step may have created/reused a session belonging to the previous employee.
+  // Re-bind once to the ID that the server-side claim RPC verifies, without asking for another tap.
+  await sb.auth.signOut();
+  const {data:newSession,error:newSessionError}=await sb.auth.signInAnonymously({options:{data:{display_name:enteredName}}});
+  if(newSessionError)throw newSessionError;
+  if(!newSession?.session)throw new Error('Could not switch to this Staff ID. Please try again.');
+  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:enteredStaffId,p_display_name:enteredName,p_department:requestedDepartment});
+  if(claimError)throw claimError;
+  if(!claimed||String(claimed).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID could not be verified. Please contact Owner.');
+  session=newSession.session;
+  currentUser=session.user;
+  const refreshed=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle();
+  if(refreshed.error||!refreshed.data)throw refreshed.error||new Error('Staff profile is still being prepared. Please try once more.');
+  profile=refreshed.data;
+  if(profile.role!=='staff'||!profile.staff_id||String(profile.staff_id).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID verification did not finish. Please contact Owner.');
+ }
+ currentRole=profile.role;currentStaffId=profile.staff_id||null;
  const previousDepartment=localStorage.getItem('tctl-staff-department')||'';
- const requestedDepartment=document.getElementById('staffDepartment').value||previousDepartment||'all';
- selectedStaffDepartment=requestedDepartment;
+ const selectedDepartment=requestedDepartment||previousDepartment||'all';
+ selectedStaffDepartment=selectedDepartment;
  localStorage.setItem('tctl-staff-department',selectedStaffDepartment);
  page=selectedStaffDepartment==='all'?'sale':selectedStaffDepartment;
  document.getElementById('authScreen').style.display='none';
