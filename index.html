@@ -3623,7 +3623,8 @@ async function createCustomerVisitReportBlob(rows,date){
  let drawn=false;try{const im=new Image();im.src='/file_000000002a408207ab0d9bef49f92c89.png';await new Promise((r,j)=>{im.onload=r;im.onerror=j;setTimeout(j,3500)});ctx.drawImage(im,24,24,width-48,185);drawn=true}catch(e){}
  if(!drawn){const g=ctx.createLinearGradient(0,20,width,210);g.addColorStop(0,'#102f4b');g.addColorStop(1,'#071a33');ctx.fillStyle=g;ctx.fillRect(24,24,width-48,185)}
  const sum=k=>list.reduce((n,x)=>n+(Number(x[k])||0),0),total=sum('total_visitors'),thai=sum('thai_visitors'),foreign=sum('foreign_visitors'),review=sum('review_visitors');
- ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,225,1140,88,18);ctx.fill();ctx.fillStyle='#10213b';ctx.font='bold 32px Arial';ctx.textAlign='left';ctx.fillText('CUSTOMER VISITS REPORT',55,263);ctx.font='22px Arial';ctx.fillText(date+' · Asia/Bangkok (UTC+7)',55,295);
+ ctx.fillStyle='#fffaf0';ctx.beginPath();ctx.roundRect(30,225,1140,88,18);ctx.fill();ctx.fillStyle='#10213b';ctx.font='bold 32px Arial';ctx.textAlign='left';ctx.fillText('CUSTOMER VISITS REPORT',55,263);ctx.font='22px Arial';const reportDateParts=String(date).split('-');const reportDateLabel=reportDateParts.length===3?reportDateParts[2]+'.'+reportDateParts[1]+'.'+reportDateParts[0]:date;
+ ctx.fillText(reportDateLabel+' · Asia/Bangkok (UTC+7)',55,295);
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(30,322,1140,80,16);ctx.fill();ctx.fillStyle='#10213b';ctx.font='bold 21px Arial';ctx.textAlign='center';ctx.fillText('TOTAL '+total+'   ·   THAI '+thai+'   ·   FOREIGN '+foreign+'   ·   REVIEW '+review,width/2,371);
  const xs=[36,270,430,640,840,1040,1164],labels=['Group','Type','People','Entry','Exit','Duration'];
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(pad,top,width-pad*2,headerH,10);ctx.fill();ctx.fillStyle='#10213b';ctx.font='bold 19px Arial';ctx.textAlign='center';labels.forEach((x,i)=>ctx.fillText(x,(xs[i]+xs[i+1])/2,top+35));
