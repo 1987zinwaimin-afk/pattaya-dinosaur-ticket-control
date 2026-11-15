@@ -10,6 +10,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -33,13 +35,13 @@ class MainActivity : Activity() {
     private lateinit var spinner: Spinner
     private var devices: List<BluetoothDevice> = emptyList()
     private var pendingPrint: PrintJob? = null
+    private var launchedFromWebsite = false
 
     data class PrintJob(val payload: String, val group: String, val people: Int, val entry: String)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         buildScreen()
-        requestBluetoothPermissionIfNeeded()
         handlePrintIntent(intent)
     }
 
@@ -126,6 +128,7 @@ class MainActivity : Activity() {
     private fun handlePrintIntent(intent: Intent?) {
         if (intent?.action != Intent.ACTION_VIEW) return
         val uri: Uri = intent.data ?: return
+        launchedFromWebsite = true
         val payload = uri.getQueryParameter("payload") ?: return
         val group = uri.getQueryParameter("group") ?: "—"
         val people = uri.getQueryParameter("people")?.toIntOrNull() ?: 0
@@ -156,7 +159,7 @@ class MainActivity : Activity() {
                 val out = socket.outputStream
                 out.write(receiptBytes(job))
                 out.flush()
-                runOnUiThread { status.text = "✓ Group #${job.group} printed successfully." }
+                runOnUiThread { status.text = "✓ Group #${job.group} printed successfully."; if (launchedFromWebsite) Handler(Looper.getMainLooper()).postDelayed({ finish() }, 900) }
             } catch (e: Exception) {
                 runOnUiThread { status.text = "Print failed: ${e.message}. Check MP58-16 is on and paired." }
             } finally {
