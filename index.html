@@ -3629,8 +3629,15 @@ function printCustomerVisitQr(row,qrData){
  const time=parts.length>=3?parts.slice(2).join(' '):'';
  const people=Number(row.total_visitors||0),peopleLabel=people===1?'PERSON':'PEOPLE';
  doc.open();
- const headingSvg='<svg xmlns="http://www.w3.org/2000/svg" width="384" height="66" viewBox="0 0 384 66"><rect width="384" height="66" fill="white"/><text x="192" y="27" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="22" font-weight="700" letter-spacing="0">PATTAYA DINOSAUR KINGDOM</text><text x="192" y="55" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="19" font-weight="600" letter-spacing="0">CUSTOMER VISIT PASS</text></svg>';
- const headingSrc='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(headingSvg);
+ // Rasterize both headings to a PNG bitmap so Android's receipt print service
+ // cannot substitute a wide monospaced font or wrap the title into extra lines.
+ const headingCanvas=document.createElement('canvas');headingCanvas.width=384;headingCanvas.height=66;
+ const headingCtx=headingCanvas.getContext('2d');headingCtx.fillStyle='#fff';headingCtx.fillRect(0,0,384,66);
+ headingCtx.fillStyle='#000';headingCtx.textAlign='center';headingCtx.textBaseline='middle';
+ const fitHeading=(label,maxSize,minSize,y,weight)=>{let size=maxSize;do{headingCtx.font=weight+' '+size+'px Arial,Helvetica,sans-serif';if(headingCtx.measureText(label).width<=372)break;size--}while(size>minSize);headingCtx.fillText(label,192,y)};
+ fitHeading('PATTAYA DINOSAUR KINGDOM',22,12,20,'700');
+ fitHeading('CUSTOMER VISIT PASS',19,11,48,'600');
+ const headingSrc=headingCanvas.toDataURL('image/png');
  doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Group '+esc(no)+'</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box;letter-spacing:0}html,body{width:54mm;margin:0 auto;padding:0;text-align:center;color:#000;background:#fff;font-family:Arial,Helvetica,sans-serif}body{padding:0.5mm 0}.heading{display:block;width:54mm;height:9.3mm;margin:0 auto 0.8mm}.group{font-size:18px;line-height:1.05;font-weight:900;margin:1mm 0}.qr{display:block;width:43mm;height:43mm;margin:1mm auto;image-rendering:pixelated}.people{font-size:12px;line-height:1.05;font-weight:bold;margin:1mm 0}.meta{font-size:8px;line-height:1.05;white-space:nowrap;margin:0.5mm 0}.hint{font-size:8px;line-height:1.05;white-space:nowrap;margin:0.7mm 0}</style></head><body><img class="heading" alt="PATTAYA DINOSAUR KINGDOM - CUSTOMER VISIT PASS" src="'+headingSrc+'"><div class="group">GROUP #'+esc(no)+'</div><img class="qr" alt="Group QR code" src="'+safeQr+'"><div class="people">'+people+' '+peopleLabel+'</div><div class="meta">'+esc(date.toUpperCase())+'</div><div class="meta">TIME '+esc(time.toUpperCase())+'</div><div class="hint">SCAN QR AT EXIT</div><div class="hint">THANK YOU</div></body></html>');
  doc.close();
  const cleanup=()=>setTimeout(()=>{if(frame.parentNode)frame.remove()},900);
