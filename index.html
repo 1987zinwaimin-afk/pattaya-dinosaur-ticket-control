@@ -2240,9 +2240,15 @@ input,select{padding:10px 11px;border-radius:10px}
  </div>
 </div>
 <div class="modal" id="actionModal"><div class="modalbox"><h2 id="actionTitle">More options</h2><div id="actionBody"></div><div class="modal-actions"><button id="closeAction">Close</button></div></div></div>
+<script>
+window.__ownerBootDiagnostics={stage:'html-ready',errors:[]};
+window.addEventListener('error',function(e){try{window.__ownerBootDiagnostics.errors.push({type:'error',message:e.message||'Script error',file:e.filename||'',line:e.lineno||0,column:e.colno||0});}catch(_){}});
+window.addEventListener('unhandledrejection',function(e){try{const r=e.reason;window.__ownerBootDiagnostics.errors.push({type:'promise',message:String(r&&r.message||r||'Unhandled rejection')});}catch(_){}});
+</script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script>if(!window.supabase){document.write('<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><\/script>')}</script>
 <script>
+window.__ownerBootDiagnostics.stage="main-script-start";
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-owner-auth-v1'}});
@@ -4074,6 +4080,7 @@ document.getElementById('language').onchange=e=>{lang=e.target.value;localStorag
 document.getElementById('shade').onclick=()=>{document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open')};document.getElementById('closeAction').onclick=()=>document.getElementById('actionModal').classList.remove('open');applyTheme();render();
 
 installUILanguageObserver();applyUILanguage();
+window.__ownerBootDiagnostics.stage="main-script-complete";
 </script><div id="entryCounterModal" aria-hidden="true">
  <div class="entry-counter-head"><div><h2>🦖 Entry Ticket Quantity</h2><div class="subtle">Tap + / − · pauses to save into Entry Ticket</div></div><button type="button" id="entryCounterClose">Close ✕</button></div>
  <div class="entry-counter-grid" id="entryCounterGrid"></div>
@@ -4144,7 +4151,9 @@ installUILanguageObserver();applyUILanguage();
    const total=tickets.reduce((n,t)=>n+Number(t.quantity||0),0);
    const summary=depts.map(([id,icon,name])=>{const a=tickets.filter(t=>t.department===id),q=a.reduce((n,t)=>n+Number(t.quantity||0),0),v=a.reduce((n,t)=>n+Number(t.quantity||0)*Number(t.price||0),0);return '<button type="button" class="panel" data-recovery-dept="'+id+'" style="text-align:left;min-height:120px"><div style="font-size:26px">'+icon+'</div><b>'+name+'</b><div class="subtle">'+a.length+' ticket types</div><strong style="display:block;color:#ffe08a;font-size:1.2rem;margin-top:8px">'+q+' tickets · '+money(v)+'</strong></button>'}).join('');
    if(stats){stats.style.display='grid';stats.innerHTML='<div class="stat"><span>Ticket types</span><strong>'+tickets.length+'</strong></div><div class="stat"><span>Total quantity</span><strong>'+total+'</strong></div><div class="stat"><span>Departments</span><strong>4</strong></div>';}
-   show('<div class="section-title"><h2>Ticket Control Overview</h2><span class="subtle">Recovered cloud view</span></div><div class="cards">'+summary+'</div><section class="panel" style="margin-top:14px"><h3>Saved ticket records</h3><p class="subtle">Your original cloud records are visible. This is a safe recovery view; ticket records have not been edited.</p><button class="gold" onclick="location.reload()">Reload normal application</button></section>');
+   const boot=window.__ownerBootDiagnostics||{stage:'diagnostics unavailable',errors:[]};
+   const bootErrors=(boot.errors||[]).slice(-4).map(x=>esc((x.type||'error')+': '+(x.message||'')+(x.line?(' · line '+x.line):'')+(x.file?(' · '+x.file.split('/').pop()):''))).join('<br>');
+   show('<div class="section-title"><h2>Ticket Control Overview</h2><span class="subtle">Recovered cloud view</span></div><div class="cards">'+summary+'</div><section class="panel" style="margin-top:14px"><h3>Saved ticket records</h3><p class="subtle">Your original cloud records are visible. This is a safe recovery view; ticket records have not been edited.</p><p class="subtle">Owner app startup: '+esc(boot.stage||'unknown')+'</p>'+(bootErrors?'<div style="padding:10px;border:1px solid #e35b69;border-radius:10px;overflow-wrap:anywhere;font-size:12px">'+bootErrors+'</div>':'<p class="subtle">No JavaScript error was captured before recovery.</p>')+'<button class="gold" onclick="location.reload()">Reload normal application</button></section>');
    root.querySelectorAll('[data-recovery-dept]').forEach(btn=>btn.addEventListener('click',()=>{
     const id=btn.dataset.recoveryDept,a=tickets.filter(t=>t.department===id);
     show('<div class="section-title"><h2>'+esc(depts.find(d=>d[0]===id)?.[2]||id)+'</h2><button type="button" id="recoveryBack">← Dashboard</button></div><div class="cards">'+a.map(t=>'<article class="panel">'+(t.image_url?'<img src="'+esc(t.image_url)+'" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:12px">':'')+'<h3>'+esc(t.name)+'</h3>'+(t.price!=null&&t.price!==''?'<div class="price">'+money(t.price)+'</div>':'')+'<strong>'+Number(t.quantity||0)+' tickets</strong></article>').join('')+'</div>');
