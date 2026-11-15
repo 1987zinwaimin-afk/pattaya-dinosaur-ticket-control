@@ -1938,16 +1938,18 @@ async function lookupStaffNameById(){
  }
  try{
   await ensureStaffLookupSession();
-  const {data,error}=await sb.rpc('lookup_staff_name_by_id',{p_staff_id:staffId});
+  const {data,error}=await sb.rpc('lookup_staff_account_by_id',{p_staff_id:staffId});
   if(sequence!==staffNameLookupSequence||idInput.value.trim().toUpperCase()!==staffId.toUpperCase())return;
   if(error)throw error;
   if(data){
-   nameInput.value=String(data);
+   nameInput.value=String(data.display_name||'');
    nameInput.readOnly=true;
    nameInput.setAttribute('aria-readonly','true');
    nameInput.placeholder='Registered Staff name';
    nameInput.dataset.resolvedStaffId=staffId.toUpperCase();
-   if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name filled automatically.';
+   const departmentSelect=document.getElementById('staffDepartment');
+   if(departmentSelect&&['all','sale','entry','playing','event'].includes(data.department))departmentSelect.value=data.department;
+   if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name and department filled automatically.';
   }else{
    // Keep any manually entered name for a new Staff ID.
    nameInput.readOnly=false;
