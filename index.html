@@ -2820,7 +2820,7 @@ function installUILanguageObserver(){if(window.__ticketLanguageObserver)return;w
 function tr(k){return T[lang]?.[k]||T.en[k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||(!!activeEventLocationNo&&String(t.location||'')==='event:'+activeEventLocationNo)))}
-function navRender(){document.getElementById('nav').innerHTML=PAGES.filter(p=>p.id!=='customervisits'||currentRole==='owner').map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page))}
+function navRender(){const pages=PAGES.filter(p=>p.id!=='customervisits');if(currentRole==='owner')pages.splice(1,0,{id:'customervisits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'});document.getElementById('nav').innerHTML=pages.map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');document.querySelectorAll('#nav [data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page))}
 function go(p){if(p!=='event')activeEventLocationNo='';page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 function render(){
  try{
