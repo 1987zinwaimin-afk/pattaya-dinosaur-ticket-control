@@ -3581,6 +3581,12 @@ async function renderCustomerVisits(){
  '<div class="actions" style="display:flex;gap:7px;flex-wrap:wrap;margin:7px 0"><button type="button" class="blue" id="visitSaveReport" style="padding:8px 10px">▤ '+reportText('Save Report','အစီရင်ခံစာသိမ်း')+'</button><button type="button" class="gold" id="visitShareReport" style="padding:8px 10px">↗ '+reportText('Share Report','အစီရင်ခံစာမျှဝေ')+'</button></div>'+
  '<div id="visitHistory" class="subtle">Loading…</div></div></section>';
  const status=document.getElementById('visitFormStatus');
+ const visitDraftKey='pdk-customer-visits-draft-v1:'+String(currentUser?.id||'owner');
+ const visitDraftFields=['visitPeopleCount','visitType','visitEntryDate','visitEntryTime'];
+ const saveVisitDraft=()=>{try{const draft={};visitDraftFields.forEach(id=>{const el=document.getElementById(id);if(el)draft[id]=el.value});localStorage.setItem(visitDraftKey,JSON.stringify(draft));const hint=document.getElementById('visitFormStatus');if(hint&&draft.visitPeopleCount)hint.textContent=reportText('Draft saved on this device. You can leave and return safely.','မပြီးသေးသောစာရင်းကို ဒီဖုန်းမှာ ယာယီသိမ်းထားပါတယ်။ ပြန်ဝင်လာလျှင် ဆက်ဖြည့်နိုင်ပါတယ်။')}catch(e){}};
+ const restoreVisitDraft=()=>{try{const raw=localStorage.getItem(visitDraftKey);if(!raw)return;const draft=JSON.parse(raw);visitDraftFields.forEach(id=>{const el=document.getElementById(id);if(el&&typeof draft[id]==='string')el.value=draft[id]});if(draft.visitPeopleCount||draft.visitEntryDate||draft.visitEntryTime)status.textContent=reportText('✓ Draft restored. Continue entering this group.','✓ မပြီးသေးသောစာရင်း ပြန်ရပါပြီ။ ဆက်လက်ဖြည့်နိုင်ပါပြီ။')}catch(e){}};
+ restoreVisitDraft();
+ visitDraftFields.forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('input',saveVisitDraft);el.addEventListener('change',saveVisitDraft)}});
  document.getElementById('visitRefresh').onclick=()=>loadCustomerVisits();
  document.getElementById('visitDateFilter').onchange=()=>loadCustomerVisits();
  document.getElementById('visitUseNow').onclick=()=>{document.getElementById('visitEntryDate').value=customerVisitBangkokDate();document.getElementById('visitEntryTime').value=customerVisitDateTimeInput().slice(11,16);};
@@ -3594,7 +3600,7 @@ async function renderCustomerVisits(){
    const payload={visit_date:entryDate,group_name:null,total_visitors:count,thai_visitors:type==='thai'?count:0,foreign_visitors:type==='foreign'?count:0,review_visitors:type==='review'?count:0,visitor_type:type,entry_at:entryAt,exit_at:null,status:'pending',notes:'',created_by:currentUser?.id||null};
    const {data,error}=await sb.from('customer_visit_logs').insert(payload).select('id,group_number,group_name').single();if(error)throw error;
    status.textContent=reportText('✓ Group ','✓ အဖွဲ့ ')+String(data.group_number||data.group_name||'')+reportText(' saved as Pending.',' ကို Pending အဖြစ် သိမ်းပြီးပါပြီ။');
-   document.getElementById('visitPeopleCount').value='';document.getElementById('visitEntryAt').value=customerVisitDateTimeInput();await loadCustomerVisits();
+   try{localStorage.removeItem(visitDraftKey)}catch(e){}document.getElementById('visitPeopleCount').value='';document.getElementById('visitType').value='thai';document.getElementById('visitEntryDate').value=customerVisitBangkokDate();document.getElementById('visitEntryTime').value=customerVisitDateTimeInput().slice(11,16);await loadCustomerVisits();
   }catch(err){status.textContent=reportText('Could not save: ','သိမ်းဆည်း၍မရပါ: ')+(err.message||err)}
   finally{btn.disabled=false}
  };
