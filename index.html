@@ -2554,7 +2554,9 @@ async function refreshCloudTickets(force=false){
     profileModal.classList.contains('open')||
     (profileModal.dataset.keepOpenAfterPicker==='1'&&document.getElementById('staffProfileUserId')?.value)
    );
-   if(!keepProfileEditorOpen)render();
+   // Ticket polling/realtime must not rebuild the Customer Visits form and history.
+   // Re-render only pages whose visible content actually depends on ticket rows.
+   if(!keepProfileEditorOpen&&page!=='customervisits')render();
   }
  }catch(e){console.error('Auto-refresh cloud tickets failed',e)}
  finally{cloudLoadBusy=false}
