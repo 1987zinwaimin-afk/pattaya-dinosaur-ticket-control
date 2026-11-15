@@ -2702,6 +2702,9 @@ async function startCloudSession(session){
   const {data:profile,error:profileError}=profileResult;
   if(profileError||!profile){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error(profileError?'Owner profile lookup error: '+profileError.message:'This account has no profile record. Existing data was not changed.')}
   currentRole=String(profile.role||'').trim().toLowerCase();
+  // Customer Visits is independent of ticket loading. Reveal its Owner page as soon as
+  // the authenticated profile role is confirmed, rather than waiting for loadCloud().
+  if(currentRole==='owner'&&page==='customervisits')renderCustomerVisits();
   try{const {data:themeRow,error:themeError}=await sb.from('theme_preferences').select('theme').eq('preference_key','owner:'+requestedUserId).maybeSingle();if(themeError)throw themeError;if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme-owner',theme);applyTheme()}}catch(themeLoadError){console.warn('Owner theme could not be loaded:',themeLoadError)}
   if(currentRole!=='owner'){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('This account is not marked as Owner. Please use the existing Owner account; do not create another account.')}
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
