@@ -198,7 +198,9 @@ class MainActivity : Activity() {
         line("PATTAYA DINOSAUR")
         line("KINGDOM")
         bytes(0x1b, 0x45, 0x00)
-        line("CUSTOMER VISIT PASS")
+        // Keep every heading within the printer's observed 16-character line width.
+        line("CUSTOMER VISIT")
+        line("PASS")
         line()
 
         // Group number is the main identifier.
@@ -215,17 +217,24 @@ class MainActivity : Activity() {
         normal()
         bytes(0x1b, 0x45, 0x01)
         bytes(0x1d, 0x21, 0x01)          // double height only
-        line("${job.people} PEOPLE")
+        val peopleLabel = if (job.people == 1) "PERSON" else "PEOPLE"
+        line("${job.people} $peopleLabel")
         bytes(0x1d, 0x21, 0x00)
         bytes(0x1b, 0x45, 0x00)
         line()
 
-        // Short, single-line date/time avoids the old wrapped "Entry:" text.
+        // Print date and time on separate short lines; avoid mid-word wrapping.
         compact()
-        val entry = job.entry.uppercase(Locale.ENGLISH)
-            .replace(",", "")
-            .replace(Regex("\\s+"), " ")
-        line("ENTRY  $entry")
+        val entryParts = job.entry.trim().replace(Regex("\\s+"), " ").split(",").map { it.trim() }
+        val entryDate = when {
+            entryParts.size >= 2 -> (entryParts[0] + " " + entryParts[1]).uppercase(Locale.ENGLISH)
+            else -> entryParts.firstOrNull().orEmpty().uppercase(Locale.ENGLISH)
+        }
+        val entryTime = if (entryParts.size >= 3) entryParts.drop(2).joinToString(" ").uppercase(Locale.ENGLISH)
+            else ""
+        line("ENTRY DATE")
+        if (entryDate.isNotBlank()) line(entryDate.take(16))
+        if (entryTime.isNotBlank()) line("TIME " + entryTime.take(11))
         line()
         line("SCAN QR AT EXIT")
         line("THANK YOU")
