@@ -174,35 +174,45 @@ class MainActivity : Activity() {
         val out = ArrayList<Byte>()
         fun bytes(vararg values: Int) { values.forEach { out.add(it.toByte()) } }
         fun text(value: String) { value.toByteArray(Charsets.US_ASCII).forEach { out.add(it) } }
-        fun line(value: String = "") { text(value + "\\n") }
-        fun fontB() { bytes(0x1b, 0x4d, 0x01); bytes(0x1b, 0x21, 0x00) }
-        fun fontA() { bytes(0x1b, 0x4d, 0x00); bytes(0x1b, 0x21, 0x00) }
+        // Send a real ESC/POS line-feed command. Do not print the literal characters "\\n".
+        fun line(value: String = "") { text(value); bytes(0x0a) }
+        fun compact() {
+            bytes(0x1b, 0x4d, 0x01) // Font B
+            bytes(0x1b, 0x21, 0x01) // condensed, normal height
+            bytes(0x1b, 0x20, 0x00) // zero character spacing
+        }
+        fun normal() {
+            bytes(0x1b, 0x4d, 0x00) // Font A
+            bytes(0x1b, 0x21, 0x00)
+            bytes(0x1b, 0x20, 0x00)
+        }
 
         bytes(0x1b, 0x40)                 // initialize printer
-        bytes(0x1b, 0x61, 0x01)          // center all receipt content
+        bytes(0x1b, 0x61, 0x01)          // center
         bytes(0x1b, 0x74, 0x00)          // default character table
+        bytes(0x1b, 0x33, 0x18)          // compact line spacing
 
-        // Compact Font B keeps both brand lines on one centered line.
-        fontB()
+        // Deliberate two-line brand heading prevents awkward automatic wrapping.
+        compact()
         bytes(0x1b, 0x45, 0x01)
-        line("PATTAYA DINOSAUR KINGDOM")
+        line("PATTAYA DINOSAUR")
+        line("KINGDOM")
         bytes(0x1b, 0x45, 0x00)
         line("CUSTOMER VISIT PASS")
         line()
 
-        // Group number is prominent but stays within 58mm paper width.
-        fontA()
+        // Group number is the main identifier.
+        normal()
         bytes(0x1b, 0x45, 0x01)
         bytes(0x1d, 0x21, 0x11)          // double width + height
         line("GROUP #${job.group}".take(15))
         bytes(0x1d, 0x21, 0x00)
         line()
 
-        // Smaller native QR for a balanced 58mm receipt.
         printQr(out, job.payload)
         line()
 
-        fontA()
+        normal()
         bytes(0x1b, 0x45, 0x01)
         bytes(0x1d, 0x21, 0x01)          // double height only
         line("${job.people} PEOPLE")
@@ -210,15 +220,18 @@ class MainActivity : Activity() {
         bytes(0x1b, 0x45, 0x00)
         line()
 
-        // Font B allows the full entry date/time to remain on one line.
-        fontB()
-        val entry = job.entry.uppercase(Locale.ENGLISH).replace(",", "")
-        line("ENTRY: $entry")
+        // Short, single-line date/time avoids the old wrapped "Entry:" text.
+        compact()
+        val entry = job.entry.uppercase(Locale.ENGLISH)
+            .replace(",", "")
+            .replace(Regex("\\s+"), " ")
+        line("ENTRY  $entry")
         line()
         line("SCAN QR AT EXIT")
         line("THANK YOU")
         line()
-        bytes(0x1b, 0x64, 0x03)          // feed 3 lines for tearing
+        bytes(0x1b, 0x32)                // default line spacing
+        bytes(0x1b, 0x64, 0x02)          // feed 2 lines for tearing
         return out.toByteArray()
     }
 
