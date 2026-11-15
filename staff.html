@@ -1920,7 +1920,8 @@ async function lookupStaffNameById(){
  const err=document.getElementById('authError');
  const staffId=idInput.value.trim();
  const sequence=++staffNameLookupSequence;
- nameInput.value='';
+ // Do not erase a name the employee has already typed while the asynchronous ID lookup runs.
+ // The Staff ID input handler clears stale names only when the ID itself changes.
  nameInput.readOnly=false;
  nameInput.removeAttribute('aria-readonly');
  nameInput.placeholder='Enter your name';
@@ -1948,7 +1949,7 @@ async function lookupStaffNameById(){
    nameInput.dataset.resolvedStaffId=staffId.toUpperCase();
    if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name filled automatically.';
   }else{
-   nameInput.value='';
+   // Keep any manually entered name for a new Staff ID.
    nameInput.readOnly=false;
    nameInput.placeholder='Enter your name for this new Staff ID';
    if(hint)hint.textContent='New Staff ID available. Enter your name to create the account.';
