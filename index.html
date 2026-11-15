@@ -2713,8 +2713,18 @@ async function startCloudSession(session){
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
   refreshOwnerPushSubscription().catch(e=>console.warn('Owner push subscription refresh failed:',e.message||e));
   document.getElementById('authScreen').style.display='none';
-  try{await withAuthTimeout(loadCloud(),'Loading ticket data',20000);cloudReady=true;listenRealtime();startStaffLoginNotifications()}
-  catch(e){showCloudError('Signed in, but cloud data did not finish loading: '+e.message);throw new Error('Signed in successfully, but ticket data did not finish loading. Check your connection and press Refresh. '+e.message)}
+  try{
+   await withAuthTimeout(loadCloud(),'Loading ticket data',20000);
+   cloudReady=true;listenRealtime();startStaffLoginNotifications();
+  }catch(e){
+   // A Cloud read failure must not leave the authenticated Owner with a blank page.
+   // Render the existing local cache (if any) and the complete navigation, while
+   // clearly reporting that Cloud sync is unavailable. No database writes/deletes here.
+   cloudReady=false;
+   console.error('Owner Cloud load failed; showing cached Owner workspace:',e);
+   try{render(true)}catch(renderError){console.error('Cached Owner workspace render failed:',renderError)}
+   showCloudError('Owner signed in, but Cloud ticket data could not be loaded: '+(e.message||e)+'. Your saved Cloud records were not changed. Check your connection and reload to retry.');
+  }
  })();
  ownerSessionStartPromise=startPromise;
  try{return await startPromise}finally{
