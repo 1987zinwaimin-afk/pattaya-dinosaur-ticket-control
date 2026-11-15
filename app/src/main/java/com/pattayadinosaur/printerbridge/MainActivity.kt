@@ -179,8 +179,7 @@ class MainActivity : Activity() {
         bytes(0x1b, 0x61, 0x01)          // center
         bytes(0x1b, 0x45, 0x01)          // bold
         bytes(0x1b, 0x21, 0x00)          // normal font
-        line("PATTAYA DINOSAUR")
-        line("KINGDOM")
+        line("PATTAYA DINOSAUR KINGDOM")
         bytes(0x1b, 0x45, 0x00)
         line("CUSTOMER VISIT PASS")
         line()
@@ -198,14 +197,13 @@ class MainActivity : Activity() {
         bytes(0x1b, 0x45, 0x00)
         line()
         val entry = job.entry.uppercase(Locale.ENGLISH).replace(",", "")
-        line("ENTRY")
-        wrap(entry, 32).forEach { line(it) }
+        wrap("ENTRY: $entry", 32).forEach { line(it) }
         line()
         line("SCAN QR AT EXIT")
         line("THANK YOU")
         line()
         bytes(0x1b, 0x61, 0x00)          // left
-        bytes(0x1d, 0x56, 0x01)          // partial cut if supported
+        bytes(0x1b, 0x64, 0x03)          // feed 3 lines; tear manually if no cutter
         return out.toByteArray()
     }
 
