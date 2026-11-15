@@ -2003,9 +2003,14 @@ document.getElementById('authForm').onsubmit=async e=>{
   if(session?.user?.id){
    const {data:existingProfile,error:existingProfileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',session.user.id).maybeSingle();
    if(existingProfileError)throw existingProfileError;
-   if(existingProfile?.is_archived)throw new Error('This staff account has been removed by Owner. Please contact Owner.');
-   if(existingProfile&&existingProfile.role!=='staff')throw new Error('This session is not a Staff account. Please use the Staff login page.');
-   if(existingProfile?.staff_id&&String(existingProfile.staff_id).toUpperCase()!==staffId.toUpperCase()){
+   if(existingProfile?.is_archived){
+    // This device may still hold a session belonging to a retired duplicate profile.
+    // Clear only that stale session, then let the active Staff ID sign in normally.
+    await sb.auth.signOut();
+    session=null;
+   }else if(existingProfile&&existingProfile.role!=='staff'){
+    throw new Error('This session is not a Staff account. Please use the Staff login page.');
+   }else if(existingProfile?.staff_id&&String(existingProfile.staff_id).toUpperCase()!==staffId.toUpperCase()){
     // Shared staff devices must allow the next employee to use their own identity.
     await sb.auth.signOut();
     session=null;
