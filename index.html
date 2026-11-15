@@ -3617,7 +3617,7 @@ async function renderCustomerVisits(){
  }
  const today=customerVisitBangkokDate();
  root.innerHTML='<section class="panel" style="padding:12px">'+
- '<div class="section-title" style="margin-bottom:8px"><div><h2 style="color:var(--gold);margin:0">👥 '+reportText('Customer Visits','ဧည့်သည်မှတ်တမ်း')+'</h2><p class="subtle" style="margin:3px 0 0">'+reportText('One group at a time · numbered automatically','တစ်ဖွဲ့ချင်းစီ ထည့်ပါ · နံပါတ် အလိုအလျောက်တပ်မည်')+'</p></div><button type="button" class="blue" id="visitRefresh" style="padding:7px 10px">↻</button></div>'+
+ '<div class="section-title" style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:nowrap;margin-bottom:8px"><div style="min-width:0;flex:1"><h2 style="color:var(--gold);margin:0">👥 '+reportText('Customer Visits','ဧည့်သည်မှတ်တမ်း')+'</h2><p class="subtle" style="margin:3px 0 0">'+reportText('One group at a time · numbered automatically','တစ်ဖွဲ့ချင်းစီ ထည့်ပါ · နံပါတ် အလိုအလျောက်တပ်မည်')+'</p></div><button type="button" class="blue" id="visitRefresh" style="flex:0 0 auto;align-self:flex-start;padding:7px 10px;margin:0">↻</button></div>'+
  '<div class="cards" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0 10px">'+
  '<div class="panel" style="padding:8px"><span class="subtle" style="font-size:11px">'+reportText('Visitors','ဧည့်သည်')+'</span><strong id="visitTotal" style="display:block;font-size:1.15rem;color:var(--gold)">0</strong></div>'+
  '<div class="panel" style="padding:8px"><span class="subtle" style="font-size:11px">🇹🇭 '+reportText('Thai','ထိုင်း')+'</span><strong id="visitThai" style="display:block;font-size:1.15rem">0</strong></div>'+
