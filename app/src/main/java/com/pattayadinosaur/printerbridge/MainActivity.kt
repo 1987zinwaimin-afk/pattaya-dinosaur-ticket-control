@@ -174,36 +174,51 @@ class MainActivity : Activity() {
         val out = ArrayList<Byte>()
         fun bytes(vararg values: Int) { values.forEach { out.add(it.toByte()) } }
         fun text(value: String) { value.toByteArray(Charsets.US_ASCII).forEach { out.add(it) } }
-        fun line(value: String = "") { text(value + "\n") }
-        bytes(0x1b, 0x40)                 // initialize
-        bytes(0x1b, 0x61, 0x01)          // center
-        bytes(0x1b, 0x45, 0x01)          // bold
-        bytes(0x1b, 0x21, 0x00)          // normal font
+        fun line(value: String = "") { text(value + "\\n") }
+        fun fontB() { bytes(0x1b, 0x4d, 0x01); bytes(0x1b, 0x21, 0x00) }
+        fun fontA() { bytes(0x1b, 0x4d, 0x00); bytes(0x1b, 0x21, 0x00) }
+
+        bytes(0x1b, 0x40)                 // initialize printer
+        bytes(0x1b, 0x61, 0x01)          // center all receipt content
+        bytes(0x1b, 0x74, 0x00)          // default character table
+
+        // Compact Font B keeps both brand lines on one centered line.
+        fontB()
+        bytes(0x1b, 0x45, 0x01)
         line("PATTAYA DINOSAUR KINGDOM")
         bytes(0x1b, 0x45, 0x00)
         line("CUSTOMER VISIT PASS")
         line()
+
+        // Group number is prominent but stays within 58mm paper width.
+        fontA()
         bytes(0x1b, 0x45, 0x01)
         bytes(0x1d, 0x21, 0x11)          // double width + height
-        line("GROUP #${job.group}".take(16))
+        line("GROUP #${job.group}".take(15))
         bytes(0x1d, 0x21, 0x00)
         line()
+
+        // Smaller native QR for a balanced 58mm receipt.
         printQr(out, job.payload)
         line()
+
+        fontA()
         bytes(0x1b, 0x45, 0x01)
         bytes(0x1d, 0x21, 0x01)          // double height only
         line("${job.people} PEOPLE")
         bytes(0x1d, 0x21, 0x00)
         bytes(0x1b, 0x45, 0x00)
         line()
+
+        // Font B allows the full entry date/time to remain on one line.
+        fontB()
         val entry = job.entry.uppercase(Locale.ENGLISH).replace(",", "")
-        wrap("ENTRY: $entry", 32).forEach { line(it) }
+        line("ENTRY: $entry")
         line()
         line("SCAN QR AT EXIT")
         line("THANK YOU")
         line()
-        bytes(0x1b, 0x61, 0x00)          // left
-        bytes(0x1b, 0x64, 0x03)          // feed 3 lines; tear manually if no cutter
+        bytes(0x1b, 0x64, 0x03)          // feed 3 lines for tearing
         return out.toByteArray()
     }
 
@@ -224,7 +239,7 @@ class MainActivity : Activity() {
         fun cmd(vararg values: Int) { values.forEach { out.add(it.toByte()) } }
         val data = value.toByteArray(Charsets.UTF_8)
         cmd(0x1d, 0x28, 0x6b, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00) // QR model 2
-        cmd(0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, 0x07)    // module size
+        cmd(0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, 0x05)    // smaller module size for 58mm paper
         cmd(0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x45, 0x31)    // ECC M
         val length = data.size + 3
         cmd(0x1d, 0x28, 0x6b, length and 0xff, (length shr 8) and 0xff, 0x31, 0x50, 0x30)
