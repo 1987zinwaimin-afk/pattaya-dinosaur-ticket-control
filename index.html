@@ -3551,7 +3551,7 @@ async function renderOwnerEventHistory(){
  }catch(error){console.error('Owner Event History load failed:',error);target.innerHTML='<p style="color:#ff9aa9">Could not load Event History: '+esc(error.message||error)+'</p><button type="button" class="blue" id="ownerEventHistoryRetry">Retry</button>';document.getElementById('ownerEventHistoryRetry').onclick=()=>renderOwnerEventHistory()}
 }
 let customerVisitRows=[];
-async function customerVisitBangkokDateTime(value){if(!value)return '—';const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';return new Intl.DateTimeFormat(undefined,{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'}).format(d)}
+function customerVisitBangkokDateTime(value){if(!value)return '—';const d=new Date(value);if(Number.isNaN(d.getTime()))return '—';return new Intl.DateTimeFormat(undefined,{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'}).format(d)}
 function customerVisitBangkokDate(){const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());const get=t=>parts.find(p=>p.type===t)?.value||'';return get('year')+'-'+get('month')+'-'+get('day')}
 async function renderCustomerVisits(){
  const root=document.getElementById('pageContent');root.dataset.uiPage='customervisits';
