@@ -2830,6 +2830,10 @@ function go(p){if(p!=='event')activeEventLocationNo='';page=p;document.getElemen
 function render(){
  try{
  navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
+ // Keep Customer Visits DOM stable while its form is open. Background sync, focus,
+ // clock, or session callbacks must never replace the active form or dismiss Android's keyboard.
+ const activePageRoot=document.getElementById('pageContent');
+ if(page==='customervisits'&&activePageRoot?.dataset.uiPage==='customervisits'&&activePageRoot.children.length)return;
 let visible=dep()?departmentTickets():tickets;
 let total=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0),0):visible.reduce((a,t)=>a+t.quantity,0),value=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0)*(Number(t.price)||0),0):visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
