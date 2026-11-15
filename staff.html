@@ -1937,7 +1937,7 @@ async function lookupStaffNameById(){
   return;
  }
  try{
-  await ensureStaffLookupSession();
+  // Staff ID lookup is a read-only public RPC; do not create an anonymous Auth user just to look up a name.
   const {data,error}=await sb.rpc('lookup_staff_account_by_id',{p_staff_id:staffId});
   if(sequence!==staffNameLookupSequence||idInput.value.trim().toUpperCase()!==staffId.toUpperCase())return;
   if(error)throw error;
