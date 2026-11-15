@@ -2866,7 +2866,7 @@ function tr(k){return T[lang]?.[k]||T.en[k]||k}function dep(){return DEPTS.find(
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||(!!activeEventLocationNo&&String(t.location||'')==='event:'+activeEventLocationNo)))}
 function navRender(){const nav=document.getElementById('nav');if(!nav)return;nav.innerHTML=PAGES.map(p=>'<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');nav.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page))}
-function go(p){if(p!=='event')activeEventLocationNo='';page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
+function go(p){if(p!=='event')activeEventLocationNo='';page=p;const pageRoot=document.getElementById('pageContent');if(p!=='customervisits'&&pageRoot)delete pageRoot.dataset.uiPage;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 function render(){
  try{
  navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
