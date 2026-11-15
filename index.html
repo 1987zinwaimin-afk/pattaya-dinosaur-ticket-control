@@ -3395,7 +3395,7 @@ function monthlyReportBuildHtml(data){
  '<div class="summary"><div class="kpi"><span>TOTAL TICKETS</span><b>'+data.totalQuantity.toLocaleString('en-US')+'</b></div><div class="kpi"><span>TOTAL SALES</span><b>'+fmtMoney(data.totalAmount)+'</b></div><div class="kpi"><span>REPORT DAYS</span><b>'+data.days.length.toLocaleString('en-US')+'</b></div></div>'+
  '<h2>Daily ticket details</h2>'+dailySections+
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
- '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>
+ '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
 </body></html>';
 }
 function monthlyReportExcelContent(data){
