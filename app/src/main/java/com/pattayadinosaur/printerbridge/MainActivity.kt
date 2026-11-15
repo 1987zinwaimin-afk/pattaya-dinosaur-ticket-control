@@ -36,6 +36,7 @@ class MainActivity : Activity() {
     private var devices: List<BluetoothDevice> = emptyList()
     private var pendingPrint: PrintJob? = null
     private var launchedFromWebsite = false
+    private var permissionRequestInFlight = false
 
     data class PrintJob(val payload: String, val group: String, val people: Int, val entry: String)
 
@@ -95,12 +96,13 @@ class MainActivity : Activity() {
 
     private fun requestBluetoothPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= 31 && checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 42)
+            if (!permissionRequestInFlight) { permissionRequestInFlight = true; ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 42) }
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 42) permissionRequestInFlight = false
         if (requestCode == 42 && grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
             loadPairedDevices()
             pendingPrint?.let { pendingPrint = null; printJob(it) }
@@ -224,7 +226,7 @@ class MainActivity : Activity() {
         fun cmd(vararg values: Int) { values.forEach { out.add(it.toByte()) } }
         val data = value.toByteArray(Charsets.UTF_8)
         cmd(0x1d, 0x28, 0x6b, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00) // QR model 2
-        cmd(0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, 0x06)    // module size
+        cmd(0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, 0x07)    // module size
         cmd(0x1d, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x45, 0x31)    // ECC M
         val length = data.size + 3
         cmd(0x1d, 0x28, 0x6b, length and 0xff, (length shr 8) and 0xff, 0x31, 0x50, 0x30)
