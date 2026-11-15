@@ -4145,7 +4145,15 @@ installUILanguageObserver();applyUILanguage();
    show('<section class="panel" role="alert" style="margin-top:14px;border:1px solid #e35b69"><h2 style="color:#ff9aa9">Owner dashboard could not finish loading</h2><p>Your saved ticket records have not been deleted or reset.</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(e.message||e)+'</pre><button class="gold" onclick="location.reload()">Try again</button></section>');
   }
  }
- function schedule(){setTimeout(()=>{const r=document.getElementById('pageContent');if(r&&!r.innerHTML.trim())recover();},1800);}
+ function schedule(){
+  // The main Owner app may need up to 45 seconds for auth/profile retries and
+  // the 20-second Cloud load timeout on a slow mobile connection. Never replace
+  // its still-loading page with the limited recovery dashboard after 1.8 seconds.
+  setTimeout(()=>{
+   const r=document.getElementById('pageContent');
+   if(r&&!r.innerHTML.trim()&&!r.children.length)recover();
+  },55000);
+ }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
 })();
 </script>
