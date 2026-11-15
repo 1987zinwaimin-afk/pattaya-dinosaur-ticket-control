@@ -3696,8 +3696,11 @@ async function renderCustomerVisits(){
    const {data,error}=await sb.from('customer_visit_logs').insert(payload).select('id,group_number,group_name').single();if(error)throw error;
    status.textContent=reportText('✓ Group ','✓ အဖွဲ့ ')+String(data.group_number||data.group_name||'')+reportText(' saved as Pending.',' ကို Pending အဖြစ် သိမ်းပြီးပါပြီ။');
    const savedGroup={...data,id:data.id,total_visitors:count,entry_at:entryAt};
-   try{status.textContent=reportText('✓ Group saved. Opening direct MP58-16 printer…','✓ အဖွဲ့သိမ်းပြီးပါပြီ။ MP58-16 Direct Printer ကို ဖွင့်နေပါတယ်…');launchPdkPrinterBridge(savedGroup);setTimeout(()=>{if(document.visibilityState==='visible')showCustomerVisitQr(savedGroup,false).catch(()=>{})},1800)}catch(qe){status.textContent=reportText('Group saved, but QR/print failed: ','အဖွဲ့သိမ်းပြီးပါပြီ။ QR/Print မအောင်မြင်ပါ: ')+(qe.message||qe);try{await showCustomerVisitQr(savedGroup,false)}catch(showError){status.textContent+=' · '+(showError.message||showError)}}
    try{localStorage.removeItem(visitDraftKey)}catch(e){}document.getElementById('visitPeopleCount').value='';document.getElementById('visitType').value='thai';document.getElementById('visitEntryDate').value=customerVisitBangkokDate();document.getElementById('visitEntryTime').value=customerVisitDateTimeInput().slice(11,16);await loadCustomerVisits();
+   // Stay on the Customer Visits page. Do not navigate to the companion-app intent:
+   // Android's fallback URL sent the browser back to the Owner dashboard.
+   status.textContent=reportText('✓ Group saved. Opening its QR receipt…','✓ အဖွဲ့စာရင်းသိမ်းပြီးပါပြီ။ QR Receipt ကို ဖွင့်နေပါတယ်…');
+   try{await showCustomerVisitQr(savedGroup,true)}catch(qe){status.textContent=reportText('Group saved, but QR could not open: ','အဖွဲ့သိမ်းပြီးပါပြီ။ QR ဖွင့်မရပါ: ')+(qe.message||qe)}
   }catch(err){status.textContent=reportText('Could not save: ','သိမ်းဆည်း၍မရပါ: ')+(err.message||err)}
   finally{btn.disabled=false}
  };
