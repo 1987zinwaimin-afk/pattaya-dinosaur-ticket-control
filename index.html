@@ -4012,3 +4012,40 @@ installUILanguageObserver();applyUILanguage();
 </script>
 
 </body></html>
+<!-- Reliable mobile navigation fallback: independent of the main app initializer -->
+<style>
+#openMenu{position:absolute!important;z-index:30!important;pointer-events:auto!important;touch-action:manipulation!important;cursor:pointer!important}
+#side{z-index:41!important}
+#shade{z-index:40!important}
+</style>
+<script>
+(function(){
+ function initTicketMenu(){
+  const btn=document.getElementById('openMenu');
+  const side=document.getElementById('side');
+  const shade=document.getElementById('shade');
+  if(!btn||!side||!shade)return;
+  const close=()=>{
+   side.classList.remove('open');
+   shade.classList.remove('open');
+   btn.setAttribute('aria-expanded','false');
+  };
+  const open=()=>{
+   side.classList.add('open');
+   shade.classList.add('open');
+   btn.setAttribute('aria-expanded','true');
+  };
+  btn.type='button';
+  btn.setAttribute('aria-controls','side');
+  btn.setAttribute('aria-expanded',side.classList.contains('open')?'true':'false');
+  btn.addEventListener('click',function(e){
+   e.preventDefault();e.stopPropagation();
+   if(side.classList.contains('open'))close();else open();
+  },true);
+  shade.addEventListener('click',close,true);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initTicketMenu,{once:true});
+ else initTicketMenu();
+})();
+</script>
