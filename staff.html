@@ -2891,7 +2891,7 @@ installUILanguageObserver();applyUILanguage();
     panel.className='staff-alarm-popover';
     panel.setAttribute('role','dialog');
     panel.setAttribute('aria-label','Emergency Alarm Notifications');
-    panel.innerHTML='<div class="staff-alarm-popover-head"><span style="font-size:22px">🚨</span><strong>Emergency Alarm Notifications</strong><span id="staffEmergencyPushBadge" style="margin-left:auto;font-size:11px;color:#b8c9d8">Checking…</span></div><p id="staffEmergencyPushStatus" class="staff-alarm-popover-status">Checking this device registration for Owner Emergency Alarms.</p><button type="button" id="staffEnableEmergencyPush" class="gold">Enable Emergency Alarm</button><div style="border-top:1px solid #ffffff24;margin:12px 0 9px;padding-top:10px"><b style="font-size:13px;color:#f5d17c">🔊 Voice Announcement</b><p id="staffVoiceStatus" class="staff-alarm-popover-status" style="margin:5px 0 9px">Female English + Thai voice alerts. Enable once on this device.</p><div style="display:flex;gap:8px"><button type="button" id="staffEnableVoice" class="gold" style="flex:1">Enable Voice</button><button type="button" id="staffTestVoice" style="flex:1;background:#204d6d;color:white;border:1px solid #50728d">Test Voice</button></div></div>';
+    panel.innerHTML='<div class="staff-alarm-popover-head"><span style="font-size:22px">🚨</span><strong>Emergency Alarm Notifications</strong><span id="staffEmergencyPushBadge" style="margin-left:auto;font-size:11px;color:#b8c9d8">Checking…</span></div><p id="staffEmergencyPushStatus" class="staff-alarm-popover-status">Checking this device registration for Owner Emergency Alarms.</p><button type="button" id="staffEnableEmergencyPush" class="gold">Enable Emergency Alarm</button><div style="border-top:1px solid #ffffff24;margin:12px 0 9px;padding-top:10px"><b style="font-size:13px;color:#f5d17c">🔊 Thai Voice Announcement</b><p id="staffVoiceStatus" class="staff-alarm-popover-status" style="margin:5px 0 9px">Thai female voice: เฮียเข้าไปในสวนแล้ว</p><label for="staffThaiVoiceSelect" style="display:block;font-size:12px;color:#d5e2ef;margin-bottom:5px">Thai voice</label><select id="staffThaiVoiceSelect" style="width:100%;min-height:38px;margin-bottom:8px;border-radius:9px;background:#0b2339;color:#fff;border:1px solid #50728d;padding:7px"></select><div style="display:flex;gap:8px"><button type="button" id="staffEnableVoice" class="gold" style="flex:1">Enable Thai Voice</button><button type="button" id="staffTestVoice" style="flex:1;background:#204d6d;color:white;border:1px solid #50728d">Test Thai Voice</button></div></div>';
     document.body.appendChild(panel);
    }
    const btn=panel.querySelector('#staffEnableEmergencyPush');
@@ -2975,59 +2975,87 @@ installUILanguageObserver();applyUILanguage();
 (function(){
  if(window.__staffEmergencyVoiceBound)return;
  window.__staffEmergencyVoiceBound=true;
- const EN='The boss has entered the park.';
  const TH='เฮียเข้าไปในสวนแล้ว';
  const KEY='staff-emergency-voice-enabled-v1';
- const femaleHints=/female|woman|zira|samantha|victoria|kanya|pim|female/i;
- function chooseVoice(prefix){
-  const list=window.speechSynthesis?window.speechSynthesis.getVoices():[];
-  const matches=list.filter(v=>(v.lang||'').toLowerCase().startsWith(prefix));
-  return matches.find(v=>femaleHints.test(v.name||''))||matches.find(v=>!/(male|man)/i.test(v.name||''))||matches[0]||null;
+ const VOICE_KEY='staff-emergency-thai-voice-uri-v1';
+ const femaleHints=/female|woman|kanya|pim|arisa|google.*female|thailand.*female/i;
+ function getThaiVoices(){
+  return ('speechSynthesis'in window)?window.speechSynthesis.getVoices().filter(v=>(v.lang||'').toLowerCase().startsWith('th')):[];
  }
- function speakAnnouncement(){
-  if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window))throw new Error('This browser does not support voice announcements.');
+ function selectedThaiVoice(){
+  const list=getThaiVoices();
+  const saved=localStorage.getItem(VOICE_KEY);
+  return list.find(v=>v.voiceURI===saved)||list.find(v=>femaleHints.test(v.name||''))||list.find(v=>!/(male|man)/i.test(v.name||''))||list[0]||null;
+ }
+ function refreshThaiVoiceOptions(){
+  const select=document.getElementById('staffThaiVoiceSelect');
+  if(!select)return;
+  const list=getThaiVoices();
+  const saved=localStorage.getItem(VOICE_KEY);
+  select.innerHTML='';
+  if(!list.length){
+   const option=document.createElement('option');option.value='';option.textContent='Thai Voice မတွေ့ပါ';select.appendChild(option);
+   return;
+  }
+  list.sort((a,b)=>(femaleHints.test(b.name||'')?1:0)-(femaleHints.test(a.name||'')?1:0));
+  list.forEach(v=>{
+   const option=document.createElement('option');option.value=v.voiceURI;
+   option.textContent=v.name+' ('+v.lang+')'+(femaleHints.test(v.name||'')?' · likely female':'');
+   select.appendChild(option);
+  });
+  select.value=list.some(v=>v.voiceURI===saved)?saved:(selectedThaiVoice()?.voiceURI||list[0].voiceURI);
+  if(!select.dataset.bound){
+   select.onchange=()=>localStorage.setItem(VOICE_KEY,select.value);
+   select.dataset.bound='1';
+  }
+ }
+ function speakThaiAnnouncement(){
+  if(!('speechSynthesis'in window)||!('SpeechSynthesisUtterance'in window))throw new Error('ဒီ Browser မှာ Thai voice announcement မရပါ။');
+  const voice=selectedThaiVoice();
+  if(!voice)throw new Error('Thai Voice မတွေ့ပါ။ ဖုန်း TTS ထဲမှာ Thai voice data ထည့်သွင်းပါ။');
   window.speechSynthesis.cancel();
-  const english=new SpeechSynthesisUtterance(EN);
-  english.lang='en-US';english.rate=0.94;english.pitch=1.12;english.volume=1;
-  const ev=chooseVoice('en');if(ev)english.voice=ev;
-  const thai=new SpeechSynthesisUtterance(TH);
-  thai.lang='th-TH';thai.rate=0.88;thai.pitch=1.12;thai.volume=1;
-  const tv=chooseVoice('th');if(tv)thai.voice=tv;
-  english.onend=()=>window.speechSynthesis.speak(thai);
-  window.speechSynthesis.speak(english);
+  const utterance=new SpeechSynthesisUtterance(TH);
+  utterance.voice=voice;utterance.lang=voice.lang||'th-TH';utterance.rate=0.88;utterance.pitch=1.12;utterance.volume=1;
+  utterance.onerror=event=>{const status=document.getElementById('staffVoiceStatus');if(status)status.textContent='Thai အသံဖွင့်မရပါ: '+event.error};
+  window.speechSynthesis.speak(utterance);
+  const status=document.getElementById('staffVoiceStatus');
+  if(status)status.textContent='กำลังพูดภาษาไทย · '+voice.name+' — เฮียเข้าไปในสวนแล้ว';
  }
  function updateVoiceUi(){
   const status=document.getElementById('staffVoiceStatus');
   const enable=document.getElementById('staffEnableVoice');
   if(!status||!enable)return;
   const active=localStorage.getItem(KEY)==='1';
-  status.textContent=active?'✓ Female English + Thai voice announcement enabled on this device.':'Tap Enable Voice once, then Test Voice to check the available female voices.';
-  enable.textContent=active?'Voice Enabled':'Enable Voice';
+  status.textContent=active?'✓ Thai voice announcement enabled on this device.':'Thai female voice: เฮียเข้าไปในสวนแล้ว';
+  enable.textContent=active?'Thai Voice Enabled':'Enable Thai Voice';
+  refreshThaiVoiceOptions();
  }
  function bindVoiceUi(){
   const enable=document.getElementById('staffEnableVoice');
   const test=document.getElementById('staffTestVoice');
   if(enable&&!enable.dataset.bound){
-   enable.onclick=()=>{localStorage.setItem(KEY,'1');updateVoiceUi();try{speakAnnouncement()}catch(e){const status=document.getElementById('staffVoiceStatus');if(status)status.textContent=e.message||String(e)}};
+   enable.onclick=()=>{localStorage.setItem(KEY,'1');updateVoiceUi();try{speakThaiAnnouncement()}catch(error){const status=document.getElementById('staffVoiceStatus');if(status)status.textContent=error.message||String(error)}};
    enable.dataset.bound='1';
   }
   if(test&&!test.dataset.bound){
-   test.onclick=()=>{try{speakAnnouncement()}catch(e){const status=document.getElementById('staffVoiceStatus');if(status)status.textContent=e.message||String(e)}};
+   test.onclick=()=>{try{speakThaiAnnouncement()}catch(error){const status=document.getElementById('staffVoiceStatus');if(status)status.textContent=error.message||String(error)}};
    test.dataset.bound='1';
   }
   updateVoiceUi();
  }
- document.addEventListener('click',e=>{if(e.target&&((e.target.id==='staffAlarmHeaderButton')||e.target.closest('#staffAlarmHeaderButton'))){setTimeout(bindVoiceUi,0)}});
+ document.addEventListener('click',event=>{
+  if(event.target&&((event.target.id==='staffAlarmHeaderButton')||event.target.closest('#staffAlarmHeaderButton')))setTimeout(bindVoiceUi,0);
+ });
  document.addEventListener('DOMContentLoaded',bindVoiceUi);
  if(navigator.serviceWorker){
   navigator.serviceWorker.addEventListener('message',event=>{
    const data=event.data||{};
    if(data.type!=='STAFF_EMERGENCY_VOICE')return;
    if(localStorage.getItem(KEY)!=='1')return;
-   try{speakAnnouncement()}catch(error){console.warn('Emergency voice announcement could not play:',error)}
+   try{speakThaiAnnouncement()}catch(error){console.warn('Thai emergency voice announcement could not play:',error)}
   });
  }
- if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>bindVoiceUi();
+ if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>{refreshThaiVoiceOptions();bindVoiceUi()};
 })();
 </script>
 </body></html>
