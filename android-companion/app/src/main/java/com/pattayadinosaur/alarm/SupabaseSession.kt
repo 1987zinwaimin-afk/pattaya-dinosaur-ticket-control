@@ -25,7 +25,7 @@ internal object SupabaseSession {
     fun signIn(context: Context, email: String, password: String): String {
         val auth = request(
             "POST", "/auth/v1/token?grant_type=password",
-            JSONObject().put("email", email).put("password", password).toString(), null
+            JSONObject().put("email", email.trim().lowercase(java.util.Locale.ROOT)).put("password", password).toString(), null
         )
         val access = auth.getString("access_token")
         val uid = auth.getJSONObject("user").getString("id")
