@@ -2895,9 +2895,7 @@ installUILanguageObserver();applyUILanguage();
      const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\nเฮียเข้าไปในสวนแล้ว'}});
      if(error)throw error;
      if(!data||!data.ok)throw new Error(data?.message||'No subscribed web-push device accepted the alarm.');
-     let androidResult=null,androidError=null;
-     try{const result=await sb.functions.invoke('android-alarm',{body:{action:'emergency_alarm',message:'The boss has entered the park.',thai_text:'เฮียเข้าไปในสวนแล้ว'}});if(result.error)throw result.error;androidResult=result.data;}catch(e){androidError=e?.message||String(e)}
-     alert('🚨 Alarm sent. Web: '+data.sent+' / '+data.subscriptions+'. Android Thai voice: '+(androidResult?.sent??0)+' / '+(androidResult?.targets??0)+(androidError?'\\nAndroid: '+androidError:'')+'\\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\\nFailed: '+data.failed);
+     alert('🚨 Alarm sent. Web notifications: '+data.sent+' / '+data.subscriptions+'.\\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\\nFailed: '+data.failed);
     }catch(error){alert('Could not send emergency alarm: '+(error?.message||error))}
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
