@@ -2386,66 +2386,7 @@ function printStaffCvQr(row,qrData){
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
    doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">
-<script>
-(function(){
- const STAFF_ALARM_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
- function alarmKeyBytes(value){
-  const pad='='.repeat((4-value.length%4)%4);
-  const raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));
-  return Uint8Array.from(Array.from(raw,c=>c.charCodeAt(0)));
- }
- window.renderStaffAlarmSetupBanner=function(){
-  const root=document.getElementById('pageContent');
-  if(!root||!STAFF_MODE||!currentUser||currentRole!=='staff')return;
-  if(document.getElementById('staffEmergencyPushSetup'))return;
-  const panel=document.createElement('section');
-  panel.id='staffEmergencyPushSetup';
-  panel.className='panel';
-  panel.style.cssText='margin:0 0 12px;padding:12px;border:1px solid #d8b45f;background:linear-gradient(135deg,rgba(20,54,82,.98),rgba(7,25,44,.98));border-radius:16px';
-  const permitted=('Notification'in window)&&Notification.permission==='granted';
-  panel.innerHTML='<div style="display:flex;align-items:center;gap:9px;min-width:0"><div style="font-size:25px">🚨</div><div style="flex:1;min-width:0"><b style="color:#f5d17c">Emergency Alarm Notifications</b><div id="staffEmergencyPushStatus" class="subtle" style="font-size:12px;margin-top:3px">'+(permitted?'Notifications allowed. Register this device for Owner alarms.':'Enable notifications once so Owner can alert this device even when the Staff website is closed.')+'</div></div></div><button type="button" id="staffEnableEmergencyPush" class="gold" style="width:100%;margin-top:10px;min-height:42px;font-weight:800">🔔 '+(permitted?'Enable / Refresh Emergency Alarm':'Enable Emergency Alarm')+'</button>';
-  root.insertBefore(panel,root.firstChild);
-  const btn=panel.querySelector('#staffEnableEmergencyPush');
-  const status=panel.querySelector('#staffEmergencyPushStatus');
-  btn.addEventListener('click',async()=>{
-   btn.disabled=true;btn.textContent='Enabling notifications…';
-   try{
-    if(!currentUser||currentRole!=='staff')throw new Error('Please sign in to your Staff account first.');
-    if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('This browser does not support web push. On iPhone, install the Staff website using Add to Home Screen first, then open the installed app.');
-    let permission=Notification.permission;
-    if(permission!=='granted')permission=await Notification.requestPermission();
-    if(permission!=='granted')throw new Error('Notification permission was not granted. Allow notifications for this website in phone settings.');
-    const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});
-    await navigator.serviceWorker.ready;
-    let subscription=await registration.pushManager.getSubscription();
-    if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:alarmKeyBytes(STAFF_ALARM_VAPID_PUBLIC_KEY)});
-    const json=subscription.toJSON();
-    if(!json.endpoint||!json.keys||!json.keys.p256dh||!json.keys.auth)throw new Error('The browser did not create a complete push subscription.');
-    const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'register_push',subscription:{endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth},user_agent:navigator.userAgent}});
-    if(error)throw error;
-    if(!data||!data.registered)throw new Error(data?.error||'Could not register this device.');
-    status.textContent='✓ Emergency alarms are enabled on this device. Keep browser notifications allowed.';
-    btn.textContent='✓ Emergency Alarm Enabled';
-    btn.style.background='linear-gradient(135deg,#1d805e,#146246)';
-   }catch(error){
-    status.textContent=error?.message||String(error);
-    btn.textContent='Try Again';
-    btn.disabled=false;
-   }
-  });
-  if(permitted&&navigator.serviceWorker&&'PushManager'in window){
-   navigator.serviceWorker.ready.then(async registration=>{
-    const existing=await registration.pushManager.getSubscription();
-    if(existing&&currentUser&&sb){
-     const j=existing.toJSON();
-     const {error}=await sb.functions.invoke('notify-staff-login',{body:{action:'register_push',subscription:{endpoint:j.endpoint,p256dh:j.keys?.p256dh,auth_key:j.keys?.auth},user_agent:navigator.userAgent}});
-     if(!error){status.textContent='✓ This device is registered for Owner Emergency Alarms.';btn.textContent='✓ Emergency Alarm Enabled';btn.disabled=true;btn.style.background='linear-gradient(135deg,#1d805e,#146246)'}
-    }
-   }).catch(()=>{});
-  }
- };
-})();
-</script>
+
 
 </body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
@@ -2914,6 +2855,66 @@ installUILanguageObserver();applyUILanguage();
   timeEl.textContent=timeFmt.format(now).toUpperCase();
  }
  updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
+})();
+</script>
+<script>
+(function(){
+ const STAFF_ALARM_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
+ function alarmKeyBytes(value){
+  const pad='='.repeat((4-value.length%4)%4);
+  const raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from(Array.from(raw,c=>c.charCodeAt(0)));
+ }
+ window.renderStaffAlarmSetupBanner=function(){
+  const root=document.getElementById('pageContent');
+  if(!root||!STAFF_MODE||!currentUser||currentRole!=='staff')return;
+  if(document.getElementById('staffEmergencyPushSetup'))return;
+  const panel=document.createElement('section');
+  panel.id='staffEmergencyPushSetup';
+  panel.className='panel';
+  panel.style.cssText='margin:0 0 12px;padding:12px;border:1px solid #d8b45f;background:linear-gradient(135deg,rgba(20,54,82,.98),rgba(7,25,44,.98));border-radius:16px';
+  const permitted=('Notification'in window)&&Notification.permission==='granted';
+  panel.innerHTML='<div style="display:flex;align-items:center;gap:9px;min-width:0"><div style="font-size:25px">🚨</div><div style="flex:1;min-width:0"><b style="color:#f5d17c">Emergency Alarm Notifications</b><div id="staffEmergencyPushStatus" class="subtle" style="font-size:12px;margin-top:3px">'+(permitted?'Notifications allowed. Register this device for Owner alarms.':'Enable notifications once so Owner can alert this device even when the Staff website is closed.')+'</div></div></div><button type="button" id="staffEnableEmergencyPush" class="gold" style="width:100%;margin-top:10px;min-height:42px;font-weight:800">🔔 '+(permitted?'Enable / Refresh Emergency Alarm':'Enable Emergency Alarm')+'</button>';
+  root.insertBefore(panel,root.firstChild);
+  const btn=panel.querySelector('#staffEnableEmergencyPush');
+  const status=panel.querySelector('#staffEmergencyPushStatus');
+  btn.addEventListener('click',async()=>{
+   btn.disabled=true;btn.textContent='Enabling notifications…';
+   try{
+    if(!currentUser||currentRole!=='staff')throw new Error('Please sign in to your Staff account first.');
+    if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('This browser does not support web push. On iPhone, install the Staff website using Add to Home Screen first, then open the installed app.');
+    let permission=Notification.permission;
+    if(permission!=='granted')permission=await Notification.requestPermission();
+    if(permission!=='granted')throw new Error('Notification permission was not granted. Allow notifications for this website in phone settings.');
+    const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});
+    await navigator.serviceWorker.ready;
+    let subscription=await registration.pushManager.getSubscription();
+    if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:alarmKeyBytes(STAFF_ALARM_VAPID_PUBLIC_KEY)});
+    const json=subscription.toJSON();
+    if(!json.endpoint||!json.keys||!json.keys.p256dh||!json.keys.auth)throw new Error('The browser did not create a complete push subscription.');
+    const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'register_push',subscription:{endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth},user_agent:navigator.userAgent}});
+    if(error)throw error;
+    if(!data||!data.registered)throw new Error(data?.error||'Could not register this device.');
+    status.textContent='✓ Emergency alarms are enabled on this device. Keep browser notifications allowed.';
+    btn.textContent='✓ Emergency Alarm Enabled';
+    btn.style.background='linear-gradient(135deg,#1d805e,#146246)';
+   }catch(error){
+    status.textContent=error?.message||String(error);
+    btn.textContent='Try Again';
+    btn.disabled=false;
+   }
+  });
+  if(permitted&&navigator.serviceWorker&&'PushManager'in window){
+   navigator.serviceWorker.ready.then(async registration=>{
+    const existing=await registration.pushManager.getSubscription();
+    if(existing&&currentUser&&sb){
+     const j=existing.toJSON();
+     const {error}=await sb.functions.invoke('notify-staff-login',{body:{action:'register_push',subscription:{endpoint:j.endpoint,p256dh:j.keys?.p256dh,auth_key:j.keys?.auth},user_agent:navigator.userAgent}});
+     if(!error){status.textContent='✓ This device is registered for Owner Emergency Alarms.';btn.textContent='✓ Emergency Alarm Enabled';btn.disabled=true;btn.style.background='linear-gradient(135deg,#1d805e,#146246)'}
+    }
+   }).catch(()=>{});
+  }
+ };
 })();
 </script>
 </body></html>
