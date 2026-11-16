@@ -47,6 +47,10 @@ internal object SupabaseSession {
             .putString("user_id", uid)
             .putString("role", role)
             .apply()
+        // The native FCM receiver reads this small eligibility flag. Keep it in
+        // sync only after the server-side profile and Event Staff checks pass.
+        context.getSharedPreferences("pdk_alarm", Context.MODE_PRIVATE)
+            .edit().putString("role", role).apply()
         return role
     }
 
@@ -59,6 +63,8 @@ internal object SupabaseSession {
             .put("device_label", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL)
             .put("platform", "android")
             .put("updated_at", java.time.Instant.now().toString())
+        context.getSharedPreferences("pdk_alarm", Context.MODE_PRIVATE)
+            .edit().putString("pending_fcm_token", token).apply()
         request(
             "POST", "/rest/v1/android_alarm_device_tokens?on_conflict=fcm_token",
             row.toString(), access,
@@ -68,8 +74,21 @@ internal object SupabaseSession {
 
     fun signOut(context: Context) {
         val access = accessToken(context)
+        val token = context.getSharedPreferences("pdk_alarm", Context.MODE_PRIVATE)
+            .getString("pending_fcm_token", null)
+        // Remove this device's subscription before ending the authenticated session.
+        if (access != null && token != null) {
+            try {
+                request(
+                    "DELETE",
+                    "/rest/v1/android_alarm_device_tokens?fcm_token=eq.${java.net.URLEncoder.encode(token, "UTF-8")}",
+                    null, access
+                )
+            } catch (_: Exception) { /* server-side expiry cleanup remains possible */ }
+        }
         if (access != null) try { request("POST", "/auth/v1/logout", "{}", access) } catch (_: Exception) {}
         prefs(context).edit().clear().apply()
+        context.getSharedPreferences("pdk_alarm", Context.MODE_PRIVATE).edit().clear().apply()
     }
 
     private fun requestArray(method: String, path: String, body: String?, bearer: String) =
