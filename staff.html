@@ -2158,7 +2158,7 @@ function printStaffCvQr(row,qrData){
  const no=String(row.group_number||'—');
  const people=Number(row.total_visitors||0);
  let dateLabel='';
- try{dateLabel=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(row.entry_at)).replace(/\\//g,'.')}catch(e){}
+ try{dateLabel=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(row.entry_at)).replace(/\//g,'.')}catch(e){}
  if(!dateLabel||dateLabel==='Invalid Date')dateLabel=String(row.entry_at||'').split('T')[0]||'';
  const old=document.getElementById('staffCustomerVisitPrintFrame');if(old)old.remove();
  const frame=document.createElement('iframe');frame.id='staffCustomerVisitPrintFrame';frame.title='Customer Visit 58mm receipt';
