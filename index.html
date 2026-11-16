@@ -2980,9 +2980,8 @@ async function sendOwnerEmergencyAlarm(button){
   const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\nเฮียเข้าไปในสวนแล้ว'}});
   if(error)throw error;
   if(!data||!data.ok)throw new Error(data?.message||'No Normal Staff web-push device accepted the alarm.');
-  let androidResult=null,androidError=null;
-  try{const result=await sb.functions.invoke('android-alarm',{body:{action:'emergency_alarm',message:'The boss has entered the park.',thai_text:'เฮียเข้าไปในสวนแล้ว'}});if(result.error)throw result.error;androidResult=result.data;}catch(e){androidError=e?.message||String(e)}
-  alert('🚨 Alarm ပို့ပြီးပါပြီ\nWeb notification: '+data.sent+' / '+data.subscriptions+'\nAndroid Thai voice: '+(androidResult?.sent??0)+' / '+(androidResult?.targets??0)+(androidError?'\nAndroid: '+androidError:'')+'\nFailed: '+data.failed+'\nOwner ကို မိမိ Alarm ပြန်မပို့ပါ။');
+  const androidResult=data.android||{};
+  alert('🚨 Alarm ပို့ပြီးပါပြီ\nWeb notification: '+data.sent+' / '+data.subscriptions+'\nAndroid notification: '+(androidResult.sent??0)+' / '+(androidResult.targets??0)+'\nFailed: '+(Number(data.failed||0)+Number(androidResult.failed||0))+'\nOwner ကို မိမိ Alarm ပြန်မပို့ပါ။');
  }catch(e){alert('Could not send emergency alarm: '+(e.message||e))}
  finally{if(btn){btn.disabled=false;btn.textContent='🚨';}}
 }
