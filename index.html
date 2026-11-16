@@ -3638,7 +3638,7 @@ function printCustomerVisitQr(row,qrData){
  if(!dateLabel||dateLabel==='Invalid Date')dateLabel=String(customerVisitBangkokDateTime(row.entry_at)||'').split(',')[0];
  const old=document.getElementById('customerVisitPrintFrame');if(old)old.remove();
  const frame=document.createElement('iframe');frame.id='customerVisitPrintFrame';frame.title='Customer Visit 58mm receipt';
- frame.style.cssText='position:fixed;left:0;top:0;width:58mm;height:100mm;border:0;background:#fff;z-index:10070';
+ frame.style.cssText='position:fixed;left:-10000px;top:0;width:58mm;height:100mm;border:0;background:#fff;z-index:-1;opacity:0;pointer-events:none';
  document.body.appendChild(frame);
  const doc=frame.contentDocument||frame.contentWindow.document;
  const canvas=doc.createElement('canvas');canvas.width=448;canvas.height=650;
