@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "386652978138",
+    "project_id": "pattaya-dinosaur-ticket-desk",
+    "storage_bucket": "pattaya-dinosaur-ticket-desk.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:386652978138:android:3cebcfdb48cee9a17cdee3",
+        "android_client_info": {
+          "package_name": "com.pattayadinosaur.alarm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "386652978138-bm8vvkj0205maelum6km34631tal43ti.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdgLGGU1E6hzNuTi9nxLREZTNlkSQPcP8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "386652978138-bm8vvkj0205maelum6km34631tal43ti.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
