@@ -47,4 +47,21 @@ self.addEventListener('push',event=>{
   catch(error){console.error('Could not display staff activity push notification:',error)}
  })());
 });
-self.addEventListener('notificationclick',event=>{event.notification.close();const target=event.notification.data&&event.notification.data.url?event.notification.data.url:'https://pattaya-dinosaur-ticket-control-eight.vercel.app/';event.waitUntil((async()=>{const clientsList=await self.clients.matchAll({type:'window',includeUncontrolled:true});for(const client of clientsList){if('focus'in client){try{await client.focus();if('navigate'in client)await client.navigate(target);return}catch(_){}}}if(self.clients.openWindow)await self.clients.openWindow(target)})())});
+self.addEventListener('notificationclick',event=>{
+ event.notification.close();
+ const data=event.notification.data||{};
+ const isEmergency=data.event_type==='emergency_alarm';
+ const isStaffOrigin=self.location.hostname==='pattaya-dinosaur-ticket-control.vercel.app';
+ const target=isEmergency
+  ? self.location.origin+(isStaffOrigin?'/staff.html':'/')
+  : (data.url||self.location.origin+'/');
+ event.waitUntil((async()=>{
+  const clientsList=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  for(const client of clientsList){
+   if('focus'in client){
+    try{await client.focus();if('navigate'in client)await client.navigate(target);return}catch(_){}
+   }
+  }
+  if(self.clients.openWindow)await self.clients.openWindow(target);
+ })());
+});
