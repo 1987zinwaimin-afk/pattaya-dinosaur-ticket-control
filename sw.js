@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v9';
+const CACHE_NAME='dino-staff-shell-v10';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -33,7 +33,7 @@ self.addEventListener('push',event=>{
    requireInteraction:true
   };
   if(data.event_type==='emergency_alarm'){
-   try{const openClients=await self.clients.matchAll({type:'window',includeUncontrolled:true});const staffClient=openClients.find(client=>client.url.includes('/staff.html'))||openClients[0];if(staffClient)staffClient.postMessage({type:'STAFF_EMERGENCY_VOICE',event_type:'emergency_alarm',body:options.body})}catch(voiceError){console.warn('Could not relay emergency voice alert to open Staff page:',voiceError)}
+   try{const openClients=await self.clients.matchAll({type:'window',includeUncontrolled:true});for(const staffClient of openClients){if(staffClient.url.includes('/staff.html')||staffClient.url.includes('/event-staff.html'))staffClient.postMessage({type:'STAFF_EMERGENCY_VOICE',event_type:'emergency_alarm',body:options.body})}}catch(voiceError){console.warn('Could not relay emergency voice alert to open Staff pages:',voiceError)}
   }
   try{await self.registration.showNotification(title,options)}
   catch(error){console.error('Could not display staff activity push notification:',error)}
