@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v11';
+const CACHE_NAME='dino-staff-shell-v12';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -18,16 +18,16 @@ self.addEventListener('push',event=>{
   let data={};
   try{data=event.data?event.data.json():{}}
   catch(_){try{data={body:event.data?event.data.text():'A staff member activity was recorded.'}}catch(__){}}
-  const title=data.title||'Pattaya Dinosaur Kingdom';
+  const title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':'Pattaya Dinosaur Kingdom');
   const options={
    body:data.body||'A staff member activity was recorded.',
    icon:data.icon||'/notification-logo.svg',
    badge:data.badge||'/notification-badge.svg',
-   tag:data.tag||'staff-activity-'+Date.now(),
+   tag:data.tag||(data.event_type==='emergency_alarm'?'pdk-emergency-alarm-'+Date.now():'staff-activity-'+Date.now()),
    renotify:true,
    timestamp:Number(data.timestamp)||Date.now(),
    data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login'},
-   vibrate:data.event_type==='emergency_alarm'?[1000,300,1000,300,1500,300,1500]:[250,100,250],
+   vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:[250,100,250],
    silent:false,
    actions:data.event_type==='emergency_alarm'?[{action:'open',title:'Open Staff App'}]:[],
    requireInteraction:true
