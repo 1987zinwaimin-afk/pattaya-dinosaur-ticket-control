@@ -3635,30 +3635,29 @@ function printCustomerVisitQr(row,qrData){
  const entry=customerVisitBangkokDateTime(row.entry_at);
  const old=document.getElementById('customerVisitPrintFrame');if(old)old.remove();
  const frame=document.createElement('iframe');frame.id='customerVisitPrintFrame';frame.title='Customer Visit 58mm receipt';
- frame.style.cssText='position:fixed;left:0;top:0;width:58mm;height:125mm;border:0;opacity:1;background:#fff;z-index:10070';
+ frame.style.cssText='position:fixed;left:0;top:0;width:58mm;height:110mm;border:0;opacity:1;background:#fff;z-index:10070';
  document.body.appendChild(frame);
  const doc=frame.contentDocument||frame.contentWindow.document;
  const safeQr=String(qrData||'');
- const parts=String(entry||'').trim().replace(/\\s+/g,' ').split(',').map(x=>x.trim());
+ const parts=String(entry||'').trim().replace(/\s+/g,' ').split(',').map(x=>x.trim());
  const date=parts.length>=2?(parts[0]+' '+parts[1]):(parts[0]||'');
  const monthMap={JAN:'01',FEB:'02',MAR:'03',APR:'04',MAY:'05',JUN:'06',JUL:'07',AUG:'08',SEP:'09',OCT:'10',NOV:'11',DEC:'12'};
- const dateBits=String(date||'').replace(/,/g,'').trim().split(/\\s+/);
+ const dateBits=String(date||'').replace(/,/g,'').trim().split(/\s+/);
  const dateLabel=dateBits.length>=3?(String(dateBits[1]).padStart(2,'0')+'.'+(monthMap[String(dateBits[0]).slice(0,3).toUpperCase()]||'00')+'.'+dateBits[2]):date;
  const people=Number(row.total_visitors||0);
- // Print every text row as a bitmap. This prevents the Android print service
- // from spreading characters or wrapping the English/Thai instructions.
+ // High-resolution bold text bitmaps keep small thermal-printer lettering crisp.
  const makeTextImage=(width,height,draw)=>{const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#000';ctx.textBaseline='middle';draw(ctx,width,height);return canvas.toDataURL('image/png')};
- const fit=(ctx,label,max,min,fontFamily,weight)=>{let size=max;do{ctx.font=weight+' '+size+'px '+fontFamily;if(ctx.measureText(label).width<=370)break;size--}while(size>min);return size};
- const headingSrc=makeTextImage(384,66,(ctx)=>{ctx.textAlign='center';ctx.font='700 20px Arial,Helvetica,sans-serif';fit(ctx,'Pattaya Dinosaur Kingdom',20,11,'Arial,Helvetica,sans-serif','700');ctx.fillText('Pattaya Dinosaur Kingdom',192,20);fit(ctx,'Customer visit pass',18,10,'Arial,Helvetica,sans-serif','600');ctx.fillText('Customer visit pass',192,48)});
+ const fit=(ctx,label,max,min,fontFamily,weight)=>{let size=max;do{ctx.font=weight+' '+size+'px '+fontFamily;if(ctx.measureText(label).width<=740)break;size--}while(size>min);return size};
+ const headingSrc=makeTextImage(768,104,(ctx)=>{ctx.textAlign='center';ctx.font='700 40px Arial,Helvetica,sans-serif';let s=fit(ctx,'Pattaya Dinosaur Kingdom',40,24,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+s+'px Arial,Helvetica,sans-serif';ctx.fillText('Pattaya Dinosaur Kingdom',384,32);s=fit(ctx,'Customer visit pass',36,22,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+s+'px Arial,Helvetica,sans-serif';ctx.fillText('Customer visit pass',384,78)});
  const groupDateText='Group - '+no+'.   '+dateLabel;
- const groupDateSrc=makeTextImage(384,30,(ctx)=>{ctx.textAlign='center';const size=fit(ctx,groupDateText,17,11,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(groupDateText,192,15)});
- const peopleSrc=makeTextImage(384,28,(ctx)=>{ctx.textAlign='center';const label=people+' Person';const size=fit(ctx,label,20,13,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(label,192,14)});
+ const groupDateSrc=makeTextImage(768,58,(ctx)=>{ctx.textAlign='center';const size=fit(ctx,groupDateText,36,22,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(groupDateText,384,29)});
+ const peopleSrc=makeTextImage(768,58,(ctx)=>{ctx.textAlign='center';const label=people+' Person';const size=fit(ctx,label,40,26,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(label,384,29)});
  const hintText='please Scan QR at exit again.';
- const hintSrc=makeTextImage(384,24,(ctx)=>{ctx.textAlign='center';const size=fit(ctx,hintText,17,11,'Arial,Helvetica,sans-serif','600');ctx.font='600 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(hintText,192,12)});
+ const hintSrc=makeTextImage(768,50,(ctx)=>{ctx.textAlign='center';const size=fit(ctx,hintText,34,22,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(hintText,384,25)});
  const thaiText='โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ';
- const thaiSrc=makeTextImage(384,28,(ctx)=>{ctx.textAlign='center';const size=fit(ctx,thaiText,17,9,"'Noto Sans Thai',Arial,sans-serif",'600');ctx.font='600 '+size+"px 'Noto Sans Thai',Arial,sans-serif";ctx.fillText(thaiText,192,14)});
+ const thaiSrc=makeTextImage(768,58,(ctx)=>{ctx.textAlign='center';const family="'Noto Sans Thai',Tahoma,Arial,sans-serif";const size=fit(ctx,thaiText,34,20,family,'700');ctx.font='700 '+size+'px '+family;ctx.fillText(thaiText,384,29)});
  doc.open();
- doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Group '+esc(no)+'</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box;letter-spacing:0}html,body{width:54mm;margin:0 auto;padding:0;text-align:center;color:#000;background:#fff;font-family:Arial,sans-serif}body{padding:0.4mm 0}.line{display:block;width:54mm;height:auto;margin:0 auto}.heading{height:9.3mm;margin-bottom:0.5mm}.group-date{height:4mm;margin:0.2mm auto}.qr{display:block;width:40mm;height:40mm;margin:0.2mm auto;image-rendering:pixelated}.people{height:3.7mm;margin:0.4mm auto}.hint{height:3.2mm;margin:0 auto}.thai{height:3.7mm;margin:0 auto}</style></head><body><img class="line heading" alt="Pattaya Dinosaur Kingdom - Customer visit pass" src="'+headingSrc+'"><img class="line group-date" alt="Group and visit date" src="'+groupDateSrc+'"><img class="qr" alt="Group QR code" src="'+safeQr+'"><img class="line people" alt="'+people+' Person" src="'+peopleSrc+'"><img class="line hint" alt="please Scan QR at exit again." src="'+hintSrc+'"><img class="line thai" alt="โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ" src="'+thaiSrc+'"></body></html>');
+ doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Group '+esc(no)+'</title><style>@page{size:58mm auto;margin:0.6mm}*{box-sizing:border-box;letter-spacing:0}html,body{width:56mm;margin:0 auto;padding:0;text-align:center;color:#000;background:#fff;font-family:Arial,sans-serif}body{padding:0}.line{display:block;width:55mm;height:auto;margin:0 auto}.heading{height:7.6mm;margin:0 auto 0.3mm}.group-date{height:4.2mm;margin:0 auto 0.1mm}.qr{display:block;width:36mm;height:36mm;margin:0 auto;image-rendering:pixelated}.people{height:4.1mm;margin:0.1mm auto}.hint{height:3.6mm;margin:0 auto}.thai{height:4.1mm;margin:0 auto}</style></head><body><img class="line heading" alt="Pattaya Dinosaur Kingdom - Customer visit pass" src="'+headingSrc+'"><img class="line group-date" alt="Group and visit date" src="'+groupDateSrc+'"><img class="qr" alt="Group QR code" src="'+safeQr+'"><img class="line people" alt="'+people+' Person" src="'+peopleSrc+'"><img class="line hint" alt="please Scan QR at exit again." src="'+hintSrc+'"><img class="line thai" alt="โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ" src="'+thaiSrc+'"></body></html>');
  doc.close();
  const cleanup=()=>setTimeout(()=>{if(frame.parentNode)frame.remove()},900);
  frame.contentWindow.onafterprint=cleanup;
