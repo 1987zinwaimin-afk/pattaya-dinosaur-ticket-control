@@ -5,9 +5,6 @@ on:
   push:
     branches:
       - android-companion-foundation
-    paths:
-      - "android-companion/**"
-      - ".github/workflows/build-android-alarm.yml"
 
 permissions:
   contents: read
