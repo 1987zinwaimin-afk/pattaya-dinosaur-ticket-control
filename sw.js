@@ -33,7 +33,15 @@ self.addEventListener('push',event=>{
    requireInteraction:true
   };
   if(data.event_type==='emergency_alarm'){
-   try{const openClients=await self.clients.matchAll({type:'window',includeUncontrolled:true});for(const staffClient of openClients){if(staffClient.url.includes('/staff.html')||staffClient.url.includes('/event-staff.html'))staffClient.postMessage({type:'STAFF_EMERGENCY_VOICE',event_type:'emergency_alarm',body:options.body})}}catch(voiceError){console.warn('Could not relay emergency voice alert to open Staff pages:',voiceError)}
+   try{
+    const openClients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const appClient of openClients){
+     const path=new URL(appClient.url).pathname;
+     const isOwnerApp=path==='/'||path.endsWith('/index.html');
+     const isNormalStaffApp=path.endsWith('/staff.html');
+     if(isOwnerApp||isNormalStaffApp)appClient.postMessage({type:'STAFF_EMERGENCY_VOICE',event_type:'emergency_alarm',body:options.body});
+    }
+   }catch(voiceError){console.warn('Could not relay emergency voice alert to Owner/Normal Staff pages:',voiceError)}
   }
   try{await self.registration.showNotification(title,options)}
   catch(error){console.error('Could not display staff activity push notification:',error)}
