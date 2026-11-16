@@ -2882,12 +2882,27 @@ installUILanguageObserver();applyUILanguage();
  window.renderStaffAlarmSetupBanner=function(){
   const host=document.getElementById('staffAlarmSettingsHost');
   const headerButton=document.getElementById('staffAlarmHeaderButton');
-  if(headerButton)headerButton.hidden=true;
+  if(headerButton){
+   headerButton.hidden=!(STAFF_MODE&&currentUser&&currentRole==='staff');
+   headerButton.setAttribute('aria-label','Send Emergency Alarm to Owner, all Staff and Event Staff');
+   headerButton.onclick=async()=>{
+    if(!currentUser||currentRole!=='staff'){alert('Please sign in to your Staff account first.');return}
+    if(!confirm('Send an EMERGENCY ALARM to Owner, all Normal Staff and Event Staff devices that have enabled notifications?'))return;
+    headerButton.disabled=true;headerButton.textContent='…';
+    try{
+     const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});
+     if(error)throw error;
+     if(!data||!data.ok)throw new Error(data?.message||'No subscribed device accepted the alarm.');
+     alert('🚨 Emergency alarm sent to all subscribed groups.\\nAccepted: '+data.sent+' / '+data.subscriptions+' devices.\\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\\nFailed: '+data.failed);
+    }catch(error){alert('Could not send emergency alarm: '+(error?.message||error))}
+    finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
+   };
+  }
   if(!host||!STAFF_MODE||!currentUser||currentRole!=='staff')return;
   let panel=document.getElementById('staffEmergencyPushSetup');
   if(!panel){
    panel=document.createElement('section');panel.id='staffEmergencyPushSetup';panel.className='staff-alarm-popover open';panel.setAttribute('aria-label','Emergency Alarm Notification Settings');
-   panel.innerHTML='<div class="staff-alarm-popover-head"><span style="font-size:22px">🚨</span><strong>Emergency Alarm Notifications</strong><span id="staffEmergencyPushBadge" style="margin-left:auto;font-size:11px;color:#b8c9d8">Checking…</span></div><p id="staffEmergencyPushStatus" class="staff-alarm-popover-status">Enable this device to receive Owner emergency alarms.</p><button type="button" id="staffEnableEmergencyPush" class="gold">Enable Emergency Alarm</button><div style="border-top:1px solid #ffffff24;margin:14px 0 10px;padding-top:12px"><b style="font-size:14px;color:#f5d17c">🔊 Thai Voice Announcement</b><p id="staffVoiceStatus" class="staff-alarm-popover-status" style="margin:6px 0 9px">Thai female voice: เฮียเข้าไปในสวนแล้ว</p><label for="staffThaiVoiceSelect" style="display:block;font-size:12px;color:#d5e2ef;margin-bottom:5px">Thai voice</label><select id="staffThaiVoiceSelect" style="width:100%;min-height:42px;margin-bottom:9px;border-radius:9px;background:#0b2339;color:#fff;border:1px solid #50728d;padding:7px"></select><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="staffEnableVoice" class="gold" style="flex:1">Enable Thai Voice</button><button type="button" id="staffTestVoice" style="flex:1;background:#204d6d;color:white;border:1px solid #50728d">Test Thai Voice</button></div></div>';
+   panel.innerHTML='<div class="staff-alarm-popover-head"><span style="font-size:22px">🚨</span><strong>Emergency Alarm Notifications</strong><span id="staffEmergencyPushBadge" style="margin-left:auto;font-size:11px;color:#b8c9d8">Checking…</span></div><p id="staffEmergencyPushStatus" class="staff-alarm-popover-status">Enable this device to receive emergency alarms from Owner and Staff.</p><button type="button" id="staffEnableEmergencyPush" class="gold">Enable Emergency Alarm</button><div style="border-top:1px solid #ffffff24;margin:14px 0 10px;padding-top:12px"><b style="font-size:14px;color:#f5d17c">🔊 Thai Voice Announcement</b><p id="staffVoiceStatus" class="staff-alarm-popover-status" style="margin:6px 0 9px">Thai female voice: เฮียเข้าไปในสวนแล้ว</p><label for="staffThaiVoiceSelect" style="display:block;font-size:12px;color:#d5e2ef;margin-bottom:5px">Thai voice</label><select id="staffThaiVoiceSelect" style="width:100%;min-height:42px;margin-bottom:9px;border-radius:9px;background:#0b2339;color:#fff;border:1px solid #50728d;padding:7px"></select><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="staffEnableVoice" class="gold" style="flex:1">Enable Thai Voice</button><button type="button" id="staffTestVoice" style="flex:1;background:#204d6d;color:white;border:1px solid #50728d">Test Thai Voice</button></div></div>';
    host.appendChild(panel);
   }else if(panel.parentElement!==host){host.appendChild(panel)}
   const btn=panel.querySelector('#staffEnableEmergencyPush'),status=panel.querySelector('#staffEmergencyPushStatus'),badge=panel.querySelector('#staffEmergencyPushBadge');
@@ -2906,12 +2921,12 @@ installUILanguageObserver();applyUILanguage();
     const json=subscription.toJSON();if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('The browser did not create a complete push subscription.');
     const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'register_push',subscription:{endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth},user_agent:navigator.userAgent}});
     if(error)throw error;if(!data?.registered)throw new Error(data?.error||'Could not register this device.');
-    setStatus('✓ This device is registered for Owner Emergency Alarms.','Enabled','#65e5a2');btn.textContent='Refresh Alarm Registration';
+    setStatus('✓ This device is registered for Owner and Staff Emergency Alarms.','Enabled','#65e5a2');btn.textContent='Refresh Alarm Registration';
    }catch(error){setStatus(error?.message||String(error),'Needs setup','#ffd17b');btn.textContent='Try Again'}
    finally{btn.disabled=false}
   };
   const refreshRegistration=async()=>{
-   if(!permitted||!navigator.serviceWorker||!('PushManager'in window)){setStatus('Enable notifications on this phone to receive Owner emergency alarms.','Not enabled','#ffd17b');btn.textContent='Enable Emergency Alarm';return}
+   if(!permitted||!navigator.serviceWorker||!('PushManager'in window)){setStatus('Enable notifications on this phone to receive Owner and Staff emergency alarms.','Not enabled','#ffd17b');btn.textContent='Enable Emergency Alarm';return}
    try{
     const registration=await navigator.serviceWorker.ready;const existing=await registration.pushManager.getSubscription();
     if(!existing){setStatus('Notifications are allowed. Enable registration so Owner can alert this device.','Not registered','#ffd17b');btn.textContent='Enable Emergency Alarm';return}
