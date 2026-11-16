@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v6';
+const CACHE_NAME='dino-staff-shell-v7';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -27,7 +27,9 @@ self.addEventListener('push',event=>{
    renotify:true,
    timestamp:Number(data.timestamp)||Date.now(),
    data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login'},
-   vibrate:[250,100,250],
+   vibrate:data.event_type==='emergency_alarm'?[600,200,600,200,1000]:[250,100,250],
+   silent:false,
+   actions:data.event_type==='emergency_alarm'?[{action:'open',title:'Open Staff App'}]:[],
    requireInteraction:true
   };
   try{await self.registration.showNotification(title,options)}
