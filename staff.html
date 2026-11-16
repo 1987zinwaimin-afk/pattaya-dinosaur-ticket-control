@@ -2445,7 +2445,7 @@ let visible=dep()?departmentTickets():(STAFF_MODE&&selectedStaffDepartment!=='al
 let total=visible.reduce((a,t)=>a+t.quantity,0),value=visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
-if(page==='payroll')renderPayroll();else if(page==='train')renderTrain();else if(page==='customer-visits')renderStaffCustomerVisits();else if(dep())renderDept(visible);else if(page==='dashboard'&&!STAFF_MODE)renderDashboard();else if(page==='monthly'&&!STAFF_MODE)renderMonthly();else if(page==='settings'&&STAFF_MODE)renderStaffSettings();else if(page==='settings'&&!STAFF_MODE)renderSettings();else if((page==='owner'||page==='staff')&&!STAFF_MODE)renderDatabase();else if(STAFF_MODE)renderDept(visible);else renderDashboard();if(STAFF_MODE&&currentUser&&currentRole==='staff'&&typeof renderStaffAlarmSetupBanner==='function'){try{renderStaffAlarmSetupBanner()}catch(alarmUiError){console.warn('Staff alarm setup UI failed without blocking Staff login or ticket rendering:',alarmUiError)}}}
+if(page==='payroll')renderPayroll();else if(page==='train')renderTrain();else if(page==='customer-visits')renderStaffCustomerVisits();else if(dep())renderDept(visible);else if(page==='dashboard'&&!STAFF_MODE)renderDashboard();else if(page==='monthly'&&!STAFF_MODE)renderMonthly();else if(page==='settings'&&STAFF_MODE)renderStaffSettings();else if(page==='settings'&&!STAFF_MODE)renderSettings();else if((page==='owner'||page==='staff')&&!STAFF_MODE)renderDatabase();else if(STAFF_MODE)renderDept(visible);else renderDashboard();if(STAFF_MODE&&currentUser&&typeof renderStaffAlarmSetupBanner==='function'){try{renderStaffAlarmSetupBanner()}catch(alarmUiError){console.warn('Staff alarm setup UI failed without blocking Staff login or ticket rendering:',alarmUiError)}}}
 function renderDashboard(){let all=tickets.reduce((s,t)=>s+t.quantity,0),val=tickets.reduce((s,t)=>s+t.quantity*(t.price||0),0);document.getElementById('pageContent').innerHTML='<div class="section-title"><h2>Ticket Control Overview</h2><span class="subtle">New workspace</span></div><div class="cards">'+DEPTS.map(d=>{let a=tickets.filter(t=>t.department===d.id),q=a.reduce((s,t)=>s+t.quantity,0),v=a.reduce((s,t)=>s+t.quantity*(t.price||0),0);return '<button class="panel" data-page="'+d.id+'" style="text-align:left;min-height:130px"><div style="font-size:28px">'+d.icon+'</div><b>'+(d[lang]||d.en)+'</b><div class="subtle">'+a.length+' '+tr('types')+'</div><strong style="color:var(--gold);font-size:1.25rem">'+q+' · '+money(v)+'</strong></button>'}).join('')+'</div><div class="panel" style="margin-top:16px"><h3>Quick actions</h3><div class="actions"><button class="gold" id="dashAdd">＋ Add ticket</button><button id="dashReport">'+tr('save')+'</button></div><p class="subtle">'+tr('cloudMsg')+'</p></div>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('dashAdd').onclick=()=>{page='sale';openTicket()};document.getElementById('dashReport').onclick=saveReport}
 
 async function loadStaffEventLocations(){try{const {data,error}=await sb.from('event_location_sessions').select('id,location_name,staff_id').eq('is_archived',false).order('created_at',{ascending:false});if(error)throw error;staffEventLocations=data||[];const select=document.getElementById('staffEventLocationSelect');if(select){const current=selectedStaffEventLocationId;select.innerHTML='<option value="">Select your Event Location</option>'+staffEventLocations.map(x=>'<option value="'+escapeHtml(x.id)+'" '+(String(x.id)===String(current)?'selected':'')+'>'+escapeHtml(x.location_name)+'</option>').join('');if(current&&!staffEventLocations.some(x=>String(x.id)===String(current))){selectedStaffEventLocationId='';localStorage.removeItem('tctl-staff-event-location');select.value=''}}}catch(error){const status=document.getElementById('staffEventLocationStatus');if(status)status.textContent='Could not load Event Locations: '+(error.message||error)}}
@@ -2885,10 +2885,10 @@ installUILanguageObserver();applyUILanguage();
   const host=document.getElementById('staffAlarmSettingsHost');
   const headerButton=document.getElementById('staffAlarmHeaderButton');
   if(headerButton){
-   headerButton.hidden=!(STAFF_MODE&&currentUser&&currentRole==='staff');
+   headerButton.hidden=!(STAFF_MODE&&currentUser);
    headerButton.setAttribute('aria-label','Send Emergency Alarm to Owner and all Normal Staff');
    headerButton.onclick=async()=>{
-    if(!currentUser||currentRole!=='staff'){alert('Please sign in to your Staff account first.');return}
+    if(!STAFF_MODE||!currentUser){alert('Please sign in to your Staff account first.');return}
     if(!confirm('Send an EMERGENCY ALARM to Owner and all Normal Staff devices that have enabled notifications?'))return;
     headerButton.disabled=true;headerButton.textContent='…';
     try{
@@ -2900,7 +2900,7 @@ installUILanguageObserver();applyUILanguage();
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
   }
-  if(!host||!STAFF_MODE||!currentUser||currentRole!=='staff')return;
+  if(!host||!STAFF_MODE||!currentUser)return;
   let panel=document.getElementById('staffEmergencyPushSetup');
   if(!panel){
    panel=document.createElement('section');panel.id='staffEmergencyPushSetup';panel.className='staff-alarm-popover open';panel.setAttribute('aria-label','Emergency Alarm Notification Settings');
@@ -2944,7 +2944,7 @@ installUILanguageObserver();applyUILanguage();
   window.dispatchEvent(new Event('staff-alarm-settings-ready'));
  };
  // The alarm send button belongs in the header on every authenticated Normal Staff page, not only after opening Settings.
- if(currentUser&&currentRole==='staff')setTimeout(()=>window.renderStaffAlarmSetupBanner?.(),0);
+ if(STAFF_MODE&&currentUser)setTimeout(()=>window.renderStaffAlarmSetupBanner?.(),0);
 })();
 </script>
 <script>
