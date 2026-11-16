@@ -4129,49 +4129,27 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
 <!-- Owner blank-screen recovery: isolated script so it still runs if the main app script fails. -->
 <script>
 (function(){
- const show=(html)=>{const root=document.getElementById('pageContent');if(root){root.innerHTML=html;root.style.display='block';root.style.minHeight='40vh';}};
- const esc=(v)=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
- async function recover(){
-  const root=document.getElementById('pageContent'),stats=document.getElementById('stats');
+ // Passive Owner-page watchdog. Reuse the main app's existing Supabase client/session.
+ // Creating a second client with the same auth storage key can contend for the auth lock
+ // and leave the recovery view stuck at "Connecting securely…".
+ function recoverBlankOwnerView(){
+  const root=document.getElementById('pageContent');
   if(!root||root.innerHTML.trim()||root.children.length)return;
-  show('<section class="panel" style="margin-top:14px"><h2 style="color:#ffd778">Restoring Owner ticket view…</h2><p class="subtle">Checking your saved cloud tickets. No records will be changed.</p><div class="subtle" id="ownerRecoveryStatus">Connecting securely…</div></section>');
+  const boot=window.__ownerBootDiagnostics||{stage:'main script not started',errors:[]};
+  const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const errors=(boot.errors||[]).slice(-5).map(e=>esc((e.type||'error')+': '+(e.message||'')+(e.line?' · line '+e.line:''))).join('<br>');
   try{
-   if(!window.supabase?.createClient)throw new Error('Supabase client did not load. Check your internet connection and refresh.');
-   const client=window.supabase.createClient('https://tlefnqzpilajeuyysujb.supabase.co','sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm',{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-owner-auth-v1'}});
-   const {data:sessionData,error:sessionError}=await client.auth.getSession();
-   if(sessionError)throw sessionError;
-   if(!sessionData.session){show('<section class="panel" style="margin-top:14px"><h2>Owner session needed</h2><p>Your saved ticket database is safe. Please sign in again to restore the Owner dashboard.</p><button class="gold" onclick="location.reload()">Open Owner Login</button></section>');return;}
-   const {data:profile,error:profileError}=await client.from('profiles').select('role').eq('id',sessionData.session.user.id).maybeSingle();
-   if(profileError)throw profileError;
-   if(profile?.role!=='owner')throw new Error('The current signed-in account is not the Owner account.');
-   const {data:rows,error}=await client.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
-   if(error)throw error;
-   const tickets=rows||[],depts=[['sale','🎟️','Sale Ticket Department'],['entry','🎫','Entry Ticket Department'],['playing','🎮','Playing Ticket Department'],['event','🎪','Event Ticket Department']];
-   const money=n=>'฿'+Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
-   const total=tickets.reduce((n,t)=>n+Number(t.quantity||0),0);
-   const summary=depts.map(([id,icon,name])=>{const a=tickets.filter(t=>t.department===id),q=a.reduce((n,t)=>n+Number(t.quantity||0),0),v=a.reduce((n,t)=>n+Number(t.quantity||0)*Number(t.price||0),0);return '<button type="button" class="panel" data-recovery-dept="'+id+'" style="text-align:left;min-height:120px"><div style="font-size:26px">'+icon+'</div><b>'+name+'</b><div class="subtle">'+a.length+' ticket types</div><strong style="display:block;color:#ffe08a;font-size:1.2rem;margin-top:8px">'+q+' tickets · '+money(v)+'</strong></button>'}).join('');
-   if(stats){stats.style.display='grid';stats.innerHTML='<div class="stat"><span>Ticket types</span><strong>'+tickets.length+'</strong></div><div class="stat"><span>Total quantity</span><strong>'+total+'</strong></div><div class="stat"><span>Departments</span><strong>4</strong></div>';}
-   const boot=window.__ownerBootDiagnostics||{stage:'diagnostics unavailable',errors:[]};
-   const bootErrors=(boot.errors||[]).slice(-4).map(x=>esc((x.type||'error')+': '+(x.message||'')+(x.line?(' · line '+x.line):'')+(x.file?(' · '+x.file.split('/').pop()):''))).join('<br>');
-   show('<div class="section-title"><h2>Ticket Control Overview</h2><span class="subtle">Recovered cloud view</span></div><div class="cards">'+summary+'</div><section class="panel" style="margin-top:14px"><h3>Saved ticket records</h3><p class="subtle">Your original cloud records are visible. This is a safe recovery view; ticket records have not been edited.</p><p class="subtle">Owner app startup: '+esc(boot.stage||'unknown')+'</p>'+(bootErrors?'<div style="padding:10px;border:1px solid #e35b69;border-radius:10px;overflow-wrap:anywhere;font-size:12px">'+bootErrors+'</div>':'<p class="subtle">No JavaScript error was captured before recovery.</p>')+'<button class="gold" onclick="location.reload()">Reload normal application</button></section>');
-   root.querySelectorAll('[data-recovery-dept]').forEach(btn=>btn.addEventListener('click',()=>{
-    const id=btn.dataset.recoveryDept,a=tickets.filter(t=>t.department===id);
-    show('<div class="section-title"><h2>'+esc(depts.find(d=>d[0]===id)?.[2]||id)+'</h2><button type="button" id="recoveryBack">← Dashboard</button></div><div class="cards">'+a.map(t=>'<article class="panel">'+(t.image_url?'<img src="'+esc(t.image_url)+'" alt="" style="width:100%;height:120px;object-fit:cover;border-radius:12px">':'')+'<h3>'+esc(t.name)+'</h3>'+(t.price!=null&&t.price!==''?'<div class="price">'+money(t.price)+'</div>':'')+'<strong>'+Number(t.quantity||0)+' tickets</strong></article>').join('')+'</div>');
-    document.getElementById('recoveryBack').onclick=recover;
-   }));
-  }catch(e){
-   console.error('Owner blank-screen recovery failed:',e);
-   show('<section class="panel" role="alert" style="margin-top:14px;border:1px solid #e35b69"><h2 style="color:#ff9aa9">Owner dashboard could not finish loading</h2><p>Your saved ticket records have not been deleted or reset.</p><pre style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(e.message||e)+'</pre><button class="gold" onclick="location.reload()">Try again</button></section>');
-  }
+   if(typeof render==='function'){
+    render(true);
+    if(root.innerHTML.trim()||root.children.length)return;
+   }
+  }catch(e){console.error('Owner watchdog render retry failed:',e)}
+  root.style.display='block';
+  root.style.minHeight='40vh';
+  root.innerHTML='<section class="panel" role="alert" style="margin-top:14px;border:1px solid #e35b69"><h2 style="color:#ff9aa9">Owner application could not finish starting</h2><p class="subtle">Startup stage: '+esc(boot.stage||'unknown')+'</p>'+(errors?'<div style="padding:10px;border:1px solid #e35b69;border-radius:10px;overflow-wrap:anywhere;font-size:12px">'+errors+'</div>':'<p class="subtle">No startup error was captured. The existing Owner session and saved Cloud records have not been changed.</p>')+'<button class="gold" type="button" onclick="location.reload()">Retry Owner application</button></section>';
  }
  function schedule(){
-  // The main Owner app may need up to 45 seconds for auth/profile retries and
-  // the 20-second Cloud load timeout on a slow mobile connection. Never replace
-  // its still-loading page with the limited recovery dashboard after 1.8 seconds.
-  setTimeout(()=>{
-   const r=document.getElementById('pageContent');
-   if(r&&!r.innerHTML.trim()&&!r.children.length)recover();
-  },55000);
+  setTimeout(recoverBlankOwnerView,55000);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
 })();
