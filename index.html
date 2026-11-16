@@ -3631,40 +3631,40 @@ function customerVisitQrPayload(row){return 'PDKCV:'+String(row.id)}
 async function showCustomerVisitQr(row,autoPrint=false){await ensureCustomerVisitQrLib();const qrData=await customerVisitQrDataUrl(customerVisitQrPayload(row));const prior=document.getElementById('customerVisitQrModal');if(prior)prior.remove();const no=String(row.group_number||row.group_name||'—'),entry=customerVisitBangkokDateTime(row.entry_at),m=document.createElement('div');m.id='customerVisitQrModal';m.style.cssText='position:fixed;inset:0;z-index:10060;background:#000b;display:flex;align-items:center;justify-content:center;padding:14px';m.innerHTML='<section style="width:min(100%,380px);background:#fff;color:#10243a;border-radius:18px;padding:16px;text-align:center"><h2 style="margin:0">PATTAYA DINOSAUR KINGDOM</h2><div>CUSTOMER VISIT PASS</div><div style="font-size:26px;font-weight:900;margin:10px">GROUP #'+esc(no)+'</div><img src="'+qrData+'" alt="Unique group QR" style="width:220px;height:220px"><div style="font-size:18px;font-weight:800">'+Number(row.total_visitors||0)+' PEOPLE</div><div style="font-size:12px">Entry: '+esc(entry)+'</div><p style="font-size:10px">Scan this same QR when the group exits.</p><div style="display:flex;gap:8px"><button id="cvQrClose" style="flex:1;background:#e8eef4;color:#10243a">Close</button><button id="cvQrPrint" style="flex:1;background:#dca53b;color:#10243a">🖨 Print 58mm</button></div><p style="font-size:10px;color:#657487">Select your paired printer in Android print options.</p></section>';document.body.appendChild(m);document.getElementById('cvQrClose').onclick=()=>m.remove();document.getElementById('cvQrPrint').onclick=()=>{try{printCustomerVisitQr(row,qrData)}catch(e){const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}};if(autoPrint)setTimeout(()=>{try{printCustomerVisitQr(row,qrData)}catch(e){const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent=(e.message||e)}},180)}
 function launchPdkPrinterBridge(row){const payload=customerVisitQrPayload(row),params=new URLSearchParams({payload,group:String(row.group_number||row.group_name||''),people:String(row.total_visitors||0),entry:customerVisitBangkokDateTime(row.entry_at)});const fallback='https://pattaya-dinosaur-ticket-control-eight.vercel.app/';const intent='intent://print?'+params.toString()+'#Intent;scheme=pdkprinter;package=com.pattayadinosaur.printerbridge;S.browser_fallback_url='+encodeURIComponent(fallback)+';end';window.location.href=intent}
 function printCustomerVisitQr(row,qrData){
- const no=String(row.group_number||row.group_name||'—'),entry=customerVisitBangkokDateTime(row.entry_at);
+ const no=String(row.group_number||row.group_name||'—');
+ const entry=customerVisitBangkokDateTime(row.entry_at);
  const old=document.getElementById('customerVisitPrintFrame');if(old)old.remove();
  const frame=document.createElement('iframe');frame.id='customerVisitPrintFrame';frame.title='Customer Visit 58mm receipt';
- // Keep a real, renderable iframe surface: Android Print Service can return a blank
- // preview when the printable frame itself is only 1px and fully transparent.
- frame.style.cssText='position:fixed;left:0;top:0;width:58mm;height:190mm;border:0;opacity:1;background:#fff;z-index:10070';
+ frame.style.cssText='position:fixed;left:0;top:0;width:58mm;height:125mm;border:0;opacity:1;background:#fff;z-index:10070';
  document.body.appendChild(frame);
  const doc=frame.contentDocument||frame.contentWindow.document;
  const safeQr=String(qrData||'');
  const parts=String(entry||'').trim().replace(/\\s+/g,' ').split(',').map(x=>x.trim());
  const date=parts.length>=2?(parts[0]+' '+parts[1]):(parts[0]||'');
- const time=parts.length>=3?parts.slice(2).join(' '):'';
- const people=Number(row.total_visitors||0),peopleLabel=people===1?'PERSON':'PEOPLE';
- doc.open();
- // Rasterize both headings to a PNG bitmap so Android's receipt print service
- // cannot substitute a wide monospaced font or wrap the title into extra lines.
- const headingCanvas=document.createElement('canvas');headingCanvas.width=384;headingCanvas.height=66;
- const headingCtx=headingCanvas.getContext('2d');headingCtx.fillStyle='#fff';headingCtx.fillRect(0,0,384,66);
- headingCtx.fillStyle='#000';headingCtx.textAlign='center';headingCtx.textBaseline='middle';
- const fitHeading=(label,maxSize,minSize,y,weight)=>{let size=maxSize;do{headingCtx.font=weight+' '+size+'px Arial,Helvetica,sans-serif';if(headingCtx.measureText(label).width<=372)break;size--}while(size>minSize);headingCtx.fillText(label,192,y)};
- fitHeading('Pattaya Dinosaur Kingdom',20,11,20,'700');
- fitHeading('Customer visit pass',18,10,48,'600');
- const headingSrc=headingCanvas.toDataURL('image/png');
  const monthMap={JAN:'01',FEB:'02',MAR:'03',APR:'04',MAY:'05',JUN:'06',JUL:'07',AUG:'08',SEP:'09',OCT:'10',NOV:'11',DEC:'12'};
  const dateBits=String(date||'').replace(/,/g,'').trim().split(/\\s+/);
  const dateLabel=dateBits.length>=3?(String(dateBits[1]).padStart(2,'0')+'.'+(monthMap[String(dateBits[0]).slice(0,3).toUpperCase()]||'00')+'.'+dateBits[2]):date;
- doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Group '+esc(no)+'</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box;letter-spacing:0}html,body{width:54mm;margin:0 auto;padding:0;text-align:center;color:#000;background:#fff;font-family:Arial,Helvetica,sans-serif}body{padding:0.5mm 0}.heading{display:block;width:54mm;height:9.3mm;margin:0 auto 0.8mm}.group-date{display:flex;align-items:center;justify-content:space-between;width:100%;gap:1mm;font-size:11px;line-height:1.1;font-weight:700;margin:1.2mm 0;white-space:nowrap}.qr-label{font-size:9px;line-height:1.1;font-weight:700;margin:0.5mm 0}.qr{display:block;width:42mm;height:42mm;margin:0.7mm auto;image-rendering:pixelated}.people{font-size:11px;line-height:1.1;font-weight:bold;margin:1mm 0}.hint{font-size:8px;line-height:1.2;margin:0.8mm 0;white-space:normal}.thai{font-family:Arial,Noto Sans Thai,sans-serif;font-size:8px;line-height:1.25;white-space:normal;overflow-wrap:anywhere;margin:0.8mm 0}</style></head><body><img class="heading" alt="Pattaya Dinosaur Kingdom - Customer visit pass" src="'+headingSrc+'"><div class="group-date"><span>Group - '+esc(no)+'.</span><span>'+esc(dateLabel)+'</span></div><div class="qr-label">QR</div><img class="qr" alt="Group QR code" src="'+safeQr+'"><div class="people">'+people+' Person</div><div class="hint">please Scan QR at exit again.</div><div class="thai">โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ</div></body></html>');
+ const people=Number(row.total_visitors||0);
+ // Print every text row as a bitmap. This prevents the Android print service
+ // from spreading characters or wrapping the English/Thai instructions.
+ const makeTextImage=(width,height,draw)=>{const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height);ctx.fillStyle='#000';ctx.textBaseline='middle';draw(ctx,width,height);return canvas.toDataURL('image/png')};
+ const fit=(ctx,label,max,min,fontFamily,weight)=>{let size=max;do{ctx.font=weight+' '+size+'px '+fontFamily;if(ctx.measureText(label).width<=370)break;size--}while(size>min);return size};
+ const headingSrc=makeTextImage(384,66,(ctx)=>{ctx.textAlign='center';ctx.font='700 20px Arial,Helvetica,sans-serif';fit(ctx,'Pattaya Dinosaur Kingdom',20,11,'Arial,Helvetica,sans-serif','700');ctx.fillText('Pattaya Dinosaur Kingdom',192,20);fit(ctx,'Customer visit pass',18,10,'Arial,Helvetica,sans-serif','600');ctx.fillText('Customer visit pass',192,48)});
+ const groupDateSrc=makeTextImage(384,28,(ctx)=>{ctx.font='700 16px Arial,Helvetica,sans-serif';ctx.textAlign='left';ctx.fillText('Group - '+no+'.',4,14);ctx.textAlign='right';ctx.fillText(dateLabel,380,14)});
+ const qrLabelSrc=makeTextImage(384,20,(ctx)=>{ctx.textAlign='center';ctx.font='700 15px Arial,Helvetica,sans-serif';ctx.fillText('QR',192,10)});
+ const peopleSrc=makeTextImage(384,28,(ctx)=>{ctx.textAlign='center';const label=people+' Person';const size=fit(ctx,label,20,13,'Arial,Helvetica,sans-serif','700');ctx.font='700 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(label,192,14)});
+ const hintText='please Scan QR at exit again.';
+ const hintSrc=makeTextImage(384,24,(ctx)=>{ctx.textAlign='center';const size=fit(ctx,hintText,17,11,'Arial,Helvetica,sans-serif','600');ctx.font='600 '+size+'px Arial,Helvetica,sans-serif';ctx.fillText(hintText,192,12)});
+ const thaiText='โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ';
+ const thaiSrc=makeTextImage(384,28,(ctx)=>{ctx.textAlign='center';const size=fit(ctx,thaiText,17,9,"'Noto Sans Thai',Arial,sans-serif",'600');ctx.font='600 '+size+"px 'Noto Sans Thai',Arial,sans-serif";ctx.fillText(thaiText,192,14)});
+ doc.open();
+ doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Group '+esc(no)+'</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box;letter-spacing:0}html,body{width:54mm;margin:0 auto;padding:0;text-align:center;color:#000;background:#fff;font-family:Arial,sans-serif}body{padding:0.4mm 0}.line{display:block;width:54mm;height:auto;margin:0 auto}.heading{height:9.3mm;margin-bottom:0.5mm}.group-date{height:3.7mm;margin:0.4mm auto}.qr-label{height:2.7mm;margin:0 auto}.qr{display:block;width:40mm;height:40mm;margin:0.5mm auto;image-rendering:pixelated}.people{height:3.7mm;margin:0.4mm auto}.hint{height:3.2mm;margin:0 auto}.thai{height:3.7mm;margin:0 auto}</style></head><body><img class="line heading" alt="Pattaya Dinosaur Kingdom - Customer visit pass" src="'+headingSrc+'"><img class="line group-date" alt="Group and visit date" src="'+groupDateSrc+'"><img class="line qr-label" alt="QR" src="'+qrLabelSrc+'"><img class="qr" alt="Group QR code" src="'+safeQr+'"><img class="line people" alt="'+people+' Person" src="'+peopleSrc+'"><img class="line hint" alt="please Scan QR at exit again." src="'+hintSrc+'"><img class="line thai" alt="โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ" src="'+thaiSrc+'"></body></html>');
  doc.close();
  const cleanup=()=>setTimeout(()=>{if(frame.parentNode)frame.remove()},900);
  frame.contentWindow.onafterprint=cleanup;
  const doPrint=()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}};
- const img=doc.querySelector('img');
- if(img){if(img.complete&&img.naturalWidth>0)setTimeout(doPrint,300);else{img.onload=()=>setTimeout(doPrint,300);img.onerror=()=>{const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent='QR image could not load; please close and retry.'}}}
- else setTimeout(doPrint,300);
+ const images=Array.from(doc.images);
+ Promise.all(images.map(img=>img.complete&&img.naturalWidth>0?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve}))).then(()=>setTimeout(doPrint,350));
  return frame
 }
 async function checkoutCustomerVisitQr(raw){const m=String(raw||'').trim().match(/^PDKCV:([0-9a-f-]{36})$/i);if(!m)throw new Error('Invalid Customer Visit QR');const {data:r,error}=await sb.from('customer_visit_logs').select('id,group_number,total_visitors,status,exit_at').eq('id',m[1]).maybeSingle();if(error)throw error;if(!r)throw new Error('Group record not found');if(r.status==='completed'||r.exit_at)return {already:true,row:r};const at=new Date().toISOString(),{data,error:updateError}=await sb.from('customer_visit_logs').update({status:'completed',exit_at:at}).eq('id',r.id).eq('status','pending').select('id').maybeSingle();if(updateError)throw updateError;if(!data)return {already:true,row:r};return {already:false,row:r}}
