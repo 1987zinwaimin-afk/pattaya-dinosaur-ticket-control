@@ -6,48 +6,51 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
-import android.media.AudioFormat
-import android.media.AudioManager
-import android.media.AudioTrack
 import android.os.Build
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import androidx.core.app.NotificationCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import kotlin.math.PI
-import kotlin.math.sin
+import java.util.Locale
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
- * Native alarm receiver. The melody intentionally mirrors the existing website's
- * default bell: triangle-wave notes 880, 1175, 1568 Hz, with the same short cadence.
- * FCM delivery and device/OEM battery policies still determine background reachability.
+ * Receives high-priority FCM data messages for the separate Android companion app.
+ * Notification itself is silent; the only audible alert is one Thai TTS announcement.
  */
 class AlarmMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         if (message.data["event_type"] != "emergency_alarm") return
         val prefs = getSharedPreferences("pdk_alarm", Context.MODE_PRIVATE)
         if (prefs.getString("role", "") !in setOf("owner", "staff")) return
-        showAlarm(message.data["message"] ?: "Emergency alarm")
-        playExistingBell()
+
+        val thaiText = message.data["thai_text"]?.takeIf { it.isNotBlank() }
+            ?: "เฮียเข้าไปในสวนแล้ว"
+        val englishText = message.data["message"]?.takeIf { it.isNotBlank() }
+            ?: "The boss has entered the park."
+        showSilentAlarm(englishText)
+        speakThaiOnce(thaiText)
     }
 
     override fun onNewToken(token: String) {
-        // Token is queued locally until the authenticated app session registers it
-        // through the protected Supabase Edge Function.
         getSharedPreferences("pdk_alarm", Context.MODE_PRIVATE)
             .edit().putString("pending_fcm_token", token).apply()
     }
 
-    private fun showAlarm(body: String) {
+    private fun showSilentAlarm(body: String) {
         val manager = getSystemService(NotificationManager::class.java)
-        val channelId = "pdk_emergency_alarm_v1"
+        val channelId = "pdk_thai_voice_alarm_v2"
         if (Build.VERSION.SDK_INT >= 26) {
             val channel = NotificationChannel(
-                channelId, "Emergency Alarm", NotificationManager.IMPORTANCE_HIGH
+                channelId, "Alarm (Thai voice only)", NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Owner and Normal Staff emergency alarm"
-                enableVibration(true)
-                vibrationPattern = longArrayOf(0, 1000, 300, 1000, 300, 1500, 300, 1500)
-                setSound(null, null) // melody is played by the native receiver
+                description = "Silent notification; Thai voice announcement is played by the app"
+                setSound(null, null)
+                enableVibration(false)
+                vibrationPattern = longArrayOf(0)
+                setShowBadge(true)
             }
             manager.createNotificationChannel(channel)
         }
@@ -60,48 +63,61 @@ class AlarmMessagingService : FirebaseMessagingService() {
             .setContentTitle("🚨 EMERGENCY ALARM")
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
-            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setAutoCancel(true)
-            .setOngoing(true)
+            .setSilent(true)
+            .setVibrate(longArrayOf(0))
             .setContentIntent(open)
             .build()
         manager.notify(4101, notification)
     }
 
-    private fun playExistingBell() {
-        val sampleRate = 44100
-        val notes = listOf(880.0, 1175.0, 1568.0)
-        val noteMs = 140
-        val gapMs = 0
-        val samplesPerNote = sampleRate * noteMs / 1000
-        val all = ShortArray((samplesPerNote + gapMs * sampleRate / 1000) * notes.size)
-        var offset = 0
-        for (frequency in notes) {
-            for (i in 0 until samplesPerNote) {
-                val t = i.toDouble() / sampleRate
-                val phase = (frequency * t) % 1.0
-                val triangle = (4.0 * kotlin.math.abs(phase - 0.5) - 1.0)
-                val envelope = minOf(1.0, i / 900.0, (samplesPerNote - i) / 1600.0).coerceAtLeast(0.0)
-                all[offset++] = (triangle * envelope * 6500).toInt().toShort()
-            }
-        }
+    private fun speakThaiOnce(text: String) {
+        val initialized = CountDownLatch(1)
+        val completed = CountDownLatch(1)
+        var engine: TextToSpeech? = null
+        var initStatus = TextToSpeech.ERROR
+
         try {
-            val track = AudioTrack(
-                AudioManager.STREAM_ALARM, sampleRate,
-                AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT,
-                all.size * 2, AudioTrack.MODE_STATIC
+            engine = TextToSpeech(applicationContext) { status ->
+                initStatus = status
+                initialized.countDown()
+            }
+            if (!initialized.await(6, TimeUnit.SECONDS) || initStatus != TextToSpeech.SUCCESS) return
+
+            val tts = engine
+            tts.setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build()
             )
-            track.write(all, 0, all.size)
-            track.setVolume(0.85f)
-            track.play()
-            track.setNotificationMarkerPosition(all.size)
-            track.setPlaybackPositionUpdateListener(object : AudioTrack.OnPlaybackPositionUpdateListener {
-                override fun onMarkerReached(track: AudioTrack) { track.release() }
-                override fun onPeriodicNotification(track: AudioTrack) = Unit
+
+            val thaiVoices = tts.voices?.filter { it.locale.language.equals("th", true) }.orEmpty()
+            if (thaiVoices.isEmpty()) return
+
+            // Android does not expose a dependable gender flag for every TTS voice.
+            // Prefer voices whose installed engine names identify a female voice.
+            val femaleHints = Regex("female|woman|kanya|pim|arisa|thailand.*f", RegexOption.IGNORE_CASE)
+            val selected = thaiVoices.sortedByDescending { femaleHints.containsMatchIn(it.name) }.first()
+            tts.voice = selected
+            tts.language = Locale.forLanguageTag("th-TH")
+            tts.setSpeechRate(0.88f)
+            tts.setPitch(1.12f)
+            tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) = Unit
+                override fun onDone(utteranceId: String?) { completed.countDown() }
+                @Deprecated("Deprecated in Java")
+                override fun onError(utteranceId: String?) { completed.countDown() }
+                override fun onError(utteranceId: String?, errorCode: Int) { completed.countDown() }
             })
+            tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "pdk-thai-emergency-once")
+            completed.await(8, TimeUnit.SECONDS)
         } catch (_: Exception) {
-            // Android may suppress alarm-stream audio under DND or device policy.
+            // No fallback notification tone: the requested alert is Thai voice only.
+        } finally {
+            try { engine?.stop(); engine?.shutdown() } catch (_: Exception) {}
         }
     }
 }
