@@ -3632,28 +3632,34 @@ async function showCustomerVisitQr(row,autoPrint=false){await ensureCustomerVisi
 function launchPdkPrinterBridge(row){const payload=customerVisitQrPayload(row),params=new URLSearchParams({payload,group:String(row.group_number||row.group_name||''),people:String(row.total_visitors||0),entry:customerVisitBangkokDateTime(row.entry_at)});const fallback='https://pattaya-dinosaur-ticket-control-eight.vercel.app/';const intent='intent://print?'+params.toString()+'#Intent;scheme=pdkprinter;package=com.pattayadinosaur.printerbridge;S.browser_fallback_url='+encodeURIComponent(fallback)+';end';window.location.href=intent}
 function printCustomerVisitQr(row,qrData){
  const no=String(row.group_number||row.group_name||'—');
- const entry=customerVisitBangkokDateTime(row.entry_at);
+ const people=Number(row.total_visitors||0);
+ let dateLabel='';
+ try{dateLabel=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(row.entry_at)).replace(/\//g,'.')}catch(e){}
+ if(!dateLabel||dateLabel==='Invalid Date')dateLabel=String(customerVisitBangkokDateTime(row.entry_at)||'').split(',')[0];
  const old=document.getElementById('customerVisitPrintFrame');if(old)old.remove();
  const frame=document.createElement('iframe');frame.id='customerVisitPrintFrame';frame.title='Customer Visit 58mm receipt';
  frame.style.cssText='position:fixed;left:0;top:0;width:58mm;height:100mm;border:0;background:#fff;z-index:10070';
  document.body.appendChild(frame);
  const doc=frame.contentDocument||frame.contentWindow.document;
- const safeQr=String(qrData||'');
- const parts=String(entry||'').trim().replace(/\s+/g,' ').split(',').map(x=>x.trim());
- const date=parts.length>=2?(parts[0]+' '+parts[1]):(parts[0]||'');
- const monthMap={JAN:'01',FEB:'02',MAR:'03',APR:'04',MAY:'05',JUN:'06',JUL:'07',AUG:'08',SEP:'09',OCT:'10',NOV:'11',DEC:'12'};
- const dateBits=String(date||'').replace(/,/g,'').trim().split(/\s+/);
- const dateLabel=dateBits.length>=3?(String(dateBits[1]).padStart(2,'0')+'.'+(monthMap[String(dateBits[0]).slice(0,3).toUpperCase()]||'00')+'.'+dateBits[2]):date;
- const people=Number(row.total_visitors||0);
- doc.open();
- doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box;letter-spacing:0}html,body{width:56mm;margin:0 auto;padding:0;background:#fff;color:#000}body{font-family:Arial,Helvetica,sans-serif;text-align:center;padding:0}.title{font-size:14px;line-height:1.08;font-weight:800;margin:0 0 0.4mm}.subtitle{font-size:12px;line-height:1.08;font-weight:700;margin:0 0 1.2mm}.group-date{display:block;text-align:center;white-space:nowrap;font-size:11.5px;line-height:1.1;font-weight:800;margin:0 0 1.2mm}.qr{display:block;width:38mm;height:38mm;object-fit:contain;margin:0 auto 0.5mm;image-rendering:pixelated}.people{font-size:13px;line-height:1.1;font-weight:800;margin:0 0 0.6mm}.english{font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.1;font-weight:700;margin:0 0 0.5mm;white-space:nowrap}.thai{font-family:Tahoma,"Noto Sans Thai",sans-serif;font-size:10px;line-height:1.15;font-weight:700;margin:0;white-space:nowrap}</style></head><body><div class="title">Pattaya Dinosaur Kingdom</div><div class="subtitle">Customer visit pass</div><div class="group-date">Group - '+esc(no)+'. &nbsp; '+esc(dateLabel)+'</div><img class="qr" src="'+safeQr+'" alt="Unique customer visit QR"><div class="people">'+people+' Person</div><div class="english">please Scan QR at exit again.</div><div class="thai">โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ</div></body></html>');
- doc.close();
- const cleanup=()=>setTimeout(()=>{if(frame.parentNode)frame.remove()},900);
- frame.contentWindow.onafterprint=cleanup;
- const doPrint=()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}};
- const qr=doc.querySelector('.qr');
- const waitForQr=qr&&qr.complete&&qr.naturalWidth>0?Promise.resolve():new Promise(resolve=>{if(!qr){resolve();return}qr.onload=resolve;qr.onerror=resolve});
- waitForQr.then(()=>setTimeout(doPrint,300));
+ const canvas=doc.createElement('canvas');canvas.width=448;canvas.height=650;
+ const ctx=canvas.getContext('2d');
+ ctx.fillStyle='#fff';ctx.fillRect(0,0,448,650);
+ ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Pattaya Dinosaur Kingdom',224,35);
+ ctx.font='bold 22px Arial,Helvetica,sans-serif';ctx.fillText('Customer visit pass',224,67);
+ ctx.font='bold 21px Arial,Helvetica,sans-serif';ctx.fillText('Group - '+no+'    '+dateLabel,224,112);
+ const qrImage=new Image();
+ const finish=()=>{
+   const qrSize=300,qrX=(448-qrSize)/2,qrY=142;
+   if(qrImage.complete&&qrImage.naturalWidth>0)ctx.drawImage(qrImage,qrX,qrY,qrSize,qrSize);
+   ctx.font='bold 23px Arial,Helvetica,sans-serif';ctx.fillText(people+' Person',224,472);
+   ctx.font='bold 18px Arial,Helvetica,sans-serif';ctx.fillText('please Scan QR at exit again.',224,520);
+   ctx.font='bold 18px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,558);
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
+   const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
+   output.src=canvas.toDataURL('image/png');
+ };
+ qrImage.onload=finish;qrImage.onerror=finish;qrImage.src=String(qrData||'');
  return frame
 }
 async function checkoutCustomerVisitQr(raw){const m=String(raw||'').trim().match(/^PDKCV:([0-9a-f-]{36})$/i);if(!m)throw new Error('Invalid Customer Visit QR');const {data:r,error}=await sb.from('customer_visit_logs').select('id,group_number,total_visitors,status,exit_at').eq('id',m[1]).maybeSingle();if(error)throw error;if(!r)throw new Error('Group record not found');if(r.status==='completed'||r.exit_at)return {already:true,row:r};const at=new Date().toISOString(),{data,error:updateError}=await sb.from('customer_visit_logs').update({status:'completed',exit_at:at}).eq('id',r.id).eq('status','pending').select('id').maybeSingle();if(updateError)throw updateError;if(!data)return {already:true,row:r};return {already:false,row:r}}
