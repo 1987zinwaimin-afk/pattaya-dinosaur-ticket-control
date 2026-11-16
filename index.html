@@ -2977,7 +2977,7 @@ async function sendOwnerEmergencyAlarm(button){
  const btn=button||document.getElementById('ownerEmergencyAlarmHeader');
  if(btn){btn.disabled=true;btn.textContent='…';}
  try{
-  const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'🚨 เฮียเข้าไปในสวนแล้ว'}});
+  const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});
   if(error)throw error;
   if(!data||!data.ok)throw new Error(data?.message||'No Staff device accepted the alarm.');
   alert('🚨 ส่ง Emergency Alarm แล้ว\nAccepted: '+data.sent+' / '+data.subscriptions+' subscribed devices.\nFailed: '+data.failed+'\n\nOnly devices with notifications enabled can receive the alert.');
