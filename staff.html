@@ -2401,9 +2401,7 @@ function printStaffCvQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">
-
-</body></html>');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
