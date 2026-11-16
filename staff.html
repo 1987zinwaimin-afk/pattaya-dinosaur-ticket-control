@@ -2884,16 +2884,16 @@ installUILanguageObserver();applyUILanguage();
   const headerButton=document.getElementById('staffAlarmHeaderButton');
   if(headerButton){
    headerButton.hidden=!(STAFF_MODE&&currentUser&&currentRole==='staff');
-   headerButton.setAttribute('aria-label','Send Emergency Alarm to Owner, all Staff and Event Staff');
+   headerButton.setAttribute('aria-label','Send Emergency Alarm to Owner and all Normal Staff');
    headerButton.onclick=async()=>{
     if(!currentUser||currentRole!=='staff'){alert('Please sign in to your Staff account first.');return}
-    if(!confirm('Send an EMERGENCY ALARM to Owner, all Normal Staff and Event Staff devices that have enabled notifications?'))return;
+    if(!confirm('Send an EMERGENCY ALARM to Owner and all Normal Staff devices that have enabled notifications?'))return;
     headerButton.disabled=true;headerButton.textContent='…';
     try{
      const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});
      if(error)throw error;
      if(!data||!data.ok)throw new Error(data?.message||'No subscribed device accepted the alarm.');
-     alert('🚨 Emergency alarm sent to all subscribed groups.\\nAccepted: '+data.sent+' / '+data.subscriptions+' devices.\\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\\nFailed: '+data.failed);
+     alert('🚨 Emergency alarm sent to Owner and subscribed Normal Staff devices.\\nAccepted: '+data.sent+' / '+data.subscriptions+' devices.\\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\\nFailed: '+data.failed);
     }catch(error){alert('Could not send emergency alarm: '+(error?.message||error))}
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
@@ -2921,12 +2921,12 @@ installUILanguageObserver();applyUILanguage();
     const json=subscription.toJSON();if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('The browser did not create a complete push subscription.');
     const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'register_push',subscription:{endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth},user_agent:navigator.userAgent}});
     if(error)throw error;if(!data?.registered)throw new Error(data?.error||'Could not register this device.');
-    setStatus('✓ This device is registered for Owner and Staff Emergency Alarms.','Enabled','#65e5a2');btn.textContent='Refresh Alarm Registration';
+    setStatus('✓ This device is registered for Owner and Normal Staff Emergency Alarms.','Enabled','#65e5a2');btn.textContent='Refresh Alarm Registration';
    }catch(error){setStatus(error?.message||String(error),'Needs setup','#ffd17b');btn.textContent='Try Again'}
    finally{btn.disabled=false}
   };
   const refreshRegistration=async()=>{
-   if(!permitted||!navigator.serviceWorker||!('PushManager'in window)){setStatus('Enable notifications on this phone to receive Owner and Staff emergency alarms.','Not enabled','#ffd17b');btn.textContent='Enable Emergency Alarm';return}
+   if(!permitted||!navigator.serviceWorker||!('PushManager'in window)){setStatus('Enable notifications on this phone to receive Owner and Normal Staff emergency alarms.','Not enabled','#ffd17b');btn.textContent='Enable Emergency Alarm';return}
    try{
     const registration=await navigator.serviceWorker.ready;const existing=await registration.pushManager.getSubscription();
     if(!existing){setStatus('Notifications are allowed. Enable registration so Owner can alert this device.','Not registered','#ffd17b');btn.textContent='Enable Emergency Alarm';return}
