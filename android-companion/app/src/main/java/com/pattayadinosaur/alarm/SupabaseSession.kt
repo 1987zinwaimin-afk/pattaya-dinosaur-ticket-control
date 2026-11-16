@@ -56,20 +56,16 @@ internal object SupabaseSession {
 
     fun registerFcmToken(context: Context, token: String) {
         val access = accessToken(context) ?: error("Please sign in first")
-        val uid = userId(context) ?: error("Missing account ID")
-        val row = JSONObject()
-            .put("user_id", uid)
+        val payload = JSONObject()
+            .put("action", "register_android_fcm")
             .put("fcm_token", token)
             .put("device_label", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL)
-            .put("platform", "android")
-            .put("updated_at", java.time.Instant.now().toString())
+        request(
+            "POST", "/functions/v1/android-alarm",
+            payload.toString(), access
+        )
         context.getSharedPreferences("pdk_alarm", Context.MODE_PRIVATE)
             .edit().putString("pending_fcm_token", token).apply()
-        request(
-            "POST", "/rest/v1/android_alarm_device_tokens?on_conflict=fcm_token",
-            row.toString(), access,
-            mapOf("Prefer" to "resolution=merge-duplicates,return=minimal")
-        )
     }
 
     fun signOut(context: Context) {
