@@ -2092,6 +2092,8 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
   if(profile.role!=='staff'||!profile.staff_id||String(profile.staff_id).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID verification did not finish. Please contact Owner.');
  }
  currentRole=profile.role;currentStaffId=profile.staff_id||null;
+ // Ensure the Normal Staff emergency-alarm control is initialized after authentication, even if the first render happened before its script loaded.
+ setTimeout(()=>{try{window.renderStaffAlarmSetupBanner?.()}catch(error){console.warn('Staff emergency alarm control initialization failed:',error)}},0);
  const previousDepartment=localStorage.getItem('tctl-staff-department')||'';
  const selectedDepartment=requestedDepartment||previousDepartment||'all';
  selectedStaffDepartment=selectedDepartment;
@@ -2941,6 +2943,8 @@ installUILanguageObserver();applyUILanguage();
   refreshRegistration();
   window.dispatchEvent(new Event('staff-alarm-settings-ready'));
  };
+ // The alarm send button belongs in the header on every authenticated Normal Staff page, not only after opening Settings.
+ if(currentUser&&currentRole==='staff')setTimeout(()=>window.renderStaffAlarmSetupBanner?.(),0);
 })();
 </script>
 <script>
