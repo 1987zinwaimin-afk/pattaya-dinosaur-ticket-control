@@ -2900,6 +2900,19 @@ installUILanguageObserver();applyUILanguage();
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
   }
+  let floatingAlarm=document.getElementById('staffAlarmFloatingButton');
+  if(!floatingAlarm){
+   floatingAlarm=document.createElement('button');
+   floatingAlarm.id='staffAlarmFloatingButton';
+   floatingAlarm.type='button';
+   floatingAlarm.setAttribute('aria-label','Send Emergency Alarm');
+   floatingAlarm.title='Send Emergency Alarm';
+   floatingAlarm.innerHTML='🚨';
+   floatingAlarm.style.cssText='position:fixed!important;right:16px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 86px)!important;z-index:2147483000!important;width:62px!important;height:62px!important;min-width:62px!important;border-radius:50%!important;border:2px solid #f2c66d!important;background:linear-gradient(145deg,#173b58,#06182b)!important;color:#ffe3a0!important;font-size:28px!important;box-shadow:0 5px 20px #0009!important;display:flex;align-items:center;justify-content:center;padding:0!important';
+   document.body.appendChild(floatingAlarm);
+  }
+  floatingAlarm.style.display=currentUser?'flex':'none';
+  floatingAlarm.onclick=()=>{const sendButton=document.getElementById('staffAlarmHeaderButton');if(sendButton&&typeof sendButton.onclick==='function')sendButton.click();else alert('Emergency Alarm is not ready. Please reload the Staff website.');};
   if(!host||!currentUser)return;
   let panel=document.getElementById('staffEmergencyPushSetup');
   if(!panel){
