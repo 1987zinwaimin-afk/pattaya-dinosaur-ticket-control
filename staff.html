@@ -2635,7 +2635,78 @@ function printStaffCvQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">
+<script>
+/* Staff Account Upgrade: read-only device and connectivity health panel.
+   Does not change authentication, database records, subscriptions, or ticket data. */
+(function(){
+ 'use strict';
+ const PANEL_ID='staffDeviceHealthPanel';
+ let observer=null;
+ function ensurePanel(){
+  const root=document.getElementById('pageContent');
+  const alarm=document.getElementById('staffAlarmSettingsSection');
+  if(!root||!alarm||document.getElementById(PANEL_ID))return;
+  const panel=document.createElement('section');
+  panel.id=PANEL_ID;
+  panel.className='panel';
+  panel.style.cssText='margin-top:16px;border:1px solid rgba(244,202,112,.45);background:linear-gradient(145deg,#102d49,#071b30)';
+  panel.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><h3 style="margin:0;color:#ffd778">📱 Device & Connection Health</h3><p class="subtle" style="margin:5px 0 0">Read-only checks for this Staff device. No account or ticket data is changed.</p></div><button type="button" id="staffHealthRefresh" class="gold" style="padding:9px 12px">↻ Refresh</button></div><div id="staffHealthRows" style="display:grid;gap:9px;margin-top:14px" aria-live="polite"><p class="subtle">Checking this device…</p></div><p id="staffHealthCheckedAt" class="subtle" style="margin:10px 0 0"></p>';
+  alarm.insertAdjacentElement('afterend',panel);
+  panel.querySelector('#staffHealthRefresh').addEventListener('click',refresh);
+  refresh();
+ }
+ function row(label,value,good){
+  const color=good===true?'#65e5a2':good===false?'#ffd17b':'#b8cadd';
+  return '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid #ffffff18;border-radius:11px;background:#06182a"><span style="color:#c4d4e3">'+label+'</span><strong style="color:'+color+';text-align:right">'+value+'</strong></div>';
+ }
+ async function refresh(){
+  const rows=document.getElementById('staffHealthRows');
+  const checked=document.getElementById('staffHealthCheckedAt');
+  if(!rows)return;
+  rows.innerHTML='<p class="subtle">Checking this device…</p>';
+  const items=[];
+  items.push(row('Internet connection',navigator.onLine?'Online':'Offline',navigator.onLine));
+  const pushSupported='Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;
+  items.push(row('Web Push support',pushSupported?'Supported':'Not supported',pushSupported));
+  if('Notification'in window){
+   const permission=Notification.permission;
+   items.push(row('Notification permission',permission,permission==='granted'));
+  }else items.push(row('Notification permission','Unavailable',false));
+  let registration=null,subscription=null;
+  if('serviceWorker'in navigator){
+   try{
+    registration=await navigator.serviceWorker.getRegistration('/');
+    if(!registration)registration=await navigator.serviceWorker.ready;
+    items.push(row('Service Worker',registration&&registration.active?'Active':'Not active',!!(registration&&registration.active)));
+    if(registration&&registration.pushManager)subscription=await registration.pushManager.getSubscription();
+    items.push(row('This device Push Subscription',subscription?'Registered':'Not registered',!!subscription));
+   }catch(error){
+    items.push(row('Service Worker / Push',String(error&&error.message||error),false));
+   }
+  }else{
+   items.push(row('Service Worker','Unavailable',false));
+   items.push(row('This device Push Subscription','Unavailable',false));
+  }
+  items.push(row('Staff app page','Open',true));
+  rows.innerHTML=items.join('');
+  if(checked)checked.textContent='Last checked: '+new Date().toLocaleString();
+ }
+ function boot(){
+  ensurePanel();
+  const root=document.getElementById('pageContent');
+  if(root&&!observer){
+   observer=new MutationObserver(()=>{if(document.getElementById('staffAlarmSettingsSection'))ensurePanel()});
+   observer.observe(root,{childList:true,subtree:true});
+  }
+  window.addEventListener('online',refresh);
+  window.addEventListener('offline',refresh);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById(PANEL_ID))refresh()});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();
+</script>
+</body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
