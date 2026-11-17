@@ -3032,6 +3032,7 @@ function setupStaffThaiEmergencyVoice(){
  }
  select.onchange=()=>localStorage.setItem(voiceKey,select.value);
  play.onclick=()=>{
+  localStorage.setItem('staff-emergency-voice-enabled-v1','1');
   const voices=synth.getVoices().filter(v=>(v.lang||'').toLowerCase().startsWith('th'));
   const voice=voices.find(v=>v.voiceURI===select.value)||voices.find(v=>female.test(v.name||''))||voices[0];
   if(!voice){loadVoices();status.textContent='Thai Voice မတွေ့ပါ။ Device မှာ Thai voice data ထည့်သွင်းပါ။';return}
