@@ -387,6 +387,41 @@ img{max-width:100%}
 }
 
 
+/* Garden Train mobile layout: show departure and return forms full-width, stacked */
+@media(max-width:700px){
+ #pageContent[data-ui-page="train"] .cards:has(>.train-depart-card),
+ #pageContent[data-ui-page="train"] .cards:has(>.train-return-card){
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:100%!important;
+  gap:12px!important;
+ }
+ #pageContent[data-ui-page="train"] .train-depart-card,
+ #pageContent[data-ui-page="train"] .train-return-card{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  grid-column:1/-1!important;
+ }
+ #pageContent[data-ui-page="train"] .train-depart-card .form-grid,
+ #pageContent[data-ui-page="train"] .train-return-card .form-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  width:100%!important;
+ }
+ #pageContent[data-ui-page="train"] .train-depart-card .form-grid>label:first-child,
+ #pageContent[data-ui-page="train"] .train-depart-card .form-grid>button,
+ #pageContent[data-ui-page="train"] .train-return-card .form-grid>*{
+  min-width:0!important;
+ }
+ #pageContent[data-ui-page="train"] .train-depart-card input,
+ #pageContent[data-ui-page="train"] .train-depart-card select,
+ #pageContent[data-ui-page="train"] .train-return-card input,
+ #pageContent[data-ui-page="train"] .train-return-card select{width:100%!important;min-width:0!important}
+}
+
 /* Restore the original two-ticket side-by-side layout on phones */
 @media(max-width:600px){
  #ticketCards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
