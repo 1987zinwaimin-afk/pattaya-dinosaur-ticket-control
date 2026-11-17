@@ -2457,11 +2457,11 @@ async function sendStaffOwnerNotification(eventType='app_open',details={}){
  }
 }
 
-async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null,notificationType='login'){
+async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null,notificationType='login',departmentOverride=null){
  currentUser=session.user;
  const enteredName=document.getElementById('authName').value.trim();
  const enteredStaffId=document.getElementById('authStaffId').value.trim();
- const requestedDepartment=document.getElementById('staffDepartment').value||'all';
+ const requestedDepartment=departmentOverride||document.getElementById('staffDepartment').value||'all';
  // Read the active identity and automatically replace a stale anonymous session on shared staff phones.
  let profile=knownProfile;
  if(!profile){
@@ -2624,6 +2624,8 @@ document.getElementById('authForm').onsubmit=async e=>{
  const nameInput=document.getElementById('authName');
  const staffIdInput=document.getElementById('authStaffId');
  const staffId=staffIdInput.value.trim();
+ // Freeze department before asynchronous lookup/session calls.
+ const chosenDepartment=document.getElementById('staffDepartment').value||'all';
  const err=document.getElementById('authError');
  try{
   if(!/^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/.test(staffId)){
@@ -2674,7 +2676,7 @@ document.getElementById('authForm').onsubmit=async e=>{
    session=data.session||null;
   }
   if(!session)throw new Error('Could not start a staff session. Please try again.');
-  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:staffId,p_display_name:name,p_department:document.getElementById('staffDepartment').value||'all'});
+  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:staffId,p_display_name:name,p_department:chosenDepartment});
   if(claimError)throw claimError;
   if(!claimed)throw new Error('Staff ID could not be verified.');
   currentStaffId=claimed;
@@ -2683,7 +2685,7 @@ document.getElementById('authForm').onsubmit=async e=>{
    if(verifiedProfileError)throw verifiedProfileError;
    knownProfile=verifiedProfile;
   }
-  await startCloudSession(session,true,knownProfile);
+  await startCloudSession(session,true,knownProfile,'login',chosenDepartment);
  }catch(e){
   console.error('Staff login failed:',e);
   err.textContent=e.message||'Could not connect. Please check Staff ID and Name.';
@@ -2714,8 +2716,8 @@ async function restoreSavedSession(){
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
    document.getElementById('authStaffId').value=profile.staff_id||'';
-   document.getElementById('staffDepartment').value=localStorage.getItem('tctl-staff-department')||'all';
-   await startCloudSession(data.session,true,profile,'app_open');
+   if(!staffLoginSubmitting)document.getElementById('staffDepartment').value=localStorage.getItem('tctl-staff-department')||'all';
+   await startCloudSession(data.session,true,profile,'app_open',localStorage.getItem('tctl-staff-department')||'all');
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
   }else{
