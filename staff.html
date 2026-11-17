@@ -2703,6 +2703,11 @@ function printStaffCvQr(row,qrData){
    items.push(makeRow('Service Worker','Unavailable',false));
    items.push(makeRow('This device Push Subscription','Unavailable',false));
   }
+  const cloudReadyState=typeof cloudReady!=='undefined'&&cloudReady;
+  const queuePending=typeof syncPending!=='undefined'&&!!syncPending;
+  const queueBusy=typeof syncBusy!=='undefined'&&!!syncBusy;
+  items.push(makeRow('Cloud data layer',cloudReadyState?'Initialized':'Not ready',!!cloudReadyState));
+  items.push(makeRow('Ticket sync queue',queuePending||queueBusy?'Pending / syncing':'Idle',!(queuePending||queueBusy)));
   items.push(makeRow('Staff settings page','Ready',true));
   rows.replaceChildren(...items);
   if(checked)checked.textContent='Last checked: '+new Date().toLocaleString();
