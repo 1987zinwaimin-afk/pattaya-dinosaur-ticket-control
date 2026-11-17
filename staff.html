@@ -1981,25 +1981,41 @@ async function openTrainReportSaveModal(){
  let pages;
  try{pages=await createTrainReportBlobs()}catch(e){alert('Could not create report pages: '+(e.message||e));return}
  const selection=getTrainReportSelection(),urls=pages.map(blob=>URL.createObjectURL(blob));
- const modal=document.createElement('div');modal.className='modal open';modal.style.zIndex='190';
- modal.innerHTML='<div class="modalbox" style="max-width:900px;max-height:92vh;overflow:auto"><div class="section-title"><div><h2>🖼 Garden Train Report Images</h2><p class="subtle">Download each report page directly as a PNG image. No Share menu and no ZIP file.</p></div><button type="button" id="trainReportImagesClose">✕</button></div><div id="trainReportImagePages" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px">'+pages.map((blob,i)=>'<div style="border:1px solid var(--border,#345);border-radius:14px;padding:10px;background:var(--panel,#10283f)"><div style="font-weight:700;margin-bottom:8px">Page '+(i+1)+' / '+pages.length+'</div><img src="'+urls[i]+'" alt="Garden Train report page '+(i+1)+'" style="display:block;width:100%;height:auto;border-radius:8px;border:1px solid #d4b15f"><button type="button" class="gold train-report-save-one" data-page="'+i+'" style="width:100%;margin-top:10px">⬇ Download Page '+(i+1)+' PNG</button><p class="subtle train-report-save-status" style="font-size:12px;margin:6px 0 0" aria-live="polite"></p></div>').join('')+'</div><p class="subtle" style="margin-top:12px">PNG files are saved by your browser to Downloads. Open the downloaded PNG to view it; use your phone's Save to Gallery option if you want it in Gallery.</p></div>';
- document.body.appendChild(modal);
+ const modal=document.createElement('div');
+ modal.className='modal open';modal.style.zIndex='190';
+ const panel=document.createElement('div');
+ panel.className='modalbox';panel.style.maxWidth='900px';panel.style.maxHeight='92vh';panel.style.overflow='auto';
+ const header=document.createElement('div');header.className='section-title';
+ const heading=document.createElement('div');
+ const h2=document.createElement('h2');h2.textContent='🖼 Garden Train Report Images';
+ const intro=document.createElement('p');intro.className='subtle';intro.textContent='Download each report page directly as a PNG image. No Share menu and no ZIP file.';
+ heading.append(h2,intro);
+ const closeButton=document.createElement('button');closeButton.type='button';closeButton.textContent='✕';
+ header.append(heading,closeButton);panel.append(header);
+ const grid=document.createElement('div');grid.id='trainReportImagePages';
+ grid.style.display='grid';grid.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))';grid.style.gap='14px';grid.style.marginTop='14px';
+ pages.forEach((blob,i)=>{
+  const card=document.createElement('div');card.style.border='1px solid var(--border,#345)';card.style.borderRadius='14px';card.style.padding='10px';card.style.background='var(--panel,#10283f)';
+  const title=document.createElement('div');title.style.fontWeight='700';title.style.marginBottom='8px';title.textContent='Page '+(i+1)+' / '+pages.length;
+  const image=document.createElement('img');image.src=urls[i];image.alt='Garden Train report page '+(i+1);image.style.display='block';image.style.width='100%';image.style.height='auto';image.style.borderRadius='8px';image.style.border='1px solid #d4b15f';
+  const button=document.createElement('button');button.type='button';button.className='gold train-report-save-one';button.style.width='100%';button.style.marginTop='10px';button.textContent='⬇ Download Page '+(i+1)+' PNG';
+  const status=document.createElement('p');status.className='subtle train-report-save-status';status.style.fontSize='12px';status.style.margin='6px 0 0';status.setAttribute('aria-live','polite');
+  button.addEventListener('click',async()=>{
+   const filename='garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png';
+   button.disabled=true;button.textContent='Starting download…';
+   try{
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),120000);
+    button.textContent='✓ Download requested';status.textContent='Check Chrome Downloads / Files for '+filename;
+    setTimeout(()=>{button.disabled=false;button.textContent='⬇ Download Page '+(i+1)+' PNG'},1800);
+   }catch(e){button.disabled=false;button.textContent='Try download again';status.textContent='Download could not start: '+(e.message||e)}
+  });
+  card.append(title,image,button,status);grid.append(card);
+ });
+ panel.append(grid);
+ const note=document.createElement('p');note.className='subtle';note.style.marginTop='12px';note.textContent='PNG files are saved by your browser to Downloads. Open the downloaded PNG to view it; use your phone\'s Save to Gallery option if you want it in Gallery.';
+ panel.append(note);modal.append(panel);document.body.appendChild(modal);
  const close=()=>{urls.forEach(URL.revokeObjectURL);modal.remove()};
- modal.querySelector('#trainReportImagesClose').onclick=close;
- modal.addEventListener('click',e=>{if(e.target===modal)close()});
- modal.querySelectorAll('.train-report-save-one').forEach(button=>button.addEventListener('click',async()=>{
-  const i=Number(button.dataset.page),status=button.parentElement.querySelector('.train-report-save-status'),filename='garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png';
-  button.disabled=true;button.textContent='Starting download…';
-  try{
-   await saveTrainReportPageToPhone(pages[i],filename);
-   button.textContent='✓ Download requested';
-   status.textContent='Check Chrome Downloads / Files for '+filename;
-   setTimeout(()=>{button.disabled=false;button.textContent='⬇ Download Page '+(i+1)+' PNG'},1800);
-  }catch(e){
-   button.disabled=false;button.textContent='Try download again';
-   status.textContent='Download could not start: '+(e.message||e);
-  }
- }));
+ closeButton.onclick=close;modal.addEventListener('click',e=>{if(e.target===modal)close()});
 }
 async function exportTrainCsv(){await openTrainReportSaveModal()}
 async function shareTrainReport(){try{const pages=await createTrainReportBlobs(),selection=getTrainReportSelection(),files=pages.map((blob,i)=>new File([blob],'garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png',{type:'image/png'}));if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,title:'Garden Train Monthly Report'});return}await downloadTrainReportPages();alert('All report pages downloaded. Share them from your Gallery/Photos.')}catch(e){if(e.name!=='AbortError')alert('Could not save/share train report: '+(e.message||e))}}
