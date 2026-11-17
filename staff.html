@@ -2736,103 +2736,7 @@ function printStaffCvQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">
-<script>
-/* Staff Account Upgrade: read-only device and connectivity health panel.
-   Does not change authentication, database records, subscriptions, or ticket data. */
-(function(){
- 'use strict';
- const PANEL_ID='staffDeviceHealthPanel';
- let observer=null;
- function tr(en,th,my){
-  const current=typeof lang!=='undefined'?lang:'en';
-  return current==='my'?my:current==='th'?th:en;
- }
- function ensurePanel(){
-  const root=document.getElementById('pageContent');
-  const alarm=document.getElementById('staffAlarmSettingsSection');
-  if(!root||!alarm||document.getElementById(PANEL_ID))return;
-  const panel=document.createElement('section');
-  panel.id=PANEL_ID;
-  panel.className='panel';
-  panel.style.cssText='margin-top:16px;border:1px solid rgba(244,202,112,.45);background:linear-gradient(145deg,#102d49,#071b30)';
-  const head=document.createElement('div');
-  head.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
-  const copy=document.createElement('div');
-  const title=document.createElement('h3');title.textContent='📱 '+tr('Device & Connection Health','อุปกรณ์และการเชื่อมต่อ','စက်ပစ္စည်းနှင့် ချိတ်ဆက်မှုအခြေအနေ');title.style.cssText='margin:0;color:#ffd778';
-  const description=document.createElement('p');description.className='subtle';description.textContent=tr('Read-only checks for this Staff device. No account or ticket data is changed.','ตรวจสอบสถานะอุปกรณ์เท่านั้น ไม่เปลี่ยนแปลงบัญชีหรือข้อมูลตั๋ว','Staff စက်၏ အခြေအနေကိုသာ စစ်ဆေးပါသည်။ Account နှင့် Ticket Data များကို ပြောင်းလဲမည်မဟုတ်ပါ။');description.style.margin='5px 0 0';
-  copy.append(title,description);
-  const button=document.createElement('button');button.type='button';button.id='staffHealthRefresh';button.className='gold';button.textContent='↻ '+tr('Refresh','รีเฟรช','ပြန်စစ်ဆေးရန်');button.style.padding='9px 12px';
-  head.append(copy,button);
-  const list=document.createElement('div');list.id='staffHealthRows';list.style.cssText='display:grid;gap:9px;margin-top:14px';list.setAttribute('aria-live','polite');
-  const initial=document.createElement('p');initial.className='subtle';initial.textContent=tr('Checking this device…','กำลังตรวจสอบอุปกรณ์…','စက်ပစ္စည်းကို စစ်ဆေးနေသည်…');list.append(initial);
-  const checked=document.createElement('p');checked.id='staffHealthCheckedAt';checked.className='subtle';checked.style.margin='10px 0 0';
-  panel.append(head,list,checked);
-  alarm.insertAdjacentElement('afterend',panel);
-  button.addEventListener('click',refresh);
-  refresh();
- }
- function makeRow(label,value,good){
-  const color=good===true?'#65e5a2':good===false?'#ffd17b':'#b8cadd';
-  const item=document.createElement('div');
-  item.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid #ffffff18;border-radius:11px;background:#06182a';
-  const name=document.createElement('span');name.textContent=label;name.style.color='#c4d4e3';
-  const result=document.createElement('strong');result.textContent=String(value);result.style.cssText='color:'+color+';text-align:right;overflow-wrap:anywhere';
-  item.append(name,result);
-  return item;
- }
- async function refresh(){
-  const rows=document.getElementById('staffHealthRows');
-  const checked=document.getElementById('staffHealthCheckedAt');
-  if(!rows)return;
-  rows.replaceChildren();
-  const loading=document.createElement('p');loading.className='subtle';loading.textContent=tr('Checking this device…','กำลังตรวจสอบอุปกรณ์…','စက်ပစ္စည်းကို စစ်ဆေးနေသည်…');rows.append(loading);
-  const items=[];
-  const online=navigator.onLine;
-  items.push(makeRow(tr('Internet connection','การเชื่อมต่ออินเทอร์เน็ต','အင်တာနက်ချိတ်ဆက်မှု'),online?tr('Online','ออนไลน์','ချိတ်ဆက်ထားသည်'):tr('Offline','ออฟไลน์','အင်တာနက်မရှိပါ'),online));
-  const supported='Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;
-  items.push(makeRow(tr('Web Push support','รองรับ Web Push','Web Push ပံ့ပိုးမှု'),supported?tr('Supported','รองรับ','ပံ့ပိုးထားသည်'):tr('Not supported','ไม่รองรับ','မပံ့ပိုးပါ'),supported));
-  if('Notification'in window){
-   const permission=Notification.permission;
-   const permissionText=permission==='granted'?tr('Granted','อนุญาตแล้ว','ခွင့်ပြုထားသည်'):permission==='denied'?tr('Denied','ถูกปฏิเสธ','ငြင်းပယ်ထားသည်'):tr('Not requested','ยังไม่อนุญาต','ခွင့်ပြုချက်မတောင်းရသေးပါ');
-   items.push(makeRow(tr('Notification permission','สิทธิ์การแจ้งเตือน','Notification ခွင့်ပြုချက်'),permissionText,permission==='granted'));
-  }else items.push(makeRow(tr('Notification permission','สิทธิ์การแจ้งเตือน','Notification ခွင့်ပြုချက်'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
-  if('serviceWorker'in navigator){
-   try{
-    const registration=await navigator.serviceWorker.getRegistration('/');
-    items.push(makeRow(tr('Service Worker','Service Worker','Service Worker'),registration&&registration.active?tr('Active','ทำงานอยู่','အသုံးပြုနေသည်'):registration?tr('Registered, activating','ลงทะเบียนแล้ว กำลังเริ่มทำงาน','မှတ်ပုံတင်ပြီး စတင်နေသည်'):tr('Not registered','ยังไม่ได้ลงทะเบียน','မှတ်ပုံမတင်ရသေးပါ'),!!(registration&&registration.active)));
-    const subscription=registration&&registration.pushManager?await registration.pushManager.getSubscription():null;
-    items.push(makeRow(tr('This device Push Subscription','การสมัครรับ Push ของอุปกรณ์นี้','ဤစက်၏ Push Subscription'),subscription?tr('Registered','ลงทะเบียนแล้ว','မှတ်ပုံတင်ထားသည်'):tr('Not registered','ยังไม่ได้ลงทะเบียน','မှတ်ပုံမတင်ရသေးပါ'),!!subscription));
-   }catch(error){
-    items.push(makeRow(tr('Service Worker / Push','Service Worker / Push','Service Worker / Push'),error&&error.message||tr('Could not inspect this device','ไม่สามารถตรวจสอบอุปกรณ์ได้','စက်ပစ္စည်းကို စစ်ဆေး၍မရပါ'),false));
-   }
-  }else{
-   items.push(makeRow(tr('Service Worker','Service Worker','Service Worker'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
-   items.push(makeRow(tr('This device Push Subscription','การสมัครรับ Push ของอุปกรณ์นี้','ဤစက်၏ Push Subscription'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
-  }
-  const cloudReadyState=typeof cloudReady!=='undefined'&&cloudReady;
-  const queuePending=typeof syncPending!=='undefined'&&!!syncPending;
-  const queueBusy=typeof syncBusy!=='undefined'&&!!syncBusy;
-  items.push(makeRow(tr('Cloud data layer','สถานะ Cloud Data','Cloud Data အခြေအနေ'),cloudReadyState?tr('Initialized','พร้อมใช้งาน','အသင့်ဖြစ်သည်'):tr('Not ready','ยังไม่พร้อม','အသင့်မဖြစ်သေးပါ'),!!cloudReadyState));
-  items.push(makeRow(tr('Ticket sync queue','คิวซิงก์ข้อมูลตั๋ว','Ticket Sync Queue'),queuePending||queueBusy?tr('Pending / syncing','รอ / กำลังซิงก์','စောင့်ဆိုင်း / Sync လုပ်နေသည်'):tr('Idle','ไม่มีงานค้าง','လုပ်ဆောင်စရာမရှိပါ'),!(queuePending||queueBusy)));
-  items.push(makeRow(tr('Staff settings page','หน้าตั้งค่า Staff','Staff Settings စာမျက်နှာ'),tr('Ready','พร้อมใช้งาน','အသင့်ဖြစ်သည်'),true));
-  rows.replaceChildren(...items);
-  if(checked)checked.textContent=tr('Last checked: ','ตรวจสอบล่าสุด: ','နောက်ဆုံးစစ်ဆေးချိန်: ')+new Date().toLocaleString();
- }
- function boot(){
-  ensurePanel();
-  const root=document.getElementById('pageContent');
-  if(root&&!observer){
-   observer=new MutationObserver(()=>{if(document.getElementById('staffAlarmSettingsSection'))ensurePanel()});
-   observer.observe(root,{childList:true,subtree:true});
-  }
-  window.addEventListener('online',refresh);
-  window.addEventListener('offline',refresh);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById(PANEL_ID))refresh()});
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
-})();</script>
-</body></html>');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
@@ -3604,6 +3508,104 @@ installUILanguageObserver();applyUILanguage();
   });
  }
  if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>{refreshThaiVoiceOptions();bindVoiceUi()};
+})();
+</script>
+</script>
+<script>
+
+/* Staff Account Upgrade: read-only device and connectivity health panel.
+   Does not change authentication, database records, subscriptions, or ticket data. */
+(function(){
+ 'use strict';
+ const PANEL_ID='staffDeviceHealthPanel';
+ let observer=null;
+ function tr(en,th,my){
+  const current=typeof lang!=='undefined'?lang:'en';
+  return current==='my'?my:current==='th'?th:en;
+ }
+ function ensurePanel(){
+  const root=document.getElementById('pageContent');
+  const alarm=document.getElementById('staffAlarmSettingsSection');
+  if(!root||!alarm||document.getElementById(PANEL_ID))return;
+  const panel=document.createElement('section');
+  panel.id=PANEL_ID;
+  panel.className='panel';
+  panel.style.cssText='margin-top:16px;border:1px solid rgba(244,202,112,.45);background:linear-gradient(145deg,#102d49,#071b30)';
+  const head=document.createElement('div');
+  head.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
+  const copy=document.createElement('div');
+  const title=document.createElement('h3');title.textContent='📱 '+tr('Device & Connection Health','อุปกรณ์และการเชื่อมต่อ','စက်ပစ္စည်းနှင့် ချိတ်ဆက်မှုအခြေအနေ');title.style.cssText='margin:0;color:#ffd778';
+  const description=document.createElement('p');description.className='subtle';description.textContent=tr('Read-only checks for this Staff device. No account or ticket data is changed.','ตรวจสอบสถานะอุปกรณ์เท่านั้น ไม่เปลี่ยนแปลงบัญชีหรือข้อมูลตั๋ว','Staff စက်၏ အခြေအနေကိုသာ စစ်ဆေးပါသည်။ Account နှင့် Ticket Data များကို ပြောင်းလဲမည်မဟုတ်ပါ။');description.style.margin='5px 0 0';
+  copy.append(title,description);
+  const button=document.createElement('button');button.type='button';button.id='staffHealthRefresh';button.className='gold';button.textContent='↻ '+tr('Refresh','รีเฟรช','ပြန်စစ်ဆေးရန်');button.style.padding='9px 12px';
+  head.append(copy,button);
+  const list=document.createElement('div');list.id='staffHealthRows';list.style.cssText='display:grid;gap:9px;margin-top:14px';list.setAttribute('aria-live','polite');
+  const initial=document.createElement('p');initial.className='subtle';initial.textContent=tr('Checking this device…','กำลังตรวจสอบอุปกรณ์…','စက်ပစ္စည်းကို စစ်ဆေးနေသည်…');list.append(initial);
+  const checked=document.createElement('p');checked.id='staffHealthCheckedAt';checked.className='subtle';checked.style.margin='10px 0 0';
+  panel.append(head,list,checked);
+  alarm.insertAdjacentElement('afterend',panel);
+  button.addEventListener('click',refresh);
+  refresh();
+ }
+ function makeRow(label,value,good){
+  const color=good===true?'#65e5a2':good===false?'#ffd17b':'#b8cadd';
+  const item=document.createElement('div');
+  item.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid #ffffff18;border-radius:11px;background:#06182a';
+  const name=document.createElement('span');name.textContent=label;name.style.color='#c4d4e3';
+  const result=document.createElement('strong');result.textContent=String(value);result.style.cssText='color:'+color+';text-align:right;overflow-wrap:anywhere';
+  item.append(name,result);
+  return item;
+ }
+ async function refresh(){
+  const rows=document.getElementById('staffHealthRows');
+  const checked=document.getElementById('staffHealthCheckedAt');
+  if(!rows)return;
+  rows.replaceChildren();
+  const loading=document.createElement('p');loading.className='subtle';loading.textContent=tr('Checking this device…','กำลังตรวจสอบอุปกรณ์…','စက်ပစ္စည်းကို စစ်ဆေးနေသည်…');rows.append(loading);
+  const items=[];
+  const online=navigator.onLine;
+  items.push(makeRow(tr('Internet connection','การเชื่อมต่ออินเทอร์เน็ต','အင်တာနက်ချိတ်ဆက်မှု'),online?tr('Online','ออนไลน์','ချိတ်ဆက်ထားသည်'):tr('Offline','ออฟไลน์','အင်တာနက်မရှိပါ'),online));
+  const supported='Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;
+  items.push(makeRow(tr('Web Push support','รองรับ Web Push','Web Push ပံ့ပိုးမှု'),supported?tr('Supported','รองรับ','ပံ့ပိုးထားသည်'):tr('Not supported','ไม่รองรับ','မပံ့ပိုးပါ'),supported));
+  if('Notification'in window){
+   const permission=Notification.permission;
+   const permissionText=permission==='granted'?tr('Granted','อนุญาตแล้ว','ခွင့်ပြုထားသည်'):permission==='denied'?tr('Denied','ถูกปฏิเสธ','ငြင်းပယ်ထားသည်'):tr('Not requested','ยังไม่อนุญาต','ခွင့်ပြုချက်မတောင်းရသေးပါ');
+   items.push(makeRow(tr('Notification permission','สิทธิ์การแจ้งเตือน','Notification ခွင့်ပြုချက်'),permissionText,permission==='granted'));
+  }else items.push(makeRow(tr('Notification permission','สิทธิ์การแจ้งเตือน','Notification ခွင့်ပြုချက်'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
+  if('serviceWorker'in navigator){
+   try{
+    const registration=await navigator.serviceWorker.getRegistration('/');
+    items.push(makeRow(tr('Service Worker','Service Worker','Service Worker'),registration&&registration.active?tr('Active','ทำงานอยู่','အသုံးပြုနေသည်'):registration?tr('Registered, activating','ลงทะเบียนแล้ว กำลังเริ่มทำงาน','မှတ်ပုံတင်ပြီး စတင်နေသည်'):tr('Not registered','ยังไม่ได้ลงทะเบียน','မှတ်ပုံမတင်ရသေးပါ'),!!(registration&&registration.active)));
+    const subscription=registration&&registration.pushManager?await registration.pushManager.getSubscription():null;
+    items.push(makeRow(tr('This device Push Subscription','การสมัครรับ Push ของอุปกรณ์นี้','ဤစက်၏ Push Subscription'),subscription?tr('Registered','ลงทะเบียนแล้ว','မှတ်ပုံတင်ထားသည်'):tr('Not registered','ยังไม่ได้ลงทะเบียน','မှတ်ပုံမတင်ရသေးပါ'),!!subscription));
+   }catch(error){
+    items.push(makeRow(tr('Service Worker / Push','Service Worker / Push','Service Worker / Push'),error&&error.message||tr('Could not inspect this device','ไม่สามารถตรวจสอบอุปกรณ์ได้','စက်ပစ္စည်းကို စစ်ဆေး၍မရပါ'),false));
+   }
+  }else{
+   items.push(makeRow(tr('Service Worker','Service Worker','Service Worker'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
+   items.push(makeRow(tr('This device Push Subscription','การสมัครรับ Push ของอุปกรณ์นี้','ဤစက်၏ Push Subscription'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
+  }
+  const cloudReadyState=typeof cloudReady!=='undefined'&&cloudReady;
+  const queuePending=typeof syncPending!=='undefined'&&!!syncPending;
+  const queueBusy=typeof syncBusy!=='undefined'&&!!syncBusy;
+  items.push(makeRow(tr('Cloud data layer','สถานะ Cloud Data','Cloud Data အခြေအနေ'),cloudReadyState?tr('Initialized','พร้อมใช้งาน','အသင့်ဖြစ်သည်'):tr('Not ready','ยังไม่พร้อม','အသင့်မဖြစ်သေးပါ'),!!cloudReadyState));
+  items.push(makeRow(tr('Ticket sync queue','คิวซิงก์ข้อมูลตั๋ว','Ticket Sync Queue'),queuePending||queueBusy?tr('Pending / syncing','รอ / กำลังซิงก์','စောင့်ဆိုင်း / Sync လုပ်နေသည်'):tr('Idle','ไม่มีงานค้าง','လုပ်ဆောင်စရာမရှိပါ'),!(queuePending||queueBusy)));
+  items.push(makeRow(tr('Staff settings page','หน้าตั้งค่า Staff','Staff Settings စာမျက်နှာ'),tr('Ready','พร้อมใช้งาน','အသင့်ဖြစ်သည်'),true));
+  rows.replaceChildren(...items);
+  if(checked)checked.textContent=tr('Last checked: ','ตรวจสอบล่าสุด: ','နောက်ဆုံးစစ်ဆေးချိန်: ')+new Date().toLocaleString();
+ }
+ function boot(){
+  ensurePanel();
+  const root=document.getElementById('pageContent');
+  if(root&&!observer){
+   observer=new MutationObserver(()=>{if(document.getElementById('staffAlarmSettingsSection'))ensurePanel()});
+   observer.observe(root,{childList:true,subtree:true});
+  }
+  window.addEventListener('online',refresh);
+  window.addEventListener('offline',refresh);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById(PANEL_ID))refresh()});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
 </script>
 <script src="./ui-mode.js" defer></script>
