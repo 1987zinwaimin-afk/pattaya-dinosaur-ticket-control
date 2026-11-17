@@ -2458,25 +2458,18 @@ async function createTrainReportBlob(){
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(838,230,332,126,22);ctx.fill();ctx.strokeStyle='#f5d48b';ctx.stroke();
  ctx.fillStyle='#10213b';ctx.textAlign='center';ctx.font='bold 22px Arial';ctx.fillText(reportText('TOTAL RIDERS','ผู้โดยสารทั้งหมด'),1004,274);
  ctx.font='bold 50px Arial';ctx.fillText(String(riders),1004,330);
- const x=[36,130,340,550,700,930,1164],labels=[reportText('No.','ลำดับ'),reportText('Time In','เวลาเข้า'),reportText('Time Out','เวลาออก'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration','ကြာချိန်')];
+ const monthly=selection.mode==='monthly';const x=monthly?[36,104,264,414,564,684,944,1164]:[36,130,340,550,700,930,1164],labels=monthly?[reportText('No.','ลำดับ'),reportText('Date','วันที่'),reportText('Time In','เวลาเข้า'),reportText('Time Out','เวลาออก'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration','ကြာချိန်')]:[reportText('No.','ลำดับ'),reportText('Time In','เวลาเข้า'),reportText('Time Out','เวลาออก'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration','ကြာချိန်')];
  ctx.fillStyle='#f5d48b';ctx.beginPath();ctx.roundRect(pad,tableTop,width-pad*2,headerH,12);ctx.fill();
  ctx.fillStyle='#10213b';ctx.font='bold 22px Arial';ctx.textAlign='center';
- ctx.fillText(labels[0],(x[0]+x[1])/2,tableTop+36);
- ctx.fillText(labels[1],(x[1]+x[2])/2,tableTop+36);
- ctx.fillText(labels[2],(x[2]+x[3])/2,tableTop+36);
- ctx.fillText(labels[3],(x[3]+x[4])/2,tableTop+36);
- ctx.fillText(labels[4],(x[4]+x[5])/2,tableTop+36);ctx.fillText(labels[5],(x[5]+x[6])/2,tableTop+36);
+ labels.forEach((heading,j)=>ctx.fillText(heading,(x[j]+x[j+1])/2,tableTop+36));
  if(!rows.length){ctx.fillStyle='#fffaf0';ctx.font='24px Arial';ctx.textAlign='center';ctx.fillText(reportText('No train records for this report period.','ဤအစီရင်ခံစာကာလအတွက် ရထားမှတ်တမ်းမရှိပါ။'),width/2,tableTop+headerH+58)}
  rows.forEach((row,i)=>{
   const y=tableTop+headerH+i*rowH;
   ctx.fillStyle=i%2?'#eaf0f5':'#fffdf7';ctx.fillRect(pad,y,width-pad*2,rowH);
   ctx.strokeStyle='#d4dce6';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad,y+rowH);ctx.lineTo(width-pad,y+rowH);ctx.stroke();
   ctx.font='bold 23px Arial';ctx.textAlign='center';
-  ctx.fillStyle='#10213b';ctx.fillText(String(i+1),(x[0]+x[1])/2,y+39);
-  ctx.fillStyle='#17805d';ctx.fillText(fmtTime(row.depart_time),(x[1]+x[2])/2,y+39);
-  ctx.fillStyle='#c83d59';ctx.fillText(fmtTime(row.return_time),(x[2]+x[3])/2,y+39);
-  ctx.fillStyle='#10213b';ctx.fillText(String(Number(row.riders||0)),(x[3]+x[4])/2,y+39);
-  ctx.fillText(String(row.driver_name||'-').slice(0,24),(x[4]+x[5])/2,y+39);ctx.fillText(durationMins(row.depart_time,row.return_time)===null?'—':durationMins(row.depart_time,row.return_time)+' min',(x[5]+x[6])/2,y+39);
+  const cells=monthly?[String(i+1),formatReportDate(row.trip_date),fmtTime(row.depart_time),fmtTime(row.return_time),String(Number(row.riders||0)),String(row.driver_name||'-').slice(0,24),durationMins(row.depart_time,row.return_time)===null?'—':durationMins(row.depart_time,row.return_time)+' min']:[String(i+1),fmtTime(row.depart_time),fmtTime(row.return_time),String(Number(row.riders||0)),String(row.driver_name||'-').slice(0,24),durationMins(row.depart_time,row.return_time)===null?'—':durationMins(row.depart_time,row.return_time)+' min'];
+  cells.forEach((cell,j)=>{ctx.fillStyle=(j===(monthly?2:1))?'#17805d':(j===(monthly?3:2))?'#c83d59':'#10213b';ctx.font=monthly?'bold 20px Arial':'bold 23px Arial';ctx.fillText(cell,(x[j]+x[j+1])/2,y+39)});
  });
  const footerY=tableTop+headerH+Math.max(1,rows.length)*rowH+22;
  ctx.strokeStyle='#e8b94f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(pad,footerY);ctx.lineTo(width-pad,footerY);ctx.stroke();
