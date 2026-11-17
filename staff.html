@@ -2490,7 +2490,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  Promise.allSettled(backgroundTasks);
 }
 // Staff ID lookup: existing IDs fill the registered name; new IDs remain available for self-registration.
-let staffNameLookupTimer=null,staffNameLookupSequence=0,staffLookupError=null;
+let staffNameLookupTimer=null,staffNameLookupSequence=0,staffLookupError=null,staffLookupCompletedId='';
 let staffSessionCreationPromise=null;
 async function ensureStaffLookupSession(){
  const {data,error}=await sb.auth.getSession();
@@ -2514,6 +2514,7 @@ async function lookupStaffNameById(){
  const staffId=idInput.value.trim();
  const sequence=++staffNameLookupSequence;
  staffLookupError=null;
+ staffLookupCompletedId='';
  // Do not erase a name the employee has already typed while the asynchronous ID lookup runs.
  // The Staff ID input handler clears stale names only when the ID itself changes.
  nameInput.readOnly=false;
@@ -2550,6 +2551,8 @@ async function lookupStaffNameById(){
    nameInput.placeholder='Enter your name for this new Staff ID';
    if(hint)hint.textContent='New Staff ID available. Enter your name to create the account.';
   }
+  // Mark completion only for the latest lookup of the exact ID currently in the field.
+  if(sequence===staffNameLookupSequence&&idInput.value.trim().toUpperCase()===staffId.toUpperCase())staffLookupCompletedId=staffId.toUpperCase();
  }catch(error){
   if(sequence!==staffNameLookupSequence)return;
   staffLookupError=error;
@@ -2594,7 +2597,10 @@ document.getElementById('authForm').onsubmit=async e=>{
   clearTimeout(staffNameLookupTimer);
   staffLookupInFlight=lookupStaffNameById();
   await staffLookupInFlight;
+  // Never continue with a stale result if another blur/input lookup superseded this request.
+  if(staffIdInput.value.trim().toUpperCase()!==staffId.toUpperCase())throw new Error('Staff ID changed while it was being checked. Please verify it again.');
   if(staffLookupError)throw staffLookupError;
+  if(staffLookupCompletedId!==staffId.toUpperCase())throw new Error('Staff ID verification has not finished yet. Please wait and try again.');
   const name=nameInput.value.trim();
  if(!staffId||!name){err.textContent='Please enter a Staff ID. Existing IDs fill the name automatically; for a new ID, enter your name.';return}
  if(document.getElementById('authName').dataset.resolvedStaffId&&document.getElementById('authName').dataset.resolvedStaffId!==staffId.toUpperCase()){err.textContent='Staff ID changed. Please verify the ID again.';return}
