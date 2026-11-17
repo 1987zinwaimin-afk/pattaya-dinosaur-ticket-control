@@ -5,8 +5,8 @@
  const role=()=>((typeof currentRole!=='undefined'&&currentRole==='owner')?'owner':((typeof STAFF_MODE!=='undefined'&&STAFF_MODE)?'staff':'owner'));
  const userId=()=>typeof currentUser!=='undefined'&&currentUser&&currentUser.id?String(currentUser.id):'device';
  const key=()=> 'tctl-ui-mode-v1:'+role()+':'+userId();
- let mode='auto';
- function load(){try{mode=localStorage.getItem(key())||'auto'}catch(e){mode='auto'}apply()}
+ let mode='auto',loadedFor='';
+ function load(){loadedFor=key();try{mode=localStorage.getItem(loadedFor)||'auto'}catch(e){mode='auto'}apply()}
  function apply(){
   body.classList.remove('ui-mode-phone','ui-mode-laptop','ui-mode-auto');
   body.classList.add('ui-mode-'+mode);
@@ -19,6 +19,7 @@
   apply();renderControls();
  }
  function renderControls(){
+  if(loadedFor!==key())load();
   const root=document.getElementById('pageContent');
   if(!root||root.dataset.uiPage!=='settings')return;
   let panel=document.getElementById('deviceUiModePanel');
