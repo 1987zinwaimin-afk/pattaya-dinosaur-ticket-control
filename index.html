@@ -2511,14 +2511,22 @@ async function buildTrainReportZip(files){
  ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,central.length,true);ev.setUint16(10,central.length,true);ev.setUint32(12,centralSize,true);ev.setUint32(16,centralStart,true);ev.setUint16(20,0,true);parts.push(end);
  return new Blob(parts,{type:'application/zip'});
 }
-async function downloadTrainReportPages(){
- const pages=await createTrainReportBlobs(),selection=getTrainReportSelection();
- const files=pages.map((blob,i)=>({blob,name:'garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png'}));
- const zip=await buildTrainReportZip(files),url=URL.createObjectURL(zip),a=document.createElement('a');
- a.href=url;a.download='garden-train-'+selection.mode+'-'+selection.period+'-all-pages.zip';
- document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+async function openTrainReportSaveModal(){
+ let pages;
+ try{pages=await createTrainReportBlobs()}catch(e){alert('Could not create report pages: '+(e.message||e));return}
+ const selection=getTrainReportSelection(),urls=pages.map(blob=>URL.createObjectURL(blob));
+ const modal=document.createElement('div');modal.className='modal open';modal.style.zIndex='190';
+ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ modal.innerHTML='<div class="modalbox" style="max-width:900px;max-height:92vh;overflow:auto"><div class="section-title"><div><h2>🖼 Garden Train Report Images</h2><p class="subtle">Preview each page, then save each PNG image separately to your device.</p></div><button type="button" id="trainReportImagesClose">✕</button></div><div id="trainReportImagePages" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px">'+pages.map((blob,i)=>'<div style="border:1px solid var(--border,#345);border-radius:14px;padding:10px;background:var(--panel,#10283f)"><div style="font-weight:700;margin-bottom:8px">Page '+(i+1)+' / '+pages.length+'</div><img src="'+urls[i]+'" alt="Garden Train report page '+(i+1)+'" style="display:block;width:100%;height:auto;border-radius:8px;border:1px solid #d4b15f"><button type="button" class="gold train-report-save-one" data-page="'+i+'" style="width:100%;margin-top:10px">⬇ Save Page '+(i+1)+' Image</button></div>').join('')+'</div><p class="subtle" style="margin-top:12px">Save each page separately. Images are PNG files; no ZIP file is created.</p></div>';
+ document.body.appendChild(modal);
+ const close=()=>{urls.forEach(URL.revokeObjectURL);modal.remove()};
+ modal.querySelector('#trainReportImagesClose').onclick=close;
+ modal.addEventListener('click',e=>{if(e.target===modal)close()});
+ modal.querySelectorAll('.train-report-save-one').forEach(button=>button.addEventListener('click',()=>{
+  const i=Number(button.dataset.page),a=document.createElement('a');a.href=urls[i];a.download='garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png';document.body.appendChild(a);a.click();a.remove();button.textContent='✓ Saved Page '+(i+1);button.disabled=true;
+ }));
 }
-async function exportTrainCsv(){try{await downloadTrainReportPages();}catch(e){alert('Could not save train report images: '+(e.message||e))}}
+async function exportTrainCsv(){await openTrainReportSaveModal()}
 async function shareTrainReport(){try{const pages=await createTrainReportBlobs(),selection=getTrainReportSelection(),files=pages.map((blob,i)=>new File([blob],'garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png',{type:'image/png'}));if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,title:'Garden Train Monthly Report'});return}await downloadTrainReportPages();alert('All report pages downloaded. Share them from your Gallery/Photos.')}catch(e){if(e.name!=='AbortError')alert('Could not save/share train report: '+(e.message||e))}}
 function exportTrainCsvData(){const rows=getTrainReportSelection().rows,data=[[reportText('No','ลำดับ'),reportText('Date','วันที่'),reportText('Depart Time','เวลาออกรถ'),reportText('Return Time','เวลากลับรถ'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration minutes','ระยะเวลา (นาที)')],...rows.map((r,i)=>[i+1,r.trip_date,fmtTime(r.depart_time),fmtTime(r.return_time),r.riders,r.driver_name,durationMins(r.depart_time,r.return_time)??''])];const csv=data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='garden-train-report-'+getTrainReportSelection().period+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function updateTrainReportMode(){const mode=document.getElementById('trainReportMode')?.value||'daily',date=document.getElementById('trainReportDateWrap'),month=document.getElementById('trainReportMonthWrap');if(date)date.style.display=mode==='daily'?'':'none';if(month)month.style.display=mode==='monthly'?'':'none'}
