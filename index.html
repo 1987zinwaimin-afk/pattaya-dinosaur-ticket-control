@@ -2512,37 +2512,36 @@ async function buildTrainReportZip(files){
  return new Blob(parts,{type:'application/zip'});
 }
 async function saveTrainReportPageToPhone(blob,filename){
- const file=new File([blob],filename,{type:'image/png'});
- if(navigator.canShare&&navigator.canShare({files:[file]})){
-  await navigator.share({files:[file],title:'Garden Train Report'});
-  return 'shared';
- }
- const url=URL.createObjectURL(blob),win=window.open(url,'_blank');
- if(!win){const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);return 'download'}
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;a.download=filename;a.style.display='none';
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
  setTimeout(()=>URL.revokeObjectURL(url),120000);
- return 'opened';
+ return 'download';
 }
 async function openTrainReportSaveModal(){
  let pages;
  try{pages=await createTrainReportBlobs()}catch(e){alert('Could not create report pages: '+(e.message||e));return}
  const selection=getTrainReportSelection(),urls=pages.map(blob=>URL.createObjectURL(blob));
  const modal=document.createElement('div');modal.className='modal open';modal.style.zIndex='190';
- modal.innerHTML='<div class="modalbox" style="max-width:900px;max-height:92vh;overflow:auto"><div class="section-title"><div><h2>🖼 Garden Train Report Images</h2><p class="subtle">Tap Save / Share for each page. Choose Photos or Save to device in the Android share menu when available.</p></div><button type="button" id="trainReportImagesClose">✕</button></div><div id="trainReportImagePages" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px">'+pages.map((blob,i)=>'<div style="border:1px solid var(--border,#345);border-radius:14px;padding:10px;background:var(--panel,#10283f)"><div style="font-weight:700;margin-bottom:8px">Page '+(i+1)+' / '+pages.length+'</div><img src="'+urls[i]+'" alt="Garden Train report page '+(i+1)+'" style="display:block;width:100%;height:auto;border-radius:8px;border:1px solid #d4b15f"><button type="button" class="gold train-report-save-one" data-page="'+i+'" style="width:100%;margin-top:10px">📲 Save / Share Page '+(i+1)+'</button><p class="subtle train-report-save-status" style="font-size:12px;margin:6px 0 0" aria-live="polite"></p></div>').join('')+'</div><p class="subtle" style="margin-top:12px">If the image opens in a new tab, long-press it and choose Download image / Save image. The browser cannot silently write directly into Gallery.</p></div>';
+ modal.innerHTML='<div class="modalbox" style="max-width:900px;max-height:92vh;overflow:auto"><div class="section-title"><div><h2>🖼 Garden Train Report Images</h2><p class="subtle">Download each report page directly as a PNG image. No Share menu and no ZIP file.</p></div><button type="button" id="trainReportImagesClose">✕</button></div><div id="trainReportImagePages" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px">'+pages.map((blob,i)=>'<div style="border:1px solid var(--border,#345);border-radius:14px;padding:10px;background:var(--panel,#10283f)"><div style="font-weight:700;margin-bottom:8px">Page '+(i+1)+' / '+pages.length+'</div><img src="'+urls[i]+'" alt="Garden Train report page '+(i+1)+'" style="display:block;width:100%;height:auto;border-radius:8px;border:1px solid #d4b15f"><button type="button" class="gold train-report-save-one" data-page="'+i+'" style="width:100%;margin-top:10px">⬇ Download Page '+(i+1)+' PNG</button><p class="subtle train-report-save-status" style="font-size:12px;margin:6px 0 0" aria-live="polite"></p></div>').join('')+'</div><p class="subtle" style="margin-top:12px">PNG files are saved by your browser to Downloads. Open the downloaded PNG to view it; use your phone's Save to Gallery option if you want it in Gallery.</p></div>';
  document.body.appendChild(modal);
  const close=()=>{urls.forEach(URL.revokeObjectURL);modal.remove()};
  modal.querySelector('#trainReportImagesClose').onclick=close;
  modal.addEventListener('click',e=>{if(e.target===modal)close()});
  modal.querySelectorAll('.train-report-save-one').forEach(button=>button.addEventListener('click',async()=>{
   const i=Number(button.dataset.page),status=button.parentElement.querySelector('.train-report-save-status'),filename='garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png';
-  button.disabled=true;button.textContent='Opening save options…';
+  button.disabled=true;button.textContent='Starting download…';
   try{
-   const result=await saveTrainReportPageToPhone(pages[i],filename);
-   if(result==='shared'){button.textContent='✓ Share menu opened';status.textContent='Choose Photos / Save to device to keep this PNG.'}
-   else if(result==='opened'){button.textContent='✓ Image opened';status.textContent='Long-press the image and select Download image / Save image.'}
-   else{button.textContent='✓ Download requested';status.textContent='Check Chrome Downloads, then save or move the PNG to Gallery.'}
+   await saveTrainReportPageToPhone(pages[i],filename);
+   button.textContent='✓ Download requested';
+   status.textContent='Check Chrome Downloads / Files for '+filename;
+   setTimeout(()=>{button.disabled=false;button.textContent='⬇ Download Page '+(i+1)+' PNG'},1800);
   }catch(e){
-   if(e.name==='AbortError'){button.disabled=false;button.textContent='📲 Save / Share Page '+(i+1);status.textContent='Share cancelled. Tap again when ready.'}
-   else{button.disabled=false;button.textContent='Try again';status.textContent='Could not open save options: '+(e.message||e)}
+   button.disabled=false;button.textContent='Try download again';
+   status.textContent='Download could not start: '+(e.message||e);
   }
  }));
 }
