@@ -2335,6 +2335,103 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 @media(max-width:600px){#pageContent .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#pageContent .ticket img{height:clamp(105px,31vw,145px)}#pageContent .ticket-body{padding:10px;gap:7px}#pageContent .ticket h3{font-size:.96rem;min-height:2.5em}#pageContent .ticket .price{font-size:.92rem;padding:6px 10px}#pageContent .ticket .qty{min-height:44px;padding:9px;font-size:1rem}#pageContent .ticket .ticket-actions{gap:6px;flex-wrap:wrap}#pageContent .ticket .ticket-actions button{flex:1 1 100%;min-height:42px}#pageContent .actions{gap:6px}}
 @media(max-width:360px){#pageContent .cards{grid-template-columns:1fr}}
 
+
+/* Owner POS polish v3 — responsive ticket workspace */
+#pageContent>.ticket-toolbar{
+ display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ gap:10px!important;padding:12px!important;margin:0 0 16px!important;
+ border:1px solid rgba(247,213,138,.28)!important;border-radius:18px!important;
+ background:linear-gradient(135deg,rgba(14,42,68,.96),rgba(5,22,39,.96))!important;
+ box-shadow:0 10px 26px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.06)!important;
+}
+#pageContent>.ticket-toolbar::before{
+ grid-column:1/-1;display:block;padding:2px 3px 8px;
+ color:#f7d58a;font-size:12px;font-weight:900;letter-spacing:.14em;
+ text-transform:uppercase;border-bottom:1px solid rgba(247,213,138,.2);
+}
+#pageContent>.ticket-toolbar.sale-toolbar::before{content:"🎟  SALE TICKET  /  POINT OF SALE"}
+#pageContent>.ticket-toolbar.entry-toolbar::before{content:"🚪  VISITOR ADMISSION  /  ENTRY CONTROL"}
+#pageContent>.ticket-toolbar.playing-toolbar::before{content:"🦖  PLAYING TICKET  /  ACTIVITY CONTROL"}
+#pageContent>.ticket-toolbar.event-toolbar::before{content:"🎪  EVENT TICKET  /  EVENT SALES"}
+#pageContent>.ticket-toolbar button{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ min-height:48px!important;height:auto!important;padding:9px 7px!important;
+ border-radius:12px!important;border:1px solid rgba(178,207,229,.25)!important;
+ font-size:13px!important;font-weight:800!important;line-height:1.2!important;
+ box-shadow:inset 0 1px rgba(255,255,255,.09),0 4px 10px rgba(0,0,0,.16)!important;
+ transition:transform .16s ease,filter .16s ease,border-color .16s ease!important;
+}
+#pageContent>.ticket-toolbar button:active{transform:scale(.97)!important}
+#pageContent>.ticket-toolbar button.gold{background:linear-gradient(135deg,#ffe8a8,#dca642)!important;color:#17283b!important;border-color:#ffdf91!important}
+#pageContent>.ticket-toolbar button.blue{background:linear-gradient(135deg,#174a70,#0b2a47)!important;color:#f4f8fc!important}
+#pageContent #search{
+ width:100%!important;min-height:48px!important;margin:0 0 16px!important;
+ padding:12px 16px 12px 44px!important;border-radius:14px!important;
+ border:1px solid rgba(151,190,220,.34)!important;
+ background:rgba(5,23,41,.9)!important;color:#f5f8fc!important;
+ box-shadow:inset 0 2px 8px rgba(0,0,0,.18)!important;
+}
+#pageContent #search::placeholder{color:#9fb4c8!important}
+#ticketCards{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important}
+#ticketCards>.ticket{
+ position:relative!important;
+ border-color:rgba(143,183,213,.34)!important;
+ box-shadow:0 12px 26px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.07)!important;
+}
+#ticketCards>.ticket::after{
+ content:"";position:absolute;inset:0 0 auto;height:2px;pointer-events:none;
+ background:linear-gradient(90deg,transparent,rgba(255,222,153,.9),transparent);
+}
+#ticketCards>.ticket .ticket-body{padding:14px!important;gap:10px!important}
+#ticketCards>.ticket h3{font-size:clamp(15px,1.2vw,18px)!important;letter-spacing:.01em!important}
+#ticketCards>.ticket .price{
+ min-height:38px!important;padding:8px 14px!important;
+ background:linear-gradient(135deg,#ffe9ae,#e1ad4c)!important;
+ box-shadow:0 4px 12px rgba(220,166,66,.2)!important;
+}
+#ticketCards>.ticket .ticket-quantity-highlight{
+ min-height:48px!important;padding:8px 12px!important;
+ border:1px solid rgba(247,213,138,.22)!important;
+ background:linear-gradient(110deg,rgba(6,25,44,.94),rgba(15,47,73,.94))!important;
+}
+#ticketCards>.ticket .ticket-quantity-highlight strong{color:#ffe09a!important}
+#ticketCards>.ticket input.qty{
+ border:1px solid rgba(247,213,138,.48)!important;
+ background:rgba(3,17,31,.92)!important;
+ box-shadow:inset 0 2px 7px rgba(0,0,0,.2)!important;
+}
+#ticketCards>.ticket input.qty:focus{
+ border-color:#ffdf91!important;outline:3px solid rgba(247,213,138,.16)!important;
+}
+#ticketCards>.ticket .ticket-actions button{
+ min-height:44px!important;border:1px solid rgba(151,190,220,.24)!important;
+ background:linear-gradient(135deg,#17466a,#0b2945)!important;
+}
+#ticketCards>.ticket .ticket-actions .clear-main{
+ background:linear-gradient(135deg,#214f70,#123451)!important;
+}
+#ticketCards>.ticket .morebox.open{padding-top:10px!important}
+#ticketCards>.ticket .morebox .edit{background:linear-gradient(135deg,#dca642,#f4d58f)!important;color:#14263a!important}
+#ticketCards>.ticket .morebox .delete{background:linear-gradient(135deg,#9d3349,#6e2034)!important;color:#fff!important}
+@media(max-width:760px){
+ #ticketCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:11px!important}
+ #pageContent>.ticket-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;padding:10px!important}
+ #pageContent>.ticket-toolbar button{min-height:46px!important;font-size:12px!important}
+ #ticketCards>.ticket .ticket-body{padding:10px!important;gap:8px!important}
+ #ticketCards>.ticket>div:first-child:has(>img),
+ #ticketCards>.ticket>.placeholder{height:clamp(100px,29vw,140px)!important}
+}
+@media(max-width:380px){
+ #pageContent>.ticket-toolbar{gap:6px!important;padding:8px!important}
+ #pageContent>.ticket-toolbar::before{font-size:10px!important;letter-spacing:.1em!important}
+ #pageContent>.ticket-toolbar button{min-height:43px!important;padding:7px 4px!important;font-size:11px!important}
+ #ticketCards{gap:8px!important}
+ #ticketCards>.ticket .ticket-body{padding:9px!important}
+ #ticketCards>.ticket h3{font-size:14px!important}
+ #ticketCards>.ticket .ticket-actions{gap:5px!important}
+ #ticketCards>.ticket .ticket-actions button{font-size:10px!important;min-height:40px!important}
+}
+
 </style>
 
 <style id="staff-database-compact-v1">
