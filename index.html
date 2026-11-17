@@ -2222,6 +2222,89 @@ input,select{padding:10px 11px;border-radius:10px}
 .owner-emergency-alarm-header[hidden]{display:none!important}
 .owner-emergency-alarm-header:disabled{opacity:.65;cursor:wait}
 @media(max-width:520px){.owner-emergency-alarm-header{right:8px;width:36px;height:36px;min-width:36px;min-height:36px;font-size:19px}}
+
+/* MK Premium Admin UI/UX refresh — shared Owner/Staff design system */
+:root{--mk-navy:#06172b;--mk-navy-2:#0b2945;--mk-glass:rgba(16,43,68,.78);--mk-gold:#f4cb78;--mk-gold-bright:#ffe4a0;--mk-stroke:rgba(160,194,220,.22);--mk-shadow:0 18px 42px rgba(0,0,0,.22)}
+body{background:radial-gradient(ellipse at 12% 0%,rgba(30,87,125,.38),transparent 38%),linear-gradient(155deg,#06172b 0%,#03101f 100%)}
+.top.brand-header{box-shadow:0 8px 26px rgba(0,0,0,.28);border-bottom:1px solid rgba(244,203,120,.65)}
+.wrap{max-width:1440px;padding:22px clamp(14px,2.2vw,32px) 52px}
+.stat,.panel,.ticket{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--mk-stroke);box-shadow:var(--mk-shadow),inset 0 1px rgba(255,255,255,.06)}
+.stat{border-radius:19px;padding:16px 18px}
+.stat span{letter-spacing:.035em;font-weight:650}
+.stat strong{font-size:clamp(1.25rem,2vw,1.7rem)}
+.panel{border-radius:22px}
+button{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+button:hover{filter:brightness(1.08);transform:translateY(-1px)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(255,215,120,.55);outline-offset:2px}
+.side{background:linear-gradient(180deg,rgba(8,31,53,.98),rgba(3,17,32,.99));border-right:1px solid rgba(244,203,120,.2);box-shadow:16px 0 42px rgba(0,0,0,.18);padding:22px 16px}
+.side h2{font-size:1.65rem;letter-spacing:-.02em;margin:12px 10px 18px}
+.nav{gap:8px}
+.nav button{min-height:48px;border-radius:14px;padding:12px 14px;font-weight:700;box-shadow:none;border:1px solid transparent;background:rgba(27,67,98,.48)}
+.nav button.active{box-shadow:0 7px 18px rgba(225,171,70,.18);border-color:rgba(255,231,174,.65)}
+#pageContent>.section-title{margin:4px 0 16px;align-items:flex-end}
+#pageContent>.section-title h2{font-size:clamp(1.35rem,2.4vw,1.85rem);letter-spacing:-.025em;margin:0}
+.mk-dashboard{display:grid;gap:18px}
+.mk-dashboard-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.mk-dashboard-head h2{font-size:clamp(1.45rem,3vw,2rem);margin:0;color:#fff}
+.mk-dashboard-head p{margin:5px 0 0;color:#afc4d9}
+.mk-dashboard-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mk-kpi{position:relative;overflow:hidden;padding:17px;border-radius:20px;background:linear-gradient(145deg,rgba(21,62,94,.9),rgba(7,27,47,.94));border:1px solid rgba(145,185,215,.25);box-shadow:var(--mk-shadow)}
+.mk-kpi:after{content:"";position:absolute;width:100px;height:100px;right:-34px;top:-38px;border-radius:50%;background:rgba(255,215,120,.08)}
+.mk-kpi-label{display:flex;align-items:center;gap:8px;color:#c0d1e0;font-size:.82rem;font-weight:700}
+.mk-kpi-value{display:block;margin-top:8px;color:#ffe09a;font-size:clamp(1.35rem,3vw,2rem);font-weight:850;line-height:1.1;overflow-wrap:anywhere}
+.mk-dashboard-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,.85fr);gap:14px}
+.mk-section{padding:18px;border:1px solid var(--mk-stroke);border-radius:22px;background:linear-gradient(145deg,rgba(15,43,68,.88),rgba(6,24,42,.92));box-shadow:var(--mk-shadow)}
+.mk-section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.mk-section-title h3{margin:0;font-size:1.08rem;color:#fff}
+.mk-department-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.mk-dept-card{display:flex;align-items:center;gap:12px;min-width:0;min-height:90px;padding:14px;border:1px solid rgba(155,190,218,.2);border-radius:17px;background:linear-gradient(145deg,rgba(25,67,98,.75),rgba(9,31,52,.9));color:#fff;text-align:left;box-shadow:none}
+.mk-dept-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:14px;background:rgba(255,216,133,.12);font-size:23px}
+.mk-dept-copy{min-width:0;flex:1}
+.mk-dept-copy b{display:block;overflow-wrap:anywhere;font-size:.94rem}
+.mk-dept-copy small{display:block;color:#b6c9dc;margin-top:4px}
+.mk-dept-copy strong{display:block;color:#ffe09a;margin-top:5px;font-size:1rem}
+.mk-quick-actions{display:grid;gap:9px}
+.mk-quick-actions button{width:100%;min-height:52px;text-align:left;box-shadow:none;border-radius:14px}
+.mk-quick-actions .mk-quick-primary{background:linear-gradient(135deg,#ffe5a0,#dca43c);color:#14263a;border-color:#ffe9b4}
+.mk-progress-list{display:grid;gap:13px}
+.mk-progress-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center}
+.mk-progress-row span{font-size:.86rem;color:#d4e0eb}
+.mk-progress-row b{font-size:.86rem;color:#ffe09a}
+.mk-progress-track{grid-column:1/-1;height:8px;border-radius:99px;background:#07182a;overflow:hidden;border:1px solid rgba(255,255,255,.08)}
+.mk-progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#d79e36,#ffe6a4)}
+.mk-dashboard-footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#9fb5ca;font-size:.82rem;padding:0 3px}
+.ticket{border-radius:19px;overflow:hidden}
+.ticket img{height:clamp(112px,14vw,180px)}
+.ticket-body{padding:15px}
+.ticket h3{font-size:1.03rem}
+.ticket-actions button{min-height:42px}
+.actions.ticket-toolbar{padding:10px;border-radius:18px;background:rgba(10,36,59,.8);border:1px solid var(--mk-stroke);box-shadow:var(--mk-shadow)}
+#stats:empty{display:none}
+@media(min-width:980px){
+ .side{transform:none;top:0;bottom:0;width:270px;z-index:30}
+ .side-shade{display:none!important}
+ .wrap{margin-left:270px;max-width:none;width:calc(100% - 270px);padding:24px clamp(20px,2.5vw,40px) 54px}
+ .top.brand-header{padding-left:270px}
+ .header-menu{display:none}
+}
+@media(max-width:760px){
+ .wrap{padding:12px 12px 34px}
+ .mk-dashboard{gap:12px}
+ .mk-dashboard-kpis{gap:8px}
+ .mk-kpi{padding:12px;border-radius:16px}
+ .mk-kpi-label{font-size:.72rem;gap:5px}
+ .mk-kpi-value{font-size:1.15rem;margin-top:6px}
+ .mk-dashboard-grid{grid-template-columns:1fr;gap:11px}
+ .mk-section{padding:14px;border-radius:18px}
+ .mk-department-grid{gap:8px}
+ .mk-dept-card{min-height:82px;padding:10px;gap:8px;border-radius:14px}
+ .mk-dept-icon{width:36px;height:36px;flex-basis:36px;font-size:19px}
+ .mk-dept-copy b{font-size:.82rem}
+ .mk-dept-copy small{font-size:.72rem}
+ .mk-dept-copy strong{font-size:.84rem}
+}
+@media(max-width:360px){.mk-dashboard-kpis{grid-template-columns:1fr}.mk-department-grid{grid-template-columns:1fr}}
+
 </style>
 
 <style id="staff-database-compact-v1">
@@ -3077,7 +3160,31 @@ async function sendOwnerEmergencyAlarm(button){
  }catch(e){alert('Could not send emergency alarm: '+(e.message||e))}
  finally{if(btn){btn.disabled=false;btn.textContent='🚨';}}
 }
-function renderDashboard(){let all=tickets.reduce((s,t)=>s+t.quantity,0),val=tickets.reduce((s,t)=>s+t.quantity*(t.price||0),0);document.getElementById('pageContent').innerHTML='<div class="section-title"><h2>Ticket Control Overview</h2><span class="subtle">New workspace</span></div><div class="cards">'+DEPTS.map(d=>{let a=tickets.filter(t=>t.department===d.id),q=a.reduce((s,t)=>s+t.quantity,0),v=a.reduce((s,t)=>s+t.quantity*(t.price||0),0);return '<button class="panel" data-page="'+d.id+'" style="text-align:left;min-height:130px"><div style="font-size:28px">'+d.icon+'</div><b>'+(d[lang]||d.en)+'</b><div class="subtle">'+a.length+' '+tr('types')+'</div><strong style="color:var(--gold);font-size:1.25rem">'+q+' · '+money(v)+'</strong></button>'}).join('')+'</div>'+'<button type="button" class="panel" data-page="customervisits" style="width:100%;text-align:left;margin-top:14px;border:1px solid var(--gold);min-height:76px"><strong style="color:var(--gold);font-size:18px">👥 Customer Visits</strong><div class="subtle">Record group check-in, check-out and visit duration</div></button>'+'<div class="panel" style="margin-top:16px"><h3>Quick actions</h3><div class="actions"><button class="gold" id="dashAdd">＋ Add ticket</button><button id="dashReport">'+tr('save')+'</button></div><p class="subtle">'+tr('cloudMsg')+'</p></div>';document.querySelectorAll('#pageContent [data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('dashAdd').onclick=()=>{page='sale';openTicket()};document.getElementById('dashReport').onclick=saveReport;}
+function renderDashboard(){
+ const all=tickets.reduce((s,t)=>s+(Number(t.quantity)||0),0);
+ const val=tickets.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
+ const deptRows=DEPTS.map(d=>{
+  const a=tickets.filter(t=>t.department===d.id),q=a.reduce((s,t)=>s+(Number(t.quantity)||0),0),v=a.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
+  return {...d,count:a.length,qty:q,value:v};
+ });
+ const maxValue=Math.max(1,...deptRows.map(d=>d.value));
+ const fmt=n=>Number(n||0).toLocaleString();
+ document.getElementById('pageContent').innerHTML=
+ '<div class="mk-dashboard">'+
+ '<div class="mk-dashboard-head"><div><h2>Welcome to Ticket Control</h2><p>Owner workspace · Pattaya Dinosaur Kingdom</p></div><span class="subtle">Premium Management</span></div>'+
+ '<div class="mk-dashboard-kpis">'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">🎟️ Ticket Types</div><strong class="mk-kpi-value">'+fmt(tickets.length)+'</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">👥 Recorded Quantity</div><strong class="mk-kpi-value">'+fmt(all)+'</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">฿ Inventory Value</div><strong class="mk-kpi-value">'+money(val)+'</strong></div>'+
+ '</div>'+
+ '<div class="mk-dashboard-grid"><section class="mk-section"><div class="mk-section-title"><h3>Department Overview</h3><span class="subtle">Live ticket records</span></div><div class="mk-department-grid">'+deptRows.map(d=>'<button type="button" class="mk-dept-card" data-page="'+d.id+'"><span class="mk-dept-icon">'+d.icon+'</span><span class="mk-dept-copy"><b>'+(d[lang]||d.en)+'</b><small>'+fmt(d.count)+' ticket types</small><strong>'+fmt(d.qty)+' · '+money(d.value)+'</strong></span></button>').join('')+'</div></section>'+
+ '<section class="mk-section"><div class="mk-section-title"><h3>Quick Actions</h3></div><div class="mk-quick-actions"><button type="button" class="mk-quick-primary" id="dashAdd">＋ Add New Ticket</button><button type="button" data-page="train">🚆 Garden Train</button><button type="button" data-page="monthly">▥ Monthly Summary</button><button type="button" data-page="customervisits">👥 Customer Visits</button><button type="button" id="dashReport">▤ Save Dashboard Report</button></div></section></div>'+
+ '<section class="mk-section"><div class="mk-section-title"><h3>Department Value Overview</h3><span class="subtle">THB</span></div><div class="mk-progress-list">'+deptRows.map(d=>'<div class="mk-progress-row"><span>'+d.icon+' '+(d[lang]||d.en)+'</span><b>'+money(d.value)+'</b><div class="mk-progress-track"><div class="mk-progress-fill" style="width:'+Math.max(0,Math.min(100,d.value/maxValue*100))+'%"></div></div></div>').join('')+'</div></section>'+
+ '<div class="mk-dashboard-footer"><span>☁ '+tr('cloudMsg')+'</span><span>Currency: THB</span></div></div>';
+ document.querySelectorAll('#pageContent [data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));
+ const add=document.getElementById('dashAdd');if(add)add.onclick=()=>{page='sale';openTicket()};
+ const report=document.getElementById('dashReport');if(report)report.onclick=saveReport;
+}
 
 let backdateEntryDate='',backdateSalesByTicket={};
 function localYesterday(){const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
