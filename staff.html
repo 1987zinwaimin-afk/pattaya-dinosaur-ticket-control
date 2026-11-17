@@ -3368,7 +3368,7 @@ installUILanguageObserver();applyUILanguage();
    const data=event.data||{};
    if(data.type!=='STAFF_EMERGENCY_VOICE')return;
    try{if(typeof window.playStaffAlarmTone==='function')window.playStaffAlarmTone()}catch(error){console.warn('Alarm notification tone could not play:',error)}
-   if(localStorage.getItem(KEY)==='1'){try{speakThaiAnnouncement()}catch(error){console.warn('Thai alarm voice announcement could not play:',error)}}
+   try{speakThaiAnnouncement()}catch(error){console.warn('Thai alarm voice announcement could not play:',error)}
   });
  }
  if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>{refreshThaiVoiceOptions();bindVoiceUi()};
