@@ -2771,7 +2771,8 @@ document.getElementById('stats').style.display=dep()?'':'none';
 if(page==='dashboard'&&STAFF_MODE)renderStaffDashboard(visible);else if(page==='payroll')renderPayroll();else if(page==='train')renderTrain();else if(page==='customer-visits')renderStaffCustomerVisits();else if(dep())renderDept(visible);else if(page==='dashboard'&&!STAFF_MODE)renderDashboard();else if(page==='monthly'&&!STAFF_MODE)renderMonthly();else if(page==='settings'&&STAFF_MODE)renderStaffSettings();else if(page==='settings'&&!STAFF_MODE)renderSettings();else if((page==='owner'||page==='staff')&&!STAFF_MODE)renderDatabase();else if(STAFF_MODE)renderDept(visible);else renderDashboard();if(currentUser&&typeof renderStaffAlarmSetupBanner==='function'){try{renderStaffAlarmSetupBanner()}catch(alarmUiError){console.warn('Staff alarm setup UI failed without blocking Staff login or ticket rendering:',alarmUiError)}}}
 function renderStaffDashboard(visible){
  const root=document.getElementById('pageContent');
- const scoped=Array.isArray(visible)?visible:[];
+ const scopedBase=Array.isArray(visible)?visible:[];
+ const scoped=selectedStaffDepartment==='event'?scopedBase.filter(t=>!!selectedStaffEventLocationId&&String(t.location||'')==='event:'+selectedStaffEventLocationId):scopedBase;
  const quantity=scoped.reduce((sum,t)=>sum+Number(t.quantity||0),0);
  const value=scoped.reduce((sum,t)=>sum+Number(t.quantity||0)*Number(t.price||0),0);
  const departmentList=selectedStaffDepartment==='all'?DEPTS:DEPTS.filter(d=>d.id===selectedStaffDepartment);
