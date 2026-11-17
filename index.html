@@ -387,6 +387,20 @@ img{max-width:100%}
 }
 
 
+/* Restore the original two-ticket side-by-side layout on phones */
+@media(max-width:600px){
+ #ticketCards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ #ticketCards>.ticket{min-width:0!important}
+ #ticketCards>.ticket .ticket-body{padding:9px!important;gap:7px!important}
+ #ticketCards>.ticket .ticket-preview-image{width:100%!important;object-fit:cover!important}
+}
+@media(max-width:380px){
+ #ticketCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+ #ticketCards>.ticket .ticket-body{padding:7px!important;gap:6px!important}
+ #ticketCards>.ticket h3{font-size:12px!important}
+ #ticketCards>.ticket .ticket-actions{grid-template-columns:1fr!important}
+}
+
 /* PREMIUM GLASS DESIGN SYSTEM v2 — shared Owner + Staff visual layer.
    CSS-only: does not alter ticket records, storage keys, auth, permissions, or sync logic. */
 :root{
