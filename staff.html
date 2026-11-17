@@ -2152,7 +2152,7 @@ function staffSyncStorageKey(kind){
  return currentUser?'tctl-staff-'+kind+'-v1:'+currentUser.id:null;
 }
 function readStaffDurableSyncQueue(){
- try{const key=staffSyncStorageKey('sync-pending');const value=key?JSON.parse(localStorage.getItem(key)||'[]'):[];return Array.isArray(value)?value.filter(x=>x&&x.id):[]}catch(error){console.warn('Could not read durable Staff sync queue:',error);return[]}
+ const key=staffSyncStorageKey('sync-pending');if(!key)return[];const raw=localStorage.getItem(key);if(raw===null)return[];const value=JSON.parse(raw);if(!Array.isArray(value))throw new Error('Stored Staff sync queue has an invalid format; it was left untouched.');return value.filter(x=>x&&x.id)
 }
 function writeStaffDurableSyncQueue(rows){
  const key=staffSyncStorageKey('sync-pending');if(!key)throw new Error('Staff session is not ready; pending changes were not queued.');
@@ -2160,7 +2160,7 @@ function writeStaffDurableSyncQueue(rows){
 }
 function mergeStaffDurableSyncQueue(rows){
  const merged=new Map(readStaffDurableSyncQueue().map(row=>[String(row.id),row]));
- (Array.isArray(rows)?rows:[]).forEach(row=>{if(!row||!row.id)return;const id=String(row.id),prior=merged.get(id);if(!prior||Date.parse(row.updated_at||0)>=Date.parse(prior.updated_at||0))merged.set(id,row)});
+ (Array.isArray(rows)?rows:[]).forEach(row=>{if(!row||!row.id)return;const id=String(row.id),prior=merged.get(id),nextTime=Date.parse(row.updated_at||'')||0,priorTime=Date.parse(prior?.updated_at||'')||0;if(!prior||nextTime>=priorTime)merged.set(id,row)});
  const result=[...merged.values()];writeStaffDurableSyncQueue(result);return result;
 }
 function removeStaffSyncedQueueRows(rows){
@@ -2169,7 +2169,7 @@ function removeStaffSyncedQueueRows(rows){
  writeStaffDurableSyncQueue(remaining);return remaining;
 }
 function readStaffSyncConflicts(){
- try{const key=staffSyncStorageKey('sync-conflicts');const value=key?JSON.parse(localStorage.getItem(key)||'[]'):[];return Array.isArray(value)?value:[]}catch(error){console.warn('Could not read Staff sync conflicts:',error);return[]}
+ const key=staffSyncStorageKey('sync-conflicts');if(!key)return[];const raw=localStorage.getItem(key);if(raw===null)return[];const value=JSON.parse(raw);if(!Array.isArray(value))throw new Error('Stored Staff sync conflicts have an invalid format; they were left untouched.');return value
 }
 function writeStaffSyncConflicts(rows){
  const key=staffSyncStorageKey('sync-conflicts');if(!key)throw new Error('Staff session is not ready; conflict copy could not be saved.');
