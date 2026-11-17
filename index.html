@@ -3016,6 +3016,21 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  margin-top:0!important;
 }
 
+
+/* PLAYING TICKETS — let the image fill the card width, without widening the card */
+#pageContent:has(>.playing-toolbar) #ticketCards>.ticket>div:first-child:has(>img){
+ width:100%!important;
+ aspect-ratio:1.74 / 1!important;
+ overflow:hidden!important;
+}
+#pageContent:has(>.playing-toolbar) #ticketCards>.ticket .ticket-preview-image{
+ width:100%!important;
+ height:100%!important;
+ max-width:none!important;
+ object-fit:cover!important;
+ object-position:center center!important;
+}
+
 </style>
 
 <style id="staff-database-compact-v1">
