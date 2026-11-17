@@ -2458,6 +2458,8 @@ async function sendStaffOwnerNotification(eventType='app_open',details={}){
 }
 
 async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null,notificationType='login',departmentOverride=null){
+ // A delayed auto-restore must never overwrite a department chosen during an active manual login.
+ if(staffLoginSubmitting&&notificationType==='app_open')return;
  currentUser=session.user;
  const enteredName=document.getElementById('authName').value.trim();
  const enteredStaffId=document.getElementById('authStaffId').value.trim();
