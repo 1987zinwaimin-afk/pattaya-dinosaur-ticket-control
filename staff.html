@@ -2148,6 +2148,75 @@ function startDailySalesAutosave(){
 function cloudRowForTicket(t){
  return {id:t.id,department:t.department,name:t.name,price:t.price??null,quantity:Number(t.quantity||0),image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()};
 }
+function staffSyncStorageKey(kind){
+ return currentUser?'tctl-staff-'+kind+'-v1:'+currentUser.id:null;
+}
+function readStaffDurableSyncQueue(){
+ const key=staffSyncStorageKey('sync-pending');if(!key)return[];const raw=localStorage.getItem(key);if(raw===null)return[];const value=JSON.parse(raw);if(!Array.isArray(value))throw new Error('Stored Staff sync queue has an invalid format; it was left untouched.');return value.filter(x=>x&&x.id)
+}
+function writeStaffDurableSyncQueue(rows){
+ const key=staffSyncStorageKey('sync-pending');if(!key)throw new Error('Staff session is not ready; pending changes were not queued.');
+ localStorage.setItem(key,JSON.stringify(rows));
+}
+function mergeStaffDurableSyncQueue(rows){
+ const merged=new Map(readStaffDurableSyncQueue().map(row=>[String(row.id),row]));
+ (Array.isArray(rows)?rows:[]).forEach(row=>{if(!row||!row.id)return;const id=String(row.id),prior=merged.get(id),nextTime=Date.parse(row.updated_at||'')||0,priorTime=Date.parse(prior?.updated_at||'')||0;if(!prior||nextTime>=priorTime)merged.set(id,row)});
+ const result=[...merged.values()];writeStaffDurableSyncQueue(result);return result;
+}
+function removeStaffSyncedQueueRows(rows){
+ const sent=new Map((rows||[]).map(row=>[String(row.id),String(row.updated_at||'')]));
+ const remaining=readStaffDurableSyncQueue().filter(row=>sent.get(String(row.id))!==String(row.updated_at||''));
+ writeStaffDurableSyncQueue(remaining);return remaining;
+}
+function readStaffSyncConflicts(){
+ const key=staffSyncStorageKey('sync-conflicts');if(!key)return[];const raw=localStorage.getItem(key);if(raw===null)return[];const value=JSON.parse(raw);if(!Array.isArray(value))throw new Error('Stored Staff sync conflicts have an invalid format; they were left untouched.');return value
+}
+function writeStaffSyncConflicts(rows){
+ const key=staffSyncStorageKey('sync-conflicts');if(!key)throw new Error('Staff session is not ready; conflict copy could not be saved.');
+ localStorage.setItem(key,JSON.stringify(rows));
+}
+function sameStaffTicketPayload(a,b){
+ return ['department','name','price','quantity','image_path','image_url','location'].every(key=>(a?.[key]??null)===(b?.[key]??null));
+}
+function showStaffSyncConflictNotice(){
+ const conflicts=readStaffSyncConflicts(),root=document.getElementById('pageContent');
+ if(!root)return;
+ let panel=document.getElementById('staffCloudSyncConflict');
+ if(!conflicts.length){if(panel)panel.remove();return}
+ if(!panel){panel=document.createElement('section');panel.id='staffCloudSyncConflict';panel.className='panel';panel.style.cssText='margin:0 0 12px;border:1px solid #b88e48;background:linear-gradient(135deg,#332b1d,#172337);color:#ffe8b4';root.insertBefore(panel,root.firstChild)}
+ panel.replaceChildren();
+ const heading=document.createElement('strong');heading.textContent=lang==='my'?'⚠️ Cloud မှာ ပိုသစ်တဲ့ Ticket မှတ်တမ်းရှိနေပါတယ်':lang==='th'?'⚠️ พบข้อมูลตั๋วบน Cloud ที่ใหม่กว่า':'⚠️ Newer ticket data exists in Cloud';
+ const message=document.createElement('p');message.style.cssText='margin:7px 0 0;font-size:13px;line-height:1.5';message.textContent=(lang==='my'?'ပြန်လည် Sync မလုပ်ဘဲ မူရင်း Cloud မှတ်တမ်းကို ထိန်းထားပြီး ဤစက်က ပြင်ဆင်မှု ':lang==='th'?'ระบบเก็บข้อมูล Cloud เดิมไว้ และแยกการแก้ไขจากอุปกรณ์นี้ ':'The newer Cloud record was kept. This device’s older edit was preserved separately for review. ')+conflicts.length+(lang==='my'?' ခုကို သီးခြားသိမ်းထားပါတယ်။':' item(s) saved separately.');
+ const details=document.createElement('ul');details.style.cssText='margin:7px 0 0;padding-left:20px;font-size:12px';
+ conflicts.slice(0,3).forEach(item=>{const li=document.createElement('li');li.textContent=String(item.pending?.name||item.id||'Ticket')+' · '+(item.cloud_updated_at||'Cloud timestamp unavailable');details.appendChild(li)});
+ panel.append(heading,message,details);
+ if(conflicts.length>3){const more=document.createElement('p');more.style.cssText='margin:5px 0 0;font-size:11px';more.textContent='+'+(conflicts.length-3)+' more';panel.appendChild(more)}
+}
+async function reconcileStaffPendingWithCloud(cloudRows){
+ const pending=readStaffDurableSyncQueue();if(!pending.length)return cloudRows;
+ const cloudById=new Map((cloudRows||[]).map(row=>[String(row.id),row]));
+ const replay=[],conflicts=readStaffSyncConflicts();
+ for(const localRow of pending){
+  const cloudRow=cloudById.get(String(localRow.id));
+  if(!cloudRow){replay.push(localRow);continue}
+  const localTime=Date.parse(localRow.updated_at||localRow.created_at||0)||0;
+  const cloudTime=Date.parse(cloudRow.updated_at||cloudRow.created_at||0)||0;
+  if(localTime>cloudTime){replay.push(localRow);continue}
+  if(sameStaffTicketPayload(localRow,cloudRow))continue;
+  const conflictKey=String(localRow.id)+'|'+String(localRow.updated_at||'');
+  if(!conflicts.some(item=>item.key===conflictKey))conflicts.push({key:conflictKey,id:localRow.id,pending:localRow,cloud_updated_at:cloudRow.updated_at||cloudRow.created_at||null,detected_at:new Date().toISOString()});
+ }
+ writeStaffSyncConflicts(conflicts);
+ writeStaffDurableSyncQueue(replay);
+ if(replay.length){
+  const {error}=await sb.from('tickets').upsert(replay,{onConflict:'id'});
+  if(error){writeStaffDurableSyncQueue(mergeStaffDurableSyncQueue(replay));throw new Error('Pending ticket changes are safely stored on this device, but Cloud replay failed: '+error.message)}
+  const {data,error:reloadError}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+  if(reloadError)throw reloadError;
+  cloudRows=data||[];
+ }
+ return cloudRows;
+}
 function save(){
  try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local cache full; Cloud sync will continue.',storageError)}
  if(!currentUser||!cloudReady)return;
@@ -2163,18 +2232,46 @@ function save(){
 }
 let syncBusy=false,syncPending=null;
 async function syncTickets(snapshot){
- syncPending=snapshot;
+ try{mergeStaffDurableSyncQueue(Array.isArray(snapshot)?snapshot:[]);syncPending=readStaffDurableSyncQueue()}
+ catch(queueError){syncPending=Array.isArray(snapshot)?snapshot:syncPending;showCloudError('Could not persist pending changes on this device: '+(queueError.message||queueError));return}
  if(syncBusy)return;
+ if(!syncPending.length){syncPending=null;return}
  syncBusy=true;
  try{
-  while(syncPending){
-   const next=syncPending;syncPending=null;
-   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);await captureDailyTicketSales();lastCloudFingerprint='';const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';}
+  while(true){
+   const next=readStaffDurableSyncQueue();syncPending=next;
+   if(!next.length){syncPending=null;break}
+   const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;
+   removeStaffSyncedQueueRows(next);
+   for(const row of next)lastCloudRows.set(String(row.id),row);
+   await captureDailyTicketSales();lastCloudFingerprint='';
+   const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';
+   syncPending=readStaffDurableSyncQueue();
   }
- }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));syncPending=syncPending||snapshot;setTimeout(()=>{if(!syncBusy&&syncPending)syncTickets(syncPending)},3000);}
- finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
+  const syncErrorBanner=document.getElementById('staffCloudSyncError');if(syncErrorBanner)syncErrorBanner.remove();
+ }catch(e){
+  console.error('Cloud sync failed',e);syncPending=readStaffDurableSyncQueue();
+  showCloudError('Cloud sync failed. Pending edits are saved on this device: '+(e.message||e));
+  setTimeout(()=>{if(!syncBusy&&readStaffDurableSyncQueue().length)syncTickets([])},5000);
+ }finally{
+  syncBusy=false;syncPending=readStaffDurableSyncQueue();
+  if(syncPending.length)setTimeout(()=>{if(!syncBusy)syncTickets([])},1500);
+ }
 }
-function showCloudError(msg){const e=document.getElementById('authError');if(e&&document.getElementById('authScreen').style.display!=='none')e.textContent=msg;else console.error(msg)}
+function showCloudError(msg){
+ const authError=document.getElementById('authError');
+ if(authError&&document.getElementById('authScreen')?.style.display!=='none'){authError.textContent=msg;return}
+ console.error(msg);
+ const root=document.getElementById('pageContent');
+ if(!root)return;
+ let banner=document.getElementById('staffCloudSyncError');
+ if(!banner){banner=document.createElement('section');banner.id='staffCloudSyncError';banner.className='panel';banner.style.cssText='margin:0 0 12px;border:1px solid #d99b48;background:linear-gradient(135deg,#432b1d,#241b20);color:#ffe3b3';root.insertBefore(banner,root.firstChild)}
+ banner.replaceChildren();
+ const message=document.createElement('p');message.style.margin='0 0 9px';message.textContent=(lang==='my'?'Cloud Sync မအောင်မြင်သေးပါ။ ပြင်ဆင်ထားသော Ticket အချက်အလက်များကို ဤစက်တွင် သိမ်းထားပြီး ပြန်လည်ချိတ်ဆက်ရန် ကြိုးစားနေပါသည်။ ':lang==='th'?'การซิงก์ Cloud ยังไม่สำเร็จ ระบบกำลังลองเชื่อมต่ออีกครั้ง ':'Cloud sync has not completed. The app is retrying the connection. ')+String(msg||'');
+ const retry=document.createElement('button');retry.type='button';retry.className='gold';retry.textContent=lang==='my'?'ယခုပြန်စမ်းရန်':lang==='th'?'ลองอีกครั้ง':'Retry Sync';
+ retry.onclick=()=>{if(!syncBusy&&readStaffDurableSyncQueue().length)syncTickets([])};
+ banner.append(message,retry);
+}
 function mapCloud(row){return {id:row.id,department:row.department,name:row.name,price:row.price===null?null:Number(row.price),quantity:Number(row.quantity||0),image:row.image_url||null,imageUrl:row.image_url||null,imagePath:row.image_path||null,location:row.location||'',createdAt:row.created_at,updatedAt:row.updated_at,createdBy:row.created_by}}
 async function loadCloud(){
  // Capture local tickets before reading Cloud: the Owner browser may contain the only surviving copy.
@@ -2185,6 +2282,8 @@ async function loadCloud(){
  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
  if(error)throw error;
  let cloudRows=data||[];
+ // Reconcile durable offline edits before legacy empty-cloud recovery or replacing the local cache.
+ cloudRows=await reconcileStaffPendingWithCloud(cloudRows);
  // One-time recovery: when the cloud table is empty but this browser has tickets, migrate that local copy to Cloud.
  // Never overwrite non-empty Cloud data and never delete local tickets during recovery.
  if(cloudRows.length===0 && localTicketsBeforeCloud.length>0){
@@ -2214,11 +2313,13 @@ async function loadCloud(){
    cloudRows=reloaded||[];
   }
  }
- tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();startDailySalesAutosave();
+ tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();showStaffSyncConflictNotice();startDailySalesAutosave();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
  if(!currentUser||!cloudReady)return;
+ // Never let background polling replace local ticket state while durable edits await Cloud sync.
+ if(readStaffDurableSyncQueue().length){if(navigator.onLine&&!syncBusy)syncTickets([]);return;}
  // Do not let an empty/stale read replace local edits while their Cloud upsert is still running.
  if(syncBusy)return;
  // Continue polling even when this tab is in the background; mobile split-screen and tab switching must not stall sync.
@@ -2236,7 +2337,7 @@ async function refreshCloudTickets(force=false){
    tickets=rows.map(mapCloud);
    lastCloudRows=new Map(rows.map(r=>[String(r.id),r]));
    try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local cache full; Cloud data is still active.',storageError)}
-   render();
+   render();showStaffSyncConflictNotice();
   }
  }catch(e){console.error('Auto-refresh cloud tickets failed',e)}
  finally{cloudLoadBusy=false}
@@ -2600,7 +2701,7 @@ function installUILanguageObserver(){
 function tr(k){return T[lang]?.[k]||T.en[k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||(!!selectedStaffEventLocationId&&String(t.location||'')==='event:'+selectedStaffEventLocationId)))}
-function navRender(){const visiblePages=PAGES.filter(p=>p.id==='payroll'||p.id==='settings'||(p.id==='customer-visits'&&(selectedStaffDepartment==='entry'||selectedStaffDepartment==='all'))||(p.id==='train'&&(selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'))||(['sale','entry','playing','event'].includes(p.id)&&(selectedStaffDepartment==='all'||p.id===selectedStaffDepartment)));document.getElementById('nav').innerHTML=visiblePages.map(p=>{const fixedLabels={sale:{en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန'},entry:{en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန'},playing:{en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန'},event:{en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန'},payroll:{en:'My Payroll',th:'เงินเดือนของฉัน',my:'ကျွန်ုပ်၏လစာ'},settings:{en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ'},'customer-visits':{en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း'},train:{en:'Garden Train',th:'Garden Train',my:'Garden Train'}};const label=fixedLabels[p.id]?.[lang]||p[lang]||p.en;return '<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'" data-no-translate>'+p.icon+' '+label+'</button>'}).join('')+(currentUser&&currentRole==='staff'?'<button type="button" id="staffEmergencyAlarmMenuButton" data-no-translate style="margin-top:10px;text-align:left;border:1px solid #e8b95f;color:#ffe2a0;background:linear-gradient(135deg,#6a271e,#241326);font-weight:800">🚨 Alarm</button>':'')+'<button type="button" id="staffThemeButton" data-page="settings" data-no-translate style="text-align:left;border:1px solid #d7b45d;color:#ffe4a3;background:linear-gradient(135deg,#173b59,#0b2034)">🎨 Change Theme / Theme Settings</button>'+'<button type="button" id="staffLogout" data-no-translate style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));const alarmMenuButton=document.getElementById('staffEmergencyAlarmMenuButton');if(alarmMenuButton)alarmMenuButton.onclick=async()=>{if(!currentUser||currentRole!=='staff'){alert('Normal Staff account ဖြင့် Login ဝင်ပါ။');return}if(!confirm('Owner နှင့် Normal Staff အားလုံးထံ Alarm ပို့မလား?'))return;alarmMenuButton.disabled=true;const oldText=alarmMenuButton.innerHTML;alarmMenuButton.textContent='Sending…';try{const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Alarm ပို့မရပါ။');const androidResult=data.android||{};alert('🚨 Alarm ပို့ပြီးပါပြီ\\nWeb notification: '+data.sent+' / '+data.subscriptions+'\\nAndroid notification: '+(androidResult.sent??0)+' / '+(androidResult.targets??0)+'\\nFailed: '+(Number(data.failed||0)+Number(androidResult.failed||0)))}catch(error){alert('Alarm ပို့မရပါ: '+(error?.message||error))}finally{alarmMenuButton.disabled=false;alarmMenuButton.innerHTML=oldText}};document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{await recordStaffActivity(false,false)}catch(e){console.warn('Could not mark Staff inactive before logout:',e)}try{await sendStaffOwnerNotification('logout')}catch(e){console.warn('Logout notification could not be sent:',e)}try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}if(window.staffActivityTimer){clearInterval(window.staffActivityTimer);window.staffActivityTimer=null}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='all';page='all';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
+function navRender(){const visiblePages=PAGES.filter(p=>p.id==='dashboard'||p.id==='payroll'||p.id==='settings'||(p.id==='customer-visits'&&(selectedStaffDepartment==='entry'||selectedStaffDepartment==='all'))||(p.id==='train'&&(selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'))||(['sale','entry','playing','event'].includes(p.id)&&(selectedStaffDepartment==='all'||p.id===selectedStaffDepartment)));document.getElementById('nav').innerHTML=visiblePages.map(p=>{const fixedLabels={sale:{en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန'},entry:{en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန'},playing:{en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန'},event:{en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန'},payroll:{en:'My Payroll',th:'เงินเดือนของฉัน',my:'ကျွန်ုပ်၏လစာ'},settings:{en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ'},'customer-visits':{en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း'},train:{en:'Garden Train',th:'Garden Train',my:'Garden Train'}};const label=fixedLabels[p.id]?.[lang]||p[lang]||p.en;return '<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'" data-no-translate>'+p.icon+' '+label+'</button>'}).join('')+(currentUser&&currentRole==='staff'?'<button type="button" id="staffEmergencyAlarmMenuButton" data-no-translate style="margin-top:10px;text-align:left;border:1px solid #e8b95f;color:#ffe2a0;background:linear-gradient(135deg,#6a271e,#241326);font-weight:800">🚨 Alarm</button>':'')+'<button type="button" id="staffThemeButton" data-page="settings" data-no-translate style="text-align:left;border:1px solid #d7b45d;color:#ffe4a3;background:linear-gradient(135deg,#173b59,#0b2034)">🎨 Change Theme / Theme Settings</button>'+'<button type="button" id="staffLogout" data-no-translate style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));const alarmMenuButton=document.getElementById('staffEmergencyAlarmMenuButton');if(alarmMenuButton)alarmMenuButton.onclick=async()=>{if(!currentUser||currentRole!=='staff'){alert('Normal Staff account ဖြင့် Login ဝင်ပါ။');return}if(!confirm('Owner နှင့် Normal Staff အားလုံးထံ Alarm ပို့မလား?'))return;alarmMenuButton.disabled=true;const oldText=alarmMenuButton.innerHTML;alarmMenuButton.textContent='Sending…';try{const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});if(error)throw error;if(!data?.ok)throw new Error(data?.message||'Alarm ပို့မရပါ။');const androidResult=data.android||{};alert('🚨 Alarm ပို့ပြီးပါပြီ\\nWeb notification: '+data.sent+' / '+data.subscriptions+'\\nAndroid notification: '+(androidResult.sent??0)+' / '+(androidResult.targets??0)+'\\nFailed: '+(Number(data.failed||0)+Number(androidResult.failed||0)))}catch(error){alert('Alarm ပို့မရပါ: '+(error?.message||error))}finally{alarmMenuButton.disabled=false;alarmMenuButton.innerHTML=oldText}};document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{await recordStaffActivity(false,false)}catch(e){console.warn('Could not mark Staff inactive before logout:',e)}try{await sendStaffOwnerNotification('logout')}catch(e){console.warn('Logout notification could not be sent:',e)}try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}if(window.staffActivityTimer){clearInterval(window.staffActivityTimer);window.staffActivityTimer=null}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='all';page='all';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
 function go(p){page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 
 let staffCvQrPromise=null,staffCvScannerPromise=null,staffCvScanner=null;
@@ -2635,7 +2736,103 @@ function printStaffCvQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">
+<script>
+/* Staff Account Upgrade: read-only device and connectivity health panel.
+   Does not change authentication, database records, subscriptions, or ticket data. */
+(function(){
+ 'use strict';
+ const PANEL_ID='staffDeviceHealthPanel';
+ let observer=null;
+ function tr(en,th,my){
+  const current=typeof lang!=='undefined'?lang:'en';
+  return current==='my'?my:current==='th'?th:en;
+ }
+ function ensurePanel(){
+  const root=document.getElementById('pageContent');
+  const alarm=document.getElementById('staffAlarmSettingsSection');
+  if(!root||!alarm||document.getElementById(PANEL_ID))return;
+  const panel=document.createElement('section');
+  panel.id=PANEL_ID;
+  panel.className='panel';
+  panel.style.cssText='margin-top:16px;border:1px solid rgba(244,202,112,.45);background:linear-gradient(145deg,#102d49,#071b30)';
+  const head=document.createElement('div');
+  head.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap';
+  const copy=document.createElement('div');
+  const title=document.createElement('h3');title.textContent='📱 '+tr('Device & Connection Health','อุปกรณ์และการเชื่อมต่อ','စက်ပစ္စည်းနှင့် ချိတ်ဆက်မှုအခြေအနေ');title.style.cssText='margin:0;color:#ffd778';
+  const description=document.createElement('p');description.className='subtle';description.textContent=tr('Read-only checks for this Staff device. No account or ticket data is changed.','ตรวจสอบสถานะอุปกรณ์เท่านั้น ไม่เปลี่ยนแปลงบัญชีหรือข้อมูลตั๋ว','Staff စက်၏ အခြေအနေကိုသာ စစ်ဆေးပါသည်။ Account နှင့် Ticket Data များကို ပြောင်းလဲမည်မဟုတ်ပါ။');description.style.margin='5px 0 0';
+  copy.append(title,description);
+  const button=document.createElement('button');button.type='button';button.id='staffHealthRefresh';button.className='gold';button.textContent='↻ '+tr('Refresh','รีเฟรช','ပြန်စစ်ဆေးရန်');button.style.padding='9px 12px';
+  head.append(copy,button);
+  const list=document.createElement('div');list.id='staffHealthRows';list.style.cssText='display:grid;gap:9px;margin-top:14px';list.setAttribute('aria-live','polite');
+  const initial=document.createElement('p');initial.className='subtle';initial.textContent=tr('Checking this device…','กำลังตรวจสอบอุปกรณ์…','စက်ပစ္စည်းကို စစ်ဆေးနေသည်…');list.append(initial);
+  const checked=document.createElement('p');checked.id='staffHealthCheckedAt';checked.className='subtle';checked.style.margin='10px 0 0';
+  panel.append(head,list,checked);
+  alarm.insertAdjacentElement('afterend',panel);
+  button.addEventListener('click',refresh);
+  refresh();
+ }
+ function makeRow(label,value,good){
+  const color=good===true?'#65e5a2':good===false?'#ffd17b':'#b8cadd';
+  const item=document.createElement('div');
+  item.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid #ffffff18;border-radius:11px;background:#06182a';
+  const name=document.createElement('span');name.textContent=label;name.style.color='#c4d4e3';
+  const result=document.createElement('strong');result.textContent=String(value);result.style.cssText='color:'+color+';text-align:right;overflow-wrap:anywhere';
+  item.append(name,result);
+  return item;
+ }
+ async function refresh(){
+  const rows=document.getElementById('staffHealthRows');
+  const checked=document.getElementById('staffHealthCheckedAt');
+  if(!rows)return;
+  rows.replaceChildren();
+  const loading=document.createElement('p');loading.className='subtle';loading.textContent=tr('Checking this device…','กำลังตรวจสอบอุปกรณ์…','စက်ပစ္စည်းကို စစ်ဆေးနေသည်…');rows.append(loading);
+  const items=[];
+  const online=navigator.onLine;
+  items.push(makeRow(tr('Internet connection','การเชื่อมต่ออินเทอร์เน็ต','အင်တာနက်ချိတ်ဆက်မှု'),online?tr('Online','ออนไลน์','ချိတ်ဆက်ထားသည်'):tr('Offline','ออฟไลน์','အင်တာနက်မရှိပါ'),online));
+  const supported='Notification'in window&&'serviceWorker'in navigator&&'PushManager'in window;
+  items.push(makeRow(tr('Web Push support','รองรับ Web Push','Web Push ပံ့ပိုးမှု'),supported?tr('Supported','รองรับ','ပံ့ပိုးထားသည်'):tr('Not supported','ไม่รองรับ','မပံ့ပိုးပါ'),supported));
+  if('Notification'in window){
+   const permission=Notification.permission;
+   const permissionText=permission==='granted'?tr('Granted','อนุญาตแล้ว','ခွင့်ပြုထားသည်'):permission==='denied'?tr('Denied','ถูกปฏิเสธ','ငြင်းပယ်ထားသည်'):tr('Not requested','ยังไม่อนุญาต','ခွင့်ပြုချက်မတောင်းရသေးပါ');
+   items.push(makeRow(tr('Notification permission','สิทธิ์การแจ้งเตือน','Notification ခွင့်ပြုချက်'),permissionText,permission==='granted'));
+  }else items.push(makeRow(tr('Notification permission','สิทธิ์การแจ้งเตือน','Notification ခွင့်ပြုချက်'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
+  if('serviceWorker'in navigator){
+   try{
+    const registration=await navigator.serviceWorker.getRegistration('/');
+    items.push(makeRow(tr('Service Worker','Service Worker','Service Worker'),registration&&registration.active?tr('Active','ทำงานอยู่','အသုံးပြုနေသည်'):registration?tr('Registered, activating','ลงทะเบียนแล้ว กำลังเริ่มทำงาน','မှတ်ပုံတင်ပြီး စတင်နေသည်'):tr('Not registered','ยังไม่ได้ลงทะเบียน','မှတ်ပုံမတင်ရသေးပါ'),!!(registration&&registration.active)));
+    const subscription=registration&&registration.pushManager?await registration.pushManager.getSubscription():null;
+    items.push(makeRow(tr('This device Push Subscription','การสมัครรับ Push ของอุปกรณ์นี้','ဤစက်၏ Push Subscription'),subscription?tr('Registered','ลงทะเบียนแล้ว','မှတ်ပုံတင်ထားသည်'):tr('Not registered','ยังไม่ได้ลงทะเบียน','မှတ်ပုံမတင်ရသေးပါ'),!!subscription));
+   }catch(error){
+    items.push(makeRow(tr('Service Worker / Push','Service Worker / Push','Service Worker / Push'),error&&error.message||tr('Could not inspect this device','ไม่สามารถตรวจสอบอุปกรณ์ได้','စက်ပစ္စည်းကို စစ်ဆေး၍မရပါ'),false));
+   }
+  }else{
+   items.push(makeRow(tr('Service Worker','Service Worker','Service Worker'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
+   items.push(makeRow(tr('This device Push Subscription','การสมัครรับ Push ของอุปกรณ์นี้','ဤစက်၏ Push Subscription'),tr('Unavailable','ไม่พร้อมใช้งาน','အသုံးမပြုနိုင်ပါ'),false));
+  }
+  const cloudReadyState=typeof cloudReady!=='undefined'&&cloudReady;
+  const queuePending=typeof syncPending!=='undefined'&&!!syncPending;
+  const queueBusy=typeof syncBusy!=='undefined'&&!!syncBusy;
+  items.push(makeRow(tr('Cloud data layer','สถานะ Cloud Data','Cloud Data အခြေအနေ'),cloudReadyState?tr('Initialized','พร้อมใช้งาน','အသင့်ဖြစ်သည်'):tr('Not ready','ยังไม่พร้อม','အသင့်မဖြစ်သေးပါ'),!!cloudReadyState));
+  items.push(makeRow(tr('Ticket sync queue','คิวซิงก์ข้อมูลตั๋ว','Ticket Sync Queue'),queuePending||queueBusy?tr('Pending / syncing','รอ / กำลังซิงก์','စောင့်ဆိုင်း / Sync လုပ်နေသည်'):tr('Idle','ไม่มีงานค้าง','လုပ်ဆောင်စရာမရှိပါ'),!(queuePending||queueBusy)));
+  items.push(makeRow(tr('Staff settings page','หน้าตั้งค่า Staff','Staff Settings စာမျက်နှာ'),tr('Ready','พร้อมใช้งาน','အသင့်ဖြစ်သည်'),true));
+  rows.replaceChildren(...items);
+  if(checked)checked.textContent=tr('Last checked: ','ตรวจสอบล่าสุด: ','နောက်ဆုံးစစ်ဆေးချိန်: ')+new Date().toLocaleString();
+ }
+ function boot(){
+  ensurePanel();
+  const root=document.getElementById('pageContent');
+  if(root&&!observer){
+   observer=new MutationObserver(()=>{if(document.getElementById('staffAlarmSettingsSection'))ensurePanel()});
+   observer.observe(root,{childList:true,subtree:true});
+  }
+  window.addEventListener('online',refresh);
+  window.addEventListener('offline',refresh);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&document.getElementById(PANEL_ID))refresh()});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+})();</script>
+</body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
@@ -2667,20 +2864,82 @@ async function loadStaffCustomerVisits(){const host=document.getElementById('sta
 function openStaffCustomerVisitEditor(r){if(!r)return;const t=(en,th,my)=>lang==='th'?th:lang==='my'?my:en;const fmt=v=>{if(!v)return '';const d=new Date(v);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)+'T'+new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(d)};const entry=fmt(r.entry_at).split('T');const exit=r.exit_at?fmt(r.exit_at).split('T')[1]:'';const modal=document.createElement('div');modal.style.cssText='position:fixed;inset:0;z-index:10050;background:#000b;display:grid;place-items:center;padding:16px';modal.innerHTML='<section class="panel" style="width:min(100%,440px);padding:16px"><h3 style="color:var(--gold)">'+t('Edit group #','แก้ไขกลุ่ม #','အဖွဲ့ပြင်ဆင်ရန် #')+esc(r.group_number)+'</h3><form id="staffCvEditForm" style="display:grid;gap:9px"><label>'+t('People','จำนวนคน','လူဦးရေ')+'<input id="staffCvEditCount" type="number" min="1" max="1000" required value="'+Number(r.total_visitors)+'"></label><label>'+t('Visitor type','ประเภทผู้เข้าชม','ဧည့်သည်အမျိုးအစား')+'<select id="staffCvEditType"><option value="thai">Thai</option><option value="foreign">Foreign</option><option value="review">Review</option></select></label><label>'+t('Entry date','วันที่เข้า','ဝင်ရက်စွဲ')+'<input id="staffCvEditDate" type="date" required value="'+entry[0]+'"></label><label>'+t('Entry time','เวลาเข้า','ဝင်ချိန်')+'<input id="staffCvEditTime" type="time" required value="'+entry[1]+'"></label><label>'+t('Exit time (optional)','เวลาออก (ไม่บังคับ)','ထွက်ချိန် (မဖြစ်မနေမဟုတ်ပါ)')+'<input id="staffCvEditExit" type="time" value="'+exit+'"></label><div style="display:flex;gap:8px"><button type="button" class="blue" id="staffCvEditCancel">'+t('Cancel','ยกเลิก','မလုပ်တော့ပါ')+'</button><button type="submit" class="gold" id="staffCvEditSave" style="flex:1">'+t('Save changes','บันทึกการเปลี่ยนแปลง','ပြင်ဆင်ချက်သိမ်းရန်')+'</button></div><p id="staffCvEditError" class="auth-error"></p></form></section>';document.body.appendChild(modal);document.getElementById('staffCvEditType').value=r.visitor_type||'thai';document.getElementById('staffCvEditCancel').onclick=()=>modal.remove();modal.querySelector('form').onsubmit=async e=>{e.preventDefault();const count=Number(document.getElementById('staffCvEditCount').value),kind=document.getElementById('staffCvEditType').value,date=document.getElementById('staffCvEditDate').value,time=document.getElementById('staffCvEditTime').value,exitTime=document.getElementById('staffCvEditExit').value,err=document.getElementById('staffCvEditError'),btn=document.getElementById('staffCvEditSave');if(!Number.isInteger(count)||count<1||count>1000){err.textContent=t('Enter 1–1000 people.','กรุณาระบุจำนวน 1–1,000 คน','လူဦးရေ ၁ မှ ၁၀၀၀ ထည့်ပါ။');return}const entryAt=new Date(date+'T'+time+':00+07:00');const exitAt=exitTime?new Date(date+'T'+exitTime+':00+07:00'):null;if(Number.isNaN(entryAt.getTime())||(exitAt&&Number.isNaN(exitAt.getTime()))||(exitAt&&exitAt<entryAt)){err.textContent=t('Check entry and exit times.','กรุณาตรวจสอบเวลาเข้าและออก','ဝင်ချိန်နှင့်ထွက်ချိန်ကို စစ်ဆေးပါ။');return}btn.disabled=true;try{const patch={total_visitors:count,visitor_type:kind,thai_visitors:kind==='thai'?count:0,foreign_visitors:kind==='foreign'?count:0,review_visitors:kind==='review'?count:0,entry_at:entryAt.toISOString(),exit_at:exitAt?exitAt.toISOString():null,status:exitAt?'completed':'pending'};const {error}=await sb.from('customer_visit_logs').update(patch).eq('id',r.id);if(error)throw error;modal.remove();await loadStaffCustomerVisits()}catch(error){err.textContent=error.message||String(error);btn.disabled=false}}}
 let staffCustomerVisitRows=[];
 async function staffCustomerVisitExport(share){const date=document.getElementById('staffCvFilter')?.value||'';const rows=staffCustomerVisitRows||[];const lines=[['Group','Type','People','Entry','Exit','Duration'],...rows.map(r=>[r.group_number,r.visitor_type,r.total_visitors,r.entry_at,r.exit_at,r.duration_minutes])];const csv='\uFEFF'+lines.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const file=new File([blob],'customer-visits-'+date+'.csv',{type:'text/csv'});if(share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'Customer Visits Report'});return}catch(e){if(e.name==='AbortError')return}}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
-function render(){if(STAFF_MODE && selectedStaffDepartment!=='all' && !['sale','entry','playing','event','train','payroll','settings','customer-visits'].includes(page))page=selectedStaffDepartment;if(STAFF_MODE&&selectedStaffDepartment==='all'&&!['sale','entry','playing','event','train','all','payroll','settings','customer-visits'].includes(page))page='all';if(page==='customer-visits'&&!['entry','all'].includes(selectedStaffDepartment))page=selectedStaffDepartment;navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
+function render(){if(STAFF_MODE && selectedStaffDepartment!=='all' && !['dashboard','sale','entry','playing','event','train','payroll','settings','customer-visits'].includes(page))page=selectedStaffDepartment;if(STAFF_MODE&&selectedStaffDepartment==='all'&&!['dashboard','sale','entry','playing','event','train','all','payroll','settings','customer-visits'].includes(page))page='all';if(page==='customer-visits'&&!['entry','all'].includes(selectedStaffDepartment))page=selectedStaffDepartment;navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
 let visible=dep()?departmentTickets():(STAFF_MODE&&selectedStaffDepartment!=='all'?tickets.filter(t=>t.department===selectedStaffDepartment):tickets);
 let total=visible.reduce((a,t)=>a+t.quantity,0),value=visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
-if(page==='payroll')renderPayroll();else if(page==='train')renderTrain();else if(page==='customer-visits')renderStaffCustomerVisits();else if(dep())renderDept(visible);else if(page==='dashboard'&&!STAFF_MODE)renderDashboard();else if(page==='monthly'&&!STAFF_MODE)renderMonthly();else if(page==='settings'&&STAFF_MODE)renderStaffSettings();else if(page==='settings'&&!STAFF_MODE)renderSettings();else if((page==='owner'||page==='staff')&&!STAFF_MODE)renderDatabase();else if(STAFF_MODE)renderDept(visible);else renderDashboard();if(currentUser&&typeof renderStaffAlarmSetupBanner==='function'){try{renderStaffAlarmSetupBanner()}catch(alarmUiError){console.warn('Staff alarm setup UI failed without blocking Staff login or ticket rendering:',alarmUiError)}}}
+if(page==='dashboard'&&STAFF_MODE)renderStaffDashboard(visible);else if(page==='payroll')renderPayroll();else if(page==='train')renderTrain();else if(page==='customer-visits')renderStaffCustomerVisits();else if(dep())renderDept(visible);else if(page==='dashboard'&&!STAFF_MODE)renderDashboard();else if(page==='monthly'&&!STAFF_MODE)renderMonthly();else if(page==='settings'&&STAFF_MODE)renderStaffSettings();else if(page==='settings'&&!STAFF_MODE)renderSettings();else if((page==='owner'||page==='staff')&&!STAFF_MODE)renderDatabase();else if(STAFF_MODE)renderDept(visible);else renderDashboard();if(currentUser&&typeof renderStaffAlarmSetupBanner==='function'){try{renderStaffAlarmSetupBanner()}catch(alarmUiError){console.warn('Staff alarm setup UI failed without blocking Staff login or ticket rendering:',alarmUiError)}}}
+function renderStaffDashboard(visible){
+ const root=document.getElementById('pageContent');
+ const scopedBase=Array.isArray(visible)?visible:[];
+ const scoped=selectedStaffDepartment==='event'?scopedBase.filter(t=>!!selectedStaffEventLocationId&&String(t.location||'')==='event:'+selectedStaffEventLocationId):scopedBase;
+ const quantity=scoped.reduce((sum,t)=>sum+Number(t.quantity||0),0);
+ const value=scoped.reduce((sum,t)=>sum+Number(t.quantity||0)*Number(t.price||0),0);
+ const departmentList=selectedStaffDepartment==='all'?DEPTS:DEPTS.filter(d=>d.id===selectedStaffDepartment);
+ const label=(en,th,my)=>lang==='my'?my:lang==='th'?th:en;
+ const syncBusyNow=typeof syncBusy!=='undefined'&&!!syncBusy;
+ const syncPendingNow=typeof syncPending!=='undefined'&&!!syncPending;
+ const cloudLabel=cloudReady?label('Connected','เชื่อมต่อแล้ว','ချိတ်ဆက်ထားသည်'):label('Connecting','กำลังเชื่อมต่อ','ချိတ်ဆက်နေသည်');
+ const syncLabel=syncBusyNow||syncPendingNow?label('Syncing','กำลังซิงก์','Sync လုပ်နေသည်'):cloudReady?label('Up to date','อัปเดตแล้ว','နောက်ဆုံးအခြေအနေဖြစ်သည်'):label('Waiting','รอดำเนินการ','စောင့်ဆိုင်းနေသည်');
+ const deptCards=departmentList.map(d=>{
+  const rows=scoped.filter(t=>t.department===d.id);
+  const count=rows.reduce((sum,t)=>sum+Number(t.quantity||0),0);
+  const amount=rows.reduce((sum,t)=>sum+Number(t.quantity||0)*Number(t.price||0),0);
+  return '<button type="button" class="panel" data-staff-dash-page="'+d.id+'" style="text-align:left;min-height:118px;border:1px solid #d8b65f66;background:linear-gradient(145deg,#123651,#081b30);color:#f7f9fc"><div style="font-size:25px">'+d.icon+'</div><b style="display:block;margin:7px 0;color:#ffe2a0">'+(d[lang]||d.en)+'</b><div class="subtle">'+rows.length+' '+label('ticket types','ประเภทตั๋ว','လက်မှတ်အမျိုးအစား')+'</div><strong style="display:block;margin-top:7px;color:#ffe08a;font-size:1.08rem">'+count.toLocaleString()+' · '+money(amount)+'</strong></button>';
+ }).join('');
+ const assignedName=selectedStaffDepartment==='all'?label('All Departments','ทุกแผนก','ဌာနအားလုံး'):(DEPTS.find(d=>d.id===selectedStaffDepartment)?.[lang]||DEPTS.find(d=>d.id===selectedStaffDepartment)?.en||'Staff');
+ root.innerHTML='<div class="section-title"><div><h2 style="color:#ffe2a0">'+label('Staff Dashboard','แดชบอร์ดพนักงาน','Staff Dashboard')+'</h2><span class="subtle">'+label('Your assigned workspace','พื้นที่ทำงานของคุณ','သတ်မှတ်ထားသော လုပ်ငန်းခွင်')+' · '+assignedName+'</span></div><span class="subtle">'+new Date().toLocaleDateString()+'</span></div>'+
+ '<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:10px">'+
+ '<div class="panel" style="border:1px solid #d8b65f66;background:linear-gradient(145deg,#153b59,#091c31)"><div class="subtle">'+label('Ticket types','ประเภทตั๋ว','လက်မှတ်အမျိုးအစား')+'</div><strong style="display:block;color:#ffe08a;font-size:1.55rem;margin-top:7px">'+scoped.length.toLocaleString()+'</strong></div>'+
+ '<div class="panel" style="border:1px solid #d8b65f66;background:linear-gradient(145deg,#153b59,#091c31)"><div class="subtle">'+label('Recorded quantity','จำนวนที่บันทึก','မှတ်တမ်းတင်ထားသော အရေအတွက်')+'</div><strong style="display:block;color:#ffe08a;font-size:1.55rem;margin-top:7px">'+quantity.toLocaleString()+'</strong></div>'+
+ '<div class="panel" style="border:1px solid #d8b65f66;background:linear-gradient(145deg,#153b59,#091c31)"><div class="subtle">'+label('Recorded value','มูลค่าที่บันทึก','မှတ်တမ်းတန်ဖိုး')+'</div><strong style="display:block;color:#ffe08a;font-size:1.4rem;margin-top:7px">'+money(value)+'</strong></div></div>'+
+ '<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin-top:12px">'+
+ '<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span>☁️ '+label('Cloud data','ข้อมูล Cloud','Cloud Data')+'</span><strong style="color:'+(cloudReady?'#65e5a2':'#ffd17b')+'">'+cloudLabel+'</strong></div>'+
+ '<div class="panel" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span>🔄 '+label('Ticket sync','ซิงก์ตั๋ว','Ticket Sync')+'</span><strong style="color:'+(syncBusyNow||syncPendingNow?'#ffd17b':'#65e5a2')+'">'+syncLabel+'</strong></div></div>'+
+ '<div class="section-title" style="margin-top:18px"><h3>'+label('Department overview','ภาพรวมแผนก','ဌာနအလိုက် အနှစ်ချုပ်')+'</h3></div>'+
+ '<div class="cards" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px">'+deptCards+'</div>'+
+ '<div class="panel" style="margin-top:14px"><h3 style="color:#ffe2a0">'+label('Quick access','ทางลัด','အမြန်ဝင်ရောက်ရန်')+'</h3><div class="actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">'+
+ '<button type="button" class="gold" id="staffDashDepartment">🎟️ '+label('Open my department','เปิดแผนกของฉัน','မိမိဌာနကိုဖွင့်ရန်')+'</button>'+
+ '<button type="button" id="staffDashSettings">⚙ '+label('Settings','ตั้งค่า','ဆက်တင်များ')+'</button>'+
+ (selectedStaffDepartment==='entry'||selectedStaffDepartment==='all'?'<button type="button" id="staffDashVisits">👥 '+label('Customer Visits','ผู้เข้าชม','ဧည့်သည်မှတ်တမ်း')+'</button>':'')+
+ (selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'?'<button type="button" id="staffDashTrain">🚆 '+label('Garden Train','Garden Train','Garden Train')+'</button>':'')+
+ '<button type="button" id="staffDashPayroll">฿ '+label('My Payroll','เงินเดือนของฉัน','ကျွန်ုပ်၏လစာ')+'</button></div>'+
+ '<p class="subtle" style="margin:10px 0 0">'+label('Figures shown are the current ticket records available to your account, not a separate cash-register settlement.','ตัวเลขเป็นข้อมูลตั๋วที่บัญชีของคุณเข้าถึงได้ ไม่ใช่ยอดปิดเครื่องคิดเงิน','ပြသထားသော ကိန်းဂဏန်းများသည် Account တွင်ရှိသော Ticket မှတ်တမ်းများဖြစ်ပြီး Cash Register စာရင်းပိတ်ยอดမဟုတ်ပါ။')+'</p></div>';
+ root.querySelectorAll('[data-staff-dash-page]').forEach(button=>button.addEventListener('click',()=>go(button.dataset.staffDashPage)));
+ const assignedButton=document.getElementById('staffDashDepartment');
+ if(assignedButton)assignedButton.onclick=()=>go(selectedStaffDepartment==='all'?'sale':selectedStaffDepartment);
+ const settingsButton=document.getElementById('staffDashSettings');if(settingsButton)settingsButton.onclick=()=>go('settings');
+ const visitsButton=document.getElementById('staffDashVisits');if(visitsButton)visitsButton.onclick=()=>go('customer-visits');
+ const trainButton=document.getElementById('staffDashTrain');if(trainButton)trainButton.onclick=()=>go('train');
+ const payrollButton=document.getElementById('staffDashPayroll');if(payrollButton)payrollButton.onclick=()=>go('payroll');
+}
 function renderDashboard(){let all=tickets.reduce((s,t)=>s+t.quantity,0),val=tickets.reduce((s,t)=>s+t.quantity*(t.price||0),0);document.getElementById('pageContent').innerHTML='<div class="section-title"><h2>Ticket Control Overview</h2><span class="subtle">New workspace</span></div><div class="cards">'+DEPTS.map(d=>{let a=tickets.filter(t=>t.department===d.id),q=a.reduce((s,t)=>s+t.quantity,0),v=a.reduce((s,t)=>s+t.quantity*(t.price||0),0);return '<button class="panel" data-page="'+d.id+'" style="text-align:left;min-height:130px"><div style="font-size:28px">'+d.icon+'</div><b>'+(d[lang]||d.en)+'</b><div class="subtle">'+a.length+' '+tr('types')+'</div><strong style="color:var(--gold);font-size:1.25rem">'+q+' · '+money(v)+'</strong></button>'}).join('')+'</div><div class="panel" style="margin-top:16px"><h3>Quick actions</h3><div class="actions"><button class="gold" id="dashAdd">＋ Add ticket</button><button id="dashReport">'+tr('save')+'</button></div><p class="subtle">'+tr('cloudMsg')+'</p></div>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('dashAdd').onclick=()=>{page='sale';openTicket()};document.getElementById('dashReport').onclick=saveReport}
 
 async function loadStaffEventLocations(){try{const {data,error}=await sb.from('event_location_sessions').select('id,location_name,staff_id').eq('is_archived',false).order('created_at',{ascending:false});if(error)throw error;staffEventLocations=data||[];const select=document.getElementById('staffEventLocationSelect');if(select){const current=selectedStaffEventLocationId;select.innerHTML='<option value="">Select your Event Location</option>'+staffEventLocations.map(x=>'<option value="'+escapeHtml(x.id)+'" '+(String(x.id)===String(current)?'selected':'')+'>'+escapeHtml(x.location_name)+'</option>').join('');if(current&&!staffEventLocations.some(x=>String(x.id)===String(current))){selectedStaffEventLocationId='';localStorage.removeItem('tctl-staff-event-location');select.value=''}}}catch(error){const status=document.getElementById('staffEventLocationStatus');if(status)status.textContent='Could not load Event Locations: '+(error.message||error)}}
 function renderDept(list){let d=dep();const eventLocationPanel=page==='event'?'<section class="panel" style="margin-bottom:12px;padding:14px;border:1px solid rgba(232,185,79,.45)"><b style="color:var(--gold)">📍 Event Location</b><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><input id="staffNewEventLocation" maxlength="160" placeholder="Enter Event Location name" style="flex:1;min-width:170px"><button type="button" class="gold" id="staffCreateEventLocation">＋ Save Location</button></div><div style="margin-top:9px"><select id="staffEventLocationSelect" style="width:100%"><option value="">Select your Event Location</option>'+staffEventLocations.map(x=>'<option value="'+escapeHtml(x.id)+'" '+(String(x.id)===String(selectedStaffEventLocationId)?'selected':'')+'>'+escapeHtml(x.location_name)+'</option>').join('')+'</select></div><p id="staffEventLocationStatus" class="subtle" style="margin:8px 0 0">Save a location name before adding tickets. Owner will see this event separately.</p></section>':'';document.getElementById('pageContent').innerHTML=eventLocationPanel+'<div class="actions"><button type="button" class="gold" id="addBtn">＋ Add</button><button id="saveBtn" class="report-icon-btn save-image-btn" aria-label="Save report as image" title="Save report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><path d="M4 17l5-5 3.5 3 2.5-2.5L20 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="blue report-icon-btn share-image-btn" id="shareBtn" aria-label="Share report as image" title="Share report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+(page==='sale'?'<button class="blue" type="button" id="ticketRangeCalcBtn">🧮 Calculator</button>':'')+'</div>'+(page==='sale'?'<div class="modal" id="calcModal"><div class="modalbox" style="width:min(560px,100%);padding:16px"><div class="section-title"><h2 style="margin:0">🧮 Calculator</h2><button type="button" id="calcCloseBtn" aria-label="Close calculator" style="padding:8px 12px">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0"><button type="button" id="simpleTab" class="gold">▦ Simple</button><button type="button" id="ticketTab" class="blue">🎟 Ticket Number</button></div><section id="simpleCalcPane"><div style="background:#03172b;border:1px solid #315573;border-radius:14px;padding:14px;text-align:right;margin-bottom:10px"><div id="simpleCalcExpression" style="color:var(--muted);min-height:22px;overflow-wrap:anywhere"></div><div id="simpleCalcDisplay" style="font-size:2rem;font-weight:800;color:var(--gold);overflow-wrap:anywhere">0</div><div style="font-size:.78rem;color:var(--muted)">Memory: <b id="simpleCalcMemory">0</b></div></div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:8px"><button type="button" data-memory="clear">MC</button><button type="button" data-memory="recall">MR</button><button type="button" data-memory="add">M+</button><button type="button" data-memory="subtract">M−</button></div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px"><button type="button" data-calc-key="C">C</button><button type="button" data-calc-key="sign">±</button><button type="button" data-calc-key="%">%</button><button type="button" data-calc-key="/">÷</button><button type="button" data-calc-key="7">7</button><button type="button" data-calc-key="8">8</button><button type="button" data-calc-key="9">9</button><button type="button" data-calc-key="*">×</button><button type="button" data-calc-key="4">4</button><button type="button" data-calc-key="5">5</button><button type="button" data-calc-key="6">6</button><button type="button" data-calc-key="-">−</button><button type="button" data-calc-key="1">1</button><button type="button" data-calc-key="2">2</button><button type="button" data-calc-key="3">3</button><button type="button" data-calc-key="+">+</button><button type="button" data-calc-key="0" style="grid-column:span 2">0</button><button type="button" data-calc-key=".">.</button><button type="button" class="gold" data-calc-key="=">=</button></div></section><section id="ticketCalcPane" hidden><h3 style="margin:8px 0 14px">🎟️ Ticket Number Calculator</h3><label>Start ticket number<input id="ticketRangeStart" type="text" inputmode="numeric" autocomplete="off" placeholder="" style="width:100%;margin-top:5px"></label><label>End ticket number<input id="ticketRangeEnd" type="text" inputmode="numeric" autocomplete="off" placeholder="" style="width:100%;margin-top:5px"></label><button class="gold" type="button" id="ticketRangeCountBtn" style="margin-top:12px;width:100%">Calculate tickets</button><p id="ticketRangeResult" role="status" style="margin:10px 0 0;font-weight:700;color:var(--gold);font-size:1.05rem"></p><p class="subtle" style="margin-bottom:0">Count includes both start and end numbers.</p></section></div></div>':'<input class="search" id="search" placeholder="'+tr('search')+'">')+'<div class="cards" id="ticketCards"></div>';if(page==='event'){loadStaffEventLocations();const createBtn=document.getElementById('staffCreateEventLocation');if(createBtn)createBtn.onclick=async()=>{const input=document.getElementById('staffNewEventLocation'),status=document.getElementById('staffEventLocationStatus'),name=input.value.trim();if(!name){status.textContent='Enter an Event Location name.';return}try{createBtn.disabled=true;const {data,error}=await sb.from('event_location_sessions').insert({location_name:name,created_by:currentUser.id,staff_id:currentStaffId||null}).select('id,location_name,staff_id').single();if(error)throw error;staffEventLocations.unshift(data);selectedStaffEventLocationId=data.id;localStorage.setItem('tctl-staff-event-location',data.id);render();}catch(error){status.textContent='Could not save location: '+(error.message||error)}finally{createBtn.disabled=false}};const locationSelect=document.getElementById('staffEventLocationSelect');if(locationSelect)locationSelect.onchange=()=>{selectedStaffEventLocationId=locationSelect.value;localStorage.setItem('tctl-staff-event-location',selectedStaffEventLocationId);render()}}document.getElementById('addBtn').onclick=e=>{e.preventDefault();e.stopPropagation();try{openTicket()}catch(error){console.error('Add Ticket form error:',error);alert('Unable to open Add Ticket form. Please reload and try again.')}};document.getElementById('saveBtn').onclick=saveReport;document.getElementById('shareBtn').onclick=shareReport;const search=document.getElementById('search');if(search)search.oninput=e=>cards(list.filter(t=>t.name.toLowerCase().includes(e.target.value.toLowerCase())));const calcBtn=document.getElementById('ticketRangeCalcBtn'),calcModal=document.getElementById('calcModal'),simplePane=document.getElementById('simpleCalcPane'),ticketPane=document.getElementById('ticketCalcPane'),simpleTab=document.getElementById('simpleTab'),ticketTab=document.getElementById('ticketTab');let calcValue='0',calcStored=null,calcOperator=null,calcFresh=false,calcMemory=0,calcExpression='';const calcDisplay=document.getElementById('simpleCalcDisplay'),calcExpr=document.getElementById('simpleCalcExpression'),calcMem=document.getElementById('simpleCalcMemory');function paintCalc(){if(calcDisplay)calcDisplay.textContent=calcValue;if(calcExpr)calcExpr.textContent=calcExpression;if(calcMem)calcMem.textContent=String(calcMemory)}function chooseCalcTab(which){const simple=which==='simple';simplePane.hidden=!simple;ticketPane.hidden=simple;simpleTab.classList.toggle('gold',simple);simpleTab.classList.toggle('blue',!simple);ticketTab.classList.toggle('gold',!simple);ticketTab.classList.toggle('blue',simple);if(!simple)document.getElementById('ticketRangeStart').focus()}if(calcBtn)calcBtn.onclick=()=>{calcModal.classList.add('open');chooseCalcTab('ticket');paintCalc()};const calcClose=document.getElementById('calcCloseBtn');if(calcClose)calcClose.onclick=()=>calcModal.classList.remove('open');if(calcModal)calcModal.addEventListener('click',e=>{if(e.target===calcModal)calcModal.classList.remove('open')});if(simpleTab)simpleTab.onclick=()=>chooseCalcTab('simple');if(ticketTab)ticketTab.onclick=()=>chooseCalcTab('ticket');document.querySelectorAll('[data-calc-key]').forEach(btn=>btn.onclick=()=>{const k=btn.dataset.calcKey;if(k.length===1&&k>='0'&&k<='9'){calcValue=calcFresh||calcValue==='0'?k:calcValue+k;calcFresh=false}else if(k==='.'){if(calcFresh){calcValue='0.';calcFresh=false}else if(!calcValue.includes('.'))calcValue+='.'}else if(k==='C'){calcValue='0';calcStored=null;calcOperator=null;calcExpression='';calcFresh=false}else if(k==='sign'){calcValue=String(-Number(calcValue))}else if(k==='%'){calcValue=String(Number(calcValue)/100)}else if(k==='='){if(calcOperator!==null&&calcStored!==null){const a=calcStored,b=Number(calcValue);let out=calcOperator==='+'?a+b:calcOperator==='-'?a-b:calcOperator==='*'?a*b:b===0?NaN:a/b;calcExpression=String(a)+' '+calcOperator+' '+String(b)+' =';calcValue=Number.isFinite(out)?String(Number(out.toPrecision(12))):'Error';calcStored=null;calcOperator=null;calcFresh=true}}else{calcStored=Number(calcValue);calcOperator=k;calcExpression=calcValue+' '+(k==='*'?'×':k==='/'?'÷':k);calcFresh=true}paintCalc()});document.querySelectorAll('[data-memory]').forEach(btn=>btn.onclick=()=>{const m=btn.dataset.memory;if(m==='clear')calcMemory=0;else if(m==='recall'){calcValue=String(calcMemory);calcFresh=true}else if(m==='add')calcMemory+=Number(calcValue)||0;else if(m==='subtract')calcMemory-=Number(calcValue)||0;paintCalc()});['ticketRangeStart','ticketRangeEnd'].forEach(id=>{const input=document.getElementById(id);if(input)input.addEventListener('input',()=>{const result=document.getElementById('ticketRangeResult');if(result)result.textContent='';});});const countBtn=document.getElementById('ticketRangeCountBtn');if(countBtn)countBtn.onclick=()=>{const startText=document.getElementById('ticketRangeStart').value.trim(),endText=document.getElementById('ticketRangeEnd').value.trim(),result=document.getElementById('ticketRangeResult');if(!/^\d+$/.test(startText)||!/^\d+$/.test(endText)){result.textContent='Enter valid ticket numbers using digits only.';return}const start=Number(startText),end=Number(endText);if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||end<start){result.textContent='End ticket number must be equal to or greater than the start number.';return}result.textContent='Total tickets: '+(end-start+1).toLocaleString()+' (inclusive)';};cards(list)}
 function openTicketImagePreview(src,title){let modal=document.getElementById('ticketImageLightbox');if(!modal){modal=document.createElement('div');modal.id='ticketImageLightbox';modal.className='ticket-image-lightbox';modal.innerHTML='<div class="preview-title"></div><button type="button" class="preview-close" aria-label="Close image preview">×</button><img alt="">';document.body.appendChild(modal);modal.addEventListener('click',e=>{if(e.target===modal||e.target.closest('.preview-close'))modal.classList.remove('open')});document.addEventListener('keydown',e=>{if(e.key==='Escape')modal.classList.remove('open')})}modal.querySelector('.preview-title').textContent=title||'Ticket image';const image=modal.querySelector('img');image.src=src;image.alt=title||'Ticket image';modal.classList.add('open')}
-function cards(list){let root=document.getElementById('ticketCards');if(!root)return;if(!list.length){root.innerHTML='<div class="empty" style="grid-column:1/-1">'+tr('none')+'<p>'+tr('noHint')+'</p></div>';return}root.innerHTML=list.map(t=>'<article class="panel ticket"><div class="'+(t.image?'':'placeholder')+'">'+(t.image?'<img class="ticket-preview-image" src="'+t.image+'" alt="'+esc(t.name)+'" role="button" tabindex="0" aria-label="View larger image: '+esc(t.name)+'">':DEPTS.find(d=>d.id===t.department).icon)+'</div><div class="ticket-body"><h3>'+esc(t.name)+'</h3><div class="price">'+(t.price===null?'Price not set':money(t.price))+'</div>'+(t.location?'<div class="subtle">📍 '+esc(t.location)+'</div>':'')+'<div class="soldrow"><b class="ticket-quantity-highlight"><span>'+tr('total')+'</span><strong>'+t.quantity.toLocaleString()+'</strong><small>tickets</small></b></div><input class="qty" type="number" min="0" step="1" inputmode="numeric" placeholder="'+tr('addQty').replace('＋ ','')+'" data-qty="'+t.id+'" aria-label="'+tr('addQty')+'"><div class="ticket-actions"><button class="blue clear-main" data-clear="'+t.id+'" >↻ '+tr('clear')+'</button><button data-more="'+t.id+'">'+tr('more')+'</button></div><div class="morebox" id="more-'+t.id+'"><button class="blue edit" data-edit="'+t.id+'">✎ '+tr('edit')+'</button><button class="red delete" data-delete="'+t.id+'">▤ '+tr('del')+'</button></div></div></article>').join('');
+const STAFF_POS_DRAFT_PREFIX='tctl-staff-pos-draft-v1:';
+function staffPosDraftKey(){
+ const userKey=currentUser?.id||'staff-session';
+ const deptKey=selectedStaffDepartment||page||'sale';
+ const eventKey=selectedStaffDepartment==='event'?(selectedStaffEventLocationId||'unselected'):'none';
+ return STAFF_POS_DRAFT_PREFIX+[userKey,deptKey,eventKey].join(':');
+}
+function readStaffPosDraft(){
+ try{const value=JSON.parse(localStorage.getItem(staffPosDraftKey())||'{}');return value&&typeof value==='object'&&!Array.isArray(value)?value:{}}catch(error){return {}}
+}
+function writeStaffPosDraft(ticketId,value){
+ try{
+  const draft=readStaffPosDraft();
+  if(String(value??'').trim())draft[String(ticketId)]=String(value);else delete draft[String(ticketId)];
+  if(Object.keys(draft).length)localStorage.setItem(staffPosDraftKey(),JSON.stringify(draft));
+  else localStorage.removeItem(staffPosDraftKey());
+ }catch(error){console.warn('Staff POS draft could not be saved on this device:',error)}
+}
+function cards(list){let root=document.getElementById('ticketCards');if(!root)return;const posDraft=readStaffPosDraft(),hasPosDraft=Object.keys(posDraft).length>0;if(!list.length){root.innerHTML=(hasPosDraft?'<div class="panel" role="status" style="grid-column:1/-1;border:1px solid #d8b65f88;color:#ffe2a0">📝 '+(lang==='my'?'မပြီးသေးသော အရေအတွက်များကို ဤစက်တွင် သိမ်းထားသည်။ Ticket အကွက်တွင် ပြန်ဖြည့်ထားပါမည်။':lang==='th'?'บันทึกจำนวนที่ยังไม่ยืนยันไว้ในอุปกรณ์นี้แล้ว':'Unsubmitted quantities are saved on this device and will be restored.')+'</div>':'')+'<div class="empty" style="grid-column:1/-1">'+tr('none')+'<p>'+tr('noHint')+'</p></div>';return}root.innerHTML=(hasPosDraft?'<div class="panel" role="status" style="grid-column:1/-1;border:1px solid #d8b65f88;color:#ffe2a0">📝 '+(lang==='my'?'မပြီးသေးသော အရေအတွက်များကို ဤစက်တွင် သိမ်းထားသည်။ အကွက်မှ ထွက်လိုက်လျှင် Ticket စုစုပေါင်းထဲ ထည့်သွင်းပါမည်။':lang==='th'?'บันทึกจำนวนที่ยังไม่ยืนยันไว้แล้ว เมื่อออกจากช่องจำนวนจะเพิ่มเข้ายอดตั๋ว':'Draft quantities restored. Leaving a quantity field confirms it into the ticket total.')+'</div>':'')+list.map(t=>'<article class="panel ticket"><div class="'+(t.image?'':'placeholder')+'">'+(t.image?'<img class="ticket-preview-image" src="'+t.image+'" alt="'+esc(t.name)+'" role="button" tabindex="0" aria-label="View larger image: '+esc(t.name)+'">':DEPTS.find(d=>d.id===t.department).icon)+'</div><div class="ticket-body"><h3>'+esc(t.name)+'</h3><div class="price">'+(t.price===null?'Price not set':money(t.price))+'</div>'+(t.location?'<div class="subtle">📍 '+esc(t.location)+'</div>':'')+'<div class="soldrow"><b class="ticket-quantity-highlight"><span>'+tr('total')+'</span><strong>'+t.quantity.toLocaleString()+'</strong><small>tickets</small></b></div><input class="qty" type="number" min="0" step="1" inputmode="numeric" placeholder="'+tr('addQty').replace('＋ ','')+'" data-qty="'+t.id+'" aria-label="'+tr('addQty')+'"><div class="ticket-actions"><button class="blue clear-main" data-clear="'+t.id+'" >↻ '+tr('clear')+'</button><button data-more="'+t.id+'">'+tr('more')+'</button></div><div class="morebox" id="more-'+t.id+'"><button class="blue edit" data-edit="'+t.id+'">✎ '+tr('edit')+'</button><button class="red delete" data-delete="'+t.id+'">▤ '+tr('del')+'</button></div></div></article>').join('');
 root.querySelectorAll('.ticket-preview-image').forEach(img=>{const open=()=>openTicketImagePreview(img.src,img.alt);img.addEventListener('click',open);img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}})});
-root.querySelectorAll('[data-qty]').forEach(inp=>{inp.value='';inp.addEventListener('focus',()=>{lastInput[inp.dataset.qty]=inp.value});inp.addEventListener('blur',()=>{let n=Math.floor(Number(inp.value));if(inp.value.trim()!==''&&Number.isFinite(n)&&n>0){let t=tickets.find(x=>x.id===inp.dataset.qty);if(t){t.quantity+=n;t.updatedAt=new Date().toISOString();save();render()}}});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur()}})});
+root.querySelectorAll('[data-qty]').forEach(inp=>{inp.value=String(posDraft[inp.dataset.qty]??'');inp.addEventListener('focus',()=>{lastInput[inp.dataset.qty]=inp.value});inp.addEventListener('input',()=>writeStaffPosDraft(inp.dataset.qty,inp.value));inp.addEventListener('blur',()=>{const raw=inp.value.trim(),n=Math.floor(Number(raw));if(raw!==''&&Number.isFinite(n)&&n>0){let t=tickets.find(x=>x.id===inp.dataset.qty);if(t){writeStaffPosDraft(inp.dataset.qty,'');t.quantity+=n;t.updatedAt=new Date().toISOString();save();render()}}else if(raw===''||n===0){writeStaffPosDraft(inp.dataset.qty,'')}});inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur()}})});
 root.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openTicket(b.dataset.edit));root.querySelectorAll('[data-more]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.morebox.open').forEach(x=>{if(x.id!=='more-'+b.dataset.more)x.classList.remove('open')});document.getElementById('more-'+b.dataset.more).classList.toggle('open')});root.querySelectorAll('[data-clear]').forEach(b=>b.onclick=()=>{let t=tickets.find(x=>x.id===b.dataset.clear);if(t&&confirm('Clear quantity for '+t.name+'?')){t.quantity=0;t.updatedAt=new Date().toISOString();save();render()}});root.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{let t=tickets.find(x=>x.id===b.dataset.delete);if(t&&confirm('Delete '+t.name+'?')){tickets=tickets.filter(x=>x.id!==t.id);if(currentUser&&cloudReady){sb.from('tickets').delete().eq('id',t.id).then(({error})=>{if(error)showCloudError(error.message)});if(t.imagePath)sb.storage.from('ticket-images').remove([t.imagePath])}save();render()}})}
 function openTicket(id){let t=tickets.find(x=>x.id===id);document.getElementById('ticketForm').reset();if(STAFF_MODE&&selectedStaffDepartment!=='all'&&!t)page=selectedStaffDepartment;document.getElementById('editId').value=id||'';document.getElementById('ticketInitial').value=t?t.quantity:0;document.getElementById('ticketName').value=t?t.name:'';document.getElementById('ticketPrice').value=t&&t.price!==null?t.price:'';document.getElementById('eventLocation').value=t&&t.location||'';document.getElementById('ticketDepartment').value=t?t.department:(selectedStaffDepartment==='all'?'sale':selectedStaffDepartment);document.getElementById('ticketDepartmentLabel').classList.toggle('hidden',!(STAFF_MODE&&selectedStaffDepartment==='all'));document.getElementById('ticketDepartment').classList.toggle('hidden',!(STAFF_MODE&&selectedStaffDepartment==='all'));document.getElementById('modalTitle').textContent=t?tr('editTitle'):tr('newTitle');const eventDeptForForm=(t&&t.department)||((STAFF_MODE&&selectedStaffDepartment==='all')?document.getElementById('ticketDepartment').value:(STAFF_MODE?selectedStaffDepartment:page));const showEventLocation=eventDeptForForm==='event';document.getElementById('eventLocationLabel').classList.toggle('hidden',!showEventLocation);document.getElementById('eventLocation').classList.toggle('hidden',!showEventLocation);document.getElementById('eventLocation').placeholder='Enter event location';document.getElementById('ticketModal').classList.add('open')}
 const eventDepartmentSelect=document.getElementById('ticketDepartment');if(eventDepartmentSelect)eventDepartmentSelect.addEventListener('change',()=>{const show=eventDepartmentSelect.value==='event';document.getElementById('eventLocationLabel').classList.toggle('hidden',!show);document.getElementById('eventLocation').classList.toggle('hidden',!show)});document.getElementById('cancelModal').onclick=()=>document.getElementById('ticketModal').classList.remove('open');async function compressTicketImage(inputFile){
@@ -3347,4 +3606,5 @@ installUILanguageObserver();applyUILanguage();
  if(window.speechSynthesis)window.speechSynthesis.onvoiceschanged=()=>{refreshThaiVoiceOptions();bindVoiceUi()};
 })();
 </script>
+<script src="./ui-mode.js" defer></script>
 </body></html>
