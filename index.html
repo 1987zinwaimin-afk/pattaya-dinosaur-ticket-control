@@ -3902,6 +3902,20 @@ async function sendOwnerEmergencyAlarm(button){
  }catch(e){alert('Could not send emergency alarm: '+(e.message||e))}
  finally{if(btn){btn.disabled=false;btn.textContent='🚨';}}
 }
+function renderSettings(){
+ const root=document.getElementById('pageContent');
+ if(!root)return;
+ root.dataset.uiPage='settings';
+ const themeOptions=[['dark','🌙 Luxury Navy Gold'],['light','☀️ Premium Light']];
+ root.innerHTML='<section class="panel"><h2>⚙️ '+(lang==='th'?'ตั้งค่า':'Settings')+'</h2><p class="subtle">'+(lang==='my'?'အကောင့်နှင့် မျက်နှာပြင်ဆက်တင်များ':'Account and display preferences')+'</p>'+
+ '<div class="summary-row"><span>Language / ภาษา / ဘာသာစကား</span><select id="ownerSettingsLanguage" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div>'+
+ '<div class="summary-row"><span>Display theme</span><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div>'+
+ '<p class="subtle">Phone UI and Laptop UI preferences are available below. They are saved separately for this Owner account on this device.</p></section>';
+ const language=document.getElementById('ownerSettingsLanguage');
+ const themeSelect=document.getElementById('ownerSettingsTheme');
+ if(language){language.value=lang;language.onchange=()=>{lang=language.value;localStorage.setItem('tctl-lang',lang);render(true);applyUILanguage()};}
+ if(themeSelect){themeSelect.value=theme;themeSelect.onchange=()=>{theme=themeSelect.value;localStorage.setItem('tctl-theme-owner',theme);applyTheme()};}
+}
 function renderDashboard(){
  const all=tickets.reduce((s,t)=>s+(Number(t.quantity)||0),0);
  const val=tickets.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
