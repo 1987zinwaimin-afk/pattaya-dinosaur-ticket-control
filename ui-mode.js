@@ -2,8 +2,8 @@
 (function(){
  'use strict';
  const body=document.body;
- const role=()=>window.currentRole==='owner'?'owner':(window.STAFF_MODE?'staff':'owner');
- const userId=()=>window.currentUser&&window.currentUser.id?String(window.currentUser.id):'device';
+ const role=()=>((typeof currentRole!=='undefined'&&currentRole==='owner')?'owner':((typeof STAFF_MODE!=='undefined'&&STAFF_MODE)?'staff':'owner'));
+ const userId=()=>typeof currentUser!=='undefined'&&currentUser&&currentUser.id?String(currentUser.id):'device';
  const key=()=> 'tctl-ui-mode-v1:'+role()+':'+userId();
  let mode='auto';
  function load(){try{mode=localStorage.getItem(key())||'auto'}catch(e){mode='auto'}apply()}
