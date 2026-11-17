@@ -1057,6 +1057,38 @@ input:focus,select:focus,textarea:focus{
 }
 
 
+/* Staff mobile login recovery: keep the complete form inside the phone viewport.
+   Overrides the older park-backdrop spacing rules that pushed the card below the fold. */
+.auth-screen{
+ position:fixed!important;inset:0!important;z-index:100!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ box-sizing:border-box!important;
+ padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+}
+.auth-card{
+ box-sizing:border-box!important;
+ width:min(440px,100%)!important;
+ max-height:none!important;
+ margin:auto!important;
+ flex:0 0 auto!important;
+}
+@media(max-width:600px){
+ .auth-screen{
+  align-items:center!important;justify-content:center!important;
+  padding:max(10px,env(safe-area-inset-top)) 12px max(10px,env(safe-area-inset-bottom))!important;
+ }
+ .auth-card{
+  width:min(440px,100%)!important;
+  padding:16px 16px 14px!important;
+  max-height:none!important;
+ }
+}
+@media(max-height:620px) and (max-width:600px){
+ .auth-screen{align-items:flex-start!important;padding-top:8px!important;padding-bottom:8px!important}
+ .auth-card{margin:0 auto!important}
+}
+
 /* Compact payroll layout: scoped so other pages remain unchanged */
 #pageContent[data-ui-page="payroll"] .report-page{gap:10px!important}
 #pageContent[data-ui-page="payroll"] .panel{padding:14px!important;border-radius:18px!important}
