@@ -3181,33 +3181,6 @@ installUILanguageObserver();applyUILanguage();
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
   }
-  let floatingAlarm=document.getElementById('staffAlarmFloatingButton');
-  if(!floatingAlarm){
-   floatingAlarm=document.createElement('button');
-   floatingAlarm.id='staffAlarmFloatingButton';
-   floatingAlarm.type='button';
-   floatingAlarm.setAttribute('aria-label','Send Alarm');
-   floatingAlarm.title='Send Alarm';
-   floatingAlarm.innerHTML='🚨';
-   floatingAlarm.style.cssText='position:fixed!important;right:16px!important;bottom:calc(env(safe-area-inset-bottom,0px) + 86px)!important;z-index:2147483000!important;width:62px!important;height:62px!important;min-width:62px!important;border-radius:50%!important;border:2px solid #f2c66d!important;background:linear-gradient(145deg,#173b58,#06182b)!important;color:#ffe3a0!important;font-size:28px!important;box-shadow:0 5px 20px #0009!important;display:flex;align-items:center;justify-content:center;padding:0!important';
-   document.body.appendChild(floatingAlarm);
-  }
-  const canUseStaffAlarm=!!currentUser&&currentRole==='staff';
-  floatingAlarm.style.display=canUseStaffAlarm?'flex':'none';
-  floatingAlarm.setAttribute('aria-hidden',canUseStaffAlarm?'false':'true');
-  floatingAlarm.disabled=!canUseStaffAlarm;
-  floatingAlarm.onclick=async()=>{
-   if(!currentUser||currentRole!=='staff'){alert('Please sign in to your Normal Staff account first.');return}
-   if(!confirm('Send an ALARM to Owner and all Normal Staff devices that have enabled notifications?'))return;
-   floatingAlarm.disabled=true;floatingAlarm.textContent='…';
-   try{
-    const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});
-    if(error)throw error;
-    if(!data||!data.ok)throw new Error(data?.message||'No subscribed device accepted the alarm.');
-    alert('🚨 Emergency alarm sent.\\nAccepted: '+data.sent+' / '+data.subscriptions+' devices.\\nFailed: '+data.failed);
-   }catch(error){alert('Could not send emergency alarm: '+(error?.message||error))}
-   finally{floatingAlarm.disabled=false;floatingAlarm.innerHTML='🚨'}
-  };
   if(!host)return;
   let panel=document.getElementById('staffEmergencyPushSetup');
   if(!panel){
