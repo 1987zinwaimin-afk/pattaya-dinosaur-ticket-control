@@ -3167,6 +3167,8 @@ installUILanguageObserver();applyUILanguage();
   const permitted=('Notification'in window)&&Notification.permission==='granted';
   const setStatus=(message,label,color)=>{if(status)status.textContent=message;if(badge){badge.textContent=label;badge.style.color=color}};
   btn.onclick=async()=>{
+   // This tap unlocks foreground alarm audio for later push events while this page stays open.
+   try{await window.unlockStaffAlarmAudio?.()}catch(_){}
    btn.disabled=true;btn.textContent='Enabling notifications…';
    try{
     if(!currentUser||currentRole!=='staff')throw new Error('Please sign in to your Staff account first.');
@@ -3209,6 +3211,36 @@ installUILanguageObserver();applyUILanguage();
  const KEY='staff-emergency-voice-enabled-v1';
  const VOICE_KEY='staff-emergency-thai-voice-uri-v1';
  const femaleHints=/female|woman|kanya|pim|arisa|google.*female|thailand.*female/i;
+ // Unlock a short Web Audio alarm tone during a real user gesture. This sound is
+ // used while the Staff page is open; closed-page sound is handled by Android/Chrome.
+ let alarmAudioContext=null;
+ window.unlockStaffAlarmAudio=async function(){
+  try{
+   const AudioCtx=window.AudioContext||window.webkitAudioContext;
+   if(!AudioCtx)return false;
+   if(!alarmAudioContext||alarmAudioContext.state==='closed')alarmAudioContext=new AudioCtx();
+   if(alarmAudioContext.state==='suspended')await alarmAudioContext.resume();
+   return alarmAudioContext.state==='running';
+  }catch(error){console.warn('Staff alarm audio could not be unlocked:',error);return false}
+ };
+ window.playStaffAlarmTone=function(){
+  try{
+   const AudioCtx=window.AudioContext||window.webkitAudioContext;
+   if(!AudioCtx)return false;
+   if(!alarmAudioContext||alarmAudioContext.state==='closed')alarmAudioContext=new AudioCtx();
+   if(alarmAudioContext.state!=='running'){alarmAudioContext.resume().catch(()=>{});return false}
+   const ctx=alarmAudioContext,now=ctx.currentTime;
+   [880,660,990,880].forEach((frequency,index)=>{
+    const start=now+index*.19,osc=ctx.createOscillator(),gain=ctx.createGain();
+    osc.type='sine';osc.frequency.setValueAtTime(frequency,start);
+    gain.gain.setValueAtTime(.0001,start);
+    gain.gain.exponentialRampToValueAtTime(.22,start+.025);
+    gain.gain.exponentialRampToValueAtTime(.0001,start+.16);
+    osc.connect(gain);gain.connect(ctx.destination);osc.start(start);osc.stop(start+.18);
+   });
+   return true;
+  }catch(error){console.warn('Staff alarm tone could not play:',error);return false}
+ };
  function getThaiVoices(){
   return ('speechSynthesis'in window)?window.speechSynthesis.getVoices().filter(v=>(v.lang||'').toLowerCase().startsWith('th')):[];
  }
@@ -3264,7 +3296,7 @@ installUILanguageObserver();applyUILanguage();
   const enable=document.getElementById('staffEnableVoice');
   const test=document.getElementById('staffTestVoice');
   if(enable&&!enable.dataset.bound){
-   enable.onclick=()=>{localStorage.setItem(KEY,'1');updateVoiceUi();try{speakThaiAnnouncement()}catch(error){const status=document.getElementById('staffVoiceStatus');if(status)status.textContent=error.message||String(error)}};
+   enable.onclick=()=>{localStorage.setItem(KEY,'1');window.unlockStaffAlarmAudio?.();updateVoiceUi();try{speakThaiAnnouncement()}catch(error){const status=document.getElementById('staffVoiceStatus');if(status)status.textContent=error.message||String(error)}};
    enable.dataset.bound='1';
   }
   if(test&&!test.dataset.bound){
@@ -3279,7 +3311,7 @@ installUILanguageObserver();applyUILanguage();
   navigator.serviceWorker.addEventListener('message',event=>{
    const data=event.data||{};
    if(data.type!=='STAFF_EMERGENCY_VOICE')return;
-   try{if(typeof playStaffLoginTone==='function')playStaffLoginTone('bell')}catch(error){console.warn('Alarm notification tone could not play:',error)}
+   try{if(typeof window.playStaffAlarmTone==='function')window.playStaffAlarmTone()}catch(error){console.warn('Alarm notification tone could not play:',error)}
    if(localStorage.getItem(KEY)==='1'){try{speakThaiAnnouncement()}catch(error){console.warn('Thai alarm voice announcement could not play:',error)}}
   });
  }
