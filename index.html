@@ -2305,6 +2305,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 }
 @media(max-width:360px){.mk-dashboard-kpis{grid-template-columns:1fr}.mk-department-grid{grid-template-columns:1fr}}
 
+
+/* Desktop shell alignment: keep the dinosaur banner full-width above the fixed sidebar */
+@media(min-width:980px){
+ .top.brand-header{padding-left:0}
+ .side{top:clamp(105px,17vw,245px);height:calc(100dvh - clamp(105px,17vw,245px));}
+ #appDateTime{margin-left:270px;width:calc(100% - 270px)}
+}
 </style>
 
 <style id="staff-database-compact-v1">
