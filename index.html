@@ -2960,6 +2960,37 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  #ticketCards>.ticket .ticket-actions button{font-size:10px!important}
 }
 
+
+/* ALIGN TICKET CARD ROWS CONSISTENTLY — all ticket pages */
+#ticketCards{
+ align-items:stretch!important;
+ grid-auto-rows:1fr!important;
+}
+#ticketCards>.ticket{
+ height:100%!important;
+ min-height:0!important;
+ align-self:stretch!important;
+}
+#ticketCards>.ticket .ticket-body{
+ flex:1 1 auto!important;
+ min-height:0!important;
+}
+#ticketCards>.ticket .ticket-body:not(:has(.price)) .soldrow{
+ margin-top:36px!important;
+}
+#ticketCards>.ticket .ticket-body:has(.price) .price{
+ min-height:36px!important;
+ box-sizing:border-box!important;
+}
+#ticketCards>.ticket .ticket-body .ticket-actions{
+ margin-top:auto!important;
+}
+@media(max-width:600px){
+ #ticketCards{align-items:stretch!important;grid-auto-rows:1fr!important}
+ #ticketCards>.ticket{height:100%!important}
+ #ticketCards>.ticket .ticket-body:not(:has(.price)) .soldrow{margin-top:36px!important}
+}
+
 </style>
 
 <style id="staff-database-compact-v1">
