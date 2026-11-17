@@ -42,7 +42,7 @@
  body.ui-mode-phone #pageContent{width:100%;max-width:600px;margin-inline:auto}
  body.ui-mode-phone #pageContent .panel{min-width:0;max-width:100%;overflow-wrap:anywhere}
  body.ui-mode-phone #pageContent table{display:block;max-width:100%;overflow-x:auto}
- body.ui-mode-phone #pageContent .cards,body.ui-mode-phone #pageContent .grid{grid-template-columns:repeat(1,minmax(0,1fr))!important}
+ body.ui-mode-phone #pageContent .cards,body.ui-mode-phone #pageContent .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
  body.ui-mode-phone #pageContent button,body.ui-mode-phone #pageContent input,body.ui-mode-phone #pageContent select{max-width:100%}
  body.ui-mode-laptop #pageContent{width:100%;max-width:none;margin-inline:0}
  body.ui-mode-laptop #pageContent .cards,body.ui-mode-laptop #pageContent .grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
