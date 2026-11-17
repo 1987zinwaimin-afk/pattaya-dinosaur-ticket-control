@@ -2148,6 +2148,75 @@ function startDailySalesAutosave(){
 function cloudRowForTicket(t){
  return {id:t.id,department:t.department,name:t.name,price:t.price??null,quantity:Number(t.quantity||0),image_path:t.imagePath||null,image_url:t.imageUrl||null,location:t.location||null,created_by:t.createdBy||currentUser.id,updated_by:currentUser.id,created_at:t.createdAt||new Date().toISOString(),updated_at:t.updatedAt||new Date().toISOString()};
 }
+function staffSyncStorageKey(kind){
+ return currentUser?'tctl-staff-'+kind+'-v1:'+currentUser.id:null;
+}
+function readStaffDurableSyncQueue(){
+ try{const key=staffSyncStorageKey('sync-pending');const value=key?JSON.parse(localStorage.getItem(key)||'[]'):[];return Array.isArray(value)?value.filter(x=>x&&x.id):[]}catch(error){console.warn('Could not read durable Staff sync queue:',error);return[]}
+}
+function writeStaffDurableSyncQueue(rows){
+ const key=staffSyncStorageKey('sync-pending');if(!key)throw new Error('Staff session is not ready; pending changes were not queued.');
+ localStorage.setItem(key,JSON.stringify(rows));
+}
+function mergeStaffDurableSyncQueue(rows){
+ const merged=new Map(readStaffDurableSyncQueue().map(row=>[String(row.id),row]));
+ (Array.isArray(rows)?rows:[]).forEach(row=>{if(!row||!row.id)return;const id=String(row.id),prior=merged.get(id);if(!prior||Date.parse(row.updated_at||0)>=Date.parse(prior.updated_at||0))merged.set(id,row)});
+ const result=[...merged.values()];writeStaffDurableSyncQueue(result);return result;
+}
+function removeStaffSyncedQueueRows(rows){
+ const sent=new Map((rows||[]).map(row=>[String(row.id),String(row.updated_at||'')]));
+ const remaining=readStaffDurableSyncQueue().filter(row=>sent.get(String(row.id))!==String(row.updated_at||''));
+ writeStaffDurableSyncQueue(remaining);return remaining;
+}
+function readStaffSyncConflicts(){
+ try{const key=staffSyncStorageKey('sync-conflicts');const value=key?JSON.parse(localStorage.getItem(key)||'[]'):[];return Array.isArray(value)?value:[]}catch(error){console.warn('Could not read Staff sync conflicts:',error);return[]}
+}
+function writeStaffSyncConflicts(rows){
+ const key=staffSyncStorageKey('sync-conflicts');if(!key)throw new Error('Staff session is not ready; conflict copy could not be saved.');
+ localStorage.setItem(key,JSON.stringify(rows));
+}
+function sameStaffTicketPayload(a,b){
+ return ['department','name','price','quantity','image_path','image_url','location'].every(key=>(a?.[key]??null)===(b?.[key]??null));
+}
+function showStaffSyncConflictNotice(){
+ const conflicts=readStaffSyncConflicts(),root=document.getElementById('pageContent');
+ if(!root)return;
+ let panel=document.getElementById('staffCloudSyncConflict');
+ if(!conflicts.length){if(panel)panel.remove();return}
+ if(!panel){panel=document.createElement('section');panel.id='staffCloudSyncConflict';panel.className='panel';panel.style.cssText='margin:0 0 12px;border:1px solid #b88e48;background:linear-gradient(135deg,#332b1d,#172337);color:#ffe8b4';root.insertBefore(panel,root.firstChild)}
+ panel.replaceChildren();
+ const heading=document.createElement('strong');heading.textContent=lang==='my'?'⚠️ Cloud မှာ ပိုသစ်တဲ့ Ticket မှတ်တမ်းရှိနေပါတယ်':lang==='th'?'⚠️ พบข้อมูลตั๋วบน Cloud ที่ใหม่กว่า':'⚠️ Newer ticket data exists in Cloud';
+ const message=document.createElement('p');message.style.cssText='margin:7px 0 0;font-size:13px;line-height:1.5';message.textContent=(lang==='my'?'ပြန်လည် Sync မလုပ်ဘဲ မူရင်း Cloud မှတ်တမ်းကို ထိန်းထားပြီး ဤစက်က ပြင်ဆင်မှု ':lang==='th'?'ระบบเก็บข้อมูล Cloud เดิมไว้ และแยกการแก้ไขจากอุปกรณ์นี้ ':'The newer Cloud record was kept. This device’s older edit was preserved separately for review. ')+conflicts.length+(lang==='my'?' ခုကို သီးခြားသိမ်းထားပါတယ်။':' item(s) saved separately.');
+ const details=document.createElement('ul');details.style.cssText='margin:7px 0 0;padding-left:20px;font-size:12px';
+ conflicts.slice(0,3).forEach(item=>{const li=document.createElement('li');li.textContent=String(item.pending?.name||item.id||'Ticket')+' · '+(item.cloud_updated_at||'Cloud timestamp unavailable');details.appendChild(li)});
+ panel.append(heading,message,details);
+ if(conflicts.length>3){const more=document.createElement('p');more.style.cssText='margin:5px 0 0;font-size:11px';more.textContent='+'+(conflicts.length-3)+' more';panel.appendChild(more)}
+}
+async function reconcileStaffPendingWithCloud(cloudRows){
+ const pending=readStaffDurableSyncQueue();if(!pending.length)return cloudRows;
+ const cloudById=new Map((cloudRows||[]).map(row=>[String(row.id),row]));
+ const replay=[],conflicts=readStaffSyncConflicts();
+ for(const localRow of pending){
+  const cloudRow=cloudById.get(String(localRow.id));
+  if(!cloudRow){replay.push(localRow);continue}
+  const localTime=Date.parse(localRow.updated_at||localRow.created_at||0)||0;
+  const cloudTime=Date.parse(cloudRow.updated_at||cloudRow.created_at||0)||0;
+  if(localTime>cloudTime){replay.push(localRow);continue}
+  if(sameStaffTicketPayload(localRow,cloudRow))continue;
+  const conflictKey=String(localRow.id)+'|'+String(localRow.updated_at||'');
+  if(!conflicts.some(item=>item.key===conflictKey))conflicts.push({key:conflictKey,id:localRow.id,pending:localRow,cloud_updated_at:cloudRow.updated_at||cloudRow.created_at||null,detected_at:new Date().toISOString()});
+ }
+ writeStaffSyncConflicts(conflicts);
+ writeStaffDurableSyncQueue(replay);
+ if(replay.length){
+  const {error}=await sb.from('tickets').upsert(replay,{onConflict:'id'});
+  if(error){writeStaffDurableSyncQueue(mergeStaffDurableSyncQueue(replay));throw new Error('Pending ticket changes are safely stored on this device, but Cloud replay failed: '+error.message)}
+  const {data,error:reloadError}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+  if(reloadError)throw reloadError;
+  cloudRows=data||[];
+ }
+ return cloudRows;
+}
 function save(){
  try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local cache full; Cloud sync will continue.',storageError)}
  if(!currentUser||!cloudReady)return;
@@ -2163,16 +2232,31 @@ function save(){
 }
 let syncBusy=false,syncPending=null;
 async function syncTickets(snapshot){
- syncPending=snapshot;
+ try{mergeStaffDurableSyncQueue(Array.isArray(snapshot)?snapshot:[]);syncPending=readStaffDurableSyncQueue()}
+ catch(queueError){syncPending=Array.isArray(snapshot)?snapshot:syncPending;showCloudError('Could not persist pending changes on this device: '+(queueError.message||queueError));return}
  if(syncBusy)return;
+ if(!syncPending.length){syncPending=null;return}
  syncBusy=true;
  try{
-  while(syncPending){
-   const next=syncPending;syncPending=null;
-   if(next.length){const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;for(const row of next)lastCloudRows.set(String(row.id),row);await captureDailyTicketSales();lastCloudFingerprint='';const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';const syncErrorBanner=document.getElementById('staffCloudSyncError');if(syncErrorBanner)syncErrorBanner.remove();}
+  while(true){
+   const next=readStaffDurableSyncQueue();syncPending=next;
+   if(!next.length){syncPending=null;break}
+   const {error}=await sb.from('tickets').upsert(next,{onConflict:'id'});if(error)throw error;
+   removeStaffSyncedQueueRows(next);
+   for(const row of next)lastCloudRows.set(String(row.id),row);
+   await captureDailyTicketSales();lastCloudFingerprint='';
+   const banner=document.getElementById('cloudSyncStatus');if(banner)banner.style.display='none';
+   syncPending=readStaffDurableSyncQueue();
   }
- }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));syncPending=syncPending||snapshot;setTimeout(()=>{if(!syncBusy&&syncPending)syncTickets(syncPending)},3000);}
- finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
+  const syncErrorBanner=document.getElementById('staffCloudSyncError');if(syncErrorBanner)syncErrorBanner.remove();
+ }catch(e){
+  console.error('Cloud sync failed',e);syncPending=readStaffDurableSyncQueue();
+  showCloudError('Cloud sync failed. Pending edits are saved on this device: '+(e.message||e));
+  setTimeout(()=>{if(!syncBusy&&readStaffDurableSyncQueue().length)syncTickets([])},5000);
+ }finally{
+  syncBusy=false;syncPending=readStaffDurableSyncQueue();
+  if(syncPending.length)setTimeout(()=>{if(!syncBusy)syncTickets([])},1500);
+ }
 }
 function showCloudError(msg){
  const authError=document.getElementById('authError');
@@ -2185,7 +2269,7 @@ function showCloudError(msg){
  banner.replaceChildren();
  const message=document.createElement('p');message.style.margin='0 0 9px';message.textContent=(lang==='my'?'Cloud Sync မအောင်မြင်သေးပါ။ ပြင်ဆင်ထားသော Ticket အချက်အလက်များကို ဤစက်တွင် သိမ်းထားပြီး ပြန်လည်ချိတ်ဆက်ရန် ကြိုးစားနေပါသည်။ ':lang==='th'?'การซิงก์ Cloud ยังไม่สำเร็จ ระบบกำลังลองเชื่อมต่ออีกครั้ง ':'Cloud sync has not completed. The app is retrying the connection. ')+String(msg||'');
  const retry=document.createElement('button');retry.type='button';retry.className='gold';retry.textContent=lang==='my'?'ယခုပြန်စမ်းရန်':lang==='th'?'ลองอีกครั้ง':'Retry Sync';
- retry.onclick=()=>{if(typeof syncPending!=='undefined'&&syncPending&&!syncBusy)syncTickets(syncPending)};
+ retry.onclick=()=>{if(!syncBusy&&readStaffDurableSyncQueue().length)syncTickets([])};
  banner.append(message,retry);
 }
 function mapCloud(row){return {id:row.id,department:row.department,name:row.name,price:row.price===null?null:Number(row.price),quantity:Number(row.quantity||0),image:row.image_url||null,imageUrl:row.image_url||null,imagePath:row.image_path||null,location:row.location||'',createdAt:row.created_at,updatedAt:row.updated_at,createdBy:row.created_by}}
@@ -2198,6 +2282,8 @@ async function loadCloud(){
  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
  if(error)throw error;
  let cloudRows=data||[];
+ // Reconcile durable offline edits before legacy empty-cloud recovery or replacing the local cache.
+ cloudRows=await reconcileStaffPendingWithCloud(cloudRows);
  // One-time recovery: when the cloud table is empty but this browser has tickets, migrate that local copy to Cloud.
  // Never overwrite non-empty Cloud data and never delete local tickets during recovery.
  if(cloudRows.length===0 && localTicketsBeforeCloud.length>0){
@@ -2227,11 +2313,13 @@ async function loadCloud(){
    cloudRows=reloaded||[];
   }
  }
- tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();startDailySalesAutosave();
+ tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();showStaffSyncConflictNotice();startDailySalesAutosave();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
  if(!currentUser||!cloudReady)return;
+ // Never let background polling replace local ticket state while durable edits await Cloud sync.
+ if(readStaffDurableSyncQueue().length){if(navigator.onLine&&!syncBusy)syncTickets([]);return;}
  // Do not let an empty/stale read replace local edits while their Cloud upsert is still running.
  if(syncBusy)return;
  // Continue polling even when this tab is in the background; mobile split-screen and tab switching must not stall sync.
