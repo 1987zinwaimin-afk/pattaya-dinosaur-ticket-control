@@ -52,8 +52,20 @@
  @media(max-width:700px){.ui-mode-options{grid-template-columns:1fr}}
  `;
  document.head.appendChild(style);
- const observer=new MutationObserver(()=>{if(document.getElementById('pageContent')?.dataset.uiPage==='settings')renderControls()});
- observer.observe(document.getElementById('pageContent')||document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['data-ui-page']});
- load();renderControls();
+ window.renderDeviceUiModeControls=function(root){
+  try{
+   if(!root)return;
+   let panel=root.querySelector('#deviceUiModePanel');
+   if(!panel){
+    panel=document.createElement('section');panel.id='deviceUiModePanel';panel.className='panel ui-mode-settings';
+    panel.innerHTML='<h3>📐 Device UI / မျက်နှာပြင်ပုံစံ</h3><p class="subtle">Choose a layout for this account on this device. Owner and Staff preferences are stored separately.</p><div class="ui-mode-options"><button type="button" data-ui-mode="phone" class="ui-mode-choice">📱 UI<br><small>Phone UI</small></button><button type="button" data-ui-mode="laptop" class="ui-mode-choice">💻 UI<br><small>Laptop UI</small></button><button type="button" data-ui-mode="auto" class="ui-mode-choice">↔ Auto<br><small>Device default</small></button></div><p class="subtle" aria-live="polite">Current: <b id="uiModeCurrent"></b></p>';
+    root.appendChild(panel);
+    panel.addEventListener('click',function(event){const button=event.target.closest('[data-ui-mode]');if(button&&panel.contains(button)){event.preventDefault();save(button.dataset.uiMode)}});
+   }
+   panel.querySelectorAll('[data-ui-mode]').forEach(btn=>btn.classList.toggle('selected',btn.dataset.uiMode===mode));
+   const badge=panel.querySelector('#uiModeCurrent');if(badge)badge.textContent=mode==='phone'?'📱 Phone UI':mode==='laptop'?'💻 Laptop UI':'Auto';
+  }catch(error){console.error('Device UI controls could not render:',error)}
+ };
+ load();
  window.addEventListener('storage',e=>{if(e.key===key()){mode=e.newValue||'auto';apply();renderControls()}});
 })();
