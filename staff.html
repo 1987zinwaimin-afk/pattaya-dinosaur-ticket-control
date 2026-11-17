@@ -2565,7 +2565,13 @@ async function lookupStaffNameById(){
  }
  try{
   // Staff ID lookup is a read-only public RPC; do not create an anonymous Auth user just to look up a name.
-  const {data,error}=await sb.rpc('lookup_staff_account_by_id',{p_staff_id:staffId});
+  // Bound the lookup wait on mobile networks. The server-side claim below remains authoritative.
+  let lookupTimeout;
+  const lookupResult=await Promise.race([
+   sb.rpc('lookup_staff_account_by_id',{p_staff_id:staffId}),
+   new Promise((_,reject)=>{lookupTimeout=setTimeout(()=>reject(new Error('Staff ID lookup timed out. Enter the registered name and continue; the server will verify it.')),8000)})
+  ]).finally(()=>clearTimeout(lookupTimeout));
+  const {data,error}=lookupResult;
   if(sequence!==staffNameLookupSequence||idInput.value.trim().toUpperCase()!==staffId.toUpperCase())return;
   if(error)throw error;
   if(data){
@@ -2631,8 +2637,11 @@ document.getElementById('authForm').onsubmit=async e=>{
   await staffLookupInFlight;
   // Never continue with a stale result if another blur/input lookup superseded this request.
   if(staffIdInput.value.trim().toUpperCase()!==staffId.toUpperCase())throw new Error('Staff ID changed while it was being checked. Please verify it again.');
-  if(staffLookupError)throw staffLookupError;
-  if(staffLookupCompletedId!==staffId.toUpperCase())throw new Error('Staff ID verification has not finished yet. Please wait and try again.');
+  // If the read-only lookup is slow/unavailable, allow the user-entered name to reach
+  // claim_staff_identity. That SECURITY DEFINER RPC checks the registered ID/name pair
+  // against staff_directory before granting access, so this is not an authentication bypass.
+  if(staffLookupError&&!nameInput.value.trim())throw staffLookupError;
+  if(staffLookupCompletedId!==staffId.toUpperCase()&&!nameInput.value.trim())throw new Error('Staff ID verification has not finished yet. Please wait and try again.');
   const name=nameInput.value.trim();
  if(!staffId||!name){err.textContent='Please enter a Staff ID. Existing IDs fill the name automatically; for a new ID, enter your name.';return}
  if(document.getElementById('authName').dataset.resolvedStaffId&&document.getElementById('authName').dataset.resolvedStaffId!==staffId.toUpperCase()){err.textContent='Staff ID changed. Please verify the ID again.';return}
