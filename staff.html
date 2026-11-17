@@ -2959,6 +2959,8 @@ function renderStaffDashboard(visible){
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-head>span{white-space:nowrap;text-align:right;font-size:.74rem}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-section{margin:12px 0 7px;color:#ffe2a0;font-size:.94rem;line-height:1.25}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts>.staff-dash-dept-card{width:100%;max-width:none;box-sizing:border-box;margin:0}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:3px;min-width:0;min-height:0;padding:10px;border:1px solid #d8b65f44;border-radius:13px;background:linear-gradient(145deg,#123651,#081b30);color:#f7f9fc;box-shadow:0 4px 12px #0002}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-icon{font-size:17px;line-height:1.15}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card b{font-size:.84rem;line-height:1.25;color:#ffe2a0}
