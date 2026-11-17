@@ -3915,11 +3915,14 @@ function renderSettings(){
   const themeOptions=[['dark','🌙 Luxury Navy Gold'],['light','☀️ Premium Light']];
   root.innerHTML='<section class="panel"><h2>⚙️ '+(lang==='th'?'ตั้งค่า':lang==='my'?'ဆက်တင်များ':'Settings')+'</h2><p class="subtle">Account and display preferences</p>'+
    '<div class="summary-row"><span>Language / ภาษา / ဘာသာစကား</span><select id="ownerSettingsLanguage" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div>'+
-   '<div class="summary-row"><span>Display theme</span><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div></section>';
+   '<div class="summary-row"><span>Display theme</span><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div>'+
+   '<button type="button" class="gold" id="ownerExportBackup">Export ticket backup (JSON)</button></section>';
   const language=root.querySelector('#ownerSettingsLanguage');
   const themeSelect=root.querySelector('#ownerSettingsTheme');
   if(language){language.value=lang;language.addEventListener('change',()=>{lang=language.value;localStorage.setItem('tctl-lang',lang);render(true);applyUILanguage()});}
   if(themeSelect){themeSelect.value=theme;themeSelect.addEventListener('change',()=>{theme=themeSelect.value;localStorage.setItem('tctl-theme-owner',theme);applyTheme()});}
+  const backup=root.querySelector('#ownerExportBackup');
+  if(backup)backup.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(tickets,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='pattaya-dinosaur-owner-ticket-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
   if(typeof window.renderDeviceUiModeControls==='function')window.renderDeviceUiModeControls(root);
  }catch(error){
   console.error('Owner Settings render failed:',error);
