@@ -2797,6 +2797,169 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  #pageContent .actions.ticket-toolbar.sale-toolbar #ticketRangeCalcBtn::before{font-size:17px!important}
 }
 
+
+/* COMPACT FULL-TICKET CARDS — shared by Sale, Entry, Playing and Event pages */
+#ticketCards{
+ align-items:start!important;
+ gap:12px!important;
+}
+#ticketCards>.ticket{
+ height:auto!important;
+ min-height:0!important;
+ align-self:start!important;
+ display:flex!important;
+ flex-direction:column!important;
+ border:1px solid rgba(211,177,111,.58)!important;
+ border-radius:17px!important;
+ overflow:hidden!important;
+}
+#ticketCards>.ticket>div:first-child:has(>img){
+ display:block!important;
+ width:100%!important;
+ height:auto!important;
+ aspect-ratio:1.74 / 1!important;
+ min-height:0!important;
+ max-height:none!important;
+ flex:0 0 auto!important;
+ overflow:hidden!important;
+ background:#071c30!important;
+ border-bottom:1px solid rgba(247,213,138,.24)!important;
+}
+#ticketCards>.ticket .ticket-preview-image{
+ display:block!important;
+ width:100%!important;
+ height:100%!important;
+ max-width:100%!important;
+ max-height:none!important;
+ object-fit:contain!important;
+ object-position:center center!important;
+ border:0!important;
+ border-radius:0!important;
+ transform:none!important;
+}
+#ticketCards>.ticket>.placeholder{
+ display:grid!important;
+ place-items:center!important;
+ width:100%!important;
+ height:auto!important;
+ aspect-ratio:1.74 / 1!important;
+ min-height:0!important;
+ max-height:none!important;
+ flex:0 0 auto!important;
+}
+#ticketCards>.ticket .ticket-body{
+ display:flex!important;
+ flex:0 0 auto!important;
+ flex-direction:column!important;
+ gap:6px!important;
+ min-width:0!important;
+ padding:10px!important;
+}
+#ticketCards>.ticket h3{
+ min-height:0!important;
+ max-height:2.55em!important;
+ margin:0!important;
+ font-size:clamp(14px,3.6vw,17px)!important;
+ line-height:1.27!important;
+ display:-webkit-box!important;
+ -webkit-box-orient:vertical!important;
+ -webkit-line-clamp:2!important;
+ overflow:hidden!important;
+ overflow-wrap:anywhere!important;
+}
+#ticketCards>.ticket .price{
+ align-self:flex-start!important;
+ width:max-content!important;
+ min-height:32px!important;
+ margin:0!important;
+ padding:6px 12px!important;
+ border-radius:10px!important;
+ font-size:clamp(13px,3.3vw,15px)!important;
+ line-height:1.2!important;
+}
+#ticketCards>.ticket .soldrow{
+ display:block!important;
+ min-width:0!important;
+ margin:0!important;
+ padding:0!important;
+}
+#ticketCards>.ticket .ticket-quantity-highlight{
+ display:grid!important;
+ grid-template-columns:auto minmax(0,1fr) auto!important;
+ align-items:center!important;
+ justify-content:stretch!important;
+ width:100%!important;
+ min-width:0!important;
+ min-height:38px!important;
+ padding:5px 8px!important;
+ gap:5px!important;
+ border-radius:10px!important;
+ white-space:nowrap!important;
+}
+#ticketCards>.ticket .ticket-quantity-highlight span{font-size:10px!important}
+#ticketCards>.ticket .ticket-quantity-highlight strong{font-size:clamp(18px,4.8vw,23px)!important;text-align:center!important}
+#ticketCards>.ticket .ticket-quantity-highlight small{font-size:9px!important;text-align:right!important}
+#ticketCards>.ticket input.qty{
+ width:100%!important;
+ min-width:0!important;
+ height:40px!important;
+ min-height:40px!important;
+ margin:0!important;
+ padding:7px 10px!important;
+ border-radius:10px!important;
+ font-size:15px!important;
+ line-height:1.2!important;
+}
+#ticketCards>.ticket .ticket-actions{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:6px!important;
+ margin:0!important;
+}
+#ticketCards>.ticket .ticket-actions button{
+ width:100%!important;
+ min-width:0!important;
+ min-height:38px!important;
+ height:auto!important;
+ margin:0!important;
+ padding:6px 4px!important;
+ border-radius:10px!important;
+ font-size:clamp(10px,2.9vw,13px)!important;
+ line-height:1.15!important;
+ white-space:normal!important;
+}
+#ticketCards>.ticket .morebox.open{
+ display:grid!important;
+ grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ gap:6px!important;
+ margin:0!important;
+ padding:7px 0 0!important;
+}
+#ticketCards>.ticket .morebox button{
+ min-width:0!important;
+ min-height:38px!important;
+ padding:6px 4px!important;
+ font-size:11px!important;
+}
+@media(min-width:900px){
+ #ticketCards{gap:14px!important}
+ #ticketCards>.ticket .ticket-body{padding:12px!important;gap:7px!important}
+}
+@media(max-width:600px){
+ #ticketCards{gap:10px!important}
+ #ticketCards>.ticket{border-radius:15px!important}
+ #ticketCards>.ticket .ticket-body{padding:9px!important;gap:5px!important}
+ #ticketCards>.ticket h3{font-size:clamp(13px,3.5vw,16px)!important}
+ #ticketCards>.ticket .ticket-quantity-highlight{min-height:36px!important}
+ #ticketCards>.ticket input.qty{height:38px!important;min-height:38px!important}
+ #ticketCards>.ticket .ticket-actions button{min-height:36px!important}
+}
+@media(max-width:380px){
+ #ticketCards{gap:8px!important}
+ #ticketCards>.ticket .ticket-body{padding:8px!important;gap:5px!important}
+ #ticketCards>.ticket .ticket-actions button{font-size:10px!important}
+}
+
 </style>
 
 <style id="staff-database-compact-v1">
