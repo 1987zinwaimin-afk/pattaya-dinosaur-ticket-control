@@ -55,6 +55,7 @@
  window.renderDeviceUiModeControls=function(root){
   try{
    if(!root)return;
+   if(loadedFor!==key())load();
    let panel=root.querySelector('#deviceUiModePanel');
    if(!panel){
     panel=document.createElement('section');panel.id='deviceUiModePanel';panel.className='panel ui-mode-settings';
