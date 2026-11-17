@@ -2337,7 +2337,7 @@ async function refreshCloudTickets(force=false){
    tickets=rows.map(mapCloud);
    lastCloudRows=new Map(rows.map(r=>[String(r.id),r]));
    try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local cache full; Cloud data is still active.',storageError)}
-   render();
+   render();showStaffSyncConflictNotice();
   }
  }catch(e){console.error('Auto-refresh cloud tickets failed',e)}
  finally{cloudLoadBusy=false}
