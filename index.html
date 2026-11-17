@@ -2312,6 +2312,29 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  .side{top:clamp(105px,17vw,245px);height:calc(100dvh - clamp(105px,17vw,245px));}
  #appDateTime{margin-left:270px;width:calc(100% - 270px)}
 }
+
+/* Owner ticket pages refresh — Sale, Entry and Playing */
+#pageContent .cards{gap:16px;align-items:stretch}
+#pageContent .ticket{border:1px solid rgba(125,174,211,.34);border-radius:20px;overflow:hidden;background:linear-gradient(155deg,rgba(17,51,79,.98),rgba(5,22,40,.99));box-shadow:0 10px 26px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.08);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+#pageContent .ticket:hover{transform:translateY(-3px);border-color:rgba(255,215,120,.72);box-shadow:0 14px 30px rgba(0,0,0,.32),0 0 0 1px rgba(255,215,120,.12)}
+#pageContent .ticket img{width:100%;height:clamp(142px,16vw,190px);object-fit:cover;object-position:center;border-bottom:1px solid rgba(255,215,120,.25)}
+#pageContent .ticket .placeholder{min-height:142px;background:radial-gradient(circle at 50% 0%,#24577b,#0a233d 72%)}
+#pageContent .ticket-body{padding:15px;display:flex;flex-direction:column;gap:8px}
+#pageContent .ticket h3{font-size:clamp(1rem,1.2vw,1.15rem);line-height:1.35;min-height:2.6em;margin:0;color:#f7f9fd}
+#pageContent .ticket .price{align-self:flex-start;margin:0 0 3px;padding:7px 13px;border-radius:999px;font-size:1rem;letter-spacing:.01em;box-shadow:0 3px 10px rgba(231,173,67,.18)}
+#pageContent .ticket .soldrow{padding:8px 10px;margin:0;border:1px solid rgba(121,164,198,.18);border-radius:11px;background:rgba(3,18,33,.42)}
+#pageContent .ticket .qty{min-height:48px;border-radius:13px;border:1px solid rgba(255,215,120,.62);background:rgba(2,17,31,.78);color:#fff;font-size:1.08rem;font-weight:800;text-align:center}
+#pageContent .ticket .ticket-actions{gap:9px;margin-top:5px}
+#pageContent .ticket .ticket-actions button{min-height:44px;border-radius:12px}
+#pageContent .panel{border-radius:20px;box-shadow:0 10px 26px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.06)}
+#pageContent .section-title{gap:12px;flex-wrap:wrap}
+#pageContent .section-title h2{letter-spacing:.01em}
+#pageContent .actions button{min-height:48px;border-radius:14px}
+#pageContent input:focus-visible,#pageContent select:focus-visible,#pageContent button:focus-visible{outline:3px solid rgba(255,215,120,.55);outline-offset:2px}
+@media(min-width:900px){#pageContent .cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}#pageContent .ticket-body{padding:16px}}
+@media(max-width:600px){#pageContent .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}#pageContent .ticket img{height:clamp(105px,31vw,145px)}#pageContent .ticket-body{padding:10px;gap:7px}#pageContent .ticket h3{font-size:.96rem;min-height:2.5em}#pageContent .ticket .price{font-size:.92rem;padding:6px 10px}#pageContent .ticket .qty{min-height:44px;padding:9px;font-size:1rem}#pageContent .ticket .ticket-actions{gap:6px;flex-wrap:wrap}#pageContent .ticket .ticket-actions button{flex:1 1 100%;min-height:42px}#pageContent .actions{gap:6px}}
+@media(max-width:360px){#pageContent .cards{grid-template-columns:1fr}}
+
 </style>
 
 <style id="staff-database-compact-v1">
@@ -3946,81 +3969,6 @@ function printCustomerVisitQr(row,qrData){
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
    doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}
-/* Owner ticket pages refresh — Sale, Entry and Playing */
-#pageContent .cards{gap:16px;align-items:stretch}
-#pageContent .ticket{
-  border:1px solid rgba(125,174,211,.34);
-  border-radius:20px;
-  overflow:hidden;
-  background:linear-gradient(155deg,rgba(17,51,79,.98),rgba(5,22,40,.99));
-  box-shadow:0 10px 26px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.08);
-  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
-}
-#pageContent .ticket:hover{
-  transform:translateY(-3px);
-  border-color:rgba(255,215,120,.72);
-  box-shadow:0 14px 30px rgba(0,0,0,.32),0 0 0 1px rgba(255,215,120,.12);
-}
-#pageContent .ticket img{
-  width:100%;height:clamp(142px,16vw,190px);
-  object-fit:cover;object-position:center;
-  border-bottom:1px solid rgba(255,215,120,.25);
-}
-#pageContent .ticket .placeholder{
-  min-height:142px;
-  background:radial-gradient(circle at 50% 0%,#24577b,#0a233d 72%);
-}
-#pageContent .ticket-body{padding:15px;display:flex;flex-direction:column;gap:8px}
-#pageContent .ticket h3{font-size:clamp(1rem,1.2vw,1.15rem);line-height:1.35;min-height:2.6em;margin:0;color:#f7f9fd}
-#pageContent .ticket .price{
-  align-self:flex-start;margin:0 0 3px;
-  padding:7px 13px;border-radius:999px;
-  font-size:1rem;letter-spacing:.01em;
-  box-shadow:0 3px 10px rgba(231,173,67,.18);
-}
-#pageContent .ticket .soldrow{
-  padding:8px 10px;margin:0;
-  border:1px solid rgba(121,164,198,.18);
-  border-radius:11px;background:rgba(3,18,33,.42);
-}
-#pageContent .ticket .qty{
-  min-height:48px;border-radius:13px;
-  border:1px solid rgba(255,215,120,.62);
-  background:rgba(2,17,31,.78);
-  color:#fff;font-size:1.08rem;font-weight:800;
-  text-align:center;
-}
-#pageContent .ticket .ticket-actions{gap:9px;margin-top:5px}
-#pageContent .ticket .ticket-actions button{min-height:44px;border-radius:12px}
-#pageContent .panel{
-  border-radius:20px;
-  box-shadow:0 10px 26px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.06);
-}
-#pageContent .section-title{gap:12px;flex-wrap:wrap}
-#pageContent .section-title h2{letter-spacing:.01em}
-#pageContent .actions button{min-height:48px;border-radius:14px}
-#pageContent input:focus-visible,#pageContent select:focus-visible,#pageContent button:focus-visible{
-  outline:3px solid rgba(255,215,120,.55);outline-offset:2px;
-}
-@media(min-width:900px){
-  #pageContent .cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-  #pageContent .ticket-body{padding:16px}
-}
-@media(max-width:600px){
-  #pageContent .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  #pageContent .ticket img{height:clamp(105px,31vw,145px)}
-  #pageContent .ticket-body{padding:10px;gap:7px}
-  #pageContent .ticket h3{font-size:.96rem;min-height:2.5em}
-  #pageContent .ticket .price{font-size:.92rem;padding:6px 10px}
-  #pageContent .ticket .qty{min-height:44px;padding:9px;font-size:1rem}
-  #pageContent .ticket .ticket-actions{gap:6px;flex-wrap:wrap}
-  #pageContent .ticket .ticket-actions button{flex:1 1 100%;min-height:42px}
-  #pageContent .actions{gap:6px}
-}
-@media(max-width:360px){
-  #pageContent .cards{grid-template-columns:1fr}
-}
-
 </style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
