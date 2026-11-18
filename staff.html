@@ -2950,7 +2950,7 @@ function renderStaffDashboard(visible){
  const label=(en,th,my)=>lang==='my'?my:lang==='th'?th:en;
  const deptCards=departmentList.map(d=>{const rows=scoped.filter(t=>t.department===d.id);const count=rows.reduce((sum,t)=>sum+Number(t.quantity||0),0);const amount=rows.reduce((sum,t)=>sum+Number(t.quantity||0)*Number(t.price||0),0);return '<button type="button" class="panel staff-dash-dept-card" data-staff-dash-page="'+d.id+'"><span class="staff-dash-dept-icon">'+d.icon+'</span><b>'+(d[lang]||d.en)+'</b><span class="subtle">'+rows.length+' '+label('ticket types','ประเภทตั๋ว','လက်မှတ်အမျိုးအစား')+'</span><strong>'+count.toLocaleString()+' · '+money(amount)+'</strong></button>'}).join('');
  const assignedName=selectedStaffDepartment==='all'?label('All Departments','ทุกแผนก','ဌာနအားလုံး'):(DEPTS.find(d=>d.id===selectedStaffDepartment)?.[lang]||DEPTS.find(d=>d.id===selectedStaffDepartment)?.en||'Staff');
- root.innerHTML='<style>
+ root.innerHTML=`<style>
 #pageContent[data-ui-page="staff-dashboard"]{padding:0 0 14px}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:2px 0;flex-wrap:nowrap}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-head>div{min-width:0;flex:1}
@@ -2977,7 +2977,7 @@ function renderStaffDashboard(visible){
 #stats .stat span{font-size:.7rem;line-height:1.2}
 #stats .stat strong{font-size:1rem;line-height:1.2;margin-top:3px}
 @media(max-width:380px){#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{gap:6px}#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{padding:8px}#stats{gap:5px}#stats .stat{padding:8px 7px}}
-</style>'+
+</style>`+
  '<div class="staff-dash-head"><div><h2>'+label('Staff Dashboard','แดชบอร์ดพนักงาน','Staff Dashboard')+'</h2><span class="subtle">'+label('Your assigned workspace','พื้นที่ทำงานของคุณ','သတ်မှတ်ထားသော လုပ်ငန်းခွင်')+' · '+assignedName+'</span></div><span class="subtle">'+new Date().toLocaleDateString()+'</span></div>'+
  '<h3 class="staff-dash-section">'+label('Department overview','ภาพรวมแผนก','ဌာနအလိုက် အနှစ်ချုပ်')+'</h3><div class="staff-dash-depts">'+deptCards+'</div>'+
  '<div class="panel staff-dash-quick"><h3 style="margin:0;color:#ffe2a0">'+label('Quick access','ทางลัด','အမြန်ဝင်ရောက်ရန်')+'</h3><div class="actions">'+
