@@ -1700,7 +1700,7 @@ main.wrap{padding-top:5px!important;padding-bottom:24px!important}
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>🎪 Event Staff Login</h2><p id="authIntro">Event Ticket Department · Dedicated Event Staff access.</p>
-<form id="authForm"><label for="authStaffId">Event Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Event Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label>Department</label><div class="panel" style="padding:12px;margin:6px 0 12px;color:#ffd778">🎪 Event Ticket Department</div><input id="staffDepartment" type="hidden" value="event"><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Event Tickets</button></div></form>
+<form id="authForm"><label for="authStaffId">Event Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Event Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="authEventLocation">Event Location</label><input id="authEventLocation" maxlength="160" required autocomplete="organization" placeholder="Enter your Event Location"><p class="subtle" style="margin:5px 0 10px;font-size:12px">Your Event Location will be confirmed with the event dates after login.</p><label>Department</label><div class="panel" style="padding:12px;margin:6px 0 12px;color:#ffd778">🎪 Event Ticket Department</div><input id="staffDepartment" type="hidden" value="event"><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Event Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">EVENT STAFF PORTAL · Event Ticket Department only</div>
 </div></div>
 
@@ -2006,7 +2006,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  if(currentRole!=='staff'){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This page is for staff only. Please use the Owner website link.';return}
  const enteredName=document.getElementById('authName').value.trim();
  const enteredStaffId=document.getElementById('authStaffId').value.trim();
- if(!profile.staff_id||enteredStaffId.toUpperCase()!==profile.staff_id.toUpperCase()){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session is not linked to the entered Staff ID. Please sign out and continue with your assigned ID.';return}
+ if(!profile.staff_id||enteredStaffId.toUpperCase()!==profile.staff_id.toUpperCase()){await sb.auth.signOut();currentUser=null;document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session is not linked to the entered Event Staff ID. Please verify your ID and continue again.';return}
  if(enteredName&&profile.display_name&&enteredName.toLowerCase()!==profile.display_name.trim().toLowerCase()){document.getElementById('authScreen').style.display='grid';document.getElementById('authError').textContent='This session belongs to a different Event Staff name. Please sign out and continue with your registered name.';return}
  const {data:eventAccount,error:eventAccountError}=await sb.from('event_staff_accounts').select('event_staff_id,display_name,is_active').eq('event_staff_id',profile.staff_id).eq('auth_user_id',currentUser.id).eq('is_active',true).maybeSingle();
  if(eventAccountError)throw eventAccountError;
@@ -2120,8 +2120,9 @@ document.getElementById('authForm').onsubmit=async e=>{
  const staffId=staffIdInput.value.trim();
  if(staffId&&!nameInput.value.trim()&&!nameInput.readOnly)await lookupStaffNameById();
  const name=nameInput.value.trim();
+ const eventLocation=document.getElementById('authEventLocation').value.trim();
  const err=document.getElementById('authError');
- if(!staffId||!name){err.textContent='Please enter your preferred Event Staff ID and name.';return}
+ if(!staffId||!name||!eventLocation){err.textContent='Please enter your Event Staff ID, name and Event Location.';return}
  if(document.getElementById('authName').dataset.resolvedStaffId&&document.getElementById('authName').dataset.resolvedStaffId!==staffId.toUpperCase()){err.textContent='Staff ID changed. Please verify the ID again.';return}
  err.textContent='Checking Event Staff ID…';
  try{
@@ -2152,6 +2153,7 @@ document.getElementById('authForm').onsubmit=async e=>{
    if(verifiedProfileError)throw verifiedProfileError;
    knownProfile=verifiedProfile;
   }
+  sessionStorage.setItem('tctl-pending-event-location',eventLocation);
   await startCloudSession(session,true,knownProfile);
  }catch(e){err.textContent=e.message||'Could not connect. Please check Staff ID and Name.'}
 };
@@ -2166,7 +2168,8 @@ async function restoreSavedSession(){
   if(error)throw error;
   if(!data.session){authScreen.style.display='grid';return}
   // A saved session exists: keep the login form hidden while it is being restored.
-  authScreen.style.display='none';
+  // Keep the login form visible until the saved identity is fully verified.
+  authScreen.style.display='grid';
   let profile=null,lastProfileError=null;
   // Allow mobile browsers and slow connections more time to restore the persisted profile.
   for(let attempt=0;attempt<6;attempt++){
@@ -2188,7 +2191,9 @@ async function restoreSavedSession(){
     currentUser=null;
     currentRole=null;
     currentStaffId=null;
-    throw startError;
+    authScreen.style.display='grid';
+    authError.textContent='Could not restore your Event Staff login: '+(startError.message||startError);
+    return;
    }
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
@@ -2196,15 +2201,13 @@ async function restoreSavedSession(){
   }else{
    // Keep the persisted session and do not force a fresh login for a temporary network failure.
    console.warn('Saved Event Staff session profile is temporarily unavailable:',lastProfileError?.message||'No profile returned');
-   authScreen.style.display='none';
-   document.getElementById('pageContent').innerHTML='<div class="panel" style="margin:16px 0;text-align:center"><strong>Restoring your Event Staff session…</strong><p class="subtle">Your login is saved. Please check the internet connection; the app will retry when reopened.</p><button type="button" class="gold" onclick="restoreSavedSession()">Retry connection</button></div>';
+   authScreen.style.display='grid';
+   authError.textContent='Your saved Event Staff login could not be verified yet. Please check your connection and press Continue to Event Tickets. '+(lastProfileError?.message||'');
   }
  }catch(e){
   console.error('Could not restore saved Event Staff session',e);
-  // Do not sign out or show the login form merely because the network is temporarily unavailable.
-  authScreen.style.display='none';
-  const safeMessage=String(e?.message||e||'Connection error').replace(/[<>&"]/g,ch=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[ch]));
-  document.getElementById('pageContent').innerHTML='<div class="panel" style="margin:16px 0;text-align:center"><strong>Event Staff session is saved</strong><p class="subtle">The saved login is still on this device. Connection or account verification did not finish. Please retry; you do not need to log in again.</p><p class="subtle" style="font-size:12px;opacity:.8">Details: '+safeMessage+'</p><button type="button" class="gold" onclick="restoreSavedSession()">Retry connection</button></div>';
+  authScreen.style.display='grid';
+  authError.textContent='Could not verify the saved Event Staff login. Please check your connection and press Continue to Event Tickets. '+(e?.message||e||'Connection error');
  }finally{restoringSavedSession=false}
 }
 let staffForegroundNotificationAt=0;
@@ -2790,7 +2793,9 @@ async function prepareEventSessionAfterLogin(){
   else {staffEventLocations=[{...active,id:String(active.id)}];await ensureStaffEventLocationTickets(active.id);}
  }else{
   selectedStaffEventLocationId='';localStorage.removeItem('tctl-staff-event-location');
-  await openEventSetupWizard(null);
+  const requestedLocation=sessionStorage.getItem('tctl-pending-event-location')||document.getElementById('authEventLocation')?.value?.trim()||'';
+  await openEventSetupWizard(requestedLocation?{location_name:requestedLocation}:null);
+  sessionStorage.removeItem('tctl-pending-event-location');
  }
 }
 function closeEventSetupWizard(){document.getElementById('eventSetupModal')?.remove()}
