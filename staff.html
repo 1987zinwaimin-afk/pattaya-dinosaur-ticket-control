@@ -2064,6 +2064,157 @@ body.theme-light #staffCloudSyncStatus .staff-status-item{
 }
 body.theme-light .staff-settings-section button:disabled{opacity:.65!important}
 
+
+/* Premium Light: nested Alarm Notifications and Device Health surfaces */
+body.theme-light #pageContent #staffAlarmSettingsSection,
+body.theme-light #pageContent #staffDeviceHealthPanel{
+ background:linear-gradient(145deg,#ffffff 0%,#edf3f8 100%)!important;
+ border:1px solid #c5d1dc!important;color:#172b40!important;
+}
+body.theme-light #pageContent #staffAlarmSettingsSection h3,
+body.theme-light #pageContent #staffDeviceHealthPanel h3{
+ color:#80520b!important;-webkit-text-fill-color:#80520b!important;
+}
+body.theme-light #pageContent #staffAlarmSettingsSection>p,
+body.theme-light #pageContent #staffDeviceHealthPanel>p,
+body.theme-light #pageContent #staffDeviceHealthPanel .subtle{
+ color:#40566c!important;-webkit-text-fill-color:#40566c!important;opacity:1!important;
+}
+/* Alarm setup is dynamically injected and has its own hard-coded Navy palette. */
+body.theme-light .staff-alarm-popover,
+body.theme-light #staffAlarmSettingsHost .staff-alarm-popover{
+ background:linear-gradient(145deg,#ffffff,#edf3f8)!important;
+ border:1px solid #bdcbd7!important;color:#172b40!important;
+ box-shadow:0 5px 18px rgba(23,43,64,.10)!important;
+}
+body.theme-light .staff-alarm-popover-head strong,
+body.theme-light #staffEmergencyPushBadge{
+ color:#80520b!important;-webkit-text-fill-color:#80520b!important;opacity:1!important;
+}
+body.theme-light .staff-alarm-popover-status,
+body.theme-light #staffEmergencyPushStatus,
+body.theme-light #staffVoiceStatus{
+ color:#40566c!important;-webkit-text-fill-color:#40566c!important;opacity:1!important;
+}
+body.theme-light .staff-alarm-popover button:not(.gold){
+ background:linear-gradient(145deg,#eaf1f7,#dce7f0)!important;
+ color:#173047!important;-webkit-text-fill-color:#173047!important;
+ border:1px solid #b7c7d5!important;
+}
+body.theme-light .staff-alarm-popover button.gold{
+ background:linear-gradient(135deg,#f5d994,#d4a448)!important;
+ color:#172b40!important;-webkit-text-fill-color:#172b40!important;
+ border:1px solid #c79536!important;
+}
+body.theme-light .staff-alarm-popover details{
+ background:#f3f7fa!important;border:1px solid #c5d1dc!important;
+ color:#263d53!important;
+}
+body.theme-light .staff-alarm-popover details summary,
+body.theme-light .staff-alarm-popover details b,
+body.theme-light .staff-alarm-popover details li,
+body.theme-light .staff-alarm-popover details div{
+ color:#344b61!important;-webkit-text-fill-color:#344b61!important;opacity:1!important;
+}
+body.theme-light .staff-alarm-popover details summary{
+ color:#80520b!important;-webkit-text-fill-color:#80520b!important;
+}
+body.theme-light .staff-alarm-popover label{
+ color:#40566c!important;-webkit-text-fill-color:#40566c!important;
+}
+body.theme-light .staff-alarm-popover select,
+body.theme-light #staffAlarmSettingsHost select{
+ background:#fff!important;color:#172b40!important;
+ -webkit-text-fill-color:#172b40!important;border:1px solid #aebfcd!important;
+}
+/* Device Health rows were created with inline dark backgrounds and low-contrast text. */
+body.theme-light #staffHealthRows>div{
+ background:linear-gradient(145deg,#f8fbfe,#e8f0f6)!important;
+ border:1px solid #c5d1dc!important;color:#263d53!important;
+}
+body.theme-light #staffHealthRows>div>span{
+ flex:1 1 56%!important;min-width:0!important;
+ color:#344b61!important;-webkit-text-fill-color:#344b61!important;
+}
+body.theme-light #staffHealthRows>div>strong{
+ flex:0 0 42%!important;width:42%!important;max-width:42%!important;min-width:0!important;
+ text-align:right!important;white-space:normal!important;word-break:normal!important;
+ overflow-wrap:anywhere!important;font-size:.9rem!important;line-height:1.3!important;
+ color:#80520b!important;-webkit-text-fill-color:#80520b!important;
+}
+body.theme-light #staffHealthCheckedAt{
+ color:#344b61!important;-webkit-text-fill-color:#344b61!important;opacity:1!important;
+}
+body.theme-light #staffHealthRefresh{
+ background:linear-gradient(135deg,#f5d994,#d4a448)!important;
+ color:#172b40!important;-webkit-text-fill-color:#172b40!important;
+ border:1px solid #c79536!important;
+}
+@media(max-width:420px){
+ body.theme-light #staffHealthRows>div{gap:8px!important;padding:10px!important}
+ body.theme-light #staffHealthRows>div>span{flex-basis:54%!important;font-size:.9rem!important}
+ body.theme-light #staffHealthRows>div>strong{flex-basis:44%!important;width:44%!important;max-width:44%!important;font-size:.84rem!important}
+}
+
+
+/* Premium Light: finish dynamic components used across Staff pages */
+body.theme-light #pageContent .ticket .qty,
+body.theme-light #pageContent input.qty{
+ background:#fff!important;color:#172b40!important;
+ -webkit-text-fill-color:#172b40!important;border:1px solid #aebfcd!important;
+}
+body.theme-light #pageContent .ui-mode-settings .ui-mode-choice{
+ background:linear-gradient(145deg,#fff,#e5edf4)!important;
+ color:#20384e!important;-webkit-text-fill-color:#20384e!important;
+ border:1px solid #bdcbd7!important;
+}
+body.theme-light #pageContent .ui-mode-settings .ui-mode-choice.selected{
+ background:linear-gradient(135deg,#f5d994,#d4a448)!important;
+ color:#172b40!important;-webkit-text-fill-color:#172b40!important;
+ border-color:#c79536!important;
+}
+body.theme-light #pageContent .mk-section,
+body.theme-light #pageContent .mk-kpi,
+body.theme-light #pageContent .mk-dept-card{
+ background:linear-gradient(145deg,#ffffff,#edf3f8)!important;
+ border:1px solid #c5d1dc!important;color:#172b40!important;
+}
+body.theme-light #pageContent .mk-section *,
+body.theme-light #pageContent .mk-kpi *,
+body.theme-light #pageContent .mk-dept-card *{
+ color:#344b61!important;-webkit-text-fill-color:#344b61!important;
+ text-shadow:none!important;
+}
+body.theme-light #pageContent .mk-section h2,
+body.theme-light #pageContent .mk-section h3,
+body.theme-light #pageContent .mk-kpi-value,
+body.theme-light #pageContent .mk-dept-copy strong{
+ color:#80520b!important;-webkit-text-fill-color:#80520b!important;
+}
+body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;border-color:#bdcbd7!important}
+body.theme-light #pageContent #staffCloudSyncConflict{
+ background:linear-gradient(145deg,#fff8e8,#f6e9c9)!important;
+ border:1px solid #d9bd7d!important;color:#604719!important;
+}
+body.theme-light #pageContent #staffCloudSyncConflict *,
+body.theme-light #pageContent #staffCloudSyncError *{
+ color:#604719!important;-webkit-text-fill-color:#604719!important;
+ text-shadow:none!important;opacity:1!important;
+}
+body.theme-light #pageContent #staffCloudSyncError{
+ background:linear-gradient(145deg,#fff5f2,#f8e5e1)!important;
+ border:1px solid #e0b4aa!important;color:#762f28!important;
+}
+body.theme-light #pageContent #staffCloudSyncError *{
+ color:#762f28!important;-webkit-text-fill-color:#762f28!important;
+}
+body.theme-light #staffHealthRows>div>strong[style*="#65e5a2"]{
+ color:#176b45!important;-webkit-text-fill-color:#176b45!important;
+}
+body.theme-light #staffHealthRows>div>strong[style*="#ffd17b"]{
+ color:#80520b!important;-webkit-text-fill-color:#80520b!important;
+}
+
 /* Compact, consistent Staff Settings layout */
 .staff-settings{padding:14px!important;display:grid;gap:11px}
 .staff-settings-heading h2{margin:0 0 3px;color:#ffd778;font-size:1.2rem}
