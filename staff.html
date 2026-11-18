@@ -2523,7 +2523,10 @@ function showCloudError(msg){
  retry.onclick=()=>{if(!syncBusy&&readStaffDurableSyncQueue().length)syncTickets([])};
  banner.append(message,retry);
 }
-function mapCloud(row){return {id:row.id,department:row.department,name:row.name,price:row.price===null?null:Number(row.price),quantity:Number(row.quantity||0),image:row.image_url||null,imageUrl:row.image_url||null,imagePath:row.image_path||null,location:row.location||'',createdAt:row.created_at,updatedAt:row.updated_at,createdBy:row.created_by}}
+function mapCloud(row){
+ const imageUrl=row.image_url||row.image||((row.image_path&&sb?.storage?.from('ticket-images')?.getPublicUrl(row.image_path)?.data?.publicUrl)||null);
+ return {id:row.id,department:row.department,name:row.name,price:row.price===null?null:Number(row.price),quantity:Number(row.quantity||0),image:imageUrl,imageUrl,imagePath:row.image_path||null,location:row.location||'',createdAt:row.created_at,updatedAt:row.updated_at,createdBy:row.created_by}
+}
 async function loadCloud(){
  // Capture local tickets before reading Cloud: the Owner browser may contain the only surviving copy.
  let localTicketsBeforeCloud=[];
@@ -2996,7 +2999,14 @@ function installUILanguageObserver(){
 }
 function tr(k){return T[lang]?.[k]||T.en[k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||(!!selectedStaffEventLocationId&&String(t.location||'')==='event:'+selectedStaffEventLocationId)))}
+function eventTicketMatchesLocation(ticket,id){
+ const location=String(ticket.location||'').trim(),key=String(id||'').trim();
+ if(!location||!key)return false;
+ if(location==='event:'+key||location===key)return true;
+ const knownName=String(staffEventLocations.find(x=>String(x.id)===key)?.location_name||'').trim();
+ return !!knownName&&location===knownName;
+}
+function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||eventTicketMatchesLocation(t,selectedStaffEventLocationId)))}
 function navRender(){const visiblePages=PAGES.filter(p=>p.id==='dashboard'||p.id==='payroll'||p.id==='settings'||(p.id==='customer-visits'&&(selectedStaffDepartment==='entry'||selectedStaffDepartment==='all'))||(p.id==='train'&&(selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'))||(['sale','entry','playing','event'].includes(p.id)&&(selectedStaffDepartment==='all'||p.id===selectedStaffDepartment)));document.getElementById('nav').innerHTML=visiblePages.map(p=>{const fixedLabels={sale:{en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန'},entry:{en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန'},playing:{en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန'},event:{en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန'},payroll:{en:'My Payroll',th:'เงินเดือนของฉัน',my:'ကျွန်ုပ်၏လစာ'},settings:{en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ'},'customer-visits':{en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း'},train:{en:'Garden Train',th:'Garden Train',my:'Garden Train'}};const label=fixedLabels[p.id]?.[lang]||p[lang]||p.en;return '<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'" data-no-translate>'+p.icon+' '+label+'</button>'}).join('')+'<button type="button" id="staffLogout" data-no-translate style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{await recordStaffActivity(false,false)}catch(e){console.warn('Could not mark Staff inactive before logout:',e)}try{await sendStaffOwnerNotification('logout')}catch(e){console.warn('Logout notification could not be sent:',e)}try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}if(window.staffActivityTimer){clearInterval(window.staffActivityTimer);window.staffActivityTimer=null}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='all';page='all';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
 function go(p){page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 
