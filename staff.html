@@ -4000,4 +4000,45 @@ installUILanguageObserver();applyUILanguage();
 })();
 </script>
 <script src="./ui-mode.js" defer></script>
+<style id="garden-train-compact-v2">
+/* Garden Train compact layout v2 — presentation only; scoped to this page */
+#pageContent[data-ui-page="train"]{min-width:0}
+#pageContent[data-ui-page="train"]>.section-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0 12px}
+#pageContent[data-ui-page="train"]>.section-title h2{font-size:clamp(1.05rem,4vw,1.35rem);line-height:1.2;margin:0}
+#pageContent[data-ui-page="train"]>.section-title .subtle{font-size:.78rem;line-height:1.25;text-align:right}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday){display:grid;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;margin:0 0 10px!important}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday)>.panel{min-width:0;padding:9px 10px!important;border-radius:14px}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday) .subtle{font-size:clamp(.64rem,2.5vw,.76rem);line-height:1.2;white-space:normal}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday) strong{display:block;font-size:clamp(.95rem,4vw,1.18rem)!important;line-height:1.15;margin-top:4px;overflow-wrap:anywhere}
+#pageContent[data-ui-page="train"] .train-depart-card{padding:12px!important;margin:0!important;border-radius:17px}
+#pageContent[data-ui-page="train"] .train-depart-card h3{font-size:1rem;line-height:1.2;margin:0 0 9px}
+#pageContent[data-ui-page="train"] #trainDepartForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:end}
+#pageContent[data-ui-page="train"] #trainDepartForm label{display:flex;flex-direction:column;gap:4px;min-width:0;margin:0;font-size:.8rem;line-height:1.2}
+#pageContent[data-ui-page="train"] #trainDepartForm label:first-child{grid-column:1/-1}
+#pageContent[data-ui-page="train"] #trainDepartForm input,#pageContent[data-ui-page="train"] #trainDepartForm select{width:100%;min-width:0;height:40px;min-height:40px;padding:6px 9px;font-size:14px;line-height:1.15;border-radius:11px}
+#pageContent[data-ui-page="train"] #trainDepartForm button{grid-column:1/-1;min-height:43px;padding:8px 10px;font-size:.88rem;border-radius:11px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory){margin:12px 0 0!important;padding:12px!important;border-radius:17px;min-width:0;overflow:hidden}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .section-title{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin:0 0 9px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .section-title h3{font-size:1rem;line-height:1.2;margin:0}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .section-title .subtle{font-size:.74rem;line-height:1.25}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:7px 0;width:100%;min-width:0}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions input{width:100%!important;max-width:none!important;min-width:0;height:38px;min-height:38px;padding:6px 8px;font-size:12px;border-radius:10px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions button{width:100%;min-width:0;min-height:38px;padding:7px 6px;font-size:.73rem;line-height:1.15;white-space:normal;border-radius:10px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory)> .panel{margin-top:8px!important;padding:9px!important;border-radius:13px}
+#pageContent[data-ui-page="train"] #trainReportMode,#pageContent[data-ui-page="train"] #trainReportDate,#pageContent[data-ui-page="train"] #trainReportMonth{width:100%;min-width:0;height:39px;min-height:39px;padding:6px 8px;font-size:13px;border-radius:10px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) table{width:100%!important;min-width:0!important;max-width:100%;table-layout:fixed!important;font-size:11px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) th,#pageContent[data-ui-page="train"] .panel:has(#trainHistory) td{padding:7px 4px!important;white-space:normal;overflow-wrap:anywhere;line-height:1.2}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) th{font-size:10px}
+@media(max-width:380px){
+#pageContent[data-ui-page="train"]>.section-title .subtle{font-size:.68rem}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday){gap:5px!important}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday)>.panel{padding:8px 7px!important}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday) .subtle{font-size:.62rem}
+#pageContent[data-ui-page="train"] .cards:has(#trainToday) strong{font-size:.92rem!important}
+#pageContent[data-ui-page="train"] .train-depart-card{padding:10px!important}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory){padding:10px!important}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions{gap:5px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions button{font-size:.68rem;padding:6px 4px}
+}
+</style>
 </body></html>
