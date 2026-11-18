@@ -4040,5 +4040,8 @@ installUILanguageObserver();applyUILanguage();
 #pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions{gap:5px}
 #pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions button{font-size:.68rem;padding:6px 4px}
 }
+
+/* Match Owner Garden Train page: hide the Staff ticket-inventory KPI strip only while Train is open. */
+main.wrap:has(#pageContent[data-ui-page="train"]) #stats{display:none!important}
 </style>
 </body></html>
