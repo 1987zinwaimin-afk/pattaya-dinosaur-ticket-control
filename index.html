@@ -4066,7 +4066,7 @@ function installUILanguageObserver(){
 function tr(k){return T[lang]?.[k]||T.en[k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function normalizeEventLocationAlias(value){
- return String(value||'').trim().toLowerCase().replace(/^terminal\\s*/,'').replace(/\\s+/g,' ');
+ return String(value||'').trim().toLowerCase().replace(/^terminal\s*/,'').replace(/\s+/g,' ');
 }
 function eventTicketMatchesLocation(ticket,id){
  const location=String(ticket.location||'').trim(),key=String(id||'').trim();
