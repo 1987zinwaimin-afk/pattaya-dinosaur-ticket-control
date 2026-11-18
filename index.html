@@ -5434,5 +5434,8 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
 #pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions{gap:5px}
 #pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions button{font-size:.68rem;padding:6px 4px}
 }
+
+/* Notifications are visual-only overlays: allow taps to pass through to Owner controls. */
+#staffLoginToast,#ownerEmergencyAlarmNotice{pointer-events:none!important}
 </style>
 </body></html>
