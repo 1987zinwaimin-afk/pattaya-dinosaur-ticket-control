@@ -3754,25 +3754,28 @@ async function refreshOwnerPushSubscription(){
 }
 function showStaffLoginNotice(row){
  const p=getStaffNotifyPrefs();
- const depts={sale:'Sale Ticket',entry:'Entry Ticket',playing:'Playing Ticket',event:'Event Ticket',all:'All Departments'};
- const msg=(row.display_name||'Staff')+(row.staff_id?' · ID '+row.staff_id:'')+' logged in — '+(depts[row.department]||row.department||'Unknown Department');
+ const depts={sale:'Sale',entry:'Entry',playing:'Playing',event:'Event',all:'All Depts'};
+ const name=row.display_name||'Staff',id=row.staff_id?'#'+row.staff_id:'';
+ const dept=depts[row.department]||row.department||'Unknown Dept';
+ const fullMsg=name+(id?' · ID '+row.staff_id:'')+' logged in — '+dept;
  playStaffLoginTone(p.sound);
  let toast=document.getElementById('staffLoginToast');
  if(!toast){toast=document.createElement('div');toast.id='staffLoginToast';document.body.appendChild(toast)}
- const base='position:fixed;z-index:99999;box-sizing:border-box;max-width:min(360px,calc(100vw - 24px));padding:10px 13px;color:#f4f7fb;font-size:14px;line-height:1.35;font-weight:700;white-space:normal;overflow-wrap:anywhere;border-radius:14px;box-shadow:0 8px 24px #0008;';
+ const base='position:fixed;z-index:99999;box-sizing:border-box;width:max-content;max-width:min(94vw,420px);padding:9px 12px;color:#f4f7fb;font-size:13px;line-height:1.25;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:13px;box-shadow:0 8px 24px #0008;';
  const styles={
   '3':'right:12px;top:12px;border:1px solid #d8b65e;background:linear-gradient(135deg,#123b58f2,#071a2cf5);',
-  '6':'right:12px;top:12px;border:1px solid #45c5e8;border-radius:999px;background:#071a2cf5;padding:9px 14px;',
-  '2':'left:50%;top:12px;transform:translateX(-50%);width:min(360px,calc(100vw - 24px));text-align:center;border:1px solid #d8b65e;background:linear-gradient(135deg,#123b58f2,#071a2cf5);',
-  '5':'left:12px;top:12px;width:min(320px,calc(100vw - 24px));border:1px solid #d8b65e;border-radius:14px;background:linear-gradient(135deg,#123b58f2,#071a2cf5);'
+  '6':'right:12px;top:12px;border:1px solid #45c5e8;border-radius:999px;background:#071a2cf5;padding:8px 12px;',
+  '2':'left:50%;top:12px;transform:translateX(-50%);border:1px solid #d8b65e;background:linear-gradient(135deg,#123b58f2,#071a2cf5);',
+  '5':'left:12px;top:12px;border:1px solid #d8b65e;border-radius:13px;background:linear-gradient(135deg,#123b58f2,#071a2cf5);'
  };
  toast.style.cssText=base+(styles[p.style]||styles['3']);
- toast.textContent='🔔 Staff Login · '+msg;
+ toast.textContent='🔔 Staff Login · '+name+(id?' · '+id:'')+' · '+dept;
+ toast.title=fullMsg;
  toast.style.display='block';
  clearTimeout(window.staffLoginToastTimer);
  window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},7000);
  if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||p.background==='both')){
-  try{new Notification('Staff Login',{body:msg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}
+  try{new Notification('Staff Login',{body:fullMsg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}
  }
 }
 async function pollStaffLoginNotifications(){
