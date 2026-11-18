@@ -1837,7 +1837,7 @@ async function syncTickets(snapshot){
  }catch(e){console.error('Cloud sync failed',e);showCloudError('Cloud sync failed: '+(e.message||e));syncPending=syncPending||snapshot;setTimeout(()=>{if(!syncBusy&&syncPending)syncTickets(syncPending)},3000);}
  finally{syncBusy=false;if(syncPending)syncTickets(syncPending);}
 }
-function showCloudError(msg){const e=document.getElementById('authError');if(e&&document.getElementById('authScreen').style.display!=='none')e.textContent=msg;else console.error(msg)}
+function showCloudError(msg){const e=document.getElementById('authError'),screen=document.getElementById('authScreen');if(e&&screen&&screen.style.display!=='none'){e.textContent=msg;return}console.error('Event Staff portal:',msg);const root=document.getElementById('pageContent');if(!root)return;let panel=document.getElementById('eventStaffConnectionError');if(!panel){panel=document.createElement('section');panel.id='eventStaffConnectionError';panel.className='panel';panel.style.cssText='margin:14px;padding:18px;border:1px solid #d9a441;border-radius:16px;background:#102a42;color:#fff';root.prepend(panel)}panel.innerHTML='<strong style="color:#f4d58a">Event Staff connection problem</strong><p style="margin:8px 0 14px">'+escapeHtml(msg)+'</p><button type="button" class="gold" id="retryEventStaffPortal">↻ Retry connection</button>';const retry=document.getElementById('retryEventStaffPortal');if(retry)retry.onclick=async()=>{retry.disabled=true;retry.textContent='Reconnecting…';try{await loadCloud();listenRealtime();await prepareEventSessionAfterLogin();render();panel.remove()}catch(error){showCloudError(error.message||String(error))}}}
 function mapCloud(row){return {id:row.id,department:row.department,name:row.name,price:row.price===null?null:Number(row.price),quantity:Number(row.quantity||0),image:row.image_url||null,imageUrl:row.image_url||null,imagePath:row.image_path||null,location:row.location||'',createdAt:row.created_at,updatedAt:row.updated_at,createdBy:row.created_by}}
 
 async function ensureStaffEventLocationTickets(locationId){
@@ -2033,10 +2033,13 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  try{
   await loadCloud();
   listenRealtime();
+  // Render the Event workspace before loading the selected Event Location.
+  // A location/session query should never leave the entire portal blank.
+  render();
   await prepareEventSessionAfterLogin();
   render();
   showStaffWelcome(sharedProfile,selectedStaffDepartment);
- }catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
+ }catch(e){showCloudError('Could not load Event Staff data: '+(e.message||e))}
  Promise.allSettled(backgroundTasks);
 }
 // Staff ID lookup: existing IDs fill the registered name; new IDs remain available for self-registration.
@@ -2741,19 +2744,31 @@ installUILanguageObserver();applyUILanguage();
 </script>
 <script>
 (function(){
- const dateEl=document.getElementById('appDateValue'),dayEl=document.getElementById('appWeekdayValue'),timeEl=document.getElementById('appTimeValue'),holidayEl=document.getElementById('appHolidayValue');
- if(!dateEl||!dayEl||!timeEl)return;
- const keyPartsFmt=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'});
- const official={'2026-01-01':'New Year’s Day','2026-01-02':'Additional New Year Holiday','2026-03-03':'Makha Bucha Day','2026-04-06':'Chakri Memorial Day','2026-04-13':'Songkran Festival','2026-04-14':'Songkran Festival','2026-04-15':'Songkran Festival','2026-05-01':'National Labour Day','2026-05-04':'Coronation Day','2026-05-31':'Visakha Bucha Day','2026-06-01':'Substitution for Visakha Bucha Day','2026-06-03':'Queen Suthida’s Birthday','2026-07-28':'King Maha Vajiralongkorn’s Birthday','2026-07-29':'Asarnha Bucha Day','2026-08-12':'Queen Sirikit The Queen Mother’s Birthday · Mother’s Day','2026-10-13':'King Bhumibol Adulyadej Memorial Day','2026-10-23':'King Chulalongkorn Memorial Day','2026-12-05':'King Bhumibol’s Birthday · National Day · Father’s Day','2026-12-07':'Substitution for 5 December Holiday','2026-12-10':'Constitution Day','2026-12-31':'New Year’s Eve'};
- const special={'2026-01-10':'Thailand National Children’s Day','2026-01-16':'Thailand Teachers’ Day','2026-05-13':'Royal Ploughing Ceremony Day · Government offices only','2026-07-30':'Khao Phansa · Buddhist Lent begins','2026-10-26':'Ok Phansa · End of Buddhist Lent','2026-11-24':'Loy Krathong Festival'};
  function updateThailandDateTime(){
-  const now=new Date(),dateParts=Object.fromEntries(keyPartsFmt.formatToParts(now).map(p=>[p.type,p.value])),key=dateParts.year+'-'+dateParts.month+'-'+dateParts.day,thai=lang==='th',locale=thai?'th-TH-u-nu-latn':'en-US',weekday=new Intl.DateTimeFormat(locale,{timeZone:'Asia/Bangkok',weekday:'long'}).format(now),dateText=new Intl.DateTimeFormat(thai?'th-TH-u-nu-latn':'en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'}).format(now),timeText=new Intl.DateTimeFormat(thai?'th-TH-u-nu-latn':'en-US',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!thai}).format(now),day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
-  dateEl.textContent=dateText.replace(/\//g,'.');dayEl.textContent=weekday;
-  dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);
-  if(holidayEl){const label=holiday||observance||(weekend?'Weekend':'');holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);}
-  timeEl.textContent=timeText;
+  const dateEl=document.getElementById('appDateValue'),dayEl=document.getElementById('appWeekdayValue'),timeEl=document.getElementById('appTimeValue'),holidayEl=document.getElementById('appHolidayValue');
+  if(!dateEl||!dayEl||!timeEl)return;
+  const official={'2026-01-01':'New Year’s Day','2026-01-02':'Additional New Year Holiday','2026-03-03':'Makha Bucha Day','2026-04-06':'Chakri Memorial Day','2026-04-13':'Songkran Festival','2026-04-14':'Songkran Festival','2026-04-15':'Songkran Festival','2026-05-01':'National Labour Day','2026-05-04':'Coronation Day','2026-05-31':'Visakha Bucha Day','2026-06-01':'Substitution for Visakha Bucha Day','2026-06-03':'Queen Suthida’s Birthday','2026-07-28':'King Maha Vajiralongkorn’s Birthday','2026-07-29':'Asarnha Bucha Day','2026-08-12':'Queen Sirikit The Queen Mother’s Birthday · Mother’s Day','2026-10-13':'King Bhumibol Adulyadej Memorial Day','2026-10-23':'King Chulalongkorn Memorial Day','2026-12-05':'King Bhumibol’s Birthday · National Day · Father’s Day','2026-12-07':'Substitution for 5 December Holiday','2026-12-10':'Constitution Day','2026-12-31':'New Year’s Eve'};
+  const special={'2026-01-10':'Thailand National Children’s Day','2026-01-16':'Thailand Teachers’ Day','2026-05-13':'Royal Ploughing Ceremony Day · Government offices only','2026-07-30':'Khao Phansa · Buddhist Lent begins','2026-10-26':'Ok Phansa · End of Buddhist Lent','2026-11-24':'Loy Krathong Festival'};
+  try{
+   const now=new Date(),parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(now),values={};parts.forEach(part=>values[part.type]=part.value);
+   const key=values.year+'-'+values.month+'-'+values.day,thai=localStorage.getItem('tctl-lang')==='th',weekday=new Intl.DateTimeFormat(thai?'th-TH-u-nu-latn':'en-US',{timeZone:'Asia/Bangkok',weekday:'long'}).format(now);
+   const dateText=new Intl.DateTimeFormat(thai?'th-TH-u-nu-latn':'en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'2-digit',year:'numeric'}).format(now);
+   const timeText=new Intl.DateTimeFormat(thai?'th-TH-u-nu-latn':'en-US',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:!thai}).format(now);
+   const day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
+   dateEl.textContent=dateText.replace(/\//g,'.');dayEl.textContent=weekday;
+   dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);
+   if(holidayEl){const label=holiday||observance||(weekend?'Weekend':'');holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance)}
+   timeEl.textContent=timeText;
+  }catch(error){
+   console.warn('Thailand date/time formatter fallback:',error);
+   const now=new Date(),dateText=now.toLocaleDateString('en-GB',{timeZone:'Asia/Bangkok'}),timeText=now.toLocaleTimeString('en-US',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+   dateEl.textContent=dateText.replace(/\//g,'.');dayEl.textContent=now.toLocaleDateString('en-US',{timeZone:'Asia/Bangkok',weekday:'long'});timeEl.textContent=timeText;
+  }
  }
- updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
+ updateThailandDateTime();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',updateThailandDateTime,{once:true});
+ window.addEventListener('pageshow',updateThailandDateTime);
+ if(!window.eventStaffClockTimer)window.eventStaffClockTimer=window.setInterval(updateThailandDateTime,1000);
 })();
 </script>
 
