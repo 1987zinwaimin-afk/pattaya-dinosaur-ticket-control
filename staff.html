@@ -2149,7 +2149,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 
 <div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
-<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
+<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="all">All Departments</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
 
@@ -2665,7 +2665,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  const enteredName=document.getElementById('authName').value.trim();
  const enteredStaffId=document.getElementById('authStaffId').value.trim();
  const requestedDepartmentRaw=departmentOverride||document.getElementById('staffDepartment').value||'sale';
- const requestedDepartment=['sale','entry','playing'].includes(requestedDepartmentRaw)?requestedDepartmentRaw:'sale';
+ const requestedDepartment=['all','sale','entry','playing'].includes(requestedDepartmentRaw)?requestedDepartmentRaw:'sale';
  // Read the active identity and automatically replace a stale anonymous session on shared staff phones.
  let profile=knownProfile;
  if(!profile){
@@ -2696,7 +2696,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  // Ensure the Normal Staff emergency-alarm control is initialized after authentication, even if the first render happened before its script loaded.
  setTimeout(()=>{try{window.renderStaffAlarmSetupBanner?.()}catch(error){console.warn('Staff emergency alarm control initialization failed:',error)}},0);
  const previousDepartment=localStorage.getItem('tctl-staff-department')||'';
- const selectedDepartment=['sale','entry','playing'].includes(requestedDepartment)?requestedDepartment:(['sale','entry','playing'].includes(previousDepartment)?previousDepartment:'sale');
+ const selectedDepartment=['all','sale','entry','playing'].includes(requestedDepartment)?requestedDepartment:(['all','sale','entry','playing'].includes(previousDepartment)?previousDepartment:'sale');
  selectedStaffDepartment=selectedDepartment;
  localStorage.setItem('tctl-staff-department',selectedStaffDepartment);
  page=selectedStaffDepartment==='all'?'dashboard':selectedStaffDepartment;
@@ -2829,7 +2829,7 @@ document.getElementById('authForm').onsubmit=async e=>{
  const staffIdInput=document.getElementById('authStaffId');
  const staffId=staffIdInput.value.trim();
  // Freeze department before asynchronous lookup/session calls.
- const chosenDepartment=['sale','entry','playing'].includes(document.getElementById('staffDepartment').value)?document.getElementById('staffDepartment').value:'sale';
+ const chosenDepartment=['all','sale','entry','playing'].includes(document.getElementById('staffDepartment').value)?document.getElementById('staffDepartment').value:'sale';
  const err=document.getElementById('authError');
  try{
   if(!/^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/.test(staffId)){
