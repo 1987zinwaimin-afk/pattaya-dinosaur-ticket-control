@@ -4065,12 +4065,24 @@ function installUILanguageObserver(){
 }
 function tr(k){return T[lang]?.[k]||T.en[k]||k}function dep(){return DEPTS.find(d=>d.id===page)}function money(n){return '฿'+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function normalizeEventLocationAlias(value){
+ return String(value||'').trim().toLowerCase().replace(/^terminal\\s*/,'').replace(/\\s+/g,' ');
+}
 function eventTicketMatchesLocation(ticket,id){
  const location=String(ticket.location||'').trim(),key=String(id||'').trim();
  if(!location||!key)return false;
  if(location==='event:'+key||location===key)return true;
- const knownName=String(eventLocationRows.find(x=>String(x.id)===key)?.location||'').trim();
- return !!knownName&&location===knownName;
+ const active=eventLocationRows.find(x=>String(x.id)===key);
+ const knownName=String(active?.location||'').trim();
+ if(knownName&&location===knownName)return true;
+ // Compatibility for a recreated Event Location (e.g. "21") whose older ticket
+ // templates remain attached to its archived "Terminal 21" session.
+ if(active&&knownName&&Array.isArray(eventLocationArchivedRows)){
+  const alias=normalizeEventLocationAlias(knownName);
+  const previous=eventLocationArchivedRows.find(x=>normalizeEventLocationAlias(x.location_name)===alias);
+  if(previous&&location==='event:'+String(previous.id))return true;
+ }
+ return false;
 }
 function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||eventTicketMatchesLocation(t,activeEventLocationNo)))}
 function canViewOwnerStaffActivity(){return !!(currentUser&&currentRole==='owner')}
@@ -4221,7 +4233,7 @@ async function loadBackdateSales(date){
   (manual||[]).forEach(r=>backdateSalesByTicket[r.ticket_id]=(backdateSalesByTicket[r.ticket_id]||0)+Number(r.quantity||0));
  }
 }
-let eventLocationRows=[],eventLocationRefreshBusy=false,eventLocationPollTimer=null,activeEventLocationNo='';
+let eventLocationRows=[],eventLocationArchivedRows=[],eventLocationRefreshBusy=false,eventLocationPollTimer=null,activeEventLocationNo='';
 function eventLocationName(n){return reportText('Event '+n,'กิจกรรม '+n)}
 function renderEventLocationsHtml(){
  return '<section class="panel" id="eventLocationsPanel" style="margin:14px 0;padding:14px;border:1px solid rgba(232,185,79,.45)"><h2 style="margin:0 0 8px;color:var(--gold)">📍 Event Locations</h2><p class="subtle">Owner can create unlimited event locations. Event Staff can also create locations from the Event Ticket page.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="newEventLocationName" maxlength="160" placeholder="Enter Event Location name" style="flex:1;min-width:180px"><button type="button" class="gold" id="createEventLocationBtn">＋ Add Location</button></div><div id="eventLocationList" style="display:grid;gap:8px;margin-top:12px"></div><p id="eventLocationStatus" class="subtle" aria-live="polite"></p></section>';
@@ -4232,11 +4244,13 @@ async function refreshEventLocations(force=false){
  if(!currentUser||!sb||eventLocationRefreshBusy)return;
  eventLocationRefreshBusy=true;
  try{
-  const [{data:rows,error},{data:legacy, error:legacyError}]=await Promise.all([
+  const [{data:rows,error},{data:legacy, error:legacyError},{data:archived,error:archivedError}]=await Promise.all([
    sb.from('event_location_sessions').select('id,location_name,created_by,staff_id,created_at,is_archived,event_start_date,event_end_date,event_days').eq('is_archived',false).order('created_at',{ascending:false}),
-   sb.from('event_locations').select('event_no,location,updated_at').order('event_no',{ascending:true})
+   sb.from('event_locations').select('event_no,location,updated_at').order('event_no',{ascending:true}),
+   sb.from('event_location_sessions').select('id,location_name,created_at').eq('is_archived',true).order('created_at',{ascending:false})
   ]);
-  if(error)throw error;if(legacyError)throw legacyError;
+  if(error)throw error;if(legacyError)throw legacyError;if(archivedError)throw archivedError;
+  eventLocationArchivedRows=archived||[];
   eventLocationRows=(rows||[]).map(x=>({id:x.id,location:String(x.location_name||''),staff_id:x.staff_id||'',created_by:x.created_by,created_at:x.created_at,event_start_date:x.event_start_date,event_end_date:x.event_end_date,event_days:x.event_days}));
   (legacy||[]).filter(x=>String(x.location||'').trim()).forEach(x=>eventLocationRows.push({id:String(x.event_no),location:String(x.location),legacy:true}));
   const status=document.getElementById('eventLocationStatus');
