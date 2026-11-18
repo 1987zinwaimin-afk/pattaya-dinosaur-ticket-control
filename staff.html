@@ -2961,6 +2961,9 @@ function renderStaffDashboard(visible){
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts>.staff-dash-dept-card{width:100%;max-width:none;box-sizing:border-box;margin:0}
+/* Robust dashboard selector: page routing may render the page marker on a wrapper */
+#pageContent .staff-dash-depts{display:grid!important;width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important}
+#pageContent .staff-dash-depts>.staff-dash-dept-card{display:flex!important;width:100%!important;min-width:0!important;max-width:none!important;grid-column:auto!important;box-sizing:border-box!important;margin:0!important}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:3px;min-width:0;min-height:0;padding:10px;border:1px solid #d8b65f44;border-radius:13px;background:linear-gradient(145deg,#123651,#081b30);color:#f7f9fc;box-shadow:0 4px 12px #0002}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-icon{font-size:17px;line-height:1.15}
 #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card b{font-size:.84rem;line-height:1.25;color:#ffe2a0}
