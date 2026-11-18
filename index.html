@@ -4071,12 +4071,15 @@ function normalizeEventLocationAlias(value){
 function eventTicketMatchesLocation(ticket,id){
  const location=String(ticket.location||'').trim(),key=String(id||'').trim();
  if(!location||!key)return false;
- if(location==='event:'+key||location===key)return true;
+ const directKey='event:'+key;
+ const directRows=tickets.filter(t=>t.department==='event'&&String(t.location||'').trim()===directKey);
+ // Each Event has its own ticket records and quantities. Prefer those exclusively.
+ if(directRows.length)return location===directKey;
+ if(location===key)return true;
  const active=eventLocationRows.find(x=>String(x.id)===key);
  const knownName=String(active?.location||'').trim();
  if(knownName&&location===knownName)return true;
- // Compatibility for a recreated Event Location (e.g. "21") whose older ticket
- // templates remain attached to its archived "Terminal 21" session.
+ // Compatibility for old archived Event records where a location was recreated.
  if(active&&knownName&&Array.isArray(eventLocationArchivedRows)){
   const alias=normalizeEventLocationAlias(knownName);
   const previous=eventLocationArchivedRows.find(x=>normalizeEventLocationAlias(x.location_name)===alias);
