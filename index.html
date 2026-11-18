@@ -4546,6 +4546,7 @@ async function renderPayroll(){
  async function load(){
   const nextTargetUserId=owner?(document.getElementById('payrollPerson').value||currentUser.id):currentUser.id;
   const targetChanged=nextTargetUserId!==loadedTargetUserId;
+  const previousCalendarScroll=calendar.querySelector('#payrollCalendarScroller')?.scrollLeft||0;
   targetUserId=nextTargetUserId;
   const {data:setting,error:se}=await sb.from('payroll_settings').select('daily_rate,period_start,period_end').eq('user_id',targetUserId).maybeSingle();
   if(se)throw se;
@@ -4579,7 +4580,7 @@ async function renderPayroll(){
    const key=iso(d),row=map.get(key);
    days.push({date:key,status:row?.status||''});
   }
-  calendar.innerHTML='<div style="overflow-x:auto;padding:0 0 8px"><div style="display:grid;grid-template-columns:repeat(7,minmax(88px,1fr));gap:6px;min-width:650px">'+days.map(d=>{
+  calendar.innerHTML='<div id="payrollCalendarScroller" class="payroll-calendar-scroller" style="overflow-x:auto;overflow-y:hidden;padding:0 0 8px;max-width:100%;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y"><div style="display:grid;grid-template-columns:repeat(7,minmax(88px,1fr));gap:6px;min-width:650px">'+days.map(d=>{
    const border=d.status==='work'?'#269b72':d.status==='off'?'#e04452':'var(--line)';
    const label=d.status==='work'?reportText('Work day','วันทำงาน'):d.status==='off'?reportText('Day off','วันหยุด'):reportText('Not marked','ยังไม่ได้ระบุ');
    const cardBg=d.status==='off'?'rgba(224,68,82,.14)':'var(--panel2,#102b45)';
@@ -4595,6 +4596,7 @@ async function renderPayroll(){
    const pay=d.status==='work'?dayRate:0;
    return '<tr><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+formatReportDate(d.date)+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line)">'+status+'</td><td style="padding:7px 5px;border-bottom:1px solid var(--line);text-align:right">'+money(pay)+'</td></tr>';
   }).join('');
+  const calendarScroller=calendar.querySelector('#payrollCalendarScroller');if(calendarScroller){calendarScroller.scrollLeft=targetChanged?0:previousCalendarScroll;requestAnimationFrame(()=>{const currentScroller=calendar.querySelector('#payrollCalendarScroller');if(currentScroller)currentScroller.scrollLeft=targetChanged?0:previousCalendarScroll})}
   summary.innerHTML='<div class="summary-row"><span>'+reportText('Salary period','รอบเงินเดือน')+'</span><b>'+formatReportDate(start.value)+' → '+formatReportDate(end.value)+'</b></div><div class="summary-row"><span>'+reportText('Work days','วันทำงาน')+'</span><b>'+work+' / '+days.length+' '+reportText('days','วัน')+'</b></div><div class="summary-row"><span>'+reportText('Days off','วันหยุด')+'</span><b>'+off+' '+reportText('days','วัน')+'</b></div><div class="summary-row"><span>'+reportText('Not marked','ยังไม่ได้ระบุ')+'</span><b>'+unmarked+' '+reportText('days','วัน')+'</b></div><div class="summary-row"><span>'+reportText('Daily wage','ค่าจ้างรายวัน')+'</span><b>'+money(dayRate)+'</b></div><div class="summary-row"><span>'+reportText('Calculation','วิธีคำนวณ')+'</span><b>'+work+' × '+money(dayRate)+'</b></div><div style="margin-top:12px;padding:14px;border-radius:14px;background:var(--panel2,#102b45);border:1px solid var(--line)"><span class="subtle">'+reportText('Estimated salary','เงินเดือนโดยประมาณ')+'</span><div style="font-size:clamp(25px,6vw,34px);font-weight:900;color:var(--gold)">'+money(amount)+'</div></div><details style="margin-top:12px"><summary style="cursor:pointer;font-weight:750;color:var(--gold);padding:8px 0">'+reportText('View daily wage breakdown','ดูรายละเอียดค่าจ้างรายวัน')+' ('+days.length+' '+reportText('days','วัน')+')</summary><div style="overflow-x:auto"><table style="width:100%;min-width:300px;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">'+reportText('Date','วันที่')+'</th><th style="text-align:left;padding:7px 5px;border-bottom:1px solid var(--line)">'+reportText('Attendance','การเข้างาน')+'</th><th style="text-align:right;padding:7px 5px;border-bottom:1px solid var(--line)">'+reportText('Wage','ค่าจ้าง')+'</th></tr></thead><tbody>'+detailRows+'</tbody></table></div></details><p class="subtle" style="font-size:12px">'+reportText('Salary is calculated from saved Work day entries only. Day off and unmarked dates are not included.','คำนวณเงินเดือนจากวันที่บันทึกเป็นวันทำงานเท่านั้น ไม่รวมวันหยุดและวันที่ยังไม่ได้ระบุ')+'</p>';
  }
  document.getElementById('savePayrollSettings').onclick=async()=>{
