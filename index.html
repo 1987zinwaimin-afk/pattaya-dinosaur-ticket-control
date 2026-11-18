@@ -4131,7 +4131,9 @@ function renderSettings(){
   root.innerHTML='<section class="panel"><h2>⚙️ '+(lang==='th'?'ตั้งค่า':lang==='my'?'ဆက်တင်များ':'Settings')+'</h2><p class="subtle">Account and display preferences</p>'+
    '<div class="summary-row"><span>Language / ภาษา / ဘာသာစကား</span><select id="ownerSettingsLanguage" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div>'+
    '<div class="summary-row"><span>Display theme</span><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div>'+
+   (currentRole==='owner'?renderEventLocationsSettingsHtml():'')+
    '<button type="button" class="gold" id="ownerExportBackup">Export ticket backup (JSON)</button></section>';
+  if(currentRole==='owner')bindEventLocationManager();
   const language=root.querySelector('#ownerSettingsLanguage');
   const themeSelect=root.querySelector('#ownerSettingsTheme');
   if(language){language.value=lang;language.addEventListener('change',()=>{lang=language.value;localStorage.setItem('tctl-lang',lang);render(true);applyUILanguage()});}
