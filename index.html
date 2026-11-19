@@ -3746,7 +3746,7 @@ async function refreshCloudTickets(force=false){
   const {data,error}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
   if(error)throw error;
   const rows=data||[];
-  const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));
+  const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at,r.is_archived,r.archived_at,r.archived_by]));
   if(force||fingerprint!==lastCloudFingerprint){
    lastCloudFingerprint=fingerprint;
    tickets=rows.map(mapCloud);
@@ -4217,7 +4217,7 @@ function render(forcePageRender=false){
  // clock, or session callbacks must never replace the active form or dismiss Android's keyboard.
  const activePageRoot=document.getElementById('pageContent');
  if(!forcePageRender&&page==='customervisits'&&activePageRoot?.dataset.uiPage==='customervisits'&&activePageRoot.children.length)return;
-let visible=dep()?departmentTickets():tickets;
+let visible=dep()?departmentTickets():tickets.filter(t=>!t.isArchived);
 let total=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0),0):visible.reduce((a,t)=>a+t.quantity,0),value=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0)*(Number(t.price)||0),0):visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
@@ -4310,10 +4310,11 @@ function renderSettings(){
  }
 }
 function renderDashboard(){
- const all=tickets.reduce((s,t)=>s+(Number(t.quantity)||0),0);
- const val=tickets.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
+ const activeTickets=tickets.filter(t=>!t.isArchived);
+ const all=activeTickets.reduce((s,t)=>s+(Number(t.quantity)||0),0);
+ const val=activeTickets.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
  const deptRows=DEPTS.map(d=>{
-  const a=tickets.filter(t=>t.department===d.id),q=a.reduce((s,t)=>s+(Number(t.quantity)||0),0),v=a.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
+  const a=activeTickets.filter(t=>t.department===d.id),q=a.reduce((s,t)=>s+(Number(t.quantity)||0),0),v=a.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
   return {...d,count:a.length,qty:q,value:v};
  });
  const maxValue=Math.max(1,...deptRows.map(d=>d.value));
