@@ -3912,7 +3912,7 @@ document.getElementById('language').onchange=e=>{lang=e.target.value;localStorag
  if(doneBtn)doneBtn.addEventListener('click',closeHelp);
  if(help)help.addEventListener('click',event=>{if(event.target===help)closeHelp()});
  if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=20261118-staff-thai-language-fix-1',{scope:'/',updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Staff app service worker registration failed',err)));
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=20261119-ios-alarm-support-1',{scope:'/',updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Staff app service worker registration failed',err)));
  }
 })();
 
@@ -4053,8 +4053,8 @@ window.renderStaffAlarmSetupBanner=function(){
   const permitted=('Notification'in window)&&Notification.permission==='granted';
   const setStatus=(message,label,color)=>{if(status)status.textContent=message;if(badge){badge.textContent=label;badge.style.color=color}};
   btn.onclick=async()=>{
-   // This tap unlocks foreground alarm audio for later push events while this page stays open.
-   try{await window.unlockStaffAlarmAudio?.()}catch(_){}
+   // Start audio unlock immediately inside the tap, but do not await it before the iOS permission prompt.
+   const alarmAudioUnlock=window.unlockStaffAlarmAudio?.();
    btn.disabled=true;btn.textContent='Enabling notifications…';
    try{
     if(!currentUser||currentRole!=='staff')throw new Error('Please sign in to your Staff account first.');
@@ -4066,6 +4066,7 @@ window.renderStaffAlarmSetupBanner=function(){
     if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error(isIOS?'Web Push is unavailable here. Open the installed Dino Staff Home Screen app on iOS/iPadOS 16.4 or later.':'This browser does not support web push. Install the Staff website and allow notifications.');
     let permission=Notification.permission;if(permission!=='granted')permission=await Notification.requestPermission();
     if(permission!=='granted')throw new Error('Notification permission was not granted. Allow notifications for this website in phone settings.');
+    try{await alarmAudioUnlock}catch(_){}
     const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});await navigator.serviceWorker.ready;
     let subscription=await registration.pushManager.getSubscription();
     if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:alarmKeyBytes(STAFF_ALARM_VAPID_PUBLIC_KEY)});
