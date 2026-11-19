@@ -3733,7 +3733,7 @@ async function speakOwnerEmergencyThaiVoice(voiceURIOverride='',forcePreview=fal
   if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')return;
   if(document.visibilityState!=='visible'){ownerEmergencyThaiVoicePending=true;return}
   const prefs=getStaffNotifyPrefs();
-  if(!forcePreview&&prefs.thaiVoiceEnabled===false)return;
+  if(!forcePreview&&prefs.thaiVoiceEnabled===false){ownerEmergencyThaiVoicePending=false;return;}
   const synth=window.speechSynthesis;
   let voices=synth.getVoices();
   if(!voices.length){
