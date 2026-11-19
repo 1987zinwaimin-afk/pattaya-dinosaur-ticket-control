@@ -3080,7 +3080,27 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  object-position:center center!important;
 }
 
-</style>
+
+/* Owner and Staff shared chat */
+.chat-panel{padding:14px;display:flex;flex-direction:column;gap:12px;min-height:min(72dvh,760px)}
+.chat-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.chat-heading h2{margin:0;color:var(--gold);font-size:1.2rem}.chat-heading p{margin:5px 0 0;color:var(--muted);font-size:.84rem}
+.chat-connection{white-space:nowrap;font-size:.72rem;color:#76e0ad;border:1px solid #367b62;padding:5px 8px;border-radius:20px}
+.chat-messages{flex:1;min-height:280px;max-height:58dvh;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:8px 3px;scroll-behavior:smooth}
+.chat-message{max-width:min(88%,560px);display:flex;flex-direction:column;gap:4px}.chat-message.mine{align-self:flex-end;align-items:flex-end}.chat-message.theirs{align-self:flex-start;align-items:flex-start}
+.chat-message-meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:.72rem;color:var(--muted)}.chat-role{font-size:.64rem;padding:2px 6px;border-radius:10px;background:#284760;color:#dcecff}.chat-role.owner{background:#59451d;color:#ffe39b}.chat-message-meta time{opacity:.8}
+.chat-bubble{padding:10px 13px;border-radius:15px;background:linear-gradient(145deg,#143a59,#0c2945);border:1px solid #315675;overflow-wrap:anywhere;white-space:normal;line-height:1.45}
+.chat-message.mine .chat-bubble{background:linear-gradient(145deg,#174e76,#0b3557);border-color:#477da0;border-bottom-right-radius:5px}
+.chat-message.theirs .chat-bubble{border-bottom-left-radius:5px}
+.chat-empty{margin:auto;text-align:center;color:var(--muted);padding:25px 12px}
+.chat-error{color:#ff9aa9}
+.chat-compose{display:flex;align-items:flex-end;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.chat-compose textarea{flex:1;min-width:0;resize:vertical;max-height:130px;min-height:48px;background:#04172b;color:#f6f8fc;border:1px solid #365a79;border-radius:13px;padding:12px;font:inherit}
+.chat-compose button{min-width:86px;min-height:48px;padding:10px}
+.chat-footnote{font-size:.7rem;color:var(--muted);opacity:.8}
+.chat-nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:7px;border-radius:20px;background:#e33e70;color:#fff;font-size:11px;font-weight:800}
+@media(max-width:420px){.chat-panel{padding:10px;min-height:70dvh}.chat-messages{min-height:250px}.chat-message{max-width:94%}.chat-heading h2{font-size:1.05rem}.chat-compose{gap:6px}.chat-compose button{min-width:72px;padding:8px;font-size:.86rem}}
+\n</style>
 
 <style id="staff-database-compact-v1">
 /* Compact Staff Database page only; leave account data and other pages unchanged. */
@@ -3291,7 +3311,7 @@ const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-owner-auth-v1'}});
 let authMode="signin",currentUser=null,currentRole="staff",cloudReady=false,cloudChannel=null;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန',icon:'🎪'}];
-const PAGES=[{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',my:'ဒက်ရှ်ဘုတ်',icon:'◈'},...DEPTS,{id:'train',en:'Garden Train',th:'Garden Train',my:'Garden Train',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',my:'လစဉ်အနှစ်ချုပ်',icon:'▥'},{id:'payroll',en:'Staff Payroll',th:'เงินเดือนพนักงาน',my:'ဝန်ထမ်းလစာ',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်',icon:'♧'},{id:'eventhistory',en:'Event History',th:'ประวัติงานอีเวนต์',my:'ပွဲမှတ်တမ်း',icon:'🗂️'},{id:'customervisits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'},{id:'settings',en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ',icon:'⚙'}];
+const PAGES=[{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',my:'ဒက်ရှ်ဘုတ်',icon:'◈'},...DEPTS,{id:'train',en:'Garden Train',th:'Garden Train',my:'Garden Train',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',my:'လစဉ်အနှစ်ချုပ်',icon:'▥'},{id:'payroll',en:'Staff Payroll',th:'เงินเดือนพนักงาน',my:'ဝန်ထမ်းလစာ',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်',icon:'♧'},{id:'eventhistory',en:'Event History',th:'ประวัติงานอีเวนต์',my:'ပွဲမှတ်တမ်း',icon:'🗂️'},{id:'customervisits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'},{id:'chat',en:'Owner & Staff Chat',th:'แชต Owner และ Staff',my:'Owner နှင့် Staff စကားပြောရန်',icon:'💬'},{id:'settings',en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ',icon:'⚙'}];
 const T={en:{types:'Ticket types',qty:'Total quantity',value:'Inventory value',add:'＋ Add Ticket',save:'▤ Save Report',share:'↗ Share Report',search:'⌕ Search tickets...',none:'No tickets saved yet.',noHint:'Use Add Ticket to create your first real ticket.',sold:'Tickets sold',total:'Total',edit:'✎ Edit',more:'⋮ More',addQty:'＋ Add quantity',clear:'Clear quantity',del:'Delete ticket',name:'Ticket name',price:'Price (THB)',initial:'Initial quantity',image:'Ticket image',saveTicket:'Save ticket',cancel:'Cancel',location:'Event location',records:'Ticket records',today:'Today',month:'Month',custom:'Custom range',from:'From date',to:'To date',report:'Generate report',staffName:'Staff name',department:'Department',loginHistory:'Staff login activity is not connected yet.',cloud:'Cloud status',cloudMsg:'Connected to Ticket Control Live cloud database. Ticket changes sync in real time.',light:'Light theme',dark:'Dark theme',noReport:'No report data for this range.',addSuccess:'Ticket saved in this browser.',quantityPrompt:'Enter quantity to add',editTitle:'Edit ticket',newTitle:'Add ticket',reportSaved:'Report downloaded.',staffNotice:'Manage staff profiles, login activity and active status.'},th:{types:'ประเภทตั๋ว',qty:'จำนวนตั๋วทั้งหมด',value:'มูลค่าสต็อก',add:'＋ เพิ่มตั๋ว',save:'▤ บันทึกรายงาน',share:'↗ แชร์รายงาน',search:'⌕ ค้นหาตั๋ว...',none:'ยังไม่มีตั๋วที่บันทึก',noHint:'กดเพิ่มตั๋วเพื่อสร้างรายการแรก',sold:'จำนวนที่ขาย',total:'รวม',edit:'✎ แก้ไข',more:'⋮ เพิ่มเติม',addQty:'＋ เพิ่มจำนวน',clear:'ล้างจำนวน',del:'ลบตั๋ว',name:'ชื่อตั๋ว',price:'ราคา (THB)',initial:'จำนวนเริ่มต้น',image:'รูปภาพตั๋ว',saveTicket:'บันทึกตั๋ว',cancel:'ยกเลิก',location:'สถานที่จัดงาน',records:'รายการตั๋ว',today:'รายวัน',month:'รายเดือน',custom:'ช่วงวันที่กำหนด',from:'ตั้งแต่วันที่',to:'ถึงวันที่',report:'สร้างรายงาน',staffName:'ชื่อพนักงาน',department:'แผนก',loginHistory:'ยังไม่ได้เชื่อมต่อประวัติการเข้าสู่ระบบ',cloud:'สถานะคลาวด์',cloudMsg:'เชื่อมต่อฐานข้อมูล Ticket Control Live แล้ว รายการตั๋วจะซิงก์แบบเรียลไทม์',light:'ธีมสว่าง',dark:'ธีมมืด',noReport:'ไม่มีข้อมูลรายงานในช่วงนี้',addSuccess:'บันทึกตั๋วในเบราว์เซอร์แล้ว',quantityPrompt:'ใส่จำนวนที่ต้องการเพิ่ม',editTitle:'แก้ไขตั๋ว',newTitle:'เพิ่มตั๋ว',reportSaved:'ดาวน์โหลดรายงานแล้ว',staffNotice:'ยังไม่ได้ตั้งค่าบัญชีพนักงานและการเข้าสู่ระบบที่ปลอดภัย'}};
 let lang=localStorage.getItem('tctl-lang')||'en',page='dashboard',tickets=readTickets(),lastInput={},theme=localStorage.getItem('tctl-theme-owner')||'dark';if(theme==='emerald'||theme==='midnight'||theme==='luxury'){theme='dark';localStorage.setItem('tctl-theme-owner',theme);}
 function readTickets(){
@@ -4116,7 +4136,79 @@ function eventTicketMatchesLocation(ticket,id){
 }
 function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||eventTicketMatchesLocation(t,activeEventLocationNo)))}
 function canViewOwnerStaffActivity(){return !!(currentUser&&currentRole==='owner')}
-function navRender(){const nav=document.getElementById('nav');if(!nav)return;const allowedPages=PAGES.filter(p=>p.id!=='staff'||canViewOwnerStaffActivity());nav.innerHTML=allowedPages.map(p=>'<button type="button" class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');if(!nav.dataset.clickBound){nav.addEventListener('click',function(e){const b=e.target.closest('button[data-page]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();go(b.dataset.page)},true);nav.dataset.clickBound='1'}}
+
+/* Owner ↔ Staff shared real-time chat */
+let chatRealtimeChannel=null,chatMessagesLoading=false,chatUnreadRefreshRunning=false;
+function chatEsc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function chatLabel(en,th,my){return lang==='my'?my:lang==='th'?th:en}
+function chatTime(value){try{return new Intl.DateTimeFormat(lang==='my'?'my-MM':lang==='th'?'th-TH':'en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value))}catch(_){return new Date(value).toLocaleString()}}
+async function refreshChatBadge(){
+ if(!currentUser||chatUnreadRefreshRunning)return;
+ chatUnreadRefreshRunning=true;
+ try{
+  const marker=await sb.from('chat_reads').select('last_read_at').eq('user_id',currentUser.id).maybeSingle();
+  const since=marker.data?.last_read_at||'1970-01-01T00:00:00.000Z';
+  const countResult=await sb.from('chat_messages').select('id',{count:'exact',head:true}).gt('created_at',since).neq('sender_id',currentUser.id);
+  const count=Number(countResult.count||0);
+  const button=document.querySelector('#nav [data-page="chat"]');
+  if(button){let badge=button.querySelector('.chat-nav-badge');if(count>0){if(!badge){badge=document.createElement('span');badge.className='chat-nav-badge';button.appendChild(badge)}badge.textContent=count>99?'99+':String(count)}else badge?.remove()}
+ }catch(error){console.warn('Chat unread count unavailable:',error.message||error)}
+ finally{chatUnreadRefreshRunning=false}
+}
+function ensureChatRealtime(){
+ if(chatRealtimeChannel||!currentUser)return;
+ chatRealtimeChannel=sb.channel('owner-staff-chat-'+currentUser.id)
+  .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},payload=>{
+   if(page==='chat')loadChatMessages(true);
+   else refreshChatBadge();
+  }).subscribe(status=>{const s=document.getElementById('chatConnection');if(s)s.textContent=status==='SUBSCRIBED'?chatLabel('Live','ออนไลน์','တိုက်ရိုက်ချိတ်ဆက်ထားသည်'):chatLabel('Connecting…','กำลังเชื่อมต่อ…','ချိတ်ဆက်နေသည်')});
+}
+async function markChatRead(){
+ if(!currentUser)return;
+ const {error}=await sb.from('chat_reads').upsert({user_id:currentUser.id,last_read_at:new Date().toISOString()},{onConflict:'user_id'});
+ if(error)console.warn('Could not update chat read marker:',error.message);
+}
+async function loadChatMessages(keepScroll=false){
+ const list=document.getElementById('chatMessages');
+ if(!list||!currentUser||chatMessagesLoading)return;
+ chatMessagesLoading=true;
+ const wasNearBottom=list.scrollHeight-list.scrollTop-list.clientHeight<90;
+ try{
+  const {data,error}=await sb.from('chat_messages').select('id,sender_id,sender_name,sender_role,message,created_at').order('created_at',{ascending:false}).limit(100);
+  if(error)throw error;
+  const rows=(data||[]).reverse();
+  if(!rows.length){list.innerHTML='<div class="chat-empty">💬 '+chatLabel('No messages yet. Start the conversation.','ยังไม่มีข้อความ เริ่มส่งข้อความได้เลย','စာမရှိသေးပါ။ စတင်စာပို့လိုက်ပါ။')+'</div>'}
+  else list.innerHTML=rows.map(row=>{
+   const own=row.sender_id===currentUser.id;
+   const role=row.sender_role==='owner'?'Owner':'Staff';
+   return '<article class="chat-message '+(own?'mine':'theirs')+'"><div class="chat-message-meta"><b>'+chatEsc(row.sender_name||role)+'</b><span class="chat-role '+role.toLowerCase()+'">'+role+'</span><time>'+chatTime(row.created_at)+'</time></div><div class="chat-bubble">'+chatEsc(row.message).replace(/\n/g,'<br>')+'</div></article>';
+  }).join('');
+  await markChatRead();
+  await refreshChatBadge();
+  if(!keepScroll||wasNearBottom)list.scrollTop=list.scrollHeight;
+ }catch(error){
+  list.innerHTML='<div class="chat-empty chat-error">'+chatLabel('Could not load messages: ','ข้อความโหลดไม่สำเร็จ: ','စာမဖွင့်နိုင်ပါ: ')+chatEsc(error.message||error)+'</div>';
+ }finally{chatMessagesLoading=false}
+}
+function renderChatPage(){
+ const root=document.getElementById('pageContent');if(!root)return;
+ root.dataset.uiPage='chat';
+ root.innerHTML='<section class="panel chat-panel"><div class="chat-heading"><div><h2>💬 '+chatLabel('Owner & Staff Chat','แชต Owner และ Staff','Owner နှင့် Staff Chat')+'</h2><p>'+chatLabel('Messages are shared with the Owner and all Staff accounts.','ข้อความจะแสดงให้ Owner และ Staff ทุกคน','Owner နဲ့ Staff အားလုံး အပြန်အလှန် မြင်နိုင်ပါတယ်။')+'</p></div><span id="chatConnection" class="chat-connection">Connecting…</span></div><div id="chatMessages" class="chat-messages"><div class="chat-empty">'+chatLabel('Loading messages…','กำลังโหลดข้อความ…','စာများ ဖွင့်နေသည်…')+'</div></div><form id="chatForm" class="chat-compose"><textarea id="chatInput" maxlength="2000" rows="2" placeholder="'+chatEsc(chatLabel('Write a message…','พิมพ์ข้อความ…','စာရေးပါ…'))+'" required></textarea><button type="submit" class="gold">'+chatLabel('Send','ส่ง','ပို့ရန်')+' ➤</button></form><div class="chat-footnote">'+chatLabel('Please do not share passwords or private account details in chat.','โปรดอย่าส่งรหัสผ่านหรือข้อมูลบัญชีส่วนตัวในแชต','Password နှင့် ကိုယ်ရေးအချက်အလက်များ မပို့ပါနှင့်။')+'</div></section>';
+ const form=document.getElementById('chatForm'),input=document.getElementById('chatInput');
+ form.addEventListener('submit',async event=>{
+  event.preventDefault();const message=input.value.trim();if(!message)return;
+  const button=form.querySelector('button');button.disabled=true;
+  try{
+   const {error}=await sb.from('chat_messages').insert({message});
+   if(error)throw error;
+   input.value='';await loadChatMessages();
+  }catch(error){alert(chatLabel('Message could not be sent: ','ส่งข้อความไม่สำเร็จ: ','စာမပို့နိုင်ပါ: ')+(error.message||error))}
+  finally{button.disabled=false;input.focus()}
+ });
+ input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();form.requestSubmit()}});
+ ensureChatRealtime();loadChatMessages();refreshChatBadge();
+}
+\nfunction navRender(){const nav=document.getElementById('nav');if(!nav)return;const allowedPages=PAGES.filter(p=>p.id!=='staff'||canViewOwnerStaffActivity());nav.innerHTML=allowedPages.map(p=>'<button type="button" class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');refreshChatBadge();if(!nav.dataset.clickBound){nav.addEventListener('click',function(e){const b=e.target.closest('button[data-page]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();go(b.dataset.page)},true);nav.dataset.clickBound='1'}}
 function go(p){if(p==='staff'&&!canViewOwnerStaffActivity()){alert('Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p!=='event')activeEventLocationNo='';page=p;const pageRoot=document.getElementById('pageContent');if(pageRoot)delete pageRoot.dataset.uiPage;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render(true)}
 function render(forcePageRender=false){
  try{
@@ -4129,7 +4221,7 @@ let visible=dep()?departmentTickets():tickets;
 let total=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0),0):visible.reduce((a,t)=>a+t.quantity,0),value=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0)*(Number(t.price)||0),0):visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
-if(page==='train')renderTrain();else if(dep())renderDept(visible);else if(page==='dashboard')renderDashboard();else if(page==='monthly')renderMonthly();else if(page==='payroll')renderPayroll();else if(page==='settings')renderSettings();else if(page==='eventhistory')renderOwnerEventHistory();else if(page==='customervisits')renderCustomerVisits();else if(page==='owner'||page==='staff')renderDatabase();else renderDashboard();
+if(page==='chat')renderChatPage();else if(page==='train')renderTrain();else if(dep())renderDept(visible);else if(page==='dashboard')renderDashboard();else if(page==='monthly')renderMonthly();else if(page==='payroll')renderPayroll();else if(page==='settings')renderSettings();else if(page==='eventhistory')renderOwnerEventHistory();else if(page==='customervisits')renderCustomerVisits();else if(page==='owner'||page==='staff')renderDatabase();else renderDashboard();
  }catch(error){
   console.error('Owner page render failed:',error);
   const root=document.getElementById('pageContent');
