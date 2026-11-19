@@ -4570,9 +4570,7 @@ document.getElementById('ticketActionProceed').onclick=()=>{
  const pending=pendingTicketAction;pendingTicketAction=null;document.getElementById('ticketActionConfirm').classList.remove('open');if(!pending)return;
  const t=tickets.find(x=>x.id===pending.id);if(!t)return;
  if(pending.action==='clear'){t.quantity=0;t.updatedAt=new Date().toISOString();save();render();return}if(pending.action==='archive'){archiveTicket(pending.id);return}
- tickets=tickets.filter(x=>x.id!==t.id);
- if(currentUser&&cloudReady){sb.from('tickets').delete().eq('id',t.id).then(({error})=>{if(error){showCloudError(error.message);return}if(t.imagePath)sb.from('tickets').select('id').eq('image_path',t.imagePath).limit(1).then(({data,error:lookupError})=>{if(lookupError){console.warn('Could not check shared ticket image references; image retained.',lookupError);return}if(!data?.length)sb.storage.from('ticket-images').remove([t.imagePath])})})}
- save();render();
+ archiveTicket(pending.id);return;
 };
 function openTicket(id){const form=document.getElementById('ticketForm'),modal=document.getElementById('ticketModal');if(!form||!modal)throw new Error('Ticket form elements are missing from the Owner page.');const t=id?tickets.find(x=>String(x.id)===String(id)):null;form.reset();document.getElementById('editId').value=id||'';document.getElementById('ticketInitial').value=t?Number(t.quantity)||0:0;document.getElementById('ticketName').value=t?t.name:'';document.getElementById('ticketPrice').value=t&&t.price!==null?t.price:'';document.getElementById('modalTitle').textContent=t?tr('editTitle'):tr('newTitle');modal.classList.add('open')}
 document.getElementById('cancelModal').onclick=()=>document.getElementById('ticketModal').classList.remove('open');async function compressTicketImage(inputFile){
