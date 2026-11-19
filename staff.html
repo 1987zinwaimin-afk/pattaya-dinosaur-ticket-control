@@ -4061,7 +4061,7 @@ window.renderStaffAlarmSetupBanner=function(){
     const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
     const isInstalled=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
     if(isIOS&&!isInstalled)throw new Error('iPhone/iPad setup: Open this site in Safari → Share → Add to Home Screen. Then launch Dino Staff from its Home Screen icon and tap Enable Alarm again. Requires iOS/iPadOS 16.4 or later.');
-    const iosVersion=(navigator.userAgent.match(/OS (\\d+)[._](\\d+)/)||[]);
+    const iosVersion=(navigator.userAgent.match(/OS (\d+)[._](\d+)/)||[]);
     if(isIOS&&iosVersion.length&&(+iosVersion[1]<16||(+iosVersion[1]===16&&+iosVersion[2]<4)))throw new Error('Web Push requires iOS/iPadOS 16.4 or later. Please update this device to a supported version.');
     if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error(isIOS?'Web Push is unavailable here. Open the installed Dino Staff Home Screen app on iOS/iPadOS 16.4 or later.':'This browser does not support web push. Install the Staff website and allow notifications.');
     let permission=Notification.permission;if(permission!=='granted')permission=await Notification.requestPermission();
