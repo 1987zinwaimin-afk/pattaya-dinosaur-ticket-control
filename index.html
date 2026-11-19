@@ -4144,7 +4144,16 @@ window.showEmergencyAlarmDialog=function(options){
   if(options?.details){details.textContent=options.details;details.hidden=false}
   if(mode==='success'){symbol.textContent='✓';symbol.classList.add('is-success');root.classList.add('is-success')}
   if(mode==='error'){symbol.textContent='!';symbol.classList.add('is-error');root.classList.add('is-error')}
-  const close=value=>{root.classList.add('is-closing');setTimeout(()=>root.remove(),160);resolve(value)};
+  let autoCloseTimer=null,dialogClosed=false;
+  const close=value=>{
+   if(dialogClosed)return;
+   dialogClosed=true;
+   if(autoCloseTimer)clearTimeout(autoCloseTimer);
+   document.removeEventListener('keydown',esc);
+   root.classList.add('is-closing');
+   setTimeout(()=>root.remove(),160);
+   resolve(value);
+  };
   if(mode==='confirm'){
    const cancel=document.createElement('button');cancel.type='button';cancel.className='emergency-alarm-cancel';cancel.textContent='Cancel';cancel.onclick=()=>close(false);
    const send=document.createElement('button');send.type='button';send.className='emergency-alarm-send';send.textContent='🚨  Send Alarm';send.onclick=()=>close(true);
@@ -4158,6 +4167,8 @@ window.showEmergencyAlarmDialog=function(options){
   document.body.appendChild(root);
   requestAnimationFrame(()=>root.classList.add('is-visible'));
   actions.querySelector('button')?.focus();
+  // Keep the successful delivery receipt visible briefly, then close it automatically.
+  if(mode==='success')autoCloseTimer=setTimeout(()=>close(true),5000);
  });
 };
 
