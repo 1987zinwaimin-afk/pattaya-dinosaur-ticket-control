@@ -3118,8 +3118,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 
 /* High-visibility motion pass: placed after legacy reduced-motion rules */
 .brand-header{position:sticky!important;isolation:isolate!important}
-.brand-header .brand-banner{animation:dinoBannerDriftVisible 18s ease-in-out infinite alternate!important;transform-origin:center!important}
-.brand-header::after{content:"🦖";position:absolute;z-index:4;left:-12%;bottom:4px;top:auto;width:auto;height:auto;inset-inline-start:auto;font-size:clamp(27px,5.4vw,48px);line-height:1;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)) drop-shadow(0 0 9px rgba(244,202,112,.8));animation:dinoWalkAcross 16s linear infinite!important}
+.brand-header .brand-banner{animation:none!important;transform:none!important}
+.brand-header::after{content:none!important;display:none!important;animation:none!important}
 .brand-header::before{content:"";position:absolute;z-index:3;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,#dca53b,#fff0bd,#f4ca70,#dca53b);box-shadow:0 0 14px rgba(244,202,112,.9);animation:dinoGoldPulseVisible 2.8s ease-in-out infinite!important}
 #pageContent .mk-dashboard-head,#pageContent .mk-kpi,#pageContent .mk-section,
 #pageContent .staff-dash-head,#pageContent .staff-dash-section,#pageContent .staff-dash-quick,
@@ -3132,8 +3132,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 @keyframes dinoBannerDriftVisible{from{transform:scale(1.01) translateX(-.5%)}to{transform:scale(1.09) translateX(.5%)}}
 @keyframes dinoGoldPulseVisible{0%,100%{opacity:.55;filter:brightness(.85)}50%{opacity:1;filter:brightness(1.5)}}
 @keyframes dinoPopVisible{0%{opacity:.2;transform:translateY(22px) scale(.985)}70%{opacity:1;transform:translateY(-2px) scale(1.005)}100%{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:480px){.brand-header::after{font-size:30px;bottom:3px}.brand-header .brand-banner{animation-duration:22s!important}}
-@media(prefers-reduced-motion:reduce){.brand-header::after{animation:none!important;left:48%;opacity:.85}.brand-header .brand-banner{animation:none!important}}
+@media(max-width:480px){.brand-header .brand-banner{animation:none!important;transform:none!important}}
+@media(prefers-reduced-motion:reduce){.brand-header::after{display:none!important}.brand-header .brand-banner{animation:none!important;transform:none!important}}
 
 
 /* Header foliage retouch: covers the small green dinosaur in the source banner only. */
