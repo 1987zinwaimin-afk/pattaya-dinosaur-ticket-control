@@ -2407,8 +2407,9 @@ body.theme-light #staffHealthRows>div>strong[style*="#ffd17b"]{
 </style>
 <style id="pdk-staff-header-fix-v2">
 /* Staff: remove the moving dinosaur pseudo-element and keep the banner fixed at the top while scrolling. */
-html,body{overflow-x:hidden}
-header.brand-header,.top.brand-header{position:-webkit-sticky!important;position:sticky!important;top:0!important;z-index:10000!important;align-self:start!important}
+html{overflow-x:clip!important;overflow-y:visible!important}
+body{overflow-x:clip!important;overflow-y:visible!important}
+header.brand-header,.top.brand-header{position:-webkit-sticky!important;position:sticky!important;top:0!important;z-index:10000!important;align-self:start!important;transform:none!important}
 .brand-header::after{content:none!important;display:none!important;animation:none!important}
 .brand-header .brand-banner{animation:none!important;transform:none!important;will-change:auto!important}
 </style>
