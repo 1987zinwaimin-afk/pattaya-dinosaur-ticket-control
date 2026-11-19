@@ -1947,7 +1947,7 @@ async function loadCloud(){
    cloudRows=reloaded||[];
   }
  }
- tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();startDailySalesAutosave();
+ tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at,r.is_archived,r.archived_at,r.archived_by]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();startDailySalesAutosave();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
@@ -1963,7 +1963,7 @@ async function refreshCloudTickets(force=false){
   const {data,error}=await sb.from('tickets').select('*').order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}).order('id',{ascending:true});
   if(error)throw error;
   const rows=data||[];
-  const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));
+  const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at,r.is_archived,r.archived_at,r.archived_by]));
   if(force||fingerprint!==lastCloudFingerprint){
    const previous=tickets;
    const next=rows.map(mapCloud);
@@ -2348,7 +2348,7 @@ function renderArchivedTickets(){
  root.querySelectorAll('[data-restore-ticket]').forEach(btn=>btn.onclick=()=>restoreTicket(btn.dataset.restoreTicket));
 }
 function render(){if(STAFF_MODE && selectedStaffDepartment!=='all' && !['sale','entry','playing','event','train','archive','payroll','settings','history'].includes(page))page=selectedStaffDepartment;if(STAFF_MODE&&selectedStaffDepartment==='all'&&!['sale','entry','playing','event','train','all','archive','payroll','settings','history'].includes(page))page='all';navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
-let visible=dep()?departmentTickets():(STAFF_MODE&&selectedStaffDepartment!=='all'?tickets.filter(t=>t.department===selectedStaffDepartment):tickets);
+let visible=dep()?departmentTickets():(STAFF_MODE&&selectedStaffDepartment!=='all'?tickets.filter(t=>!t.isArchived&&t.department===selectedStaffDepartment):tickets.filter(t=>!t.isArchived));
 let total=visible.reduce((a,t)=>a+t.quantity,0),value=visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
