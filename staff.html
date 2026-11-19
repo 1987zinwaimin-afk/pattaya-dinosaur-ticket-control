@@ -4308,6 +4308,23 @@ main.wrap:has(#pageContent[data-ui-page="train"]) #stats{display:none!important}
  white-space:nowrap!important;
  overflow-wrap:normal!important;
 }
+
+/* Center the Thailand date/time card itself in the full viewport on every screen size. */
+#appDateTime{
+  box-sizing:border-box!important;
+  width:min(calc(100% - 24px),760px)!important;
+  margin:10px auto 14px!important;
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+}
+@media(min-width:980px){
+  #appDateTime{
+    width:min(calc(100% - 32px),760px)!important;
+    margin:10px auto 14px!important;
+  }
+}
+
 </style>
 
 </body></html>
