@@ -2574,7 +2574,7 @@ async function openTrainReportSaveModal(){
 }
 async function exportTrainCsv(){await openTrainReportSaveModal()}
 async function shareTrainReport(){try{const pages=await createTrainReportBlobs(),selection=getTrainReportSelection(),files=pages.map((blob,i)=>new File([blob],'garden-train-'+selection.mode+'-'+selection.period+'-page-'+(i+1)+'-of-'+pages.length+'.png',{type:'image/png'}));if(navigator.canShare&&navigator.canShare({files})){await navigator.share({files,title:'Garden Train Monthly Report'});return}await downloadTrainReportPages();alert('All report pages downloaded. Share them from your Gallery/Photos.')}catch(e){if(e.name!=='AbortError')alert('Could not save/share train report: '+(e.message||e))}}
-function exportTrainCsvData(){const rows=getTrainReportSelection().rows,data=[[reportText('No','ลำดับ'),reportText('Date','วันที่'),reportText('Depart Time','เวลาออกรถ'),reportText('Return Time','เวลากลับรถ'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration minutes','ระยะเวลา (นาที)')],...rows.map((r,i)=>[i+1,r.trip_date,fmtTime(r.depart_time),fmtTime(r.return_time),r.riders,r.driver_name,durationMins(r.depart_time,r.return_time)??''])];const csv=data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='train-time-report-'+getTrainReportSelection().period+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function exportTrainCsvData(){const rows=getTrainReportSelection().rows,data=[[reportText('No','ลำดับ'),reportText('Date','วันที่'),reportText('Depart Time','เวลาออกรถ'),reportText('Return Time','เวลากลับรถ'),reportText('Riders','ผู้โดยสาร'),reportText('Driver Name','ชื่อคนขับ'),reportText('Duration minutes','ระยะเวลา (นาที)')],...rows.map((r,i)=>[i+1,r.trip_date,fmtTime(r.depart_time),fmtTime(r.return_time),r.riders,r.driver_name,durationMins(r.depart_time,r.return_time)??''])];const csv=data.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'}));a.download='train-time-report-'+getTrainReportSelection().period+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 // Garden Train date sync: keep declarations separated by real source newlines.
 function syncGardenTrainDateControls(source){const trip=document.getElementById('trainDepartDate'),history=document.getElementById('trainFilterDate'),report=document.getElementById('trainReportDate'),month=document.getElementById('trainReportMonth');let value='';if(source==='month'){const m=month?.value||localToday().slice(0,7);value=m+'-01'}else value=(source==='trip'?trip?.value:source==='history'?history?.value:report?.value)||localToday();if(value.length!==10||value[4]!=='-'||value[7]!=='-')value=localToday();const ym=value.slice(0,7);[history,report].forEach(el=>{if(el)el.value=value});if(month)month.value=ym;drawTrainHistory()};
 function updateTrainReportMode(){const mode=document.getElementById('trainReportMode')?.value||'daily',date=document.getElementById('trainReportDateWrap'),month=document.getElementById('trainReportMonthWrap');if(date)date.style.display=mode==='daily'?'':'none';if(month)month.style.display=mode==='monthly'?'':'none'}
@@ -3817,18 +3817,18 @@ function renderStaffSettings(){
  setupStaffThaiEmergencyVoice();
  const emergencyAlarmButton=document.getElementById('staffEmergencyAlarmSettingsButton');
  if(emergencyAlarmButton)emergencyAlarmButton.onclick=async()=>{
-  if(!currentUser||currentRole!=='staff'){alert('Normal Staff account ဖြင့် Login ဝင်ပါ။');return}
-  if(!confirm('Owner နှင့် Normal Staff အားလုံးထံ Alarm ပို့မလား?'))return;
+  if(!currentUser||currentRole!=='staff'){await window.showEmergencyAlarmDialog({mode:'error',title:'Staff login required',message:'Normal Staff account ဖြင့် Login ဝင်ပါ။'});return}
+  if(!await window.showEmergencyAlarmDialog({mode:'confirm',title:'Send Emergency Alarm?',message:'Owner နှင့် Normal Staff အားလုံးထံ Alarm ပို့မလား?'}))return;
   emergencyAlarmButton.disabled=true;
   const oldText=emergencyAlarmButton.innerHTML;
   emergencyAlarmButton.textContent='Sending…';
   try{
-   const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});
+   const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\nเฮียเข้าไปในสวนแล้ว'}});
    if(error)throw error;
    if(!data?.ok)throw new Error(data?.message||'Alarm ပို့မရပါ။');
    const androidResult=data.android||{};
-   alert('🚨 Alarm ပို့ပြီးပါပြီ\\nWeb notification: '+data.sent+' / '+data.subscriptions+'\\nAndroid notification: '+(androidResult.sent??0)+' / '+(androidResult.targets??0)+'\\nFailed: '+(Number(data.failed||0)+Number(androidResult.failed||0)));
-  }catch(error){alert('Alarm ပို့မရပါ: '+(error?.message||error))}
+   await window.showEmergencyAlarmDialog({mode:'success',title:'Alarm ပို့ပြီးပါပြီ',message:'Emergency Alarm ကို ပို့ပြီးပါပြီ။',details:'Web notification: '+data.sent+' / '+data.subscriptions+'\nAndroid notification: '+(androidResult.sent??0)+' / '+(androidResult.targets??0)+'\nFailed: '+(Number(data.failed||0)+Number(androidResult.failed||0))});
+  }catch(error){await window.showEmergencyAlarmDialog({mode:'error',title:'Alarm ပို့မရပါ',message:error?.message||String(error)})}
   finally{emergencyAlarmButton.disabled=false;emergencyAlarmButton.innerHTML=oldText}
  };
  document.getElementById('settingLang').value=lang;
@@ -4011,10 +4011,10 @@ window.renderStaffAlarmSetupBanner=function(){
     if(!approved)return;
     headerButton.disabled=true;headerButton.textContent='…';
     try{
-     const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});
+     const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\nเฮียเข้าไปในสวนแล้ว'}});
      if(error)throw error;
      if(!data||!data.ok)throw new Error(data?.message||'No subscribed web-push device accepted the alarm.');
-     await window.showEmergencyAlarmDialog({mode:'success',title:'Alarm sent successfully',message:'Your emergency alarm has been sent.',details:'Web notifications: '+data.sent+' / '+data.subscriptions+'\\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\\nFailed: '+data.failed});
+     await window.showEmergencyAlarmDialog({mode:'success',title:'Alarm sent successfully',message:'Your emergency alarm has been sent.',details:'Web notifications: '+data.sent+' / '+data.subscriptions+'\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\nFailed: '+data.failed});
     }catch(error){await window.showEmergencyAlarmDialog({mode:'error',title:'Alarm could not be sent',message:error?.message||String(error)})}
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
