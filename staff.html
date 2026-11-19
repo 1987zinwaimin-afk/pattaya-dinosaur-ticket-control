@@ -3262,7 +3262,8 @@ function eventTicketMatchesLocation(ticket,id){
 function departmentTickets(){return tickets.filter(t=>t.department===page&&(page!=='event'||eventTicketMatchesLocation(t,selectedStaffEventLocationId)))}
 
 /* Owner ↔ Staff shared real-time chat */
-let chatRealtimeChannel=null,chatMessagesLoading=false,chatUnreadRefreshRunning=false;
+let chatRealtimeChannel=null,chatMessagesLoading=false,chatReloadPending=false,chatUnreadRefreshRunning=false;
+sb.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'&&chatRealtimeChannel){const oldChannel=chatRealtimeChannel;chatRealtimeChannel=null;setTimeout(()=>sb.removeChannel(oldChannel),0)}});
 function chatEsc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function chatLabel(en,th,my){return lang==='my'?my:lang==='th'?th:en}
 function chatTime(value){try{return new Intl.DateTimeFormat(lang==='my'?'my-MM':lang==='th'?'th-TH':'en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(value))}catch(_){return new Date(value).toLocaleString()}}
@@ -3294,7 +3295,8 @@ async function markChatRead(){
 }
 async function loadChatMessages(keepScroll=false){
  const list=document.getElementById('chatMessages');
- if(!list||!currentUser||chatMessagesLoading)return;
+ if(!list||!currentUser)return;
+ if(chatMessagesLoading){chatReloadPending=true;return;}
  chatMessagesLoading=true;
  const wasNearBottom=list.scrollHeight-list.scrollTop-list.clientHeight<90;
  try{
@@ -3312,7 +3314,7 @@ async function loadChatMessages(keepScroll=false){
   if(!keepScroll||wasNearBottom)list.scrollTop=list.scrollHeight;
  }catch(error){
   list.innerHTML='<div class="chat-empty chat-error">'+chatLabel('Could not load messages: ','ข้อความโหลดไม่สำเร็จ: ','စာမဖွင့်နိုင်ပါ: ')+chatEsc(error.message||error)+'</div>';
- }finally{chatMessagesLoading=false}
+ }finally{chatMessagesLoading=false;if(chatReloadPending){chatReloadPending=false;setTimeout(()=>loadChatMessages(true),0)}}
 }
 function renderChatPage(){
  const root=document.getElementById('pageContent');if(!root)return;
