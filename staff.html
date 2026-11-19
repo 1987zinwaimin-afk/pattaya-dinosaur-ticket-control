@@ -4325,6 +4325,14 @@ main.wrap:has(#pageContent[data-ui-page="train"]) #stats{display:none!important}
   }
 }
 
+
+/* Hide ticket inventory KPI strip on Staff pages where ticket inventory is unrelated. */
+main.wrap:has(#pageContent[data-ui-page="payroll"]) #stats,
+main.wrap:has(#pageContent[data-ui-page="customer-visits"]) #stats,
+main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
+  display:none!important;
+}
+
 </style>
 
 </body></html>
