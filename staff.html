@@ -2760,7 +2760,7 @@ function save(){
  for(const t of tickets){
   const row=cloudRowForTicket(t);
   const prior=lastCloudRows.get(String(t.id));
-  const fields=['department','name','price','quantity','image_path','image_url','location'];
+  const fields=['department','name','price','quantity','image_path','image_url','location','is_archived','archived_at','archived_by'];
   const differs=!prior||fields.some(k=>(prior[k]??null)!==(row[k]??null));
   if(differs){row.updated_at=new Date().toISOString();t.updatedAt=row.updated_at;changed.push(row)}
  }
@@ -2852,7 +2852,7 @@ async function loadCloud(){
    cloudRows=reloaded||[];
   }
  }
- tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();showStaffSyncConflictNotice();startDailySalesAutosave();
+ tickets=cloudRows.map(mapCloud);lastCloudRows=new Map(cloudRows.map(r=>[String(r.id),r]));lastCloudFingerprint=JSON.stringify(cloudRows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at,r.is_archived,r.archived_at,r.archived_by]));cloudReady=true;try{localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets))}catch(storageError){console.warn('Local ticket cache is full; using Cloud data for this session.',storageError)}render();showStaffSyncConflictNotice();startDailySalesAutosave();
 }
 let cloudPollTimer=null,cloudLoadBusy=false,lastCloudFingerprint='';
 async function refreshCloudTickets(force=false){
@@ -2870,7 +2870,7 @@ async function refreshCloudTickets(force=false){
   const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
   if(error)throw error;
   const rows=data||[];
-  const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at]));
+  const fingerprint=JSON.stringify(rows.map(r=>[r.id,r.department,r.name,r.price,r.quantity,r.image_path,r.image_url,r.location,r.updated_at,r.is_archived,r.archived_at,r.archived_by]));
   if(force||fingerprint!==lastCloudFingerprint){
    lastCloudFingerprint=fingerprint;
    tickets=rows.map(mapCloud);
@@ -3399,8 +3399,8 @@ function renderArchivedTickets(){
  document.getElementById('archiveSearch').oninput=e=>{const q=e.target.value.toLowerCase();root.querySelectorAll('[data-restore-ticket]').forEach(btn=>{const t=archived.find(x=>String(x.id)===btn.dataset.restoreTicket);btn.closest('.ticket').style.display=t.name.toLowerCase().includes(q)?'':'none'})};
  root.querySelectorAll('[data-restore-ticket]').forEach(btn=>btn.onclick=()=>restoreTicket(btn.dataset.restoreTicket));
 }
-function render(){if(STAFF_MODE&&page==='event')page=selectedStaffDepartment;if(STAFF_MODE&&!['dashboard','sale','entry','playing','train','monthly','payroll','settings','customer-visits'].includes(page))page=selectedStaffDepartment;if(page==='customer-visits'&&!['entry','all'].includes(selectedStaffDepartment))page=selectedStaffDepartment;navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
-let visible=dep()?departmentTickets():(STAFF_MODE?(selectedStaffDepartment==='all'?tickets.filter(t=>['sale','entry','playing'].includes(t.department)):tickets.filter(t=>t.department===selectedStaffDepartment)):tickets);
+function render(){if(STAFF_MODE&&page==='event')page=selectedStaffDepartment;if(STAFF_MODE&&!['dashboard','archive','sale','entry','playing','train','monthly','payroll','settings','customer-visits'].includes(page))page=selectedStaffDepartment;if(page==='customer-visits'&&!['entry','all'].includes(selectedStaffDepartment))page=selectedStaffDepartment;navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
+let visible=dep()?departmentTickets():(STAFF_MODE?(selectedStaffDepartment==='all'?tickets.filter(t=>!t.isArchived&&['sale','entry','playing'].includes(t.department)):tickets.filter(t=>!t.isArchived&&t.department===selectedStaffDepartment)):tickets.filter(t=>!t.isArchived));
 let total=visible.reduce((a,t)=>a+t.quantity,0),value=visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
