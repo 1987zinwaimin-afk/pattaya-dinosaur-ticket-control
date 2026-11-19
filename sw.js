@@ -18,7 +18,12 @@ self.addEventListener('push',event=>{
   let data={};
   try{data=event.data?event.data.json():{}}
   catch(_){try{data={body:event.data?event.data.text():'A staff member activity was recorded.'}}catch(__){}}
-  const title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':'Pattaya Dinosaur Kingdom');
+  let title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':'Pattaya Dinosaur Kingdom');
+  if(data.event_type==='emergency_alarm'){
+   // Keep only the authenticated sender's display name; hide role and staff ID.
+   const senderMatch=String(title).match(/(?:🚨\\s*)?Alarm\\s*·\\s*(.*?)\\s*·\\s*(?:Owner|Staff)(?:\\s*·\\s*ID\\s*[^·]+)?$/i);
+   if(senderMatch?.[1])title='🚨 Alarm · '+senderMatch[1].trim();
+  }
   const options={
    body:data.body||'A staff member activity was recorded.',
    icon:data.icon||'/notification-logo.svg',
