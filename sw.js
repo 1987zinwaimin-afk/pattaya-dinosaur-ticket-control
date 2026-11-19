@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v22';
+const CACHE_NAME='dino-staff-shell-v23';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -20,9 +20,16 @@ self.addEventListener('push',event=>{
   catch(_){try{data={body:event.data?event.data.text():'A staff member activity was recorded.'}}catch(__){}}
   let title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':'Pattaya Dinosaur Kingdom');
   if(data.event_type==='emergency_alarm'){
-   // Keep only the authenticated sender's display name; hide role and staff ID.
-   const titleParts=String(title).split(' · ');
-   if(titleParts.length>=3 && /^🚨?\s*Alarm$/i.test(titleParts[0].replace(/^🚨\s*/,'')))title=titleParts.slice(0,2).join(' · ');
+   // Notifications show only the sender's display name, never department, role, or Staff ID.
+   const titleParts=String(title).split(' · ').map(part=>part.trim()).filter(Boolean);
+   const alarmPrefix=/^🚨?\s*Alarm$/i.test((titleParts[0]||'').replace(/^🚨\s*/,'')); 
+   if(alarmPrefix){
+    const senderName=titleParts[1]||'Staff';
+    title='🚨 Alarm · '+senderName;
+   }else{
+    // If a legacy sender supplied a different title format, remove ID/role suffixes.
+    title=titleParts.slice(0,1).join(' ')||'🚨 Alarm';
+   }
   }
   const options={
    body:data.body||'A staff member activity was recorded.',
