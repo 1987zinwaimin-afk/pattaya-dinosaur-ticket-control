@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v20';
+const CACHE_NAME='dino-staff-shell-v21';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -21,8 +21,8 @@ self.addEventListener('push',event=>{
   let title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':'Pattaya Dinosaur Kingdom');
   if(data.event_type==='emergency_alarm'){
    // Keep only the authenticated sender's display name; hide role and staff ID.
-   const senderMatch=String(title).match(/(?:🚨\\s*)?Alarm\\s*·\\s*(.*?)\\s*·\\s*(?:Owner|Staff)(?:\\s*·\\s*ID\\s*[^·]+)?$/i);
-   if(senderMatch?.[1])title='🚨 Alarm · '+senderMatch[1].trim();
+   const titleParts=String(title).split(' · ');
+   if(titleParts.length>=3 && /^🚨?\s*Alarm$/i.test(titleParts[0].replace(/^🚨\s*/,'')))title=titleParts.slice(0,2).join(' · ');
   }
   const options={
    body:data.body||'A staff member activity was recorded.',
