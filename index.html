@@ -3080,6 +3080,41 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  object-position:center center!important;
 }
 
+
+/* Premium Dinosaur Kingdom motion layer — presentation only, no app/data logic */
+.brand-header{isolation:isolate;box-shadow:0 5px 22px rgba(0,0,0,.42),0 2px 22px rgba(226,174,76,.14);border-bottom-color:rgba(244,202,112,.82)}
+.brand-header .brand-banner{transform-origin:center center;animation:dinoBannerDrift 24s ease-in-out infinite alternate;will-change:transform}
+.brand-header::after{content:"";position:absolute;z-index:1;inset:0 auto 0 -55%;width:42%;pointer-events:none;background:linear-gradient(105deg,transparent 0%,rgba(255,238,190,.02) 28%,rgba(255,225,151,.20) 50%,rgba(255,238,190,.035) 72%,transparent 100%);transform:skewX(-14deg);animation:dinoGoldSweep 13s ease-in-out infinite}
+.brand-header::before{content:"";position:absolute;z-index:1;left:0;right:0;bottom:-3px;height:3px;pointer-events:none;background:linear-gradient(90deg,transparent,#f4ca70 22%,#fff0bd 50%,#dca53b 78%,transparent);box-shadow:0 0 12px rgba(244,202,112,.72);animation:dinoGoldPulse 4.5s ease-in-out infinite}
+.app-datetime{animation:dinoCardReveal .75s cubic-bezier(.2,.75,.25,1) both;box-shadow:0 5px 18px rgba(16,36,58,.18),0 0 0 1px rgba(244,202,112,.035);transition:border-color .25s ease,box-shadow .25s ease}
+.app-datetime:hover{border-color:rgba(244,202,112,.82);box-shadow:0 8px 24px rgba(0,0,0,.2),0 0 18px rgba(244,202,112,.10)}
+#pageContent .mk-dashboard-head,#pageContent .mk-kpi,#pageContent .mk-section{animation:dinoCardReveal .7s cubic-bezier(.2,.75,.25,1) both}
+#pageContent .mk-kpi:nth-child(2){animation-delay:.08s}
+#pageContent .mk-kpi:nth-child(3){animation-delay:.16s}
+#pageContent .mk-dashboard-grid>.mk-section:nth-child(1){animation-delay:.12s}
+#pageContent .mk-dashboard-grid>.mk-section:nth-child(2){animation-delay:.2s}
+#pageContent .mk-dept-card{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+#pageContent .mk-dept-card:hover{transform:translateY(-3px);border-color:rgba(244,202,112,.62);box-shadow:0 9px 22px rgba(0,0,0,.24),0 0 14px rgba(244,202,112,.08)}
+#pageContent .mk-quick-actions button{transition:transform .2s ease,filter .2s ease,box-shadow .2s ease}
+#pageContent .mk-quick-actions button:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 7px 18px rgba(0,0,0,.2)}
+#pageContent .staff-dash-head,#pageContent .staff-dash-section,#pageContent .staff-dash-quick{animation:dinoCardReveal .65s cubic-bezier(.2,.75,.25,1) both}
+#pageContent .staff-dash-dept-card{animation:dinoCardReveal .6s cubic-bezier(.2,.75,.25,1) both;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+#pageContent .staff-dash-dept-card:nth-child(2){animation-delay:.07s}
+#pageContent .staff-dash-dept-card:nth-child(3){animation-delay:.14s}
+#pageContent .staff-dash-dept-card:nth-child(4){animation-delay:.21s}
+#pageContent .staff-dash-dept-card:hover{transform:translateY(-3px);border-color:rgba(244,202,112,.7)!important;box-shadow:0 8px 18px rgba(0,0,0,.24),0 0 13px rgba(244,202,112,.1)}
+@keyframes dinoBannerDrift{0%{transform:scale(1.015) translateX(-.15%)}100%{transform:scale(1.055) translateX(.25%)}}
+@keyframes dinoGoldSweep{0%,62%{left:-55%;opacity:0}68%{opacity:1}88%,100%{left:120%;opacity:0}}
+@keyframes dinoGoldPulse{0%,100%{opacity:.65;filter:brightness(.9)}50%{opacity:1;filter:brightness(1.25)}}
+@keyframes dinoCardReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(hover:none){#pageContent .mk-dept-card:hover,#pageContent .staff-dash-dept-card:hover{transform:none}}
+@media(prefers-reduced-motion:reduce){
+ .brand-header .brand-banner,.brand-header::after,.brand-header::before,.app-datetime,
+ #pageContent .mk-dashboard-head,#pageContent .mk-kpi,#pageContent .mk-section,
+ #pageContent .staff-dash-head,#pageContent .staff-dash-section,#pageContent .staff-dash-quick,
+ #pageContent .staff-dash-dept-card{animation:none!important;transition:none!important}
+}
+
 </style>
 
 <style id="staff-database-compact-v1">
