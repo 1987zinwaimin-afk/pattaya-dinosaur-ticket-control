@@ -3480,7 +3480,7 @@ async function renderPayroll(){
  const iso=d=>{const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)};
  const money=n=>'฿'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
  const signedInStaffName=(document.getElementById('authName')?.value||'Staff').trim();
- root.innerHTML='<div class="report-page"><section class="panel"><div class="report-heading"><div><h2>'+esc(signedInStaffName)+' · '+reportText('Staff Payroll','เงินเดือนพนักงาน')+'</h2></div><span class="report-icon">฿</span></div>'+
+ root.innerHTML='<div class="report-page"><section class="panel"><div class="report-heading"><div><h2>'+esc(signedInStaffName)+' · '+reportText('Staff Payroll','เงินเดือนพนักงาน')+'</h2></div></div>'+
  (owner?'<label for="payrollPerson">Staff / Owner account</label><select id="payrollPerson" style="width:100%;margin:6px 0 14px"><option value="'+esc(currentUser.id)+'">My Owner Payroll</option></select>':'')+
  '<div class="report-filters"><label>'+reportText('Salary period start','วันเริ่มรอบเงินเดือน')+'<input type="date" id="payrollStart" value="'+iso(defaultStart)+'"></label><label>'+reportText('Salary closing date','วันสิ้นสุดรอบเงินเดือน')+'<input type="date" id="payrollEnd" value="'+iso(defaultEnd)+'"></label></div>'+
  '<div id="payrollRateWrap" style="margin:12px 0"><label for="payrollRate">'+reportText('Daily wage (THB)','ค่าจ้างรายวัน (บาท)')+'</label><input id="payrollRate" type="number" min="0" step="0.01" placeholder="Set by Owner" style="width:100%"></div>'+
@@ -4332,6 +4332,30 @@ main.wrap:has(#pageContent[data-ui-page="customer-visits"]) #stats,
 main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
   display:none!important;
 }
+
+
+/* Staff Payroll: tighter header and form spacing; remove decorative baht mark. */
+#pageContent[data-ui-page="payroll"] .report-page{gap:8px!important}
+#pageContent[data-ui-page="payroll"] .report-page>.panel{padding:11px!important;border-radius:16px!important}
+#pageContent[data-ui-page="payroll"] .report-heading{display:block!important;margin:0 0 7px!important;padding:0!important}
+#pageContent[data-ui-page="payroll"] .report-heading h2{font-size:clamp(20px,4.8vw,24px)!important;line-height:1.12!important;margin:0!important}
+#pageContent[data-ui-page="payroll"] .report-heading .report-icon{display:none!important}
+#pageContent[data-ui-page="payroll"] .report-filters{gap:7px!important;margin:6px 0!important}
+#pageContent[data-ui-page="payroll"] .report-filters label,
+#pageContent[data-ui-page="payroll"] #payrollRateWrap>label{font-size:12px!important;line-height:1.2!important}
+#pageContent[data-ui-page="payroll"] .report-filters input,
+#pageContent[data-ui-page="payroll"] #payrollRate{height:38px!important;min-height:38px!important;padding:6px 9px!important;font-size:13px!important}
+#pageContent[data-ui-page="payroll"] #payrollRateWrap{margin:6px 0!important}
+#pageContent[data-ui-page="payroll"] .report-page>.panel:first-child .actions{gap:6px!important;margin-top:7px!important}
+#pageContent[data-ui-page="payroll"] .report-page>.panel:first-child .actions button{min-height:36px!important;padding:7px 8px!important;font-size:12px!important}
+#pageContent[data-ui-page="payroll"] .payroll-calendar-panel,
+#pageContent[data-ui-page="payroll"] .payroll-summary-panel{padding:11px!important;margin-top:8px!important}
+#pageContent[data-ui-page="payroll"] .payroll-calendar-panel>p{margin:4px 0 7px!important;font-size:12px!important}
+#pageContent[data-ui-page="payroll"] .payroll-calendar-panel #payrollCalendar>div{padding-bottom:4px!important}
+#pageContent[data-ui-page="payroll"] .payroll-day-card{padding:6px!important;border-radius:9px!important}
+#pageContent[data-ui-page="payroll"] .payroll-day-card>span:first-child{font-size:11px!important;line-height:1.2!important}
+#pageContent[data-ui-page="payroll"] .payroll-day-card select{height:34px!important;min-height:34px!important;padding:5px 4px!important;font-size:11px!important}
+#pageContent[data-ui-page="payroll"] .payroll-day-status{font-size:10px!important}
 
 </style>
 
