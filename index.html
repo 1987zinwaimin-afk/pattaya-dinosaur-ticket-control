@@ -3115,6 +3115,26 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
  #pageContent .staff-dash-dept-card{animation:none!important;transition:none!important}
 }
 
+
+/* High-visibility motion pass: placed after legacy reduced-motion rules */
+.brand-header{position:sticky!important;isolation:isolate!important}
+.brand-header .brand-banner{animation:dinoBannerDriftVisible 18s ease-in-out infinite alternate!important;transform-origin:center!important}
+.brand-header::after{content:"🦖";position:absolute;z-index:4;left:-12%;bottom:4px;top:auto;width:auto;height:auto;inset-inline-start:auto;font-size:clamp(27px,5.4vw,48px);line-height:1;pointer-events:none;filter:drop-shadow(0 3px 5px rgba(0,0,0,.85)) drop-shadow(0 0 9px rgba(244,202,112,.8));animation:dinoWalkAcross 16s linear infinite!important}
+.brand-header::before{content:"";position:absolute;z-index:3;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,#dca53b,#fff0bd,#f4ca70,#dca53b);box-shadow:0 0 14px rgba(244,202,112,.9);animation:dinoGoldPulseVisible 2.8s ease-in-out infinite!important}
+#pageContent .mk-dashboard-head,#pageContent .mk-kpi,#pageContent .mk-section,
+#pageContent .staff-dash-head,#pageContent .staff-dash-section,#pageContent .staff-dash-quick,
+#pageContent .staff-dash-dept-card{animation:dinoPopVisible .75s cubic-bezier(.18,.8,.22,1) both!important}
+#pageContent .mk-kpi:nth-child(2),#pageContent .staff-dash-dept-card:nth-child(2){animation-delay:.12s!important}
+#pageContent .mk-kpi:nth-child(3),#pageContent .staff-dash-dept-card:nth-child(3){animation-delay:.24s!important}
+#pageContent .mk-dept-card,#pageContent .staff-dash-dept-card{transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease!important}
+#pageContent .mk-dept-card:hover,#pageContent .staff-dash-dept-card:hover{transform:translateY(-5px) scale(1.015)!important;box-shadow:0 12px 28px rgba(0,0,0,.35),0 0 18px rgba(244,202,112,.22)!important;border-color:#f4ca70!important}
+@keyframes dinoWalkAcross{0%{left:-14%;transform:translateY(0) scaleX(1) rotate(-2deg)}8%{transform:translateY(-5px) scaleX(1) rotate(0)}16%{transform:translateY(0) scaleX(1)}42%{transform:translateY(-4px) scaleX(1)}50%{transform:translateY(0) scaleX(1)}76%{transform:translateY(-5px) scaleX(1)}100%{left:112%;transform:translateY(0) scaleX(1)}}
+@keyframes dinoBannerDriftVisible{from{transform:scale(1.01) translateX(-.5%)}to{transform:scale(1.09) translateX(.5%)}}
+@keyframes dinoGoldPulseVisible{0%,100%{opacity:.55;filter:brightness(.85)}50%{opacity:1;filter:brightness(1.5)}}
+@keyframes dinoPopVisible{0%{opacity:.2;transform:translateY(22px) scale(.985)}70%{opacity:1;transform:translateY(-2px) scale(1.005)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:480px){.brand-header::after{font-size:30px;bottom:3px}.brand-header .brand-banner{animation-duration:22s!important}}
+@media(prefers-reduced-motion:reduce){.brand-header::after{animation:none!important;left:48%;opacity:.85}.brand-header .brand-banner{animation:none!important}}
+
 </style>
 
 <style id="staff-database-compact-v1">
