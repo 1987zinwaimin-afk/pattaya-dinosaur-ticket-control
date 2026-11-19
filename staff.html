@@ -3969,22 +3969,53 @@ installUILanguageObserver();applyUILanguage();
 (function(){
  const STAFF_ALARM_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
  function alarmKeyBytes(value){const pad='='.repeat((4-value.length%4)%4);const raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(Array.from(raw,c=>c.charCodeAt(0)))}
- window.renderStaffAlarmSetupBanner=function(){
+ 
+window.showEmergencyAlarmDialog=function(options){
+ const mode=options?.mode||'confirm';
+ return new Promise(resolve=>{
+  document.getElementById('emergencyAlarmDialog')?.remove();
+  const root=document.createElement('div');root.id='emergencyAlarmDialog';root.className='emergency-alarm-overlay';
+  root.innerHTML='<section class="emergency-alarm-card" role="dialog" aria-modal="true" aria-labelledby="emergencyAlarmTitle"><div class="emergency-alarm-glow"></div><div class="emergency-alarm-symbol" id="emergencyAlarmSymbol">🚨</div><div class="emergency-alarm-kicker">PATTAYA DINOSAUR KINGDOM</div><h2 id="emergencyAlarmTitle"></h2><p id="emergencyAlarmMessage"></p><div class="emergency-alarm-details" id="emergencyAlarmDetails" hidden></div><div class="emergency-alarm-actions" id="emergencyAlarmActions"></div></section>';
+  const title=root.querySelector('#emergencyAlarmTitle'),message=root.querySelector('#emergencyAlarmMessage'),symbol=root.querySelector('#emergencyAlarmSymbol'),details=root.querySelector('#emergencyAlarmDetails'),actions=root.querySelector('#emergencyAlarmActions');
+  title.textContent=options?.title||(mode==='confirm'?'Send Emergency Alarm?':mode==='success'?'Alarm sent successfully':'Alarm could not be sent');
+  message.textContent=options?.message||'';
+  if(options?.details){details.textContent=options.details;details.hidden=false}
+  if(mode==='success'){symbol.textContent='✓';symbol.classList.add('is-success');root.classList.add('is-success')}
+  if(mode==='error'){symbol.textContent='!';symbol.classList.add('is-error');root.classList.add('is-error')}
+  const close=value=>{root.classList.add('is-closing');setTimeout(()=>root.remove(),160);resolve(value)};
+  if(mode==='confirm'){
+   const cancel=document.createElement('button');cancel.type='button';cancel.className='emergency-alarm-cancel';cancel.textContent='Cancel';cancel.onclick=()=>close(false);
+   const send=document.createElement('button');send.type='button';send.className='emergency-alarm-send';send.textContent='🚨  Send Alarm';send.onclick=()=>close(true);
+   actions.append(cancel,send);
+  }else{
+   const done=document.createElement('button');done.type='button';done.className='emergency-alarm-send';done.textContent='Close';done.onclick=()=>close(true);actions.append(done);
+  }
+  root.addEventListener('click',e=>{if(e.target===root&&mode==='confirm')close(false)});
+  const esc=e=>{if(e.key==='Escape'&&mode==='confirm'){document.removeEventListener('keydown',esc);close(false)}};
+  document.addEventListener('keydown',esc);
+  document.body.appendChild(root);
+  requestAnimationFrame(()=>root.classList.add('is-visible'));
+  actions.querySelector('button')?.focus();
+ });
+};
+
+window.renderStaffAlarmSetupBanner=function(){
   const host=document.getElementById('staffAlarmSettingsHost');
   const headerButton=document.getElementById('staffAlarmHeaderButton');
   if(headerButton){
    headerButton.hidden=!currentUser;
    headerButton.setAttribute('aria-label','Send Alarm to Owner and all Normal Staff');
    headerButton.onclick=async()=>{
-    if(!currentUser){alert('Please sign in to your Normal Staff account first.');return}
-    if(!confirm('Send an ALARM to Owner and all Normal Staff devices that have enabled notifications?'))return;
+    if(!currentUser){await window.showEmergencyAlarmDialog({mode:'error',title:'Staff login required',message:'Please sign in to your Normal Staff account first.'});return}
+    const approved=await window.showEmergencyAlarmDialog({mode:'confirm',title:'Send Emergency Alarm?',message:'Send an ALARM to Owner and all Normal Staff devices that have enabled notifications?',details:'Only devices with notifications enabled can receive this alarm.'});
+    if(!approved)return;
     headerButton.disabled=true;headerButton.textContent='…';
     try{
-     const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\nเฮียเข้าไปในสวนแล้ว'}});
+     const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\\nเฮียเข้าไปในสวนแล้ว'}});
      if(error)throw error;
      if(!data||!data.ok)throw new Error(data?.message||'No subscribed web-push device accepted the alarm.');
-     alert('🚨 Alarm sent. Web notifications: '+data.sent+' / '+data.subscriptions+'.\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\nFailed: '+data.failed);
-    }catch(error){alert('Could not send emergency alarm: '+(error?.message||error))}
+     await window.showEmergencyAlarmDialog({mode:'success',title:'Alarm sent successfully',message:'Your emergency alarm has been sent.',details:'Web notifications: '+data.sent+' / '+data.subscriptions+'\\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\\nFailed: '+data.failed});
+    }catch(error){await window.showEmergencyAlarmDialog({mode:'error',title:'Alarm could not be sent',message:error?.message||String(error)})}
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
   }
@@ -4373,6 +4404,33 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
  #pageContent[data-ui-page="customer-visits"] .staff-cv-header-actions{gap:4px!important}
  #pageContent[data-ui-page="customer-visits"] .staff-cv-header-actions button{padding:5px 7px!important;font-size:11px!important;height:34px!important;min-height:34px!important}
 }
+
+
+/* Animated in-app emergency alarm dialog; replaces browser-native confirm/alert for alarm sending only. */
+.emergency-alarm-overlay{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:rgba(2,10,20,.76);backdrop-filter:blur(9px);opacity:0;transition:opacity .2s ease}
+.emergency-alarm-overlay.is-visible{opacity:1}
+.emergency-alarm-card{position:relative;isolation:isolate;overflow:hidden;width:min(100%,430px);padding:26px 22px 20px;border:1px solid rgba(255,210,115,.58);border-radius:25px;background:linear-gradient(145deg,#102b43 0%,#071827 65%,#14283a 100%);box-shadow:0 24px 80px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.12);color:#f5f7fb;text-align:center;transform:translateY(18px) scale(.96);transition:transform .28s cubic-bezier(.2,.85,.25,1)}
+.emergency-alarm-overlay.is-visible .emergency-alarm-card{transform:translateY(0) scale(1)}
+.emergency-alarm-overlay.is-closing{opacity:0}
+.emergency-alarm-overlay.is-closing .emergency-alarm-card{transform:translateY(10px) scale(.97)}
+.emergency-alarm-glow{position:absolute;z-index:-1;width:180px;height:180px;left:50%;top:-100px;transform:translateX(-50%);border-radius:50%;background:rgba(255,64,83,.23);filter:blur(38px)}
+.emergency-alarm-symbol{display:grid;place-items:center;width:76px;height:76px;margin:0 auto 13px;border:1px solid rgba(255,105,112,.55);border-radius:23px;background:linear-gradient(145deg,#6b1e2a,#321426);font-size:39px;box-shadow:0 0 0 7px rgba(255,75,90,.08);animation:emergencyAlarmPulse 1.35s ease-in-out infinite}
+.emergency-alarm-kicker{color:#e9c77f;font-size:10px;font-weight:800;letter-spacing:2px}
+.emergency-alarm-card h2{margin:8px 0;color:#ffe0a0;font-size:24px;line-height:1.2}
+.emergency-alarm-card p{margin:10px 0 16px;color:#d5e0eb;font-size:14px;line-height:1.55;white-space:pre-line}
+.emergency-alarm-details{margin:0 0 16px;padding:11px;border:1px solid rgba(255,255,255,.13);border-radius:13px;background:rgba(255,255,255,.07);color:#f7e6bd;font-size:13px;line-height:1.5;white-space:pre-line}
+.emergency-alarm-actions{display:flex;gap:10px}
+.emergency-alarm-actions button{flex:1;min-height:46px;padding:10px 12px;border-radius:13px;font-size:14px;font-weight:750;cursor:pointer}
+.emergency-alarm-cancel{border:1px solid rgba(209,223,235,.3);background:#20384c;color:#e7eef5}
+.emergency-alarm-send{border:1px solid #f4d17e;background:linear-gradient(120deg,#ffe29a,#c88e2d);color:#17283a;box-shadow:0 7px 18px rgba(203,151,58,.22)}
+.emergency-alarm-overlay.is-success .emergency-alarm-symbol{border-color:#68e2a4;background:linear-gradient(145deg,#17664a,#123b35);color:#a5ffd0;animation:emergencyAlarmSuccess .55s ease-out}
+.emergency-alarm-overlay.is-success .emergency-alarm-glow{background:rgba(56,220,145,.2)}
+.emergency-alarm-overlay.is-success .emergency-alarm-card h2{color:#a5ffd0}
+.emergency-alarm-overlay.is-error .emergency-alarm-symbol{border-color:#ff8e8e;background:#632331;animation:none}
+.emergency-alarm-overlay.is-error .emergency-alarm-card h2{color:#ffb2b2}
+@keyframes emergencyAlarmPulse{0%,100%{transform:scale(1);box-shadow:0 0 0 7px rgba(255,75,90,.08),0 0 22px rgba(255,72,90,.13)}50%{transform:scale(1.06);box-shadow:0 0 0 13px rgba(255,75,90,.03),0 0 32px rgba(255,72,90,.3)}}
+@keyframes emergencyAlarmSuccess{0%{transform:scale(.55) rotate(-18deg)}70%{transform:scale(1.13) rotate(4deg)}100%{transform:scale(1) rotate(0)}}
+@media(prefers-reduced-motion:reduce){.emergency-alarm-overlay,.emergency-alarm-card{transition:none}.emergency-alarm-symbol{animation:none!important}}
 
 </style>
 
