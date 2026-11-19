@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v25';
+const CACHE_NAME='dino-staff-shell-v26';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -20,16 +20,17 @@ self.addEventListener('push',event=>{
   catch(_){try{data={body:event.data?event.data.text():'A staff member activity was recorded.'}}catch(__){}}
   let title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':'Pattaya Dinosaur Kingdom');
   if(data.event_type==='emergency_alarm'){
-   // Notifications show only the sender's display name, never department, role, or Staff ID.
-   const titleParts=String(title).split(' · ').map(part=>part.trim()).filter(Boolean);
-   const alarmPrefix=/^🚨?\s*Alarm$/i.test((titleParts[0]||'').replace(/^🚨\s*/,'')); 
-   if(alarmPrefix){
-    const senderName=titleParts[1]||'Staff';
-    title='🚨 Alarm · '+senderName;
-   }else{
-    // If a legacy sender supplied a different title format, remove ID/role suffixes.
-    title=titleParts.slice(0,1).join(' ')||'🚨 Alarm';
-   }
+   // Keep the sender's name, but never expose role, department, or Staff ID.
+   const rawTitle=String(data.title||title||'').trim();
+   const clean=value=>String(value||'').replace(/\s*[·|—-]\s*(?:(?:Owner|Staff|Teen)\b.*|ID\s*[:#-]?.*)$/i,'').trim();
+   const parts=rawTitle.split(/\s*[·|—]\s*/).map(part=>part.trim()).filter(Boolean);
+   const prefix=(parts[0]||'').replace(/^🚨\s*/,'').trim();
+   const suppliedName=String(data.sender_name||data.display_name||'').trim();
+   let senderName='';
+   if(/^Alarm$/i.test(prefix)) senderName=clean(parts[1]||suppliedName);
+   else if(parts.length>1) senderName=clean(parts[1]);
+   else senderName=clean(suppliedName);
+   title=senderName?'🚨 Alarm · '+senderName:'🚨 Alarm';
   }
   const options={
    body:data.body||'A staff member activity was recorded.',
