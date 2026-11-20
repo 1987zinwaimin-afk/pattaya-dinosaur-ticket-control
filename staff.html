@@ -3318,7 +3318,15 @@ async function restoreSavedSession(){
    document.getElementById('authStaffId').value=profile.staff_id||'';
    if(!staffLoginSubmitting){const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';document.getElementById('staffDepartment').value=['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale';}
    const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';
-   await startCloudSession(data.session,true,profile,'app_open',['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale');
+   const restoredDepartment=['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale';
+   // A restored anonymous session must reclaim its Staff ID activity row.
+   // Otherwise Owner Chat can keep targeting an older duplicate profile for this Staff ID.
+   if(profile.staff_id){
+    const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:profile.staff_id,p_display_name:profile.display_name||'Staff',p_department:restoredDepartment});
+    if(claimError)throw claimError;
+    if(!claimed||String(claimed).toUpperCase()!==String(profile.staff_id).toUpperCase())throw new Error('Saved Staff ID could not be verified. Please sign in again.');
+   }
+   await startCloudSession(data.session,true,profile,'app_open',restoredDepartment);
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
   }else{
