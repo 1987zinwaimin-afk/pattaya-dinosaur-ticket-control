@@ -3504,6 +3504,7 @@ async function restoreTicket(id){
 
 let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
 let chatSelfAliasIds=[],chatAliasIdsByProfileId=new Map(),chatCanonicalIdByAliasId=new Map(),chatRefreshPending=false,chatRefreshPendingReloadContacts=false;
+let chatPollTimer=null,chatRealtimeStatus='CLOSED';
 let chatHiddenMessageIds=new Set(),chatHiddenMessageUserId='';
 async function chatLoadHiddenMessages(){
  if(!currentUser)throw new Error('Please sign in before loading hidden chat messages.');
@@ -3560,7 +3561,21 @@ function chatEnsureRealtime(){
   })
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_groups'},()=>{if(page==='chat')chatRefresh(true)})
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_members'},()=>{if(page==='chat')chatRefresh(true)})
-  .subscribe();
+  .subscribe((status,error)=>{
+   chatRealtimeStatus=status;
+   if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+    console.warn('Team Chat realtime subscription status:',status,error||'');
+   }
+  });
+ // Keep messages live even when a Realtime websocket event is missed or the
+ // device temporarily suspends its connection. This fallback never replaces
+ // Realtime; it only reconciles the active conversation in the background.
+ if(!chatPollTimer){
+  chatPollTimer=setInterval(()=>{
+   if(!currentUser||page!=='chat'||document.hidden)return;
+   if(!chatRefreshBusy)chatRefresh(false);
+  },3500);
+ }
 }
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
@@ -3881,11 +3896,11 @@ async function chatSendMessage(event){
  }finally{if(send)send.disabled=false;bodyEl?.focus()}
 }
 function chatMessageActionsHtml(message,isGroup){
- if(!currentUser)return '';
+ if(!currentUser||message.deleted_at)return '';
  const id=chatEsc(message.id);
  const group=isGroup?'true':'false';
- const own=message.sender_id===currentUser?.id;
- return '<div class="chat-message-actions">'+(own&&!message.deleted_at?'<button type="button" onclick="chatEditMessage(&quot;'+id+'&quot;,'+group+')">✎ Edit</button><button type="button" class="chat-unsend-action" onclick="chatUnsendMessage(&quot;'+id+'&quot;,'+group+')">↩ Unsend</button>':'')+'<button type="button" class="chat-delete-action" onclick="chatDeleteForMe(&quot;'+id+'&quot;,'+group+')">⌫ Delete</button></div>';
+ const own=(chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]).includes(message.sender_id);
+ return '<div class="chat-message-actions">'+(own?'<button type="button" onclick="chatEditMessage(&quot;'+id+'&quot;,'+group+')">✎ Edit</button><button type="button" class="chat-unsend-action" onclick="chatUnsendMessage(&quot;'+id+'&quot;,'+group+')">↩ Unsend</button>':'')+'<button type="button" class="chat-delete-action" onclick="chatDeleteForMe(&quot;'+id+'&quot;,'+group+')">⌫ Delete</button></div>';
 }
 async function chatEditMessage(id,isGroup){
  const rows=isGroup?chatGroupMessages:chatAllMessages;const row=rows.find(m=>m.id===id);
