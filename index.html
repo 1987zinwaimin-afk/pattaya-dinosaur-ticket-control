@@ -4267,18 +4267,25 @@ async function chatLoadContacts(){
   console.warn('Chat will use the newest profile per Staff ID because activity lookup was unavailable:',activityError);
  }
  const activityByStaffId=new Map();
+ const legacyActivityByStaffId=new Map();
  for(const activity of activityRows){
   const linkedProfile=profileById.get(activity.user_id);
-  const staffId=String(activity.staff_id||linkedProfile?.staff_id||activity.normalized_name||'').trim().toUpperCase();
+  const explicitStaffId=String(activity.staff_id||'').trim().toUpperCase();
+  const fallbackStaffId=String(linkedProfile?.staff_id||activity.normalized_name||'').trim().toUpperCase();
+  const staffId=explicitStaffId||fallbackStaffId;
   if(!staffId)continue;
-  const previous=activityByStaffId.get(staffId);
+  const target=explicitStaffId?activityByStaffId:legacyActivityByStaffId;
+  const previous=target.get(staffId);
   if(!previous||new Date(activity.last_seen||0).getTime()>new Date(previous.last_seen||0).getTime()){
-   activityByStaffId.set(staffId,activity);
+   target.set(staffId,activity);
   }
+ }
+ // Prefer the explicit Staff ID activity row over older legacy name-based rows.
+ for(const [staffId,activity] of legacyActivityByStaffId){
+  if(!activityByStaffId.has(staffId))activityByStaffId.set(staffId,activity);
  }
  const grouped=new Map();
  for(const profile of profiles){
-  if(profile.id===currentUser.id)continue;
   if(profile.role==='owner'){
    grouped.set('owner:'+profile.id,profile);
    continue;
@@ -4295,7 +4302,9 @@ async function chatLoadContacts(){
    grouped.set(key,profile);
   }
  }
- chatContacts=[...grouped.values()].sort((a,b)=>{
+ // Remove the signed-in account only after deduplication, so its older duplicate
+ // profiles cannot reappear as a second copy of the same Staff member.
+ chatContacts=[...grouped.values()].filter(p=>p.id!==currentUser.id).sort((a,b)=>{
   const name=String(a.display_name||'').localeCompare(String(b.display_name||''),undefined,{sensitivity:'base'});
   return name||String(a.staff_id||'').localeCompare(String(b.staff_id||''));
  });
