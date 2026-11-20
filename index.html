@@ -4100,6 +4100,7 @@ async function enableStaffLoginNotifications(){try{if(!currentUser||currentRole!
 async function refreshOwnerPushSubscription(){
  if(!currentUser||currentRole!=='owner'||!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)||Notification.permission!=='granted')return;
  const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});
+ try{await registration.update()}catch(updateError){console.warn('Owner service worker update check failed:',updateError)}
  await navigator.serviceWorker.ready;
  let subscription=await registration.pushManager.getSubscription();
  if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(OWNER_PUSH_VAPID_PUBLIC_KEY)});
