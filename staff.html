@@ -2417,6 +2417,19 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 .brand-header::after{content:none!important;display:none!important;animation:none!important}
 .brand-header .brand-banner{animation:none!important;transform:none!important;will-change:auto!important}
 </style>
+
+<style id="team-chat-styles">
+.team-chat-shell{height:min(72vh,760px);min-height:440px;display:grid;grid-template-columns:minmax(220px,31%) minmax(0,1fr);overflow:hidden;border:1px solid #45617a;border-radius:18px;background:linear-gradient(145deg,#102d47,#071a2c);box-shadow:0 12px 30px #0003;color:#edf5fc}
+.team-chat-sidebar{min-width:0;display:flex;flex-direction:column;border-right:1px solid #34516b;background:#0d2439}
+.team-chat-title{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:15px 13px 10px}.team-chat-title h2{margin:0;color:#f2cf82;font-size:18px}.team-chat-title small,.team-chat-peer small{display:block;color:#9eb2c4;font-size:11px;margin-top:3px}.chat-live-dot{color:#75e0b0;font-size:10px;white-space:nowrap}
+.chat-search{margin:0 10px 9px;width:calc(100% - 20px);box-sizing:border-box;border:1px solid #385b77!important;background:#071a2a!important;border-radius:12px!important;padding:9px 11px!important;color:#eef6ff!important;font-size:13px!important}
+.team-chat-contacts{overflow:auto;min-height:0;flex:1;padding:4px 7px 9px}.chat-contact{width:100%;display:flex;align-items:center;gap:9px;padding:10px 8px;border:0;border-radius:12px;background:transparent;color:#edf5fc;text-align:left;box-shadow:none;margin:2px 0}.chat-contact.active{background:#1c4260;outline:1px solid #4b6e88}.chat-avatar{width:36px;height:36px;flex:0 0 36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#e9c77b,#a87830);color:#132b40;font-weight:800;overflow:hidden}.chat-avatar img{width:100%;height:100%;object-fit:cover}.chat-contact-copy{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}.chat-contact-copy b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chat-contact-copy small{font-size:10px;color:#a9bdcf}.chat-unread,.chat-nav-badge{display:inline-grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#d6a94e;color:#102238;font-size:10px;font-weight:800}.chat-nav-badge{margin-left:7px}
+.team-chat-conversation{min-width:0;display:flex;flex-direction:column;background:radial-gradient(ellipse at top right,#1b405b 0,transparent 48%),#091e31}.team-chat-peer{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid #29445d;min-height:54px}.team-chat-peer b{font-size:14px}.chat-peer-avatar{width:34px;height:34px;flex-basis:34px}.chat-back{display:none;padding:5px 9px;border-radius:9px;background:#183a56;border:1px solid #45617a}
+.team-chat-messages{display:flex;flex-direction:column;gap:9px;overflow:auto;flex:1;min-height:0;padding:14px}.chat-bubble{max-width:min(82%,520px);padding:9px 11px 6px;border-radius:15px;box-shadow:0 3px 10px #0002;overflow-wrap:anywhere}.chat-bubble.mine{align-self:flex-end;background:linear-gradient(145deg,#dcb65f,#b98737);color:#14283b;border-bottom-right-radius:4px}.chat-bubble.theirs{align-self:flex-start;background:#193a55;border:1px solid #355a76;color:#f1f6fb;border-bottom-left-radius:4px}.chat-bubble-text{font-size:14px;line-height:1.45;white-space:normal}.chat-bubble time{display:block;text-align:right;font-size:9px;opacity:.72;margin-top:5px}.chat-message-image{display:block;max-width:min(100%,290px);max-height:260px;object-fit:contain;border-radius:10px;margin-bottom:5px}.chat-empty-state{margin:auto;display:flex;flex-direction:column;align-items:center;gap:7px;color:#a9bfd1;text-align:center;padding:20px}.chat-empty-state>span{font-size:35px}.chat-empty-state b{color:#f1d18c}.chat-empty-state small{font-size:12px}.chat-error{padding:12px;color:#ffb9c0;font-size:12px;overflow-wrap:anywhere}.chat-loading,.chat-no-contacts{padding:14px;color:#9fb4c6;font-size:12px;text-align:center}
+.team-chat-compose{padding:9px 11px 8px;border-top:1px solid #29445d;background:#0c2439}.chat-compose-row{display:flex;align-items:flex-end;gap:8px}.chat-attach{width:38px;height:38px;flex:0 0 38px;border:1px solid #486984;border-radius:12px;display:grid;place-items:center;color:#f3d18b;font-size:24px;cursor:pointer;background:#173750}.chat-compose-row textarea{flex:1;min-width:0;max-height:110px;resize:vertical;border:1px solid #3d5e78;border-radius:12px;background:#06192a;color:#eef5fb;padding:10px 11px;font:inherit;font-size:13px;line-height:1.35}.chat-send{width:40px;height:39px;flex:0 0 40px;padding:0!important;border-radius:12px!important}.chat-compose-hint{display:block;color:#819bb0;font-size:9px;margin:5px 0 0 49px}.chat-file-preview{font-size:11px;color:#f1d18c;margin:0 0 5px 48px;overflow-wrap:anywhere}
+@media(max-width:650px){.team-chat-shell{height:calc(100dvh - 190px);min-height:390px;grid-template-columns:1fr}.team-chat-sidebar{border-right:0}.team-chat-conversation{display:none}.team-chat-shell.chat-has-peer .team-chat-sidebar{display:none}.team-chat-shell.chat-has-peer .team-chat-conversation{display:flex}.team-chat-shell.chat-has-peer .chat-back{display:inline-block}.team-chat-shell.chat-has-peer .team-chat-peer{gap:8px}.team-chat-shell.chat-has-peer .team-chat-messages{padding:10px}.chat-bubble{max-width:88%}}
+@media(min-width:651px){.team-chat-shell{height:min(74vh,760px)}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -2454,7 +2467,7 @@ try{if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}catc
 let authMode="signin",currentUser=null,currentRole="staff",currentStaffId=null,cloudReady=false,cloudChannel=null;
 const STAFF_MODE=true;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန',icon:'🎪'}];
-const PAGES=[{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',my:'ဒက်ရှ်ဘုတ်',icon:'◈'},...DEPTS,{id:'train',en:'Garden Train',th:'Garden Train',my:'Garden Train',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',my:'လစဉ်အနှစ်ချုပ်',icon:'▥'},{id:'payroll',en:'My Payroll',th:'เงินเดือนของฉัน',my:'ကျွန်ုပ်၏လစာ',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်',icon:'♧'},{id:'archive',en:'Archived Tickets',th:'ตั๋วที่เก็บถาวร',my:'သိမ်းဆည်းထားသော လက်မှတ်များ',icon:'🗂️'},{id:'customer-visits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'},{id:'settings',en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ',icon:'⚙'}];
+const PAGES=[{id:'chat',en:'Team Chat',th:'แชททีม',my:'အဖွဲ့လိုက် စကားပြော',icon:'💬'},{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',my:'ဒက်ရှ်ဘုတ်',icon:'◈'},...DEPTS,{id:'train',en:'Garden Train',th:'Garden Train',my:'Garden Train',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',my:'လစဉ်အနှစ်ချုပ်',icon:'▥'},{id:'payroll',en:'My Payroll',th:'เงินเดือนของฉัน',my:'ကျွန်ုပ်၏လစာ',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်',icon:'♧'},{id:'archive',en:'Archived Tickets',th:'ตั๋วที่เก็บถาวร',my:'သိမ်းဆည်းထားသော လက်မှတ်များ',icon:'🗂️'},{id:'customer-visits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'},{id:'settings',en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ',icon:'⚙'}];
 const T={en:{types:'Ticket types',qty:'Total quantity',value:'Inventory value',add:'＋ Add Ticket',save:'▤ Save Report',share:'↗ Share Report',search:'⌕ Search tickets...',none:'No tickets saved yet.',noHint:'Use Add Ticket to create your first real ticket.',sold:'Tickets sold',total:'Total',edit:'✎ Edit',more:'⋮ More',addQty:'＋ Add quantity',clear:'Clear quantity',del:'Delete',name:'Ticket name',price:'Price (THB)',initial:'Initial quantity',image:'Ticket image',saveTicket:'Save ticket',cancel:'Cancel',location:'Event location',records:'Ticket records',today:'Today',month:'Month',custom:'Custom range',from:'From date',to:'To date',report:'Generate report',staffName:'Staff name',department:'Department',loginHistory:'Staff login activity is not connected yet.',cloud:'Cloud status',cloudMsg:'Connected to Ticket Control Live cloud database. Ticket changes sync in real time.',light:'Light theme',dark:'Dark theme',noReport:'No report data for this range.',addSuccess:'Ticket saved in this browser.',quantityPrompt:'Enter quantity to add',editTitle:'Edit ticket',newTitle:'Add ticket',reportSaved:'Report downloaded.',staffNotice:'Staff accounts and secure login are not configured yet.'},th:{types:'ประเภทตั๋ว',qty:'จำนวนตั๋วทั้งหมด',value:'มูลค่าสต็อก',add:'＋ เพิ่มตั๋ว',save:'▤ บันทึกรายงาน',share:'↗ แชร์รายงาน',search:'⌕ ค้นหาตั๋ว...',none:'ยังไม่มีตั๋วที่บันทึก',noHint:'กดเพิ่มตั๋วเพื่อสร้างรายการแรก',sold:'จำนวนที่ขาย',total:'รวม',edit:'✎ แก้ไข',more:'⋮ เพิ่มเติม',addQty:'＋ เพิ่มจำนวน',clear:'ล้างจำนวน',del:'ลบตั๋ว',name:'ชื่อตั๋ว',price:'ราคา (THB)',initial:'จำนวนเริ่มต้น',image:'รูปภาพตั๋ว',saveTicket:'บันทึกตั๋ว',cancel:'ยกเลิก',location:'สถานที่จัดงาน',records:'รายการตั๋ว',today:'รายวัน',month:'รายเดือน',custom:'ช่วงวันที่กำหนด',from:'ตั้งแต่วันที่',to:'ถึงวันที่',report:'สร้างรายงาน',staffName:'ชื่อพนักงาน',department:'แผนก',loginHistory:'ยังไม่ได้เชื่อมต่อประวัติการเข้าสู่ระบบ',cloud:'สถานะคลาวด์',cloudMsg:'เชื่อมต่อฐานข้อมูล Ticket Control Live แล้ว รายการตั๋วจะซิงก์แบบเรียลไทม์',light:'ธีมสว่าง',dark:'ธีมมืด',noReport:'ไม่มีข้อมูลรายงานในช่วงนี้',addSuccess:'บันทึกตั๋วในเบราว์เซอร์แล้ว',quantityPrompt:'ใส่จำนวนที่ต้องการเพิ่ม',editTitle:'แก้ไขตั๋ว',newTitle:'เพิ่มตั๋ว',reportSaved:'ดาวน์โหลดรายงานแล้ว',staffNotice:'ยังไม่ได้ตั้งค่าบัญชีพนักงานและการเข้าสู่ระบบที่ปลอดภัย'}};
 let lang=localStorage.getItem('tctl-lang')||'en',page='sale',tickets=readTickets(),lastInput={},theme=localStorage.getItem('tctl-theme-staff')||'dark';if(theme==='emerald'||theme==='midnight'||theme==='luxury'){theme='dark';localStorage.setItem('tctl-theme-staff',theme);}
 const staffDepartmentLabels={sale:'Sale Department',entry:'Entry Department',playing:'Playing Department',event:'Event Department',all:'All Department'};
@@ -3313,7 +3326,7 @@ function eventTicketMatchesLocation(ticket,id){
  return false;
 }
 function departmentTickets(){return tickets.filter(t=>!t.isArchived&&t.department===page&&(page!=='event'||eventTicketMatchesLocation(t,selectedStaffEventLocationId)))}
-function navRender(){const visiblePages=PAGES.filter(p=>p.id==='dashboard'||p.id==='archive'||p.id==='payroll'||p.id==='settings'||(p.id==='customer-visits'&&['entry','all'].includes(selectedStaffDepartment))||(p.id==='train'&&['playing','all'].includes(selectedStaffDepartment))||(['sale','entry','playing'].includes(p.id)&&(selectedStaffDepartment==='all'||p.id===selectedStaffDepartment)));document.getElementById('nav').innerHTML=visiblePages.map(p=>{const fixedLabels={sale:{en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန'},entry:{en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန'},playing:{en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန'},event:{en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန'},payroll:{en:'My Payroll',th:'เงินเดือนของฉัน',my:'ကျွန်ုပ်၏လစာ'},settings:{en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ'},'customer-visits':{en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း'},train:{en:'Garden Train',th:'Garden Train',my:'Garden Train'}};const label=fixedLabels[p.id]?.[lang]||p[lang]||p.en;return '<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+label+'</button>'}).join('')+'<button type="button" id="staffLogout" style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{await recordStaffActivity(false,false)}catch(e){console.warn('Could not mark Staff inactive before logout:',e)}try{await sendStaffOwnerNotification('logout')}catch(e){console.warn('Logout notification could not be sent:',e)}try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}if(window.staffActivityTimer){clearInterval(window.staffActivityTimer);window.staffActivityTimer=null}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='sale';page='sale';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
+function navRender(){const visiblePages=PAGES.filter(p=>p.id==='dashboard'||p.id==='chat'||p.id==='archive'||p.id==='payroll'||p.id==='settings'||(p.id==='customer-visits'&&['entry','all'].includes(selectedStaffDepartment))||(p.id==='train'&&['playing','all'].includes(selectedStaffDepartment))||(['sale','entry','playing'].includes(p.id)&&(selectedStaffDepartment==='all'||p.id===selectedStaffDepartment)));document.getElementById('nav').innerHTML=visiblePages.map(p=>{const fixedLabels={sale:{en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန'},entry:{en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန'},playing:{en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန'},event:{en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန'},payroll:{en:'My Payroll',th:'เงินเดือนของฉัน',my:'ကျွန်ုပ်၏လစာ'},settings:{en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ'},'customer-visits':{en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း'},train:{en:'Garden Train',th:'Garden Train',my:'Garden Train'}};const label=fixedLabels[p.id]?.[lang]||p[lang]||p.en;return '<button class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+label+'</button>'}).join('')+'<button type="button" id="staffLogout" style="margin-top:12px;border:1px solid #d36b78;color:#ffdce0;background:#54212b">↪ Logout</button>';document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));document.getElementById('staffLogout').onclick=async()=>{if(!confirm('Log out of Staff Ticket Control?'))return;try{await recordStaffActivity(false,false)}catch(e){console.warn('Could not mark Staff inactive before logout:',e)}try{await sendStaffOwnerNotification('logout')}catch(e){console.warn('Logout notification could not be sent:',e)}try{if(sb)await sb.auth.signOut()}catch(e){console.error('Sign out failed',e)}if(window.staffActivityTimer){clearInterval(window.staffActivityTimer);window.staffActivityTimer=null}currentUser=null;currentRole=null;cloudReady=false;if(cloudPollTimer){clearInterval(cloudPollTimer);cloudPollTimer=null}if(cloudChannel){sb.removeChannel(cloudChannel);cloudChannel=null}document.getElementById('authName').value='';document.getElementById('authError').textContent='';document.getElementById('authScreen').style.display='grid';document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('pageContent').innerHTML='';document.getElementById('stats').innerHTML='';selectedStaffDepartment='sale';page='sale';navRender();document.getElementById('pageTitle').textContent='Staff Ticket Control';};}
 function go(p){if(STAFF_MODE&&p==='event')return;if(STAFF_MODE&&!['dashboard','archive','sale','entry','playing','train','monthly','payroll','settings','customer-visits'].includes(p))return;page=p;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render()}
 
 let staffCvQrPromise=null,staffCvScannerPromise=null,staffCvScanner=null;
@@ -3394,6 +3407,136 @@ async function restoreTicket(id){
  if(error){showCloudError('Could not restore ticket: '+error.message);return}if(!data){alert('Ticket was already restored or changed. Refresh and try again.');await refreshCloudTickets(true);return}
  const next=mapCloud(data);tickets=tickets.map(x=>String(x.id)===String(id)?next:x);lastCloudRows.set(String(id),data);lastCloudFingerprint='';localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render();
 }
+
+let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatRefreshBusy=false;
+function chatEsc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function chatText(en,th,my){return lang==='my'?my:lang==='th'?th:en}
+function chatTime(value){try{return new Intl.DateTimeFormat(undefined,{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(_){return ''}}
+function chatEnsureRealtime(){
+ if(!currentUser||chatChannel)return;
+ chatChannel=sb.channel('team-chat-'+currentUser.id)
+  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_messages'},payload=>{
+   const row=payload.new||payload.old||{};
+   if(row.sender_id===currentUser?.id||row.recipient_id===currentUser?.id){
+    if(page==='chat')chatRefresh(true);
+    chatUpdateUnreadBadge();
+   }
+  }).subscribe();
+}
+async function chatUpdateUnreadBadge(){
+ if(!currentUser)return;
+ try{
+  const {data,error}=await sb.from('team_chat_messages').select('id').eq('recipient_id',currentUser.id).is('read_at',null).limit(99);
+  if(error)throw error;
+  const button=document.querySelector('#nav [data-page="chat"]');
+  if(button){const count=(data||[]).length;button.innerHTML='💬 '+chatText('Team Chat','แชททีม','အဖွဲ့လိုက် စကားပြော')+(count?'<span class="chat-nav-badge">'+count+'</span>':'')}
+ }catch(e){console.warn('Chat unread count unavailable:',e)}
+}
+async function chatLoadContacts(){
+ const {data,error}=await sb.from('profiles').select('id,display_name,role,avatar_url').eq('is_archived',false).in('role',['owner','staff']).neq('id',currentUser.id).order('display_name',{ascending:true});
+ if(error)throw error;
+ chatContacts=data||[];
+}
+async function chatLoadMessages(){
+ const uid=currentUser.id;
+ const {data,error}=await sb.from('team_chat_messages').select('id,sender_id,recipient_id,body,image_path,created_at,read_at').or('sender_id.eq.'+uid+',recipient_id.eq.'+uid).order('created_at',{ascending:true}).limit(500);
+ if(error)throw error;
+ chatAllMessages=data||[];
+}
+async function chatRenderMessageList(){
+ const pane=document.getElementById('teamChatMessages');if(!pane)return;
+ const rows=chatAllMessages.filter(m=>(m.sender_id===currentUser.id&&m.recipient_id===chatPeerId)||(m.sender_id===chatPeerId&&m.recipient_id===currentUser.id));
+ if(!rows.length){pane.innerHTML='<div class="chat-empty-state"><span>💬</span><b>'+chatText('Start the conversation','เริ่มการสนทนา','စကားစပြောပါ')+'</b><small>'+chatText('Send a message or photo','ส่งข้อความหรือรูปภาพ','စာ သို့မဟုတ် ဓာတ်ပုံ ပို့ပါ')+'</small></div>';return}
+ const html=await Promise.all(rows.map(async m=>{
+  let image='';
+  if(m.image_path){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Chat image could not be loaded:',e)}}
+  const mine=m.sender_id===currentUser.id;
+  return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(image||'')+(m.body?'<div class="chat-bubble-text">'+chatEsc(m.body).replace(/\n/g,'<br>')+'</div>':'')+'<time>'+chatTime(m.created_at)+(mine?(m.read_at?' · ✓✓':' · ✓'):'')+'</time></article>';
+ }));
+ if(!document.getElementById('teamChatMessages'))return;
+ pane.innerHTML=html.join('');
+ pane.scrollTop=pane.scrollHeight;
+ const unread=rows.filter(m=>m.recipient_id===currentUser.id&&!m.read_at);
+ if(unread.length){
+  const ids=unread.map(m=>m.id);
+  const {error}=await sb.from('team_chat_messages').update({read_at:new Date().toISOString()}).in('id',ids).eq('recipient_id',currentUser.id).is('read_at',null);
+  if(error)console.warn('Could not mark chat messages read:',error);
+  else{chatAllMessages=chatAllMessages.map(m=>ids.includes(m.id)?{...m,read_at:new Date().toISOString()}:m);chatUpdateUnreadBadge()}
+ }
+}
+function chatDrawContacts(){
+ const list=document.getElementById('teamChatContacts');if(!list)return;
+ const q=(document.getElementById('teamChatSearch')?.value||'').trim().toLowerCase();
+ const unreadBy={};chatAllMessages.forEach(m=>{if(m.recipient_id===currentUser.id&&!m.read_at)unreadBy[m.sender_id]=(unreadBy[m.sender_id]||0)+1});
+ const rows=chatContacts.filter(p=>(p.display_name||'').toLowerCase().includes(q));
+ list.innerHTML=rows.map(p=>'<button type="button" class="chat-contact '+(p.id===chatPeerId?'active':'')+'" data-chat-peer="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').trim().slice(0,1).toUpperCase()))+'</span><span class="chat-contact-copy"><b>'+chatEsc(p.display_name||'Unnamed')+'</b><small>'+(p.role==='owner'?'👑 Owner':'Staff')+'</small></span>'+(unreadBy[p.id]?'<span class="chat-unread">'+unreadBy[p.id]+'</span>':'')+'</button>').join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
+}
+async function chatRefresh(reloadContacts){
+ if(chatRefreshBusy||!currentUser||page!=='chat')return;
+ chatRefreshBusy=true;
+ try{if(reloadContacts)await chatLoadContacts();await chatLoadMessages();chatDrawContacts();await chatRenderMessageList();await chatUpdateUnreadBadge()}
+ catch(e){console.error('Chat refresh failed:',e);const pane=document.getElementById('teamChatMessages');if(pane)pane.innerHTML='<div class="chat-error">'+chatEsc(e.message||e)+'</div>'}
+ finally{chatRefreshBusy=false}
+}
+async function chatSelectPeer(id){
+ if(!chatContacts.some(p=>p.id===id))return;
+ chatPeerId=id;
+ const root=document.getElementById('pageContent');root?.classList.add('chat-has-peer');
+ chatDrawContacts();
+ const peer=chatContacts.find(p=>p.id===id);
+ const title=document.getElementById('teamChatPeerName'),sub=document.getElementById('teamChatPeerRole');
+ if(title)title.textContent=peer?.display_name||'Team member';
+ if(sub)sub.textContent=peer?.role==='owner'?'👑 Owner':'Staff';
+ await chatLoadMessages();await chatRenderMessageList();await chatUpdateUnreadBadge();
+}
+async function chatSendMessage(event){
+ event.preventDefault();
+ if(!currentUser||!chatPeerId)return;
+ const form=event.currentTarget,bodyEl=document.getElementById('teamChatText'),fileEl=document.getElementById('teamChatFile'),send=document.getElementById('teamChatSend');
+ const body=(bodyEl?.value||'').trim(),file=fileEl?.files?.[0]||null;
+ if(!body&&!file)return;
+ if(body.length>4000){alert('Message is too long (maximum 4,000 characters).');return}
+ if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>5*1024*1024)){alert('Please choose a JPG, PNG or WEBP image up to 5 MB.');return}
+ if(send)send.disabled=true;
+ let imagePath=null;
+ try{
+  if(file){
+   const ext=file.type==='image/png'?'png':file.type==='image/webp'?'webp':'jpg';
+   imagePath=currentUser.id+'/'+crypto.randomUUID()+'.'+ext;
+   const {error:uploadError}=await sb.storage.from('team-chat-images').upload(imagePath,file,{contentType:file.type,upsert:false});
+   if(uploadError)throw uploadError;
+  }
+  const {error}=await sb.from('team_chat_messages').insert({sender_id:currentUser.id,recipient_id:chatPeerId,body,image_path:imagePath});
+  if(error)throw error;
+  if(bodyEl)bodyEl.value='';if(fileEl)fileEl.value='';
+  const preview=document.getElementById('teamChatPreview');if(preview)preview.textContent='';
+  await chatLoadMessages();chatDrawContacts();await chatRenderMessageList();await chatUpdateUnreadBadge();
+ }catch(e){
+  if(imagePath)try{await sb.storage.from('team-chat-images').remove([imagePath])}catch(_){}
+  alert('Message could not be sent: '+(e.message||e));
+ }finally{if(send)send.disabled=false;bodyEl?.focus()}
+}
+async function renderTeamChat(){
+ const root=document.getElementById('pageContent');if(!root)return;
+ root.dataset.uiPage='team-chat';root.classList.remove('chat-has-peer');
+ if(!currentUser||!['owner','staff'].includes(currentRole)){root.innerHTML='<section class="panel">Please sign in with an Owner or Staff account to use Team Chat.</section>';return}
+ root.innerHTML='<section class="team-chat-shell"><aside class="team-chat-sidebar"><div class="team-chat-title"><div><h2>💬 '+chatText('Team Chat','แชททีม','အဖွဲ့လိုက် စကားပြော')+'</h2><small>'+chatText('Owner & Staff','Owner และพนักงาน','Owner နှင့် Staff')+'</small></div><span class="chat-live-dot">● Live</span></div><input id="teamChatSearch" class="chat-search" type="search" placeholder="'+chatText('Search people…','ค้นหาสมาชิก…','အဖွဲ့ဝင်ရှာရန်…')+'"><div id="teamChatContacts" class="team-chat-contacts"><div class="chat-loading">Loading team…</div></div></aside><section class="team-chat-conversation"><header class="team-chat-peer"><button type="button" id="teamChatBack" class="chat-back" aria-label="Back to contacts">←</button><span class="chat-avatar chat-peer-avatar">👤</span><div><b id="teamChatPeerName">'+chatText('Select a team member','เลือกสมาชิกทีม','အဖွဲ့ဝင်တစ်ဦး ရွေးပါ')+'</b><small id="teamChatPeerRole">Owner & Staff</small></div></header><div id="teamChatMessages" class="team-chat-messages"><div class="chat-empty-state"><span>💬</span><b>Team Chat</b><small>Select a person to start chatting</small></div></div><form id="teamChatForm" class="team-chat-compose"><div id="teamChatPreview" class="chat-file-preview"></div><div class="chat-compose-row"><label class="chat-attach" for="teamChatFile" title="Send image">＋</label><input id="teamChatFile" type="file" accept="image/jpeg,image/png,image/webp" hidden><textarea id="teamChatText" rows="1" maxlength="4000" placeholder="'+chatText('Write a message…','พิมพ์ข้อความ…','စာရေးရန်…')+'"></textarea><button id="teamChatSend" class="gold chat-send" type="submit" aria-label="Send">➤</button></div><small class="chat-compose-hint">JPG / PNG / WEBP · 5 MB max</small></form></section></section>';
+ try{
+  await chatLoadContacts();await chatLoadMessages();
+  if(!document.getElementById('teamChatContacts'))return;
+  chatDrawContacts();
+  const search=document.getElementById('teamChatSearch');search.oninput=chatDrawContacts;
+  document.getElementById('teamChatContacts').onclick=e=>{const b=e.target.closest('[data-chat-peer]');if(b)chatSelectPeer(b.dataset.chatPeer)};
+  document.getElementById('teamChatBack').onclick=()=>root.classList.remove('chat-has-peer');
+  document.getElementById('teamChatForm').onsubmit=chatSendMessage;
+  document.getElementById('teamChatFile').onchange=e=>{const f=e.target.files?.[0],p=document.getElementById('teamChatPreview');if(p)p.textContent=f?'📎 '+f.name:''};
+  chatEnsureRealtime();await chatUpdateUnreadBadge();
+  if(!chatPeerId||!chatContacts.some(p=>p.id===chatPeerId))chatPeerId=chatContacts[0]?.id||'';
+  if(chatPeerId)await chatSelectPeer(chatPeerId);
+  else document.getElementById('teamChatMessages').innerHTML='<div class="chat-empty-state"><span>👥</span><b>No other team members yet</b><small>Owner and Staff profiles will appear here.</small></div>';
+ }catch(e){console.error('Team Chat failed to initialize:',e);const list=document.getElementById('teamChatContacts');if(list)list.innerHTML='<div class="chat-error">'+chatEsc(e.message||e)+'</div>'}
+}
+
 function renderArchivedTickets(){
  const root=document.getElementById('pageContent');if(!root)return;
  const archived=tickets.filter(t=>t.isArchived&&(selectedStaffDepartment==='all'?['sale','entry','playing'].includes(t.department):t.department===selectedStaffDepartment)).sort((a,b)=>String(b.archivedAt||'').localeCompare(String(a.archivedAt||'')));
@@ -3406,12 +3549,12 @@ function renderArchivedTickets(){
  search.oninput=filter;dept.onchange=filter;
  root.querySelectorAll('[data-restore-ticket]').forEach(btn=>btn.onclick=()=>restoreTicket(btn.dataset.restoreTicket));
 }
-function render(){if(STAFF_MODE&&page==='event')page=selectedStaffDepartment;if(STAFF_MODE&&!['dashboard','archive','sale','entry','playing','train','monthly','payroll','settings','customer-visits'].includes(page))page=selectedStaffDepartment;if(page==='customer-visits'&&!['entry','all'].includes(selectedStaffDepartment))page=selectedStaffDepartment;navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
+function render(){if(STAFF_MODE&&page==='event')page=selectedStaffDepartment;if(STAFF_MODE&&!['dashboard','chat','archive','sale','entry','playing','train','monthly','payroll','settings','customer-visits'].includes(page))page=selectedStaffDepartment;if(page==='customer-visits'&&!['entry','all'].includes(selectedStaffDepartment))page=selectedStaffDepartment;navRender();let p=PAGES.find(x=>x.id===page);document.getElementById('pageTitle').textContent=p?(p[lang]||p.en):'Ticket Control';document.getElementById('language').value=lang;
 let visible=dep()?departmentTickets():(STAFF_MODE?(selectedStaffDepartment==='all'?tickets.filter(t=>!t.isArchived&&['sale','entry','playing'].includes(t.department)):tickets.filter(t=>!t.isArchived&&t.department===selectedStaffDepartment)):tickets.filter(t=>!t.isArchived));
 let total=visible.reduce((a,t)=>a+t.quantity,0),value=visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
-if(page==='dashboard'&&STAFF_MODE)renderStaffDashboard(visible);else if(page==='payroll')renderPayroll();else if(page==='train')renderTrain();else if(page==='customer-visits')renderStaffCustomerVisits();else if(page==='archive')renderArchivedTickets();else if(dep())renderDept(visible);else if(page==='dashboard'&&!STAFF_MODE)renderDashboard();else if(page==='monthly'&&!STAFF_MODE)renderMonthly();else if(page==='settings'&&STAFF_MODE)renderStaffSettings();else if(page==='settings'&&!STAFF_MODE)renderSettings();else if((page==='owner'||page==='staff')&&!STAFF_MODE)renderDatabase();else if(STAFF_MODE)renderDept(visible);else renderDashboard();if(currentUser&&typeof renderStaffAlarmSetupBanner==='function'){try{renderStaffAlarmSetupBanner()}catch(alarmUiError){console.warn('Staff alarm setup UI failed without blocking Staff login or ticket rendering:',alarmUiError)}}}
+if(page==='chat')renderTeamChat();else if(page==='dashboard'&&STAFF_MODE)renderStaffDashboard(visible);else if(page==='payroll')renderPayroll();else if(page==='train')renderTrain();else if(page==='customer-visits')renderStaffCustomerVisits();else if(page==='archive')renderArchivedTickets();else if(dep())renderDept(visible);else if(page==='dashboard'&&!STAFF_MODE)renderDashboard();else if(page==='monthly'&&!STAFF_MODE)renderMonthly();else if(page==='settings'&&STAFF_MODE)renderStaffSettings();else if(page==='settings'&&!STAFF_MODE)renderSettings();else if((page==='owner'||page==='staff')&&!STAFF_MODE)renderDatabase();else if(STAFF_MODE)renderDept(visible);else renderDashboard();if(currentUser&&typeof renderStaffAlarmSetupBanner==='function'){try{renderStaffAlarmSetupBanner()}catch(alarmUiError){console.warn('Staff alarm setup UI failed without blocking Staff login or ticket rendering:',alarmUiError)}}}
 function renderStaffDashboard(visible){
  const root=document.getElementById('pageContent');
  const scopedBase=Array.isArray(visible)?visible:[];
