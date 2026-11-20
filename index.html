@@ -3923,6 +3923,26 @@ function bindOwnerNotificationSettings(){const prefs=getStaffNotifyPrefs(),sound
 function unlockStaffNotifyAudio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;staffNotifyAudioContext=staffNotifyAudioContext||new AC();if(staffNotifyAudioContext.state==='suspended')staffNotifyAudioContext.resume().catch(()=>{})}catch(e){console.warn('Notification audio could not be unlocked',e)}}
 async function playStaffLoginTone(kind=getStaffNotifyPrefs().sound){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;staffNotifyAudioContext=staffNotifyAudioContext||new AC();const ctx=staffNotifyAudioContext;if(ctx.state==='suspended')await ctx.resume();if(ctx.state!=='running')return;const now=ctx.currentTime;const notes=kind==='ding'?[1046]:kind==='alert'?[880,880]:[880,1175,1568];notes.forEach((freq,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain(),t=now+i*(kind==='alert'?.23:.14);osc.type=kind==='ding'?'sine':'triangle';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.16,t+.025);gain.gain.exponentialRampToValueAtTime(.0001,t+(kind==='ding'?.32:.14));osc.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+(kind==='ding'?.34:.16))})}catch(e){console.warn('Login notification sound unavailable',e)}}
 let ownerEmergencyThaiVoicePending=false;
+let ownerChatVoicePending=null;
+async function speakOwnerChatMessage(senderName,messageBody){
+ const spoken=String(senderName||'Team member')+' sent a message. '+(String(messageBody||'').trim()||'Photo attachment');
+ if(document.visibilityState!=='visible'){ownerChatVoicePending=spoken;return}
+ if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')return;
+ const synth=window.speechSynthesis;
+ let voices=synth.getVoices();
+ if(!voices.length){await Promise.race([new Promise(resolve=>synth.addEventListener('voiceschanged',resolve,{once:true})),new Promise(resolve=>setTimeout(resolve,900))]);voices=synth.getVoices()}
+ const hasThai=/[\u0E00-\u0E7F]/.test(spoken),hasMyanmar=/[\u1000-\u109F]/.test(spoken);
+ const preferred=hasThai?'th':hasMyanmar?'my':'en';
+ const saved=localStorage.getItem('owner-emergency-thai-voice-uri-v1')||'';
+ const voice=voices.find(v=>v.voiceURI===saved)||voices.find(v=>(v.lang||'').toLowerCase().startsWith(preferred))||voices.find(v=>(v.lang||'').toLowerCase().startsWith('en'))||voices[0];
+ const utterance=new SpeechSynthesisUtterance(spoken);
+ if(voice){utterance.voice=voice;utterance.lang=voice.lang||'en-US'}else utterance.lang=hasThai?'th-TH':hasMyanmar?'my-MM':'en-US';
+ utterance.rate=.96;utterance.pitch=1;utterance.volume=1;
+ synth.speak(utterance);
+}
+function retryOwnerChatVoice(){if(ownerChatVoicePending&&document.visibilityState==='visible'){const text=ownerChatVoicePending;ownerChatVoicePending=null;speakOwnerChatMessage('',text)}}
+document.addEventListener('visibilitychange',retryOwnerChatVoice);
+window.addEventListener('focus',retryOwnerChatVoice);
 async function speakOwnerEmergencyThaiVoice(voiceURIOverride='',forcePreview=false){
  try{
   if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')return;
@@ -3962,6 +3982,12 @@ document.addEventListener('visibilitychange',retryOwnerEmergencyThaiVoice);
 window.addEventListener('focus',retryOwnerEmergencyThaiVoice);
 if(window.speechSynthesis)window.speechSynthesis.addEventListener('voiceschanged',retryOwnerEmergencyThaiVoice);
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',event=>{if(event.data?.type==='STAFF_EMERGENCY_VOICE'&&event.data?.event_type==='emergency_alarm'){playStaffLoginTone(getStaffNotifyPrefs().sound);ownerEmergencyThaiVoicePending=true;speakOwnerEmergencyThaiVoice();let toast=document.getElementById('ownerEmergencyAlarmNotice');if(!toast){toast=document.createElement('div');toast.id='ownerEmergencyAlarmNotice';toast.style.cssText='position:absolute;z-index:5;box-sizing:border-box;top:7px;left:64px;right:64px;margin:0 auto;width:max-content;max-width:calc(100% - 128px);padding:6px 11px;border:1px solid rgba(255,105,125,.9);border-radius:999px;background:linear-gradient(110deg,rgba(73,17,34,.96),rgba(18,35,55,.94));color:#ffe3a0;font-size:12px;line-height:1.2;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 3px 12px rgba(0,0,0,.32);text-align:center;backdrop-filter:blur(9px)';(document.querySelector('.brand-header')||document.body).appendChild(toast)}toast.textContent='🚨 EMERGENCY ALARM — '+(event.data.body||'Staff sent an emergency alarm');toast.style.display='block';clearTimeout(window.ownerEmergencyAlarmNoticeTimer);window.ownerEmergencyAlarmNoticeTimer=setTimeout(()=>{toast.style.display='none'},9000)}})}
+if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('message',event=>{
+ const data=event.data||{};
+ if(data.type!=='STAFF_CHAT_MESSAGE_VOICE'||data.event_type!=='chat_message')return;
+ try{playStaffLoginTone(getStaffNotifyPrefs().sound)}catch(error){console.warn('Chat notification tone failed:',error)}
+ speakOwnerChatMessage(data.sender_name,data.body).catch(error=>console.warn('Chat voice announcement failed:',error));
+})}
 const OWNER_PUSH_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
 function urlBase64ToUint8Array(value){const padding='='.repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
 async function enableStaffLoginNotifications(){try{if(!currentUser||currentRole!=='owner')throw new Error('Please sign in to the Owner website first.');if(!('serviceWorker'in navigator)||!('PushManager'in window))throw new Error('This browser does not support background push notifications. Use Chrome and add the website to your Home screen if possible.');if(!('Notification'in window))throw new Error('Browser notifications are not supported.');const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Notifications are blocked. Allow notifications for this website in Chrome settings, then try again.');const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});await navigator.serviceWorker.ready;let subscription=await registration.pushManager.getSubscription();if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(OWNER_PUSH_VAPID_PUBLIC_KEY)});const json=subscription.toJSON();if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('The browser did not return a complete push subscription.');const {error}=await sb.from('owner_push_subscriptions').upsert({owner_user_id:currentUser.id,endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth,user_agent:navigator.userAgent,updated_at:new Date().toISOString()},{onConflict:'endpoint'});if(error)throw error;playStaffLoginTone();localStorage.setItem('tctl-staff-notify-sound','1');alert('Background notifications enabled on this device. Staff logins can now notify you even when the website is closed, as long as this phone allows Chrome notifications and background activity.')}catch(e){alert('Could not enable background notifications: '+(e.message||e))}}
@@ -4613,13 +4639,21 @@ async function chatSendMessage(event){
    const {error:uploadError}=await sb.storage.from('team-chat-images').upload(imagePath,file,{contentType:file.type,upsert:false});
    if(uploadError)throw uploadError;
   }
-  let error;
+  let error,insertedMessage;
   if(chatActiveGroupId){
-   ({error}=await sb.from('team_chat_group_messages').insert({group_id:chatActiveGroupId,sender_id:currentUser.id,body,image_path:imagePath}));
+   const result=await sb.from('team_chat_group_messages').insert({group_id:chatActiveGroupId,sender_id:currentUser.id,body,image_path:imagePath}).select('id').single();
+   error=result.error;insertedMessage=result.data;
   }else{
-   ({error}=await sb.from('team_chat_messages').insert({sender_id:currentUser.id,recipient_id:chatPeerId,body,image_path:imagePath}));
+   const result=await sb.from('team_chat_messages').insert({sender_id:currentUser.id,recipient_id:chatPeerId,body,image_path:imagePath}).select('id').single();
+   error=result.error;insertedMessage=result.data;
   }
   if(error)throw error;
+  if(insertedMessage?.id){
+   try{
+    const {data:pushResult,error:pushError}=await sb.functions.invoke('notify-staff-login',{body:{action:'chat_message',message_id:insertedMessage.id}});
+    if(pushError||!pushResult?.ok)console.warn('Chat message was saved, but background notification delivery was not confirmed:',pushError||pushResult?.message);
+   }catch(pushError){console.warn('Chat message was saved, but push notification could not be requested:',pushError)}
+  }
   if(bodyEl)bodyEl.value='';if(fileEl)fileEl.value='';
   const preview=document.getElementById('teamChatPreview');if(preview)preview.textContent='';
   if(chatActiveGroupId){await chatLoadGroupMessages(chatActiveGroupId);await chatRenderGroupMessageList()}
