@@ -4507,7 +4507,8 @@ function chatEnsureRealtime(){
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
  try{
-  const {data,error}=await sb.from('team_chat_messages').select('id').eq('recipient_id',currentUser.id).is('read_at',null).limit(99);
+  const unreadIdentityIds=[...new Set((chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]).filter(Boolean))];
+  const {data,error}=await sb.from('team_chat_messages').select('id').in('recipient_id',unreadIdentityIds).is('read_at',null).is('deleted_at',null).limit(99);
   if(error)throw error;
   const button=document.querySelector('#nav [data-page="chat"]');
   if(button){const count=(data||[]).length;button.innerHTML='💬 '+chatText('Team Chat','แชททีม','အဖွဲ့လိုက် စကားပြော')+(count?'<span class="chat-nav-badge">'+count+'</span>':'')}
@@ -4611,7 +4612,7 @@ async function chatLoadMessages(){
  await chatLoadHiddenMessages();
  const identityIds=[...new Set((chatSelfAliasIds?.length?chatSelfAliasIds:[uid]).filter(Boolean))];
  const identityFilter='sender_id.in.('+identityIds.join(',')+'),recipient_id.in.('+identityIds.join(',')+')';
- const {data,error}=await sb.from('team_chat_messages').select('id,sender_id,recipient_id,body,image_path,created_at,read_at,edited_at,deleted_at').or(identityFilter).order('created_at',{ascending:true}).limit(500);
+ const {data,error}=await sb.from('team_chat_messages').select('id,sender_id,recipient_id,body,image_path,created_at,read_at,edited_at,deleted_at').or(identityFilter).is('deleted_at',null).order('created_at',{ascending:true}).limit(500);
  if(error)throw error;
  chatAllMessages=data||[];
 }
@@ -4630,13 +4631,13 @@ async function chatLoadGroupMessages(groupId){
  if(!chatHiddenMessageIds.size)await chatLoadHiddenMessages();
  const {data,error}=await sb.from('team_chat_group_messages')
   .select('id,group_id,sender_id,body,image_path,created_at,edited_at,deleted_at')
-  .eq('group_id',groupId).order('created_at',{ascending:true}).limit(500);
+  .eq('group_id',groupId).is('deleted_at',null).order('created_at',{ascending:true}).limit(500);
  if(error)throw error;
  chatGroupMessages=data||[];
 }
 async function chatRenderGroupMessageList(){
  const pane=document.getElementById('teamChatMessages');if(!pane||!chatActiveGroupId)return;
- const rows=chatGroupMessages.filter(m=>m.group_id===chatActiveGroupId&&!chatHiddenMessageIds.has(m.id));
+ const rows=chatGroupMessages.filter(m=>m.group_id===chatActiveGroupId&&!m.deleted_at&&!chatHiddenMessageIds.has(m.id));
  if(!rows.length){pane.innerHTML='<div class="chat-empty-state"><span>👥</span><b>'+chatText('Start the group conversation','เริ่มการสนทนากลุ่ม','အဖွဲ့လိုက် စကားစပြောပါ')+'</b><small>'+chatText('Send a message or photo to everyone in this group','ส่งข้อความหรือรูปภาพให้ทุกคนในกลุ่ม','အဖွဲ့ဝင်အားလုံးထံ စာ သို့မဟုတ် ဓာတ်ပုံ ပို့ပါ')+'</small></div>';return}
  const senderIds=[...new Set(rows.map(m=>m.sender_id))];
  const {data:people,error}=await sb.from('profiles').select('id,display_name').in('id',senderIds);
@@ -4699,7 +4700,7 @@ async function chatRenderMessageList(){
  const pane=document.getElementById('teamChatMessages');if(!pane)return;
  const selfIds=new Set(chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]);
  const peerIds=new Set(chatAliasIdsByProfileId.get(chatPeerId)||[chatPeerId]);
- const rows=chatAllMessages.filter(m=>!chatHiddenMessageIds.has(m.id)&&((selfIds.has(m.sender_id)&&peerIds.has(m.recipient_id))||(peerIds.has(m.sender_id)&&selfIds.has(m.recipient_id))));
+ const rows=chatAllMessages.filter(m=>!m.deleted_at&&!chatHiddenMessageIds.has(m.id)&&((selfIds.has(m.sender_id)&&peerIds.has(m.recipient_id))||(peerIds.has(m.sender_id)&&selfIds.has(m.recipient_id))));
  if(!rows.length){pane.innerHTML='<div class="chat-empty-state"><span>💬</span><b>'+chatText('Start the conversation','เริ่มการสนทนา','စကားစပြောပါ')+'</b><small>'+chatText('Send a message or photo','ส่งข้อความหรือรูปภาพ','စာ သို့မဟုတ် ဓာတ်ပုံ ပို့ပါ')+'</small></div>';return}
  const html=await Promise.all(rows.map(async m=>{
   let image='';
@@ -4724,6 +4725,7 @@ function chatDrawContacts(){
  const unreadBy={},latestByPeer={};
  const selfIds=new Set(chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]);
  chatAllMessages.forEach(m=>{
+  if(m.deleted_at||chatHiddenMessageIds.has(m.id))return;
   if(selfIds.has(m.recipient_id)&&!m.read_at){
    const senderId=chatCanonicalIdByAliasId.get(m.sender_id)||m.sender_id;
    unreadBy[senderId]=(unreadBy[senderId]||0)+1;
