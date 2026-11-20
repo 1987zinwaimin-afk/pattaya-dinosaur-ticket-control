@@ -4310,9 +4310,14 @@ async function chatLoadContacts(){
    grouped.set(key,profile);
   }
  }
- // Remove the signed-in account only after deduplication, so its older duplicate
- // profiles cannot reappear as a second copy of the same Staff member.
- chatContacts=[...grouped.values()].filter(p=>p.id!==currentUser.id).sort((a,b)=>{
+ // Remove the signed-in account after deduplication. On Staff portal, also
+ // hide every duplicate profile carrying this same Staff ID, not just this auth UUID.
+ const signedInProfile=profileById.get(currentUser.id);
+ const signedInStaffId=String(signedInProfile?.staff_id||'').trim().toUpperCase();
+ chatContacts=[...grouped.values()].filter(p=>
+  p.id!==currentUser.id&&
+  !(signedInProfile?.role==='staff'&&signedInStaffId&&p.role==='staff'&&String(p.staff_id||'').trim().toUpperCase()===signedInStaffId)
+ ).sort((a,b)=>{
   const name=String(a.display_name||'').localeCompare(String(b.display_name||''),undefined,{sensitivity:'base'});
   return name||String(a.staff_id||'').localeCompare(String(b.staff_id||''));
  });
