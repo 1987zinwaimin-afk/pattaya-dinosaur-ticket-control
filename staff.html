@@ -3769,10 +3769,9 @@ async function chatSendMessage(event){
   }
   if(error)throw error;
   if(insertedMessage?.id){
-   try{
-    const {data:pushResult,error:pushError}=await sb.functions.invoke('notify-staff-login',{body:{action:'chat_message',message_id:insertedMessage.id}});
-    if(pushError||!pushResult?.ok)console.warn('Chat message was saved, but background notification delivery was not confirmed:',pushError||pushResult?.message);
-   }catch(pushError){console.warn('Chat message was saved, but push notification could not be requested:',pushError)}
+   void sb.functions.invoke('notify-staff-login',{body:{action:'chat_message',message_id:insertedMessage.id}})
+    .then(({data:pushResult,error:pushError})=>{if(pushError||!pushResult?.ok)console.warn('Chat message was saved, but background notification delivery was not confirmed:',pushError||pushResult?.message)})
+    .catch(pushError=>console.warn('Chat message was saved, but push notification could not be requested:',pushError));
   }
   if(bodyEl)bodyEl.value='';if(fileEl)fileEl.value='';
   const preview=document.getElementById('teamChatPreview');if(preview)preview.textContent='';
