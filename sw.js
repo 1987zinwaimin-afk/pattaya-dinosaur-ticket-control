@@ -59,7 +59,7 @@ self.addEventListener('push',event=>{
    silent:false,
    renotify:true,
    actions:data.event_type==='emergency_alarm'?[{action:'open',title:'Open Staff App'}]:[],
-   requireInteraction:true
+   requireInteraction:data.event_type==='emergency_alarm'
   };
   if(data.event_type==='emergency_alarm'){
    try{
