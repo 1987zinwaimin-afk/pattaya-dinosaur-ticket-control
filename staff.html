@@ -4099,10 +4099,26 @@ function chatSetListTab(tab){
  chatListTab=tab==='groups'?'groups':'people';
  const people=chatListTab==='people';
  const overlay=document.getElementById('teamChatOverlay');
- if(overlay){overlay.classList.toggle('chat-list-people',people);overlay.classList.toggle('chat-list-groups',!people)}
- const setDisplay=(id,value)=>{const el=document.getElementById(id);if(el)el.style.display=value?'':'none'};
- setDisplay('chatPeopleHeading',people);setDisplay('teamChatContacts',people);
- setDisplay('chatGroupsHeading',!people);setDisplay('teamChatGroups',!people);
+ const shell=overlay?.querySelector('.team-chat-shell');
+ const sidebar=overlay?.querySelector('.team-chat-sidebar');
+ // Keep the directory view mounted when switching tabs; never navigate or reload the page.
+ if(overlay){
+  overlay.classList.toggle('chat-list-people',people);
+  overlay.classList.toggle('chat-list-groups',!people);
+  overlay.classList.remove('chat-show-conversation');
+  overlay.style.display='block';
+ }
+ if(shell){shell.classList.remove('chat-has-peer');shell.style.display='flex'}
+ if(sidebar)sidebar.style.display='flex';
+ const setVisible=(id,visible)=>{
+  const el=document.getElementById(id);if(!el)return;
+  el.style.display=visible?'':'none';
+  el.setAttribute('aria-hidden',String(!visible));
+ };
+ setVisible('chatPeopleHeading',people);
+ setVisible('teamChatContacts',people);
+ setVisible('chatGroupsHeading',!people);
+ setVisible('teamChatGroups',!people);
  const p=document.getElementById('chatPeopleTab'),g=document.getElementById('chatGroupsTab');
  if(p){p.classList.toggle('active',people);p.setAttribute('aria-selected',String(people))}
  if(g){g.classList.toggle('active',!people);g.setAttribute('aria-selected',String(!people))}
@@ -5508,4 +5524,49 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
  document.addEventListener('pointerdown',()=>{try{window.unlockStaffAlarmAudio?.()}catch(_){}},{once:true,capture:true});
 })();
 </script>
+<style id="pdk-team-chat-tab-blank-screen-guard-v4">
+/* Stable mobile directory layout: the selected list occupies all remaining space. */
+#teamChatOverlay{isolation:isolate}
+#teamChatOverlay .team-chat-shell{min-width:0;min-height:0}
+#teamChatOverlay .team-chat-sidebar{min-width:0;min-height:0}
+#teamChatOverlay.chat-list-people #chatGroupsHeading,
+#teamChatOverlay.chat-list-people #teamChatGroups,
+#teamChatOverlay.chat-list-groups #chatPeopleHeading,
+#teamChatOverlay.chat-list-groups #teamChatContacts{display:none!important}
+#teamChatOverlay.chat-list-people #teamChatContacts,
+#teamChatOverlay.chat-list-groups #teamChatGroups{
+ display:flex!important;flex-direction:column!important;flex:1 1 auto!important;
+ width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;
+ overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;
+ -webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;
+ padding-bottom:max(18px,env(safe-area-inset-bottom))!important
+}
+#teamChatOverlay.chat-list-groups #teamChatGroups.is-empty{
+ display:flex!important;align-items:center!important;justify-content:center!important
+}
+@media(max-width:820px){
+ #teamChatOverlay:not(.chat-show-conversation){
+  display:block!important;position:fixed!important;inset:0!important;
+  width:100vw!important;height:100dvh!important;padding:0!important;overflow:hidden!important
+ }
+ #teamChatOverlay:not(.chat-show-conversation) .team-chat-shell{
+  display:flex!important;flex-direction:column!important;width:100%!important;
+  height:100dvh!important;min-height:0!important;max-height:100dvh!important;
+  margin:0!important;border:0!important;border-radius:0!important;overflow:hidden!important
+ }
+ #teamChatOverlay:not(.chat-show-conversation) .team-chat-sidebar{
+  display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+  width:100%!important;height:100%!important;min-height:0!important;overflow:hidden!important;border:0!important
+ }
+ #teamChatOverlay:not(.chat-show-conversation) .team-chat-title,
+ #teamChatOverlay:not(.chat-show-conversation) .chat-search,
+ #teamChatOverlay:not(.chat-show-conversation) .chat-list-tabs,
+ #teamChatOverlay:not(.chat-show-conversation) #chatPeopleHeading,
+ #teamChatOverlay:not(.chat-show-conversation) #chatGroupsHeading{flex:0 0 auto!important}
+ #teamChatOverlay:not(.chat-show-conversation).chat-list-people #teamChatContacts,
+ #teamChatOverlay:not(.chat-show-conversation).chat-list-groups #teamChatGroups{
+  flex:1 1 0!important;width:100%!important;height:auto!important;min-height:0!important
+ }
+}
+</style>
 </body></html>
