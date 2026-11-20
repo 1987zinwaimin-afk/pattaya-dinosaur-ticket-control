@@ -3998,14 +3998,27 @@ async function chatSelectPeer(id){
  const groupSettings=document.getElementById('teamChatGroupSettings');if(groupSettings)groupSettings.remove();
  if(!chatContacts.some(p=>p.id===id))return;
  chatPeerId=id;chatActiveGroupId='';
- const shell=document.querySelector('#pageContent .team-chat-shell');shell?.classList.add('chat-has-peer');document.getElementById('teamChatOverlay')?.classList.add('chat-show-conversation');
- chatDrawContacts();chatDrawGroups();
+ const shell=document.querySelector('#pageContent .team-chat-shell');
+ const overlay=document.getElementById('teamChatOverlay');
+ shell?.classList.add('chat-has-peer');
+ overlay?.classList.add('chat-show-conversation');
+ if(overlay)overlay.style.display='block';
  const peer=chatContacts.find(p=>p.id===id);
  const title=document.getElementById('teamChatPeerName'),sub=document.getElementById('teamChatPeerRole'),avatar=document.querySelector('.team-chat-peer .chat-peer-avatar');
  if(title)title.textContent=peer?.display_name||'Team member';
  if(sub)sub.textContent=peer?.role==='owner'?'👑 Owner':'Staff';
  if(avatar){if(peer?.avatar_url)avatar.innerHTML='<img src="'+chatEsc(peer.avatar_url)+'" alt="">';else avatar.textContent=(peer?.display_name||'?').trim().slice(0,1).toUpperCase()}
- await chatLoadMessages();await chatRenderMessageList();await chatUpdateUnreadBadge();
+ const pane=document.getElementById('teamChatMessages');
+ if(pane)pane.innerHTML='<div class="chat-loading">Loading conversation…</div>';
+ chatDrawContacts();chatDrawGroups();
+ try{
+  await chatLoadMessages();
+  await chatRenderMessageList();
+ }catch(err){
+  console.error('Team Chat conversation load failed:',err);
+  if(pane)pane.innerHTML='<div class="chat-error" role="alert">Could not load this conversation. Please check your connection and try again.<small>'+chatEsc(err?.message||String(err))+'</small></div>';
+ }
+ try{await chatUpdateUnreadBadge()}catch(err){console.warn('Unread badge update failed:',err)}
 }
 async function chatSendMessage(event){
  event.preventDefault();
@@ -5567,6 +5580,52 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
  #teamChatOverlay:not(.chat-show-conversation).chat-list-groups #teamChatGroups{
   flex:1 1 0!important;width:100%!important;height:auto!important;min-height:0!important
  }
+}
+</style>
+<style id="pdk-staff-chat-conversation-visible-v5">
+/* Staff: force the selected conversation to occupy the phone viewport.
+   Keep all existing message queries, records and send handlers untouched. */
+@media(max-width:820px){
+ #teamChatOverlay.chat-show-conversation{
+  display:block!important;position:fixed!important;inset:0!important;
+  z-index:2147483000!important;width:100vw!important;height:100dvh!important;
+  min-height:100dvh!important;max-height:100dvh!important;margin:0!important;
+  padding:0!important;overflow:hidden!important;visibility:visible!important;opacity:1!important;
+  background:#081b2b!important
+ }
+ #teamChatOverlay.chat-show-conversation .team-chat-shell{
+  display:block!important;position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;min-height:0!important;max-height:none!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;
+  overflow:hidden!important;background:#081b2b!important
+ }
+ #teamChatOverlay.chat-show-conversation .team-chat-sidebar{display:none!important}
+ #teamChatOverlay.chat-show-conversation .team-chat-conversation{
+  display:grid!important;position:absolute!important;inset:0!important;
+  grid-template-rows:auto minmax(0,1fr) auto!important;
+  width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+  max-height:none!important;overflow:hidden!important;visibility:visible!important;opacity:1!important;
+  background:#0b2032!important
+ }
+ #teamChatOverlay.chat-show-conversation .team-chat-peer{
+  display:flex!important;position:relative!important;z-index:2!important;
+  min-width:0!important;min-height:64px!important;visibility:visible!important;opacity:1!important;
+  background:#102d45!important
+ }
+ #teamChatOverlay.chat-show-conversation .team-chat-messages{
+  display:flex!important;flex-direction:column!important;position:relative!important;
+  min-width:0!important;width:100%!important;height:auto!important;min-height:0!important;
+  max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;
+  visibility:visible!important;opacity:1!important;background:#0b2032!important
+ }
+ #teamChatOverlay.chat-show-conversation .team-chat-compose{
+  display:block!important;position:relative!important;z-index:2!important;
+  width:100%!important;min-height:64px!important;visibility:visible!important;opacity:1!important;
+  background:#102d45!important
+ }
+ #teamChatOverlay.chat-show-conversation .chat-compose-row,
+ #teamChatOverlay.chat-show-conversation #teamChatText,
+ #teamChatOverlay.chat-show-conversation #teamChatSend{visibility:visible!important;opacity:1!important}
 }
 </style>
 </body></html>
