@@ -4884,12 +4884,33 @@ async function chatEditMessage(id,isGroup){
 }
 async function chatUnsendMessage(id,isGroup){
  const rows=isGroup?chatGroupMessages:chatAllMessages;const row=rows.find(m=>m.id===id);
- if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;if(!confirm('Unsend this message for everyone in this conversation?'))return;
+ if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;
+ if(!confirm('Unsend this message permanently for everyone in this conversation? This cannot be undone.'))return;
  const table=isGroup?'team_chat_group_messages':'team_chat_messages';
- const {data,error}=await sb.from(table).update({body:'This message was unsent',deleted_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',id).eq('sender_id',currentUser.id).is('deleted_at',null).select('id').maybeSingle();
- if(error||!data){alert('Message could not be unsent: '+(error?.message||'Permission denied or message already changed.'));return}
- if(isGroup){await chatLoadGroupMessages(chatActiveGroupId);await chatRenderGroupMessageList()}else{await chatLoadMessages();await chatRenderMessageList()}chatDrawContacts();chatDrawGroups();await chatUpdateUnreadBadge();
+ try{
+  if(row.image_path){
+   const {error:storageError}=await sb.storage.from('team-chat-images').remove([row.image_path]);
+   if(storageError)throw storageError;
+  }
+  const {data,error}=await sb.from(table).delete().eq('id',id).eq('sender_id',currentUser.id).select('id').maybeSingle();
+  if(error||!data)throw error||new Error('Permission denied or message already removed.');
+  chatHiddenMessageIds.delete(id);
+  if(isGroup){
+   chatGroupMessages=chatGroupMessages.filter(m=>m.id!==id);
+   await chatLoadGroupMessages(chatActiveGroupId);
+   await chatRenderGroupMessageList();
+  }else{
+   chatAllMessages=chatAllMessages.filter(m=>m.id!==id);
+   await chatLoadMessages();
+   await chatRenderMessageList();
+  }
+  chatDrawContacts();chatDrawGroups();await chatUpdateUnreadBadge();
+ }catch(error){
+  console.error('Permanent chat unsend failed:',error);
+  alert('Message could not be permanently removed: '+(error?.message||error));
+ }
 }
+
 let chatListTab='people';
 function chatSetListTab(tab){
  chatListTab=tab==='groups'?'groups':'people';
