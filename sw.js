@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v29';
+const CACHE_NAME='dino-staff-shell-v30';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -51,7 +51,7 @@ self.addEventListener('push',event=>{
   const chatSender=String(data.sender_name||'Team member').trim().slice(0,80);
   const chatMessage=String(data.body||data.message||'New message').trim().slice(0,220);
   const options={
-   body:isChat?'💬 TEAM CHAT\\n'+chatSender+': '+chatMessage:(data.body||'A staff member activity was recorded.'),
+   body:isChat?'💬 TEAM CHAT\n'+chatSender+': '+chatMessage:(data.body||'A staff member activity was recorded.'),
    icon:data.icon||'/notification-logo.svg',
    badge:data.badge||'/notification-badge.svg',
    tag:data.tag||(data.event_type==='emergency_alarm'?'pdk-emergency-alarm-'+Date.now():isChat?'pdk-chat-'+String(data.message_id||Date.now()):'staff-activity-'+Date.now()),
@@ -60,8 +60,8 @@ self.addEventListener('push',event=>{
    data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login',message_id:data.message_id||null},
    vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:isChat?[300,120,300]:[250,100,250],
    silent:false,
-   actions:(data.event_type==='emergency_alarm'||isChat)?[{action:'open',title:'Open Staff App'}]:[],
-   requireInteraction:data.event_type==='emergency_alarm'||isChat
+   actions:(data.event_type==='emergency_alarm'||isChat||data.event_type==='login')?[{action:'open',title:'Open App'}]:[],
+   requireInteraction:['emergency_alarm','chat_message','login','app_open'].includes(data.event_type)
   };
   if(data.event_type==='emergency_alarm'){
    try{
