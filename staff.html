@@ -2591,9 +2591,41 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 }
 @media(prefers-reduced-motion:reduce){.chat-contact{transition:none!important}}
 </style>
+<style id="pdk-header-always-visible-v2">
+/* Fixed park banner: measure its real rendered height so content never sits underneath it. */
+html,body{overflow-x:clip!important}
+body{padding-top:var(--pdk-header-height,22vw)!important}
+header.brand-header,.top.brand-header{
+ position:fixed!important;top:0!important;left:0!important;right:0!important;
+ width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;
+ margin:0!important;padding:0!important;z-index:100000!important;
+ display:block!important;line-height:0!important;overflow:hidden!important;
+ transform:none!important;align-self:auto!important;box-sizing:border-box!important;
+}
+header.brand-header .brand-banner{
+ display:block!important;width:100%!important;height:auto!important;
+ aspect-ratio:auto!important;object-fit:cover!important;transform:none!important;animation:none!important;
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
+<script id="pdk-header-height-sync-v2">
+(function(){
+ function syncParkHeaderHeight(){
+  var header=document.querySelector('header.brand-header');
+  if(!header)return;
+  var h=Math.ceil(header.getBoundingClientRect().height);
+  if(h>0)document.documentElement.style.setProperty('--pdk-header-height',h+'px');
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncParkHeaderHeight,{once:true});
+ else syncParkHeaderHeight();
+ window.addEventListener('load',syncParkHeaderHeight,{once:true});
+ window.addEventListener('resize',syncParkHeaderHeight,{passive:true});
+ var image=document.querySelector('header.brand-header .brand-banner');
+ if(image){if(!image.complete)image.addEventListener('load',syncParkHeaderHeight,{once:true});if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(image)}}
+})();
+</script>
 <div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
 <div class="staff-install-help" id="staffInstallHelp" hidden role="dialog" aria-modal="true" aria-labelledby="staffInstallHelpTitle">
  <div class="staff-install-panel">
@@ -3523,24 +3555,7 @@ function printStaffCvQr(row,qrData){
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
    doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style>
-<style id="pdk-header-always-visible-v1">
-/* Keep the park banner visible while the document scrolls. Reserve its responsive image height in the page flow. */
-:root{--pdk-header-reserved-height:calc(100vw / 5.85 + 3px)}
-html,body{overflow-x:clip!important}
-body{padding-top:var(--pdk-header-reserved-height)!important}
-header.brand-header,.top.brand-header{
- position:fixed!important;top:0!important;left:0!important;right:0!important;
- width:100%!important;max-width:none!important;height:auto!important;min-height:0!important;
- margin:0!important;padding:0!important;z-index:90!important;
- display:block!important;line-height:0!important;overflow:hidden!important;
- transform:none!important;align-self:auto!important;box-sizing:border-box!important;
-}
-header.brand-header .brand-banner{
- display:block!important;width:100%!important;height:auto!important;
- aspect-ratio:5.85/1!important;object-fit:cover!important;transform:none!important;animation:none!important;
-}
-@media(max-width:520px){:root{--pdk-header-reserved-height:calc(100vw / 5.85 + 3px)}}
-</style>
+
 </head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
