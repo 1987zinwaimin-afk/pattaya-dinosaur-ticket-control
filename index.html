@@ -3334,6 +3334,50 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
  .chat-contact{flex-shrink:0;min-height:58px;touch-action:pan-y}
 }
 </style>
+<style id="team-chat-layout-fix">
+/* Keep the people list as the primary scroll area; group list must never cover it. */
+.team-chat-overlay .team-chat-sidebar{
+  display:flex!important;flex-direction:column!important;
+  height:100%!important;min-height:0!important;overflow:hidden!important;
+}
+.team-chat-overlay .team-chat-title,
+.team-chat-overlay .chat-search,
+.team-chat-overlay .chat-list-heading,
+.team-chat-overlay .chat-groups-heading{flex:0 0 auto!important}
+.team-chat-overlay .team-chat-contacts{
+  flex:1 1 0!important;height:0!important;min-height:0!important;
+  max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  touch-action:pan-y;padding-bottom:14px!important;
+}
+.team-chat-overlay .team-chat-groups{
+  flex:0 1 auto!important;height:auto!important;min-height:0!important;
+  max-height:clamp(100px,22%,180px)!important;overflow-x:hidden!important;overflow-y:auto!important;
+  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+}
+/* An empty group list should use only a small status row, not a third of the popup. */
+.team-chat-overlay .team-chat-groups:has(.chat-no-contacts){
+  flex:0 0 48px!important;height:48px!important;max-height:48px!important;
+  overflow:hidden!important;display:flex;align-items:center;justify-content:center;
+}
+.team-chat-overlay .team-chat-groups .chat-no-contacts{padding:8px 10px!important}
+@media(max-width:650px){
+  .team-chat-overlay{padding:6px!important;align-items:stretch!important}
+  .team-chat-overlay .team-chat-shell{
+    width:100%!important;height:calc(100dvh - 12px)!important;
+    min-height:0!important;max-height:none!important;
+    grid-template-columns:minmax(0,1fr)!important;border-radius:18px!important;
+  }
+  .team-chat-overlay .team-chat-sidebar{border-right:0!important}
+  .team-chat-overlay .team-chat-contacts{flex:1 1 0!important;min-height:0!important}
+  .team-chat-overlay .team-chat-groups{max-height:clamp(90px,20%,150px)!important}
+  .team-chat-overlay .team-chat-groups:has(.chat-no-contacts){
+    flex:0 0 44px!important;height:44px!important;max-height:44px!important;
+  }
+  .team-chat-overlay .team-chat-shell.chat-has-peer .team-chat-sidebar{display:none!important}
+  .team-chat-overlay .team-chat-shell.chat-has-peer .team-chat-conversation{display:flex!important}
+}
+</style>
 <style id="team-chat-popup-group-styles">
 .team-chat-overlay{position:fixed;inset:0;z-index:20000;display:grid;place-items:center;padding:12px;background:rgba(1,10,20,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .team-chat-overlay .team-chat-shell{width:min(1180px,100%);height:min(88dvh,850px);min-height:420px;max-height:calc(100dvh - 24px);grid-template-columns:minmax(220px,31%) minmax(0,1fr);border-radius:22px}
