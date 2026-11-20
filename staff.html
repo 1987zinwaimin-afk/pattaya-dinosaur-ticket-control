@@ -3830,7 +3830,8 @@ function chatDrawContacts(){
  }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
 async function chatRefresh(reloadContacts){
- if(!currentUser||page!=='chat')return;
+ // Use the mounted Chat UI as the SPA route signal; the page variable can be stale.
+ if(!currentUser||!document.getElementById('teamChatMessages'))return;
  if(chatRefreshBusy){chatRefreshPending=true;chatRefreshPendingReloadContacts=chatRefreshPendingReloadContacts||!!reloadContacts;return}
  chatRefreshBusy=true;
  try{
