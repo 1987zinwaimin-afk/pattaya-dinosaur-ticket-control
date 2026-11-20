@@ -1,5 +1,6 @@
-const CACHE_NAME='dino-staff-shell-v30';
+const CACHE_NAME='dino-staff-shell-v31';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
+// v31: refreshes the closed-app push handler while retaining system-managed audible notifications.
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{
@@ -59,7 +60,8 @@ self.addEventListener('push',event=>{
    timestamp:Number(data.timestamp)||Date.now(),
    data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login',message_id:data.message_id||null},
    vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:isChat?[300,120,300]:[250,100,250],
-   silent:false,
+   silent:false, // Allow the OS/browser notification channel to play its configured sound.
+   renotify:true,
    actions:(data.event_type==='emergency_alarm'||isChat||data.event_type==='login')?[{action:'open',title:'Open App'}]:[],
    requireInteraction:['emergency_alarm','chat_message','login','app_open'].includes(data.event_type)
   };
