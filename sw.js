@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v27';
+const CACHE_NAME='dino-staff-shell-v28';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -18,7 +18,22 @@ self.addEventListener('push',event=>{
   let data={};
   try{data=event.data?event.data.json():{}}
   catch(_){try{data={body:event.data?event.data.text():'A staff member activity was recorded.'}}catch(__){}}
-  let title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':'Pattaya Dinosaur Kingdom');
+  let title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':data.event_type==='chat_message'?'💬 Team Chat':'Pattaya Dinosaur Kingdom');
+  if(data.event_type==='chat_message'){
+   const sender=String(data.sender_name||title||'Team member').trim();
+   title='💬 '+sender;
+  }
+  if(data.event_type==='chat_message'){
+   try{
+    const openClients=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const appClient of openClients){
+     const path=new URL(appClient.url).pathname;
+     const isOwnerApp=path==='/'||path.endsWith('/index.html');
+     const isNormalStaffApp=path.endsWith('/staff.html');
+     if(isOwnerApp||isNormalStaffApp)appClient.postMessage({type:'STAFF_CHAT_MESSAGE_VOICE',event_type:'chat_message',sender_name:data.sender_name||'Team member',body:data.body||'New message'});
+    }
+   }catch(voiceError){console.warn('Could not relay Team Chat notification to open app:',voiceError)}
+  }
   if(data.event_type==='emergency_alarm'){
    // Keep the sender's name, but never expose role, department, or Staff ID.
    const rawTitle=String(data.title||title||'').trim();
@@ -40,8 +55,9 @@ self.addEventListener('push',event=>{
    renotify:true,
    timestamp:Number(data.timestamp)||Date.now(),
    data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login'},
-   vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:[250,100,250],
+   vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:data.event_type==='chat_message'?[300,120,300]:[250,100,250],
    silent:false,
+   renotify:true,
    actions:data.event_type==='emergency_alarm'?[{action:'open',title:'Open Staff App'}]:[],
    requireInteraction:true
   };
@@ -65,7 +81,8 @@ self.addEventListener('notificationclick',event=>{
  const data=event.notification.data||{};
  const isEmergency=data.event_type==='emergency_alarm';
  const isStaffOrigin=self.location.hostname==='pattaya-dinosaur-ticket-control.vercel.app';
- const target=isEmergency
+ const isChat=data.event_type==='chat_message';
+ const target=(isEmergency||isChat)
   ? self.location.origin+(isStaffOrigin?'/staff.html':'/')
   : (data.url||self.location.origin+'/');
  event.waitUntil((async()=>{
