@@ -3534,7 +3534,7 @@ async function chatToggleTranslate(){chatTranslateEnabled=!chatTranslateEnabled;
 function chatTime(value){try{return new Intl.DateTimeFormat(undefined,{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(_){return ''}}
 function chatEnsureRealtime(){
  if(!currentUser)return;
- if(chatChannel&&chatChannelUserId===currentUser.id)return;
+ if(chatChannel&&chatChannelUserId===currentUser.id){if(!chatPollTimer)chatPollTimer=setInterval(()=>{if(document.visibilityState==='visible'&&document.getElementById('teamChatMessages')&&currentUser?.id===chatChannelUserId)chatRefresh(false)},1500);return;}
  if(chatChannel)sb.removeChannel(chatChannel);
  if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null;}
  chatChannelUserId=currentUser.id;
@@ -3542,27 +3542,27 @@ function chatEnsureRealtime(){
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_messages'},payload=>{
    const row=payload.new||payload.old||{};
    if(row.sender_id===currentUser?.id||row.recipient_id===currentUser?.id){
-    if(page==='chat')chatRefresh(true);
+    if(document.getElementById('teamChatMessages'))chatRefresh(true);
     chatUpdateUnreadBadge();
    }
   })
   // Keep the contact list aligned with Staff Login Activity and Owner profile edits.
   .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{
-   if(page==='chat')chatRefresh(true);
+   if(document.getElementById('teamChatMessages'))chatRefresh(true);
   })
   .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>{
-   if(page==='chat')chatRefresh(true);
+   if(document.getElementById('teamChatMessages'))chatRefresh(true);
   })
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_messages'},payload=>{
    const row=payload.new||payload.old||{};
-   if(chatActiveGroupId&&row.group_id===chatActiveGroupId&&page==='chat')chatRefresh(false);
+   if(chatActiveGroupId&&row.group_id===chatActiveGroupId&&document.getElementById('teamChatMessages'))chatRefresh(false);
   })
-  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_groups'},()=>{if(page==='chat')chatRefresh(true)})
-  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_members'},()=>{if(page==='chat')chatRefresh(true)})
+  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_groups'},()=>{if(document.getElementById('teamChatMessages'))chatRefresh(true)})
+  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_members'},()=>{if(document.getElementById('teamChatMessages'))chatRefresh(true)})
   .subscribe(status=>{console.log('Team Chat realtime status:',status)});
  // Realtime is primary; a lightweight foreground sync is the fallback for dropped or delayed socket events.
  chatPollTimer=setInterval(()=>{if(document.visibilityState==='visible'&&document.getElementById('teamChatMessages')&&currentUser?.id===chatChannelUserId)chatRefresh(false)},1500);
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.getElementById('teamChatMessages'))chatRefresh(false)});
+
 }
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
