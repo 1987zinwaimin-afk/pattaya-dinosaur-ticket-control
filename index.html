@@ -4493,10 +4493,25 @@ async function chatLoadContacts(){
   return name||String(a.staff_id||'').localeCompare(String(b.staff_id||''));
  });
 }
+let chatCurrentIdentityIds=[];
+async function chatGetIdentityIds(profileId){
+ const {data:me,error:meError}=await sb.from('profiles').select('id,role,staff_id,is_archived').eq('id',profileId).maybeSingle();
+ if(meError)throw meError;
+ if(!me||me.is_archived)return [profileId];
+ if(me.role!=='staff'||!String(me.staff_id||'').trim())return [profileId];
+ const staffKey=String(me.staff_id).trim().toUpperCase();
+ const {data:aliases,error}=await sb.from('profiles').select('id').eq('role','staff').eq('is_archived',false).ilike('staff_id',staffKey);
+ if(error)throw error;
+ return [...new Set([profileId,...(aliases||[]).map(p=>p.id)])];
+}
 async function chatLoadMessages(){
  const uid=currentUser.id;
  await chatLoadHiddenMessages();
- const {data,error}=await sb.from('team_chat_messages').select('id,sender_id,recipient_id,body,image_path,created_at,read_at,edited_at,deleted_at').or('sender_id.eq.'+uid+',recipient_id.eq.'+uid).order('created_at',{ascending:true}).limit(500);
+ chatCurrentIdentityIds=await chatGetIdentityIds(uid);
+ const ids=chatCurrentIdentityIds;
+ const idList='('+ids.join(',')+')';
+ const {data,error}=await sb.from('team_chat_messages').select('id,sender_id,recipient_id,body,image_path,created_at,read_at,edited_at,deleted_at')
+  .or('sender_id.in.'+idList+',recipient_id.in.'+idList).order('created_at',{ascending:true}).limit(500);
  if(error)throw error;
  chatAllMessages=data||[];
 }
@@ -4530,7 +4545,7 @@ async function chatRenderGroupMessageList(){
  const html=await Promise.all(rows.map(async m=>{
   let image='';
   if(m.image_path&&!m.deleted_at){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Group image could not be loaded:',e)}}
-  const mine=m.sender_id===currentUser.id;
+  const mine=myIds.has(m.sender_id);
   const sender=mine?chatText('You','คุณ','သင်'):(names.get(m.sender_id)||chatText('Team member','สมาชิกทีม','အဖွဲ့ဝင်'));
   return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(!mine?'<small class="chat-group-sender">'+chatEsc(sender)+'</small>':'')+(image||'')+await chatMessageBodyHtml(m)+chatMessageActionsHtml(m,true)+'<time>'+chatTime(m.created_at)+(m.edited_at?' · Edited':'')+'</time></article>';
  }));
@@ -4582,7 +4597,10 @@ async function chatSelectGroup(id){
 }
 async function chatRenderMessageList(){
  const pane=document.getElementById('teamChatMessages');if(!pane)return;
- const rows=chatAllMessages.filter(m=>!chatHiddenMessageIds.has(m.id)&&((m.sender_id===currentUser.id&&m.recipient_id===chatPeerId)||(m.sender_id===chatPeerId&&m.recipient_id===currentUser.id)));
+ const myIds=new Set(chatCurrentIdentityIds.length?chatCurrentIdentityIds:[currentUser.id]);
+ const peerIds=new Set(await chatGetIdentityIds(chatPeerId));
+ const rows=chatAllMessages.filter(m=>!chatHiddenMessageIds.has(m.id)&&
+  ((myIds.has(m.sender_id)&&peerIds.has(m.recipient_id))||(peerIds.has(m.sender_id)&&myIds.has(m.recipient_id))));
  if(!rows.length){pane.innerHTML='<div class="chat-empty-state"><span>💬</span><b>'+chatText('Start the conversation','เริ่มการสนทนา','စကားစပြောပါ')+'</b><small>'+chatText('Send a message or photo','ส่งข้อความหรือรูปภาพ','စာ သို့မဟုတ် ဓာတ်ပုံ ပို့ပါ')+'</small></div>';return}
  const html=await Promise.all(rows.map(async m=>{
   let image='';
@@ -4593,10 +4611,10 @@ async function chatRenderMessageList(){
  if(!document.getElementById('teamChatMessages'))return;
  pane.innerHTML=html.join('');
  pane.scrollTop=pane.scrollHeight;
- const unread=rows.filter(m=>m.recipient_id===currentUser.id&&!m.read_at);
+ const unread=rows.filter(m=>myIds.has(m.recipient_id)&&!m.read_at);
  if(unread.length){
   const ids=unread.map(m=>m.id);
-  const {error}=await sb.from('team_chat_messages').update({read_at:new Date().toISOString()}).in('id',ids).eq('recipient_id',currentUser.id).is('read_at',null);
+  const {error}=await sb.from('team_chat_messages').update({read_at:new Date().toISOString()}).in('id',ids).in('recipient_id',[currentUser.id]).is('read_at',null);
   if(error)console.warn('Could not mark chat messages read:',error);
   else{chatAllMessages=chatAllMessages.map(m=>ids.includes(m.id)?{...m,read_at:new Date().toISOString()}:m);chatUpdateUnreadBadge()}
  }
