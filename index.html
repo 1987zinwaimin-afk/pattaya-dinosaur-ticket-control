@@ -4006,7 +4006,12 @@ function listenRealtime(){
   .on('postgres_changes',{event:'*',schema:'public',table:'event_location_sessions'},()=>{if(currentRole==='owner')refreshEventLocations(true)})
   // Staff login rows are written by the separate Staff website. Listen for the
   // database event so the Owner gets the notice immediately, not only on polling.
-  .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{if(currentRole==='owner')pollStaffLoginNotifications()})
+  .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{
+   if(currentRole==='owner'){
+    pollStaffLoginNotifications();
+    if(page==='staff'&&document.getElementById('staffActivityList'))loadStaffActivity();
+   }
+  })
   .on('postgres_changes',{event:'*',schema:'public',table:'event_staff_login_activity'},()=>{if(currentRole==='owner')pollEventStaffLoginNotifications()})
   .subscribe(status=>{console.log('Ticket / Staff activity realtime status:',status)});
  if(cloudPollTimer)clearInterval(cloudPollTimer);
@@ -4111,7 +4116,7 @@ function showStaffLoginNotice(row){
  const dept=depts[row.department]||row.department||'Unknown Department';
  const fullMsg=name+' · ID '+id+' · '+dept;
  playStaffLoginTone(p.sound);
- const header=document.querySelector('.brand-header')||document.body;
+ const header=document.body;
  let toast=document.getElementById('staffLoginToast');
  if(!toast){
   toast=document.createElement('div');toast.id='staffLoginToast';
@@ -4138,7 +4143,13 @@ async function pollStaffLoginNotifications(){
    if(error)throw error;
    const rows=data||[];
    if(!staffNotifyBaseline){
-    rows.forEach(r=>{if(r.normalized_name)staffNotifySeen[r.normalized_name]=r.logged_in_at||''});
+    // Do not drop a login that happened while the Owner dashboard was still loading.
+    rows.forEach(r=>{
+     if(!r.normalized_name)return;
+     const stamp=r.logged_in_at||'';
+     if(stamp&&Date.parse(stamp)>=staffNotifyStartedAt-30000)showStaffLoginNotice(r);
+     staffNotifySeen[r.normalized_name]=stamp;
+    });
     staffNotifyBaseline=true;
     return;
    }
@@ -4252,9 +4263,11 @@ async function startCloudSession(session){
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
   refreshOwnerPushSubscription().catch(e=>console.warn('Owner push subscription refresh failed:',e.message||e));
   document.getElementById('authScreen').style.display='none';
+  // Start activity polling before the slower ticket download so Staff logins during startup are not missed.
+  startStaffLoginNotifications();
   try{
    await withAuthTimeout(loadCloud(),'Loading ticket data',20000);
-   cloudReady=true;listenRealtime();startStaffLoginNotifications();
+   cloudReady=true;listenRealtime();
   }catch(e){
    // A Cloud read failure must not leave the authenticated Owner with a blank page.
    // Render the existing local cache (if any) and the complete navigation, while
@@ -6778,6 +6791,14 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
  #teamChatOverlay:not(.chat-show-conversation).chat-list-groups #teamChatGroups{
   flex:1 1 0!important;width:100%!important;height:auto!important;min-height:0!important
  }
+}
+</style>
+<style id="pdk-owner-activity-toast-fixed-v1">
+/* Keep Owner activity alerts above the dashboard header on every viewport. */
+#staffLoginToast,#eventStaffLoginToast{
+ position:fixed!important;top:calc(env(safe-area-inset-top,0px) + 12px)!important;
+ left:12px!important;right:12px!important;width:auto!important;max-width:560px!important;
+ margin:0 auto!important;z-index:2147483647!important;pointer-events:auto!important
 }
 </style>
 </body></html>
