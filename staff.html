@@ -3503,6 +3503,7 @@ async function restoreTicket(id){
 }
 
 let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
+let chatSelfAliasIds=[],chatAliasIdsByProfileId=new Map(),chatCanonicalIdByAliasId=new Map(),chatRefreshPending=false,chatRefreshPendingReloadContacts=false;
 let chatHiddenMessageIds=new Set(),chatHiddenMessageUserId='';
 async function chatLoadHiddenMessages(){
  if(!currentUser)throw new Error('Please sign in before loading hidden chat messages.');
@@ -3540,7 +3541,8 @@ function chatEnsureRealtime(){
  chatChannel=sb.channel('team-chat-'+currentUser.id)
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_messages'},payload=>{
    const row=payload.new||payload.old||{};
-   if(row.sender_id===currentUser?.id||row.recipient_id===currentUser?.id){
+   const ownIds=chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id];
+   if(ownIds.includes(row.sender_id)||ownIds.includes(row.recipient_id)){
     if(page==='chat')chatRefresh(true);
     chatUpdateUnreadBadge();
    }
@@ -3573,12 +3575,24 @@ async function chatLoadContacts(){
  // One chat contact per permanent Staff ID, not per anonymous device profile.
  // The login activity row identifies the profile currently representing that Staff ID.
  const {data:profileRows,error}=await sb.from('profiles')
-  .select('id,display_name,role,avatar_url,staff_id,created_at')
-  .eq('is_archived',false)
+  .select('id,display_name,role,avatar_url,staff_id,created_at,is_archived')
   .in('role',['owner','staff']);
  if(error)throw error;
- const profiles=profileRows||[];
- const profileById=new Map(profiles.map(p=>[p.id,p]));
+ const allProfiles=profileRows||[];
+ const profiles=allProfiles.filter(p=>!p.is_archived);
+ const profileById=new Map(allProfiles.map(p=>[p.id,p]));
+ const aliasesByStaffId=new Map();
+ for(const profile of allProfiles){
+  const staffId=String(profile.staff_id||'').trim().toUpperCase();
+  if(profile.role==='staff'&&staffId){
+   if(!aliasesByStaffId.has(staffId))aliasesByStaffId.set(staffId,[]);
+   aliasesByStaffId.get(staffId).push(profile.id);
+  }
+ }
+ chatAliasIdsByProfileId=new Map(allProfiles.map(profile=>{
+  const staffId=String(profile.staff_id||'').trim().toUpperCase();
+  return [profile.id,profile.role==='staff'&&staffId?(aliasesByStaffId.get(staffId)||[profile.id]):[profile.id]];
+ }));
  let activityRows=[];
  try{
   // Owner can read the global activity feed; Staff RLS returns only their own row.
@@ -3637,11 +3651,25 @@ async function chatLoadContacts(){
   const name=String(a.display_name||'').localeCompare(String(b.display_name||''),undefined,{sensitivity:'base'});
   return name||String(a.staff_id||'').localeCompare(String(b.staff_id||''));
  });
+ chatCanonicalIdByAliasId=new Map();
+ for(const profile of allProfiles){
+  const staffId=String(profile.staff_id||'').trim().toUpperCase();
+  const canonical=profile.role==='staff'&&staffId
+   ?chatContacts.find(p=>p.role==='staff'&&String(p.staff_id||'').trim().toUpperCase()===staffId)?.id
+   :profile.id;
+  chatCanonicalIdByAliasId.set(profile.id,canonical||profile.id);
+ }
+ const signedIn=profileById.get(currentUser.id);
+ chatSelfAliasIds=signedIn?.role==='staff'&&signedIn.staff_id
+  ?(chatAliasIdsByProfileId.get(currentUser.id)||[currentUser.id])
+  :[currentUser.id];
 }
 async function chatLoadMessages(){
  const uid=currentUser.id;
  await chatLoadHiddenMessages();
- const {data,error}=await sb.from('team_chat_messages').select('id,sender_id,recipient_id,body,image_path,created_at,read_at,edited_at,deleted_at').or('sender_id.eq.'+uid+',recipient_id.eq.'+uid).order('created_at',{ascending:true}).limit(500);
+ const identityIds=[...new Set((chatSelfAliasIds?.length?chatSelfAliasIds:[uid]).filter(Boolean))];
+ const identityFilter='sender_id.in.('+identityIds.join(',')+'),recipient_id.in.('+identityIds.join(',')+')';
+ const {data,error}=await sb.from('team_chat_messages').select('id,sender_id,recipient_id,body,image_path,created_at,read_at,edited_at,deleted_at').or(identityFilter).order('created_at',{ascending:true}).limit(500);
  if(error)throw error;
  chatAllMessages=data||[];
 }
@@ -3727,12 +3755,14 @@ async function chatSelectGroup(id){
 }
 async function chatRenderMessageList(){
  const pane=document.getElementById('teamChatMessages');if(!pane)return;
- const rows=chatAllMessages.filter(m=>!chatHiddenMessageIds.has(m.id)&&((m.sender_id===currentUser.id&&m.recipient_id===chatPeerId)||(m.sender_id===chatPeerId&&m.recipient_id===currentUser.id)));
+ const selfIds=new Set(chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]);
+ const peerIds=new Set(chatAliasIdsByProfileId.get(chatPeerId)||[chatPeerId]);
+ const rows=chatAllMessages.filter(m=>!chatHiddenMessageIds.has(m.id)&&((selfIds.has(m.sender_id)&&peerIds.has(m.recipient_id))||(peerIds.has(m.sender_id)&&selfIds.has(m.recipient_id))));
  if(!rows.length){pane.innerHTML='<div class="chat-empty-state"><span>💬</span><b>'+chatText('Start the conversation','เริ่มการสนทนา','စကားစပြောပါ')+'</b><small>'+chatText('Send a message or photo','ส่งข้อความหรือรูปภาพ','စာ သို့မဟုတ် ဓာတ်ပုံ ပို့ပါ')+'</small></div>';return}
  const html=await Promise.all(rows.map(async m=>{
   let image='';
   if(m.image_path&&!m.deleted_at){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Chat image could not be loaded:',e)}}
-  const mine=m.sender_id===currentUser.id;
+  const mine=selfIds.has(m.sender_id);
   return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(image||'')+await chatMessageBodyHtml(m)+chatMessageActionsHtml(m,false)+'<time>'+chatTime(m.created_at)+(m.edited_at?' · Edited':'')+(mine?(m.read_at?' · ✓✓':' · ✓'):'')+'</time></article>';
  }));
  if(!document.getElementById('teamChatMessages'))return;
@@ -3750,9 +3780,14 @@ function chatDrawContacts(){
  const list=document.getElementById('teamChatContacts');if(!list)return;
  const q=(document.getElementById('teamChatSearch')?.value||'').trim().toLowerCase();
  const unreadBy={},latestByPeer={};
+ const selfIds=new Set(chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]);
  chatAllMessages.forEach(m=>{
-  if(m.recipient_id===currentUser.id&&!m.read_at)unreadBy[m.sender_id]=(unreadBy[m.sender_id]||0)+1;
-  const peerId=m.sender_id===currentUser.id?m.recipient_id:m.sender_id;
+  if(selfIds.has(m.recipient_id)&&!m.read_at){
+   const senderId=chatCanonicalIdByAliasId.get(m.sender_id)||m.sender_id;
+   unreadBy[senderId]=(unreadBy[senderId]||0)+1;
+  }
+  const rawPeerId=selfIds.has(m.sender_id)?m.recipient_id:m.sender_id;
+  const peerId=chatCanonicalIdByAliasId.get(rawPeerId)||rawPeerId;
   if(!peerId)return;
   const prev=latestByPeer[peerId];
   if(!prev||new Date(m.created_at||0).getTime()>new Date(prev.created_at||0).getTime())latestByPeer[peerId]=m;
@@ -3766,13 +3801,14 @@ function chatDrawContacts(){
  });
  list.innerHTML=rows.map(p=>{
   const identity=p.role==='owner'?'👑 Owner':'Staff',last=latestByPeer[p.id];
-  const preview=last?(last.image_path?(last.body?'📷 '+last.body:'📷 Photo'):((last.sender_id===currentUser.id?'You: ':'')+(last.body||''))):'Start a conversation';
+  const preview=last?(last.image_path?(last.body?'📷 '+last.body:'📷 Photo'):((selfIds.has(last.sender_id)?'You: ':'')+(last.body||''))):'Start a conversation';
   const when=last?new Date(last.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'';
   return '<button type="button" class="chat-contact '+(p.id===chatPeerId?'active':'')+'" data-chat-peer="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').trim().slice(0,1).toUpperCase()))+'</span><span class="chat-contact-copy"><b>'+chatEsc(p.display_name||'Unnamed')+'</b><small>'+chatEsc(identity)+'</small><span class="chat-contact-preview">'+chatEsc(preview)+'</span></span><span class="chat-contact-meta">'+(when?'<time>'+chatEsc(when)+'</time>':'')+(unreadBy[p.id]?'<span class="chat-unread">'+unreadBy[p.id]+'</span>':'')+'</span></button>';
  }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
 async function chatRefresh(reloadContacts){
- if(chatRefreshBusy||!currentUser||page!=='chat')return;
+ if(!currentUser||page!=='chat')return;
+ if(chatRefreshBusy){chatRefreshPending=true;chatRefreshPendingReloadContacts=chatRefreshPendingReloadContacts||!!reloadContacts;return}
  chatRefreshBusy=true;
  try{
   if(reloadContacts){await chatLoadContacts();await chatLoadGroups()}
@@ -3782,7 +3818,14 @@ async function chatRefresh(reloadContacts){
   else if(chatPeerId){await chatRenderMessageList()}
   await chatUpdateUnreadBadge();
  }catch(e){console.error('Chat refresh failed:',e);const pane=document.getElementById('teamChatMessages');if(pane)pane.innerHTML='<div class="chat-error">'+chatEsc(e.message||e)+'</div>'}
- finally{chatRefreshBusy=false}
+ finally{
+  chatRefreshBusy=false;
+  if(chatRefreshPending&&currentUser&&page==='chat'){
+   const reload=chatRefreshPendingReloadContacts;
+   chatRefreshPending=false;chatRefreshPendingReloadContacts=false;
+   setTimeout(()=>chatRefresh(reload),0);
+  }
+ }
 }
 async function chatSelectPeer(id){
  if(!chatContacts.some(p=>p.id===id))return;
