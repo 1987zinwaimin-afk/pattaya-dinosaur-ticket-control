@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v28';
+const CACHE_NAME='dino-staff-shell-v29';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
@@ -20,8 +20,8 @@ self.addEventListener('push',event=>{
   catch(_){try{data={body:event.data?event.data.text():'A staff member activity was recorded.'}}catch(__){}}
   let title=data.title||(data.event_type==='emergency_alarm'?'🚨 Alarm':data.event_type==='chat_message'?'💬 Team Chat':'Pattaya Dinosaur Kingdom');
   if(data.event_type==='chat_message'){
-   const sender=String(data.sender_name||title||'Team member').trim();
-   title='💬 '+sender;
+   // Match the Android emergency-alert card hierarchy: app name, event label, sender and message.
+   title='Pattaya Dinosaur Kingdom';
   }
   if(data.event_type==='chat_message'){
    try{
@@ -47,19 +47,21 @@ self.addEventListener('push',event=>{
    else senderName=clean(suppliedName);
    title=senderName?'🚨 Alarm · '+senderName:'🚨 Alarm';
   }
+  const isChat=data.event_type==='chat_message';
+  const chatSender=String(data.sender_name||'Team member').trim().slice(0,80);
+  const chatMessage=String(data.body||data.message||'New message').trim().slice(0,220);
   const options={
-   body:data.body||'A staff member activity was recorded.',
+   body:isChat?'💬 TEAM CHAT\\n'+chatSender+': '+chatMessage:(data.body||'A staff member activity was recorded.'),
    icon:data.icon||'/notification-logo.svg',
    badge:data.badge||'/notification-badge.svg',
-   tag:data.tag||(data.event_type==='emergency_alarm'?'pdk-emergency-alarm-'+Date.now():'staff-activity-'+Date.now()),
+   tag:data.tag||(data.event_type==='emergency_alarm'?'pdk-emergency-alarm-'+Date.now():isChat?'pdk-chat-'+String(data.message_id||Date.now()):'staff-activity-'+Date.now()),
    renotify:true,
    timestamp:Number(data.timestamp)||Date.now(),
-   data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login'},
-   vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:data.event_type==='chat_message'?[300,120,300]:[250,100,250],
+   data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login',message_id:data.message_id||null},
+   vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:isChat?[300,120,300]:[250,100,250],
    silent:false,
-   renotify:true,
-   actions:data.event_type==='emergency_alarm'?[{action:'open',title:'Open Staff App'}]:[],
-   requireInteraction:data.event_type==='emergency_alarm'
+   actions:(data.event_type==='emergency_alarm'||isChat)?[{action:'open',title:'Open Staff App'}]:[],
+   requireInteraction:data.event_type==='emergency_alarm'||isChat
   };
   if(data.event_type==='emergency_alarm'){
    try{
