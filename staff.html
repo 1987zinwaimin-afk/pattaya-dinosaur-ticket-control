@@ -2506,7 +2506,7 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
    The previous popup layout rule forced the sidebar visible with !important,
    overriding the selected-conversation hide rule and causing the directory,
    group footer, and message thread to overlap. */
-@media(max-width:650px){
+@media(max-width:820px){
  .team-chat-overlay .team-chat-shell.chat-has-peer .team-chat-sidebar{display:none!important}
  .team-chat-overlay .team-chat-shell.chat-has-peer .team-chat-conversation{display:flex!important;min-width:0;min-height:0}
  .team-chat-overlay .team-chat-shell:not(.chat-has-peer) .team-chat-sidebar{display:flex!important}
@@ -2514,7 +2514,7 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 }
 
 /* Staff mobile chat: explicitly switch the whole popup between directory and one full-screen conversation. */
-@media(max-width:650px){
+@media(max-width:820px){
  .team-chat-overlay.chat-show-conversation{display:block!important;padding:0!important;overflow:hidden!important}
  .team-chat-overlay.chat-show-conversation .team-chat-shell{display:flex!important;flex-direction:column!important;width:100%!important;height:100dvh!important;min-height:0!important;max-height:100dvh!important;margin:0!important;border:0!important;border-radius:0!important;overflow:hidden!important}
  .team-chat-overlay.chat-show-conversation .team-chat-sidebar{display:none!important;width:0!important;height:0!important;min-height:0!important;flex:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -3503,10 +3503,14 @@ async function restoreTicket(id){
 }
 
 let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
-let chatHiddenMessageIds=new Set();
+let chatHiddenMessageIds=new Set(),chatHiddenMessageUserId='';
 async function chatLoadHiddenMessages(){
- const {data,error}=await sb.from('team_chat_hidden_messages').select('direct_message_id,group_message_id').eq('user_id',currentUser.id);
- if(error)throw error;chatHiddenMessageIds=new Set((data||[]).flatMap(x=>[x.direct_message_id,x.group_message_id]).filter(Boolean));
+ if(!currentUser)throw new Error('Please sign in before loading hidden chat messages.');
+ const uid=currentUser.id;
+ const {data,error}=await sb.from('team_chat_hidden_messages').select('direct_message_id,group_message_id').eq('user_id',uid);
+ if(error)throw error;
+ chatHiddenMessageIds=new Set((data||[]).flatMap(x=>[x.direct_message_id,x.group_message_id]).filter(Boolean));
+ chatHiddenMessageUserId=uid;
 }
 async function chatDeleteForMe(id,isGroup){
  if(!confirm('Delete this message from your chat only? The other participants will still see it.'))return;
@@ -3653,7 +3657,7 @@ async function chatLoadGroups(){
  chatGroups=chatGroups.map(g=>({...g,member_count:chatGroupMembers.filter(m=>m.group_id===g.id).length}));
 }
 async function chatLoadGroupMessages(groupId){
- if(!chatHiddenMessageIds.size)await chatLoadHiddenMessages();
+ if(chatHiddenMessageUserId!==currentUser.id)await chatLoadHiddenMessages();
  const {data,error}=await sb.from('team_chat_group_messages')
   .select('id,group_id,sender_id,body,image_path,created_at,edited_at,deleted_at')
   .eq('group_id',groupId).order('created_at',{ascending:true}).limit(500);
