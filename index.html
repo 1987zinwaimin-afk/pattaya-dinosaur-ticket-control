@@ -4696,7 +4696,7 @@ async function chatRefresh(reloadContacts){
  }catch(e){console.error('Chat refresh failed:',e);const pane=document.getElementById('teamChatMessages');if(pane)pane.innerHTML='<div class="chat-error">'+chatEsc(e.message||e)+'</div>'}
  finally{
   chatRefreshBusy=false;
-  if(chatRefreshPending&&currentUser&&page==='chat'){
+  if(chatRefreshPending&&currentUser&&document.getElementById('teamChatMessages')){
    const reload=chatRefreshPendingReloadContacts;
    chatRefreshPending=false;chatRefreshPendingReloadContacts=false;
    setTimeout(()=>chatRefresh(reload),0);
