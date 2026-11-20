@@ -4234,7 +4234,15 @@ function chatEnsureRealtime(){
     if(page==='chat')chatRefresh(true);
     chatUpdateUnreadBadge();
    }
-  }).subscribe();
+  })
+  // Keep the contact list aligned with Staff Login Activity and Owner profile edits.
+  .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{
+   if(page==='chat')chatRefresh(true);
+  })
+  .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>{
+   if(page==='chat')chatRefresh(true);
+  })
+  .subscribe();
 }
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
@@ -4246,9 +4254,73 @@ async function chatUpdateUnreadBadge(){
  }catch(e){console.warn('Chat unread count unavailable:',e)}
 }
 async function chatLoadContacts(){
- const {data,error}=await sb.from('profiles').select('id,display_name,role,avatar_url').eq('is_archived',false).in('role',['owner','staff']).neq('id',currentUser.id).order('display_name',{ascending:true});
+ // One chat contact per permanent Staff ID, not per anonymous device profile.
+ // The login activity row identifies the profile currently representing that Staff ID.
+ const {data:profileRows,error}=await sb.from('profiles')
+  .select('id,display_name,role,avatar_url,staff_id,created_at')
+  .eq('is_archived',false)
+  .in('role',['owner','staff']);
  if(error)throw error;
- chatContacts=data||[];
+ const profiles=profileRows||[];
+ const profileById=new Map(profiles.map(p=>[p.id,p]));
+ let activityRows=[];
+ try{
+  // Owner can read the global activity feed; Staff RLS returns only their own row.
+  const {data,error:activityError}=await sb.from('staff_login_activity')
+   .select('normalized_name,staff_id,user_id,last_seen')
+   .not('user_id','is',null);
+  if(activityError)throw activityError;
+  activityRows=data||[];
+ }catch(activityError){
+  console.warn('Chat will use the newest profile per Staff ID because activity lookup was unavailable:',activityError);
+ }
+ const activityByStaffId=new Map();
+ const legacyActivityByStaffId=new Map();
+ for(const activity of activityRows){
+  const linkedProfile=profileById.get(activity.user_id);
+  const explicitStaffId=String(activity.staff_id||'').trim().toUpperCase();
+  const fallbackStaffId=String(linkedProfile?.staff_id||activity.normalized_name||'').trim().toUpperCase();
+  const staffId=explicitStaffId||fallbackStaffId;
+  if(!staffId)continue;
+  const target=explicitStaffId?activityByStaffId:legacyActivityByStaffId;
+  const previous=target.get(staffId);
+  if(!previous||new Date(activity.last_seen||0).getTime()>new Date(previous.last_seen||0).getTime()){
+   target.set(staffId,activity);
+  }
+ }
+ // Prefer the explicit Staff ID activity row over older legacy name-based rows.
+ for(const [staffId,activity] of legacyActivityByStaffId){
+  if(!activityByStaffId.has(staffId))activityByStaffId.set(staffId,activity);
+ }
+ const grouped=new Map();
+ for(const profile of profiles){
+  if(profile.role==='owner'){
+   grouped.set('owner:'+profile.id,profile);
+   continue;
+  }
+  const staffId=String(profile.staff_id||'').trim().toUpperCase();
+  const key=staffId?'staff:'+staffId:'user:'+profile.id;
+  const current=grouped.get(key);
+  const activeUserId=staffId?activityByStaffId.get(staffId)?.user_id:null;
+  const profileIsCurrent=!!activeUserId&&profile.id===activeUserId;
+  const currentIsCurrent=!!activeUserId&&current?.id===activeUserId;
+  const profileCreated=Date.parse(profile.created_at||'')||0;
+  const currentCreated=Date.parse(current?.created_at||'')||0;
+  if(!current||(profileIsCurrent&&!currentIsCurrent)||(!currentIsCurrent&&!profileIsCurrent&&profileCreated>currentCreated)){
+   grouped.set(key,profile);
+  }
+ }
+ // Remove the signed-in account after deduplication. On Staff portal, also
+ // hide every duplicate profile carrying this same Staff ID, not just this auth UUID.
+ const signedInProfile=profileById.get(currentUser.id);
+ const signedInStaffId=String(signedInProfile?.staff_id||'').trim().toUpperCase();
+ chatContacts=[...grouped.values()].filter(p=>
+  p.id!==currentUser.id&&
+  !(signedInProfile?.role==='staff'&&signedInStaffId&&p.role==='staff'&&String(p.staff_id||'').trim().toUpperCase()===signedInStaffId)
+ ).sort((a,b)=>{
+  const name=String(a.display_name||'').localeCompare(String(b.display_name||''),undefined,{sensitivity:'base'});
+  return name||String(a.staff_id||'').localeCompare(String(b.staff_id||''));
+ });
 }
 async function chatLoadMessages(){
  const uid=currentUser.id;
@@ -4281,8 +4353,11 @@ function chatDrawContacts(){
  const list=document.getElementById('teamChatContacts');if(!list)return;
  const q=(document.getElementById('teamChatSearch')?.value||'').trim().toLowerCase();
  const unreadBy={};chatAllMessages.forEach(m=>{if(m.recipient_id===currentUser.id&&!m.read_at)unreadBy[m.sender_id]=(unreadBy[m.sender_id]||0)+1});
- const rows=chatContacts.filter(p=>(p.display_name||'').toLowerCase().includes(q));
- list.innerHTML=rows.map(p=>'<button type="button" class="chat-contact '+(p.id===chatPeerId?'active':'')+'" data-chat-peer="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').trim().slice(0,1).toUpperCase()))+'</span><span class="chat-contact-copy"><b>'+chatEsc(p.display_name||'Unnamed')+'</b><small>'+(p.role==='owner'?'👑 Owner':'Staff')+'</small></span>'+(unreadBy[p.id]?'<span class="chat-unread">'+unreadBy[p.id]+'</span>':'')+'</button>').join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
+ const rows=chatContacts.filter(p=>(p.display_name||'').toLowerCase().includes(q)||String(p.staff_id||'').toLowerCase().includes(q));
+ list.innerHTML=rows.map(p=>{
+  const identity=p.role==='owner'?'👑 Owner':('Staff'+(p.staff_id?' · ID '+p.staff_id:''));
+  return '<button type="button" class="chat-contact '+(p.id===chatPeerId?'active':'')+'" data-chat-peer="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').trim().slice(0,1).toUpperCase()))+'</span><span class="chat-contact-copy"><b>'+chatEsc(p.display_name||'Unnamed')+'</b><small>'+chatEsc(identity)+'</small></span>'+(unreadBy[p.id]?'<span class="chat-unread">'+unreadBy[p.id]+'</span>':'')+'</button>';
+ }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
 async function chatRefresh(reloadContacts){
  if(chatRefreshBusy||!currentUser||page!=='chat')return;
@@ -4299,7 +4374,7 @@ async function chatSelectPeer(id){
  const peer=chatContacts.find(p=>p.id===id);
  const title=document.getElementById('teamChatPeerName'),sub=document.getElementById('teamChatPeerRole');
  if(title)title.textContent=peer?.display_name||'Team member';
- if(sub)sub.textContent=peer?.role==='owner'?'👑 Owner':'Staff';
+ if(sub)sub.textContent=peer?.role==='owner'?'👑 Owner':('Staff'+(peer?.staff_id?' · ID '+peer.staff_id:''));
  await chatLoadMessages();await chatRenderMessageList();await chatUpdateUnreadBadge();
 }
 async function chatSendMessage(event){
