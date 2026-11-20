@@ -4387,48 +4387,56 @@ function chatUpdateTranslateButton(){const button=document.getElementById('teamC
 async function chatToggleTranslate(){chatTranslateEnabled=!chatTranslateEnabled;localStorage.setItem('team-chat-translate-enabled-v1',String(chatTranslateEnabled));chatUpdateTranslateButton();if(chatActiveGroupId)await chatRenderGroupMessageList();else if(chatPeerId)await chatRenderMessageList();}
 function chatTime(value){try{return new Intl.DateTimeFormat(undefined,{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(_){return ''}}
 function chatEnsureRealtime(){
- if(!currentUser)return;
- if(chatChannel&&chatChannelUserId===currentUser.id)return;
- if(chatChannel)sb.removeChannel(chatChannel);
- chatChannelUserId=currentUser.id;
- chatChannel=sb.channel('team-chat-'+currentUser.id)
-  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_messages'},payload=>{
-   const row=payload.new||payload.old||{};
-   const ownIds=chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id];
-   if(ownIds.includes(row.sender_id)||ownIds.includes(row.recipient_id)){
-    if(page==='chat')chatRefresh(true);
-    chatUpdateUnreadBadge();
-   }
-  })
-  // Keep the contact list aligned with Staff Login Activity and Owner profile edits.
-  .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{
-   if(page==='chat')chatRefresh(true);
-  })
-  .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>{
-   if(page==='chat')chatRefresh(true);
-  })
-  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_messages'},payload=>{
-   const row=payload.new||payload.old||{};
-   if(chatActiveGroupId&&row.group_id===chatActiveGroupId&&page==='chat')chatRefresh(false);
-  })
-  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_groups'},()=>{if(page==='chat')chatRefresh(true)})
-  .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_members'},()=>{if(page==='chat')chatRefresh(true)})
-  .subscribe((status,error)=>{
-   chatRealtimeStatus=status;
-   if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
-    console.warn('Team Chat realtime subscription status:',status,error||'');
-   }
-  });
- // Keep messages live even when a Realtime websocket event is missed or the
- // device temporarily suspends its connection. This fallback never replaces
- // Realtime; it only reconciles the active conversation in the background.
- if(!chatPollTimer){
+  if(!currentUser)return;
+  // Restore the foreground fallback even when the Realtime channel already exists.
+  if(chatChannel&&chatChannelUserId===currentUser.id){
+   if(!chatPollTimer)chatPollTimer=setInterval(()=>{
+    if(document.visibilityState==='visible'&&document.getElementById('teamChatMessages')&&currentUser?.id===chatChannelUserId&&!chatRefreshBusy)chatRefresh(false);
+   },2500);
+   return;
+  }
+  if(chatChannel)sb.removeChannel(chatChannel);
+  if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null;}
+  chatChannelUserId=currentUser.id;
+  chatChannel=sb.channel('team-chat-'+currentUser.id)
+   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_messages'},payload=>{
+    const row=payload.new||payload.old||{};
+    const ownIds=chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id];
+    if(ownIds.includes(row.sender_id)||ownIds.includes(row.recipient_id)){
+     if(document.getElementById('teamChatMessages'))chatRefresh(true);
+     chatUpdateUnreadBadge();
+    }
+   })
+   .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{
+    if(document.getElementById('teamChatMessages'))chatRefresh(true);
+   })
+   .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>{
+    if(document.getElementById('teamChatMessages'))chatRefresh(true);
+   })
+   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_messages'},payload=>{
+    const row=payload.new||payload.old||{};
+    if(chatActiveGroupId&&row.group_id===chatActiveGroupId&&document.getElementById('teamChatMessages'))chatRefresh(false);
+   })
+   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_groups'},()=>{
+    if(document.getElementById('teamChatMessages'))chatRefresh(true);
+   })
+   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_members'},()=>{
+    if(document.getElementById('teamChatMessages'))chatRefresh(true);
+   })
+   .subscribe((status,error)=>{
+    chatRealtimeStatus=status;
+    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+     console.warn('Team Chat realtime subscription status:',status,error||'');
+    }
+   });
+  // Realtime is primary. Reconcile whenever the chat DOM is mounted, without
+  // relying on the SPA page variable which can be stale after navigation.
   chatPollTimer=setInterval(()=>{
-   if(!currentUser||page!=='chat'||document.hidden)return;
-   if(!chatRefreshBusy)chatRefresh(false);
-  },3500);
+   if(document.visibilityState!=='visible'||!document.getElementById('teamChatMessages'))return;
+   if(currentUser?.id!==chatChannelUserId||chatRefreshBusy)return;
+   chatRefresh(false);
+  },2500);
  }
-}
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
  try{
