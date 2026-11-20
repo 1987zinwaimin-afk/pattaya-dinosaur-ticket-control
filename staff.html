@@ -3156,6 +3156,9 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
   if(profile.role!=='staff'||!profile.staff_id||String(profile.staff_id).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID verification did not finish. Please contact Owner.');
  }
  currentRole=profile.role;currentStaffId=profile.staff_id||null;
+ // Refresh an existing background push subscription as soon as the Staff identity is verified.
+ // This is non-blocking and never changes login, ticket, or payroll data.
+ if(STAFF_MODE&&currentRole==='staff')setTimeout(()=>window.ensureStaffBackgroundPushSubscription?.().catch(error=>console.warn('Staff background push refresh failed:',error?.message||error)),0);
  // Ensure the Normal Staff emergency-alarm control is initialized after authentication, even if the first render happened before its script loaded.
  setTimeout(()=>{try{window.renderStaffAlarmSetupBanner?.()}catch(error){console.warn('Staff emergency alarm control initialization failed:',error)}},0);
  const previousDepartment=localStorage.getItem('tctl-staff-department')||'';
@@ -4888,6 +4891,25 @@ installUILanguageObserver();applyUILanguage();
 (function(){
  const STAFF_ALARM_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
  function alarmKeyBytes(value){const pad='='.repeat((4-value.length%4)%4);const raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(Array.from(raw,c=>c.charCodeAt(0)))}
+ // Re-register an already-approved device subscription after every Staff login and app resume.
+ // Never open a permission prompt automatically; first-time permission remains a user action.
+ window.ensureStaffBackgroundPushSubscription=async function(){
+  if(!currentUser||currentRole!=='staff'||!('Notification'in window)||Notification.permission!=='granted'||!('serviceWorker'in navigator)||!('PushManager'in window))return {status:'permission-required'};
+  const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});
+  try{await registration.update()}catch(updateError){console.warn('Staff service worker update check failed:',updateError)}
+  const ready=await navigator.serviceWorker.ready;
+  const subscription=await ready.pushManager.getSubscription();
+  if(!subscription)return {status:'not-subscribed'};
+  const json=subscription.toJSON();
+  if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('The existing browser push subscription is incomplete.');
+  const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'register_push',subscription:{endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth},user_agent:navigator.userAgent}});
+  if(error)throw error;
+  if(!data?.registered)throw new Error(data?.error||'The Staff device subscription could not be refreshed.');
+  console.info('Staff background push subscription refreshed.');
+  return {status:'registered'};
+ };
+ window.addEventListener('pageshow',()=>{if(currentRole==='staff')window.ensureStaffBackgroundPushSubscription?.().catch(error=>console.warn('Staff background push refresh failed:',error?.message||error))});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&currentRole==='staff')window.ensureStaffBackgroundPushSubscription?.().catch(error=>console.warn('Staff background push refresh failed:',error?.message||error))});
  
 window.showEmergencyAlarmDialog=function(options){
  const mode=options?.mode||'confirm';
