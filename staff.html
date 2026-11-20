@@ -2429,6 +2429,13 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 .team-chat-compose{padding:9px 11px 8px;border-top:1px solid #29445d;background:#0c2439}.chat-compose-row{display:flex;align-items:flex-end;gap:8px}.chat-attach{width:38px;height:38px;flex:0 0 38px;border:1px solid #486984;border-radius:12px;display:grid;place-items:center;color:#f3d18b;font-size:24px;cursor:pointer;background:#173750}.chat-compose-row textarea{flex:1;min-width:0;max-height:110px;resize:vertical;border:1px solid #3d5e78;border-radius:12px;background:#06192a;color:#eef5fb;padding:10px 11px;font:inherit;font-size:13px;line-height:1.35}.chat-send{width:40px;height:39px;flex:0 0 40px;padding:0!important;border-radius:12px!important}.chat-compose-hint{display:block;color:#819bb0;font-size:9px;margin:5px 0 0 49px}.chat-file-preview{font-size:11px;color:#f1d18c;margin:0 0 5px 48px;overflow-wrap:anywhere}
 @media(max-width:650px){.team-chat-shell{height:calc(100dvh - 190px);min-height:390px;grid-template-columns:1fr}.team-chat-sidebar{border-right:0}.team-chat-conversation{display:none}.team-chat-shell.chat-has-peer .team-chat-sidebar{display:none}.team-chat-shell.chat-has-peer .team-chat-conversation{display:flex}.team-chat-shell.chat-has-peer .chat-back{display:inline-block}.team-chat-shell.chat-has-peer .team-chat-peer{gap:8px}.team-chat-shell.chat-has-peer .team-chat-messages{padding:10px}.chat-bubble{max-width:88%}}
 @media(min-width:651px){.team-chat-shell{height:min(74vh,760px)}}
+/* Mobile contact directory: keep the list inside the visible chat panel and allow finger scrolling. */
+@media(max-width:650px){
+ .team-chat-shell{height:min(62dvh,680px)!important;min-height:360px!important;max-height:calc(100dvh - 210px)!important}
+ .team-chat-sidebar{min-height:0!important;overflow:hidden!important}
+ .team-chat-contacts{height:0!important;min-height:0!important;flex:1 1 0!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding-bottom:20px!important}
+ .chat-contact{flex-shrink:0;min-height:58px;touch-action:pan-y}
+}
 </style>
 </head>
 <body>
@@ -3545,7 +3552,7 @@ function chatDrawContacts(){
  const unreadBy={};chatAllMessages.forEach(m=>{if(m.recipient_id===currentUser.id&&!m.read_at)unreadBy[m.sender_id]=(unreadBy[m.sender_id]||0)+1});
  const rows=chatContacts.filter(p=>(p.display_name||'').toLowerCase().includes(q)||String(p.staff_id||'').toLowerCase().includes(q));
  list.innerHTML=rows.map(p=>{
-  const identity=p.role==='owner'?'👑 Owner':('Staff'+(p.staff_id?' · ID '+p.staff_id:''));
+  const identity=p.role==='owner'?'👑 Owner':'Staff';
   return '<button type="button" class="chat-contact '+(p.id===chatPeerId?'active':'')+'" data-chat-peer="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').trim().slice(0,1).toUpperCase()))+'</span><span class="chat-contact-copy"><b>'+chatEsc(p.display_name||'Unnamed')+'</b><small>'+chatEsc(identity)+'</small></span>'+(unreadBy[p.id]?'<span class="chat-unread">'+unreadBy[p.id]+'</span>':'')+'</button>';
  }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
@@ -3564,7 +3571,7 @@ async function chatSelectPeer(id){
  const peer=chatContacts.find(p=>p.id===id);
  const title=document.getElementById('teamChatPeerName'),sub=document.getElementById('teamChatPeerRole');
  if(title)title.textContent=peer?.display_name||'Team member';
- if(sub)sub.textContent=peer?.role==='owner'?'👑 Owner':('Staff'+(peer?.staff_id?' · ID '+peer.staff_id:''));
+ if(sub)sub.textContent=peer?.role==='owner'?'👑 Owner':'Staff';
  await chatLoadMessages();await chatRenderMessageList();await chatUpdateUnreadBadge();
 }
 async function chatSendMessage(event){
