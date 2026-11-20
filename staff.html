@@ -3561,7 +3561,8 @@ function chatEnsureRealtime(){
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_members'},()=>{if(page==='chat')chatRefresh(true)})
   .subscribe(status=>{console.log('Team Chat realtime status:',status)});
  // Realtime is primary; a lightweight foreground sync is the fallback for dropped or delayed socket events.
- chatPollTimer=setInterval(()=>{if(page==='chat'&&document.visibilityState==='visible'&&currentUser?.id===chatChannelUserId)chatRefresh(false)},2500);
+ chatPollTimer=setInterval(()=>{if(document.visibilityState==='visible'&&document.getElementById('teamChatMessages')&&currentUser?.id===chatChannelUserId)chatRefresh(false)},1500);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&document.getElementById('teamChatMessages'))chatRefresh(false)});
 }
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
@@ -3775,7 +3776,8 @@ function chatDrawContacts(){
  }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
 async function chatRefresh(reloadContacts){
- if(!currentUser||page!=='chat')return;
+ // Use the live chat DOM as the source of truth; the route variable can change during SPA transitions.
+ if(!currentUser||!document.getElementById('teamChatMessages'))return;
  // Never drop an incoming event while another refresh is in progress.
  if(chatRefreshBusy){chatRefreshQueued=true;chatRefreshQueuedContacts=chatRefreshQueuedContacts||!!reloadContacts;return;}
  chatRefreshBusy=true;
