@@ -4627,7 +4627,8 @@ function chatDrawContacts(){
  }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
 async function chatRefresh(reloadContacts){
- if(!currentUser||page!=='chat')return;
+ // Use the live chat DOM as the source of truth; SPA route state can lag behind it.
+ if(!currentUser||!document.getElementById('teamChatMessages'))return;
  // Never drop an incoming event while another refresh is in progress.
  if(chatRefreshBusy){chatRefreshQueued=true;chatRefreshQueuedContacts=chatRefreshQueuedContacts||!!reloadContacts;return;}
  chatRefreshBusy=true;
