@@ -4426,6 +4426,7 @@ async function restoreTicket(id){
 }
 
 let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
+const chatGroupAvatarUrls=new Map();
 let chatSelfAliasIds=[],chatAliasIdsByProfileId=new Map(),chatCanonicalIdByAliasId=new Map(),chatRefreshPending=false,chatRefreshPendingReloadContacts=false;
 let chatPollTimer=null,chatRealtimeStatus='CLOSED';
 let chatHiddenMessageIds=new Set();
@@ -4617,7 +4618,7 @@ async function chatLoadMessages(){
  chatAllMessages=data||[];
 }
 async function chatLoadGroups(){
- const {data,error}=await sb.from('team_chat_groups').select('id,name,created_by,created_at,updated_at').order('updated_at',{ascending:false});
+ const {data,error}=await sb.from('team_chat_groups').select('id,name,avatar_path,created_by,created_at,updated_at').order('updated_at',{ascending:false});
  if(error)throw error;
  chatGroups=data||[];
  if(!chatGroups.length){chatGroupMembers=[];return}
@@ -4653,12 +4654,15 @@ async function chatRenderGroupMessageList(){
  if(!document.getElementById('teamChatMessages'))return;
  pane.innerHTML=html.join('');pane.scrollTop=pane.scrollHeight;
 }
-function chatDrawGroups(){
+async function chatDrawGroups(){
  const list=document.getElementById('teamChatGroups');if(!list)return;
  const q=(document.getElementById('teamChatSearch')?.value||'').trim().toLowerCase();
  const rows=chatGroups.filter(g=>(g.name||'').toLowerCase().includes(q));
  list.classList.toggle('is-empty',rows.length===0);
- list.innerHTML=rows.map(g=>'<button type="button" class="chat-contact chat-group-contact '+(g.id===chatActiveGroupId?'active':'')+'" data-chat-group="'+chatEsc(g.id)+'"><span class="chat-avatar chat-group-avatar">👥</span><span class="chat-contact-copy"><b>'+chatEsc(g.name)+'</b><small>'+g.member_count+' '+chatText('members','สมาชิก','ဦး')+'</small></span></button>').join('')||'<div class="chat-no-contacts">'+chatText('No groups yet','ยังไม่มีกลุ่ม','Group မရှိသေးပါ')+'</div>';
+ list.innerHTML=rows.map(g=>'<button type="button" class="chat-contact chat-group-contact '+(g.id===chatActiveGroupId?'active':'')+'" data-chat-group="'+chatEsc(g.id)+'"><span class="chat-avatar chat-group-avatar">'+(chatGroupAvatarUrls.get(g.id)?'<img src="'+chatEsc(chatGroupAvatarUrls.get(g.id))+'" alt="">':'👥')+'</span><span class="chat-contact-copy"><b>'+chatEsc(g.name)+'</b><small>'+g.member_count+' '+chatText('members','สมาชิก','ဦး')+'</small></span></button>').join('')||'<div class="chat-no-contacts">'+chatText('No groups yet','ยังไม่มีกลุ่ม','Group မရှိသေးပါ')+'</div>';
+ const pending=rows.filter(g=>g.avatar_path&&!chatGroupAvatarUrls.has(g.id));
+ await Promise.all(pending.map(async g=>{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(g.avatar_path,3600);if(!error&&data?.signedUrl)chatGroupAvatarUrls.set(g.id,data.signedUrl)}));
+ if(pending.length&&document.getElementById('teamChatGroups'))list.innerHTML=rows.map(g=>'<button type="button" class="chat-contact chat-group-contact '+(g.id===chatActiveGroupId?'active':'')+'" data-chat-group="'+chatEsc(g.id)+'"><span class="chat-avatar chat-group-avatar">'+(chatGroupAvatarUrls.get(g.id)?'<img src="'+chatEsc(chatGroupAvatarUrls.get(g.id))+'" alt="">':'👥')+'</span><span class="chat-contact-copy"><b>'+chatEsc(g.name)+'</b><small>'+g.member_count+' '+chatText('members','สมาชิก','ဦး')+'</small></span></button>').join('')||'<div class="chat-no-contacts">'+chatText('No groups yet','ยังไม่มีกลุ่ม','Group မရှိသေးပါ')+'</div>';
 }
 function chatOpenCreateGroup(){
  const layer=document.getElementById('teamChatModalLayer');if(!layer)return;
@@ -4685,6 +4689,40 @@ function chatOpenCreateGroup(){
   }catch(err){alert('Could not create group: '+(err.message||err));submit.disabled=false}
  };
 }
+function chatCanManageGroup(group){return !!group&&(group.created_by===currentUser?.id||currentRole==='owner');}
+async function chatOpenGroupSettings(){
+ const group=chatGroups.find(g=>g.id===chatActiveGroupId);const layer=document.getElementById('teamChatModalLayer');if(!group||!layer)return;
+ const canManage=chatCanManageGroup(group);
+ const [{data:members,error:memberError},{data:profiles,error:profileError}]=await Promise.all([
+  sb.from('team_chat_group_members').select('user_id,added_by,joined_at').eq('group_id',group.id).order('joined_at'),
+  sb.from('profiles').select('id,display_name,role,avatar_url,is_archived').eq('is_archived',false).order('display_name')
+ ]);
+ if(memberError||profileError){alert('Could not load group members: '+(memberError||profileError).message);return}
+ const memberIds=new Set((members||[]).map(m=>m.user_id));
+ const people=new Map((profiles||[]).map(p=>[p.id,p]));
+ const memberHtml=(members||[]).map(m=>{const p=people.get(m.user_id);return '<div class="chat-group-member"><span class="chat-avatar">'+(p?.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p?.display_name||'?').slice(0,1).toUpperCase()))+'</span><span><b>'+chatEsc(p?.display_name||'Former member')+'</b><small>'+(p?.role==='owner'?'Owner':'Staff')+'</small></span>'+(canManage&&m.user_id!==currentUser.id?'<button type="button" class="chat-member-remove" data-remove-group-member="'+chatEsc(m.user_id)+'">Remove</button>':'')+'</div>'}).join('');
+ const candidates=(profiles||[]).filter(p=>!memberIds.has(p.id));
+ const addHtml=candidates.map(p=>'<label class="chat-group-member"><input type="checkbox" name="chatGroupAddMember" value="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').slice(0,1).toUpperCase()))+'</span><span><b>'+chatEsc(p.display_name||'Staff')+'</b><small>'+(p.role==='owner'?'Owner':'Staff')+'</small></span></label>').join('')||'<small>No additional active members available.</small>';
+ const {data:avatarData}=group.avatar_path?await sb.storage.from('team-chat-images').createSignedUrl(group.avatar_path,3600):{data:null};
+ layer.innerHTML='<div class="chat-modal-backdrop"><form class="chat-create-modal chat-group-settings-modal" id="chatGroupSettingsForm"><div class="chat-modal-head"><div><b>'+chatText('Group settings','ตั้งค่ากลุ่ม','Group ဆက်တင်များ')+'</b><small>'+chatEsc(group.name)+'</small></div><button type="button" class="chat-modal-close" id="chatGroupSettingsClose">×</button></div><label class="chat-modal-label">'+chatText('Group photo','รูปกลุ่ม','Group ပုံ')+'</label><div class="chat-group-photo-edit">'+(avatarData?.signedUrl?'<img src="'+chatEsc(avatarData.signedUrl)+'" alt="">':'<span>👥</span>')+'<input type="file" id="chatGroupPhoto" accept="image/jpeg,image/png,image/webp" '+(canManage?'':'disabled')+'></div><label class="chat-modal-label">'+chatText('Group name','ชื่อกลุ่ม','Group အမည်')+'</label><input id="chatGroupNameEdit" maxlength="80" minlength="2" required value="'+chatEsc(group.name)+'" '+(canManage?'':'disabled')+'><div class="chat-modal-label">'+chatText('Members','สมาชิก','အဖွဲ့ဝင်များ')+' · '+(members||[]).length+'</div><div class="chat-group-member-list">'+memberHtml+'</div>'+(canManage?'<div class="chat-modal-label">'+chatText('Add members','เพิ่มสมาชิก','အဖွဲ့ဝင်အသစ်ထည့်ရန်')+'</div><div class="chat-group-member-list">'+addHtml+'</div>':'<small>Only the group creator or Owner can change group details and membership.</small>')+'<div class="chat-modal-actions"><button type="button" class="chat-modal-cancel" id="chatGroupSettingsCancel">Close</button>'+(canManage?'<button type="submit" class="gold">Save changes</button>':'<button type="button" class="chat-member-remove" id="chatLeaveGroup">Leave group</button>')+'</div></form></div>';
+ const close=()=>layer.innerHTML='';document.getElementById('chatGroupSettingsClose').onclick=close;document.getElementById('chatGroupSettingsCancel').onclick=close;
+ layer.querySelectorAll('[data-remove-group-member]').forEach(btn=>btn.onclick=async()=>{const uid=btn.dataset.removeGroupMember;if(!confirm('Remove this member from the group?'))return;const {error}=await sb.from('team_chat_group_members').delete().eq('group_id',group.id).eq('user_id',uid);if(error){alert('Could not remove member: '+error.message);return}await chatLoadGroups();await chatDrawGroups();await chatOpenGroupSettings();if(chatActiveGroupId===group.id)await chatSelectGroup(group.id)});
+ const leaveButton=document.getElementById('chatLeaveGroup');if(leaveButton)leaveButton.onclick=async()=>{if(!confirm('Leave this group? You will no longer see its messages.'))return;const {error}=await sb.from('team_chat_group_members').delete().eq('group_id',group.id).eq('user_id',currentUser.id);if(error){alert('Could not leave group: '+error.message);return}layer.innerHTML='';chatActiveGroupId='';await chatLoadGroups();await chatDrawGroups();document.querySelector('#pageContent .team-chat-shell')?.classList.remove('chat-has-peer');const pane=document.getElementById('teamChatMessages');if(pane)pane.innerHTML='<div class="chat-empty-state"><span>👥</span><b>Choose a conversation</b></div>';};
+ const form=document.getElementById('chatGroupSettingsForm');if(!canManage)return;
+ form.onsubmit=async e=>{e.preventDefault();const submit=form.querySelector('button[type="submit"]');submit.disabled=true;
+ try{
+  const name=document.getElementById('chatGroupNameEdit').value.trim();if(name.length<2)throw new Error('Group name must contain at least 2 characters.');
+  const photo=document.getElementById('chatGroupPhoto').files?.[0];if(photo&&(!['image/jpeg','image/png','image/webp'].includes(photo.type)||photo.size>5*1024*1024))throw new Error('Choose JPG, PNG or WEBP up to 5 MB.');
+  const selected=[...form.querySelectorAll('input[name="chatGroupAddMember"]:checked')].map(x=>x.value);
+  const patch={name,updated_at:new Date().toISOString()};let newPath=null;
+  if(photo){const ext=photo.type==='image/png'?'png':photo.type==='image/webp'?'webp':'jpg';newPath=currentUser.id+'/group-avatars/'+group.id+'/'+crypto.randomUUID()+'.'+ext;const {error}=await sb.storage.from('team-chat-images').upload(newPath,photo,{contentType:photo.type,upsert:false});if(error)throw error;patch.avatar_path=newPath}
+  const {error:updateError}=await sb.from('team_chat_groups').update(patch).eq('id',group.id);if(updateError){if(newPath)await sb.storage.from('team-chat-images').remove([newPath]);throw updateError}
+  if(selected.length){const rows=selected.map(user_id=>({group_id:group.id,user_id,added_by:currentUser.id}));const {error:addError}=await sb.from('team_chat_group_members').insert(rows);if(addError)throw addError}
+  if(newPath&&group.avatar_path)await sb.storage.from('team-chat-images').remove([group.avatar_path]);
+  chatGroupAvatarUrls.delete(group.id);layer.innerHTML='';await chatLoadGroups();await chatDrawGroups();await chatSelectGroup(group.id);
+ }catch(err){alert('Could not save group settings: '+(err.message||err));submit.disabled=false}
+ };
+}
 async function chatSelectGroup(id){
  const group=chatGroups.find(g=>g.id===id);if(!group)return;
  chatActiveGroupId=id;chatPeerId='';
@@ -4693,7 +4731,8 @@ async function chatSelectGroup(id){
  const title=document.getElementById('teamChatPeerName'),sub=document.getElementById('teamChatPeerRole'),avatar=document.querySelector('.team-chat-peer .chat-peer-avatar');
  if(title)title.textContent=group.name;
  if(sub)sub.textContent='👥 '+group.member_count+' '+chatText('members','สมาชิก','ဦး');
- if(avatar)avatar.textContent='👥';
+ if(avatar){const {data:av}=group.avatar_path?await sb.storage.from('team-chat-images').createSignedUrl(group.avatar_path,3600):{data:null};avatar.innerHTML=av?.signedUrl?'<img src="'+chatEsc(av.signedUrl)+'" alt="">':'👥';}
+ const peerHeader=document.querySelector('.team-chat-peer');let settings=document.getElementById('teamChatGroupSettings');if(settings)settings.remove();if(peerHeader){const btn=document.createElement('button');btn.type='button';btn.id='teamChatGroupSettings';btn.className='chat-translate-toggle';btn.textContent='⚙ Group';btn.onclick=chatOpenGroupSettings;peerHeader.insertBefore(btn,document.getElementById('teamChatTranslateToggle'));}
  await chatLoadGroupMessages(id);await chatRenderGroupMessageList();
 }
 async function chatRenderMessageList(){
@@ -4773,6 +4812,7 @@ async function chatRefresh(reloadContacts){
  }
 }
 async function chatSelectPeer(id){
+ const groupSettings=document.getElementById('teamChatGroupSettings');if(groupSettings)groupSettings.remove();
  if(!chatContacts.some(p=>p.id===id))return;
  chatPeerId=id;chatActiveGroupId='';
  const shell=document.querySelector('#pageContent .team-chat-shell');shell?.classList.add('chat-has-peer');
@@ -4844,22 +4884,58 @@ async function chatEditMessage(id,isGroup){
 }
 async function chatUnsendMessage(id,isGroup){
  const rows=isGroup?chatGroupMessages:chatAllMessages;const row=rows.find(m=>m.id===id);
- if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;if(!confirm('Unsend this message for everyone in this conversation?'))return;
+ if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;
+ if(!confirm('Unsend this message permanently for everyone in this conversation? This cannot be undone.'))return;
  const table=isGroup?'team_chat_group_messages':'team_chat_messages';
- const {data,error}=await sb.from(table).update({body:'This message was unsent',deleted_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',id).eq('sender_id',currentUser.id).is('deleted_at',null).select('id').maybeSingle();
- if(error||!data){alert('Message could not be unsent: '+(error?.message||'Permission denied or message already changed.'));return}
- if(isGroup){await chatLoadGroupMessages(chatActiveGroupId);await chatRenderGroupMessageList()}else{await chatLoadMessages();await chatRenderMessageList()}chatDrawContacts();chatDrawGroups();await chatUpdateUnreadBadge();
+ try{
+  if(row.image_path){
+   const {error:storageError}=await sb.storage.from('team-chat-images').remove([row.image_path]);
+   if(storageError)throw storageError;
+  }
+  const {data,error}=await sb.from(table).delete().eq('id',id).eq('sender_id',currentUser.id).select('id').maybeSingle();
+  if(error||!data)throw error||new Error('Permission denied or message already removed.');
+  chatHiddenMessageIds.delete(id);
+  if(isGroup){
+   chatGroupMessages=chatGroupMessages.filter(m=>m.id!==id);
+   await chatLoadGroupMessages(chatActiveGroupId);
+   await chatRenderGroupMessageList();
+  }else{
+   chatAllMessages=chatAllMessages.filter(m=>m.id!==id);
+   await chatLoadMessages();
+   await chatRenderMessageList();
+  }
+  chatDrawContacts();chatDrawGroups();await chatUpdateUnreadBadge();
+ }catch(error){
+  console.error('Permanent chat unsend failed:',error);
+  alert('Message could not be permanently removed: '+(error?.message||error));
+ }
+}
+
+let chatListTab='people';
+function chatSetListTab(tab){
+ chatListTab=tab==='groups'?'groups':'people';
+ const people=chatListTab==='people';
+ const setDisplay=(id,value)=>{const el=document.getElementById(id);if(el)el.style.display=value?'':'none'};
+ setDisplay('chatPeopleHeading',people);setDisplay('teamChatContacts',people);
+ setDisplay('chatGroupsHeading',!people);setDisplay('teamChatGroups',!people);
+ const p=document.getElementById('chatPeopleTab'),g=document.getElementById('chatGroupsTab');
+ if(p){p.classList.toggle('active',people);p.setAttribute('aria-selected',String(people))}
+ if(g){g.classList.toggle('active',!people);g.setAttribute('aria-selected',String(!people))}
+ const search=document.getElementById('teamChatSearch');
+ if(search)search.placeholder=people?chatText('Search people…','ค้นหาสมาชิก…','ဝန်ထမ်းများ ရှာရန်…'):chatText('Search groups…','ค้นหากลุ่ม…','Group များ ရှာရန်…');
 }
 async function renderTeamChat(){
  const root=document.getElementById('pageContent');if(!root)return;
  root.dataset.uiPage='team-chat';
  if(!currentUser||!['owner','staff'].includes(currentRole)){root.innerHTML='<section class="panel">Please sign in with an Owner or Staff account to use Team Chat.</section>';return}
- chatPeerId='';chatActiveGroupId='';
- root.innerHTML='<div class="team-chat-overlay" id="teamChatOverlay" role="dialog" aria-modal="true" aria-label="Team Chat"><section class="team-chat-shell"><aside class="team-chat-sidebar"><div class="team-chat-title"><div><h2>💬 '+chatText('Team Chat','แชททีม','အဖွဲ့လိုက် စကားပြော')+'</h2><small>'+chatText('Owner & Staff','Owner และพนักงาน','Owner နှင့် Staff')+'</small></div><div class="chat-title-actions"><span class="chat-live-dot">● Live</span><button type="button" id="teamChatClose" class="chat-modal-close" aria-label="Close chat">×</button></div></div><input id="teamChatSearch" class="chat-search" type="search" placeholder="'+chatText('Search people and groups…','ค้นหาสมาชิกและกลุ่ม…','အဖွဲ့ဝင်နှင့် Group ရှာရန်…')+'"><div class="chat-list-heading"><b>'+chatText('People','สมาชิก','ဝန်ထမ်းများ')+'</b></div><div id="teamChatContacts" class="team-chat-contacts"><div class="chat-loading">Loading team…</div></div><div class="chat-groups-heading"><b>'+chatText('Group chats','แชทกลุ่ม','Group Chat များ')+'</b><button type="button" id="chatNewGroup" class="chat-new-group">＋ '+chatText('New','ใหม่','အသစ်')+'</button></div><div id="teamChatGroups" class="team-chat-groups"><div class="chat-loading">Loading groups…</div></div></aside><section class="team-chat-conversation"><header class="team-chat-peer"><button type="button" id="teamChatBack" class="chat-back" aria-label="Back to contacts">←</button><span class="chat-avatar chat-peer-avatar">👤</span><div class="chat-peer-title-copy"><b id="teamChatPeerName">'+chatText('Select a person or group','เลือกสมาชิกหรือกลุ่ม','ဝန်ထမ်း သို့မဟုတ် Group ရွေးပါ')+'</b><small id="teamChatPeerRole">Owner & Staff</small></div><button type="button" id="teamChatTranslateToggle" class="chat-translate-toggle" aria-pressed="true">🌐 Translate ON</button></header><div id="teamChatMessages" class="team-chat-messages"><div class="chat-empty-state"><span>💬</span><b>'+chatText('Choose a conversation','เลือกการสนทนา','စကားပြောခန်း ရွေးပါ')+'</b><small>'+chatText('Select a person or group to start chatting','เลือกสมาชิกหรือกลุ่มเพื่อเริ่มแชท','စကားပြောရန် ဝန်ထမ်း သို့မဟုတ် Group ရွေးပါ')+'</small></div></div><form id="teamChatForm" class="team-chat-compose"><div id="teamChatPreview" class="chat-file-preview"></div><div class="chat-compose-row"><label class="chat-attach" for="teamChatFile" title="Send image">＋</label><input id="teamChatFile" type="file" accept="image/jpeg,image/png,image/webp" hidden><textarea id="teamChatText" rows="1" maxlength="4000" placeholder="'+chatText('Write a message…','พิมพ์ข้อความ…','စာရေးရန်…')+'"></textarea><button id="teamChatSend" class="gold chat-send" type="submit" aria-label="Send">➤</button></div><small class="chat-compose-hint">JPG / PNG / WEBP · 5 MB max</small></form></section></section><div id="teamChatModalLayer"></div></div>';
+ chatPeerId='';chatActiveGroupId='';chatListTab='people';
+ root.innerHTML='<div class="team-chat-overlay" id="teamChatOverlay" role="dialog" aria-modal="true" aria-label="Team Chat"><section class="team-chat-shell"><aside class="team-chat-sidebar"><div class="team-chat-title"><div><h2>💬 '+chatText('Team Chat','แชททีม','အဖွဲ့လိုက် စကားပြော')+'</h2><small>'+chatText('Owner & Staff','Owner และพนักงาน','Owner နှင့် Staff')+'</small></div><div class="chat-title-actions"><span class="chat-live-dot">● Live</span><button type="button" id="teamChatClose" class="chat-modal-close" aria-label="Close chat">×</button></div></div><input id="teamChatSearch" class="chat-search" type="search" placeholder="'+chatText('Search people and groups…','ค้นหาสมาชิกและกลุ่ม…','အဖွဲ့ဝင်နှင့် Group ရှာရန်…')+'"><div class="chat-list-tabs" role="tablist" aria-label="Chat list"><button type="button" id="chatPeopleTab" class="chat-list-tab active" role="tab" aria-selected="true">👤 '+chatText('People','สมาชิก','People')+'</button><button type="button" id="chatGroupsTab" class="chat-list-tab" role="tab" aria-selected="false">👥 '+chatText('Group Chat','แชทกลุ่ม','Group Chat')+'</button></div><div class="chat-list-heading" id="chatPeopleHeading"><b>'+chatText('People','สมาชิก','ဝန်ထမ်းများ')+'</b></div><div id="teamChatContacts" class="team-chat-contacts"><div class="chat-loading">Loading team…</div></div><div class="chat-groups-heading" id="chatGroupsHeading"><b>'+chatText('Group chats','แชทกลุ่ม','Group Chat များ')+'</b><button type="button" id="chatNewGroup" class="chat-new-group">＋ '+chatText('New','ใหม่','အသစ်')+'</button></div><div id="teamChatGroups" class="team-chat-groups"><div class="chat-loading">Loading groups…</div></div></aside><section class="team-chat-conversation"><header class="team-chat-peer"><button type="button" id="teamChatBack" class="chat-back" aria-label="Back to contacts">←</button><span class="chat-avatar chat-peer-avatar">👤</span><div class="chat-peer-title-copy"><b id="teamChatPeerName">'+chatText('Select a person or group','เลือกสมาชิกหรือกลุ่ม','ဝန်ထမ်း သို့မဟုတ် Group ရွေးပါ')+'</b><small id="teamChatPeerRole">Owner & Staff</small></div><button type="button" id="teamChatTranslateToggle" class="chat-translate-toggle" aria-pressed="true">🌐 Translate ON</button></header><div id="teamChatMessages" class="team-chat-messages"><div class="chat-empty-state"><span>💬</span><b>'+chatText('Choose a conversation','เลือกการสนทนา','စကားပြောခန်း ရွေးပါ')+'</b><small>'+chatText('Select a person or group to start chatting','เลือกสมาชิกหรือกลุ่มเพื่อเริ่มแชท','စကားပြောရန် ဝန်ထမ်း သို့မဟုတ် Group ရွေးပါ')+'</small></div></div><form id="teamChatForm" class="team-chat-compose"><div id="teamChatPreview" class="chat-file-preview"></div><div class="chat-compose-row"><label class="chat-attach" for="teamChatFile" title="Send image">＋</label><input id="teamChatFile" type="file" accept="image/jpeg,image/png,image/webp" hidden><textarea id="teamChatText" rows="1" maxlength="4000" placeholder="'+chatText('Write a message…','พิมพ์ข้อความ…','စာရေးရန်…')+'"></textarea><button id="teamChatSend" class="gold chat-send" type="submit" aria-label="Send">➤</button></div><small class="chat-compose-hint">JPG / PNG / WEBP · 5 MB max</small></form></section></section><div id="teamChatModalLayer"></div></div>';
  try{
   await chatLoadContacts();await chatLoadMessages();await chatLoadGroups();
   if(!document.getElementById('teamChatContacts'))return;
-  chatDrawContacts();chatDrawGroups();
+  chatDrawContacts();chatDrawGroups();chatSetListTab('people');
+  document.getElementById('chatPeopleTab').onclick=()=>chatSetListTab('people');
+  document.getElementById('chatGroupsTab').onclick=()=>chatSetListTab('groups');
   const search=document.getElementById('teamChatSearch');
   search.oninput=()=>{chatDrawContacts();chatDrawGroups()};
   document.getElementById('teamChatContacts').onclick=e=>{const b=e.target.closest('[data-chat-peer]');if(b)chatSelectPeer(b.dataset.chatPeer)};
@@ -6502,5 +6578,14 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
 
 
 .chat-message-actions{display:flex;gap:6px;justify-content:flex-end;margin-top:6px}.chat-message-actions button{border:1px solid currentColor;background:transparent;border-radius:7px;padding:3px 7px;font-size:10px;font-weight:700;opacity:.82}.chat-message-actions .chat-unsend-action{color:#b42318}.chat-bubble.mine .chat-message-actions .chat-unsend-action{color:#64251b}.chat-unsent{font-style:italic;opacity:.78}
-.chat-message-actions .chat-delete-action{color:#f3a4a4}.chat-bubble.mine .chat-message-actions .chat-delete-action{color:#64251b}</style>
+.chat-message-actions .chat-delete-action{color:#f3a4a4}.chat-bubble.mine .chat-message-actions .chat-delete-action{color:#64251b}
+.chat-group-avatar img,.chat-peer-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}.chat-peer-avatar{overflow:hidden}.chat-group-settings-modal{width:min(480px,100%)}.chat-group-photo-edit{display:flex;align-items:center;gap:14px;padding:8px 0}.chat-group-photo-edit img,.chat-group-photo-edit>span{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#1c405b;display:grid;place-items:center;font-size:28px}.chat-group-photo-edit input{min-width:0;max-width:230px;color:#dbe7f1}.chat-member-remove{margin-left:auto;border:1px solid #8b5660;background:#482b38;color:#ffe1e5;border-radius:8px;padding:6px 9px;font-size:11px}
+
+.chat-list-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:9px 12px 10px;border-bottom:1px solid #29445d;flex:0 0 auto}
+.chat-list-tab{min-height:42px;border:1px solid #3a5871;border-radius:12px;background:#102b43;color:#c2d1df;font-size:13px;font-weight:800;cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+.chat-list-tab.active{background:linear-gradient(135deg,#e5c477,#c4933e);border-color:#e5c477;color:#142a3d;box-shadow:0 4px 12px #0002}
+.chat-list-heading,.chat-groups-heading{flex:0 0 auto}
+.team-chat-overlay .team-chat-contacts,.team-chat-overlay .team-chat-groups{flex:1 1 0!important;height:0!important;min-height:0!important;max-height:none!important;overflow-x:hidden!important;overflow-y:auto!important}
+.team-chat-overlay .team-chat-groups:has(.chat-no-contacts){flex:1 1 0!important;height:0!important;max-height:none!important;display:flex;align-items:center;justify-content:center}
+</style>
 </body></html>
