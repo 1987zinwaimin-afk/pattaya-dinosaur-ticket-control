@@ -4218,12 +4218,15 @@ async function restoreTicket(id){
  const next=mapCloud(data);tickets=tickets.map(x=>String(x.id)===String(id)?next:x);lastCloudRows.set(String(id),data);lastCloudFingerprint='';localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render(true);
 }
 
-let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatRefreshBusy=false;
+let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false;
 function chatEsc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function chatText(en,th,my){return lang==='my'?my:lang==='th'?th:en}
 function chatTime(value){try{return new Intl.DateTimeFormat(undefined,{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(_){return ''}}
 function chatEnsureRealtime(){
- if(!currentUser||chatChannel)return;
+ if(!currentUser)return;
+ if(chatChannel&&chatChannelUserId===currentUser.id)return;
+ if(chatChannel)sb.removeChannel(chatChannel);
+ chatChannelUserId=currentUser.id;
  chatChannel=sb.channel('team-chat-'+currentUser.id)
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_messages'},payload=>{
    const row=payload.new||payload.old||{};
