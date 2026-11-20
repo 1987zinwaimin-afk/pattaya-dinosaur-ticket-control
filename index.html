@@ -3524,6 +3524,25 @@ header.brand-header .brand-banner{
  aspect-ratio:auto!important;object-fit:cover!important;transform:none!important;animation:none!important;
 }
 </style>
+<style id="pdk-owner-team-chat-menu-access-v2">
+/* Owner Team Chat: keep the global header and navigation above the chat overlay. */
+body:has(#pageContent[data-ui-page="team-chat"]) header.brand-header,
+body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
+ position:sticky!important;top:0!important;z-index:20002!important;
+}
+body:has(#pageContent[data-ui-page="team-chat"]) #side{
+ z-index:20004!important;
+}
+body:has(#pageContent[data-ui-page="team-chat"]) #shade{
+ z-index:20003!important;
+}
+body:has(#pageContent[data-ui-page="team-chat"]) #teamChatOverlay{
+ z-index:20000!important;
+}
+body:has(#pageContent[data-ui-page="team-chat"]) #teamChatOverlay .team-chat-shell{
+ pointer-events:auto!important;
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -5792,45 +5811,6 @@ function monthlyReportBuildHtml(data){
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
  '
-<style id="pdk-owner-team-chat-inline-fix-v1">
-/* Owner only: Team Chat is an in-page workspace, not a full-screen click-blocking modal. */
-#pageContent[data-ui-page="team-chat"] #teamChatOverlay{
- position:relative!important;inset:auto!important;
- display:block!important;width:100%!important;height:auto!important;
- min-height:0!important;max-height:none!important;padding:0!important;
- overflow:visible!important;z-index:auto!important;
- background:transparent!important;backdrop-filter:none!important;
- -webkit-backdrop-filter:none!important;pointer-events:auto!important;
-}
-#pageContent[data-ui-page="team-chat"] #teamChatOverlay .team-chat-shell{
- position:relative!important;width:100%!important;
- height:min(76dvh,780px)!important;min-height:480px!important;
- max-height:none!important;margin:0!important;
- border-radius:18px!important;overflow:hidden!important;
- pointer-events:auto!important;
-}
-#pageContent[data-ui-page="team-chat"] #teamChatOverlay .team-chat-shell *{
- pointer-events:auto;
-}
-@media(max-width:820px){
- #pageContent[data-ui-page="team-chat"] #teamChatOverlay{
-  position:relative!important;inset:auto!important;
-  width:100%!important;height:auto!important;min-height:0!important;
-  max-height:none!important;overflow:visible!important;padding:0!important;
- }
- #pageContent[data-ui-page="team-chat"] #teamChatOverlay .team-chat-shell{
-  width:100%!important;height:min(74dvh,680px)!important;
-  min-height:440px!important;max-height:none!important;
-  margin:0!important;border-radius:16px!important;
- }
-}
-@media(max-height:620px){
- #pageContent[data-ui-page="team-chat"] #teamChatOverlay .team-chat-shell{
-  height:68dvh!important;min-height:360px!important;
- }
-}
-</style>
-
 </body></html>';
 }
 function monthlyReportExcelContent(data){
