@@ -3926,7 +3926,7 @@ let ownerEmergencyThaiVoicePending=false;
 let ownerChatVoicePending=null;
 async function speakOwnerChatMessage(senderName,messageBody){
  const spoken=String(senderName||'Team member')+' sent a message. '+(String(messageBody||'').trim()||'Photo attachment');
- if(document.visibilityState!=='visible'){ownerChatVoicePending=spoken;return}
+ if(document.visibilityState!=='visible'){ownerChatVoicePending={senderName,messageBody};return}
  if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')return;
  const synth=window.speechSynthesis;
  let voices=synth.getVoices();
@@ -3940,7 +3940,7 @@ async function speakOwnerChatMessage(senderName,messageBody){
  utterance.rate=.96;utterance.pitch=1;utterance.volume=1;
  synth.speak(utterance);
 }
-function retryOwnerChatVoice(){if(ownerChatVoicePending&&document.visibilityState==='visible'){const text=ownerChatVoicePending;ownerChatVoicePending=null;speakOwnerChatMessage('',text)}}
+function retryOwnerChatVoice(){if(ownerChatVoicePending&&document.visibilityState==='visible'){const pending=ownerChatVoicePending;ownerChatVoicePending=null;speakOwnerChatMessage(pending.senderName,pending.messageBody)}}
 document.addEventListener('visibilitychange',retryOwnerChatVoice);
 window.addEventListener('focus',retryOwnerChatVoice);
 async function speakOwnerEmergencyThaiVoice(voiceURIOverride='',forcePreview=false){
