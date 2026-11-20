@@ -3841,16 +3841,44 @@ function chatCanManageGroup(group){return !!group&&(group.created_by===currentUs
 async function chatOpenGroupSettings(){
  const group=chatGroups.find(g=>g.id===chatActiveGroupId);const layer=document.getElementById('teamChatModalLayer');if(!group||!layer)return;
  const canManage=chatCanManageGroup(group);
- const [{data:members,error:memberError},{data:profiles,error:profileError}]=await Promise.all([
+ const [{data:members,error:memberError},{data:profiles,error:profileError},{data:activityRows,error:activityError}]=await Promise.all([
   sb.from('team_chat_group_members').select('user_id,added_by,joined_at').eq('group_id',group.id).order('joined_at'),
-  sb.from('profiles').select('id,display_name,role,avatar_url,is_archived').eq('is_archived',false).order('display_name')
+  sb.from('profiles').select('id,display_name,role,avatar_url,staff_id,is_archived').in('role',['owner','staff']).order('display_name'),
+  sb.from('staff_login_activity').select('staff_id,user_id,display_name,last_seen').not('staff_id','is',null).not('user_id','is',null).order('last_seen',{ascending:false})
  ]);
- if(memberError||profileError){alert('Could not load group members: '+(memberError||profileError).message);return}
+ if(memberError||profileError||(currentRole==='owner'&&activityError)){
+  alert('Could not load the current staff list: '+(memberError||profileError||activityError).message);return;
+ }
+ const profileById=new Map((profiles||[]).map(p=>[p.id,p]));
  const memberIds=new Set((members||[]).map(m=>m.user_id));
- const people=new Map((profiles||[]).map(p=>[p.id,p]));
- const memberHtml=(members||[]).map(m=>{const p=people.get(m.user_id);return '<div class="chat-group-member"><span class="chat-avatar">'+(p?.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p?.display_name||'?').slice(0,1).toUpperCase()))+'</span><span><b>'+chatEsc(p?.display_name||'Former member')+'</b><small>'+(p?.role==='owner'?'Owner':'Staff')+'</small></span>'+(canManage&&m.user_id!==currentUser.id?'<button type="button" class="chat-member-remove" data-remove-group-member="'+chatEsc(m.user_id)+'">Remove</button>':'')+'</div>'}).join('');
- const candidates=(profiles||[]).filter(p=>!memberIds.has(p.id));
- const addHtml=candidates.map(p=>'<label class="chat-group-member"><input type="checkbox" name="chatGroupAddMember" value="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').slice(0,1).toUpperCase()))+'</span><span><b>'+chatEsc(p.display_name||'Staff')+'</b><small>'+(p.role==='owner'?'Owner':'Staff')+'</small></span></label>').join('')||'<small>No additional active members available.</small>';
+ const memberHtml=(members||[]).map(m=>{const p=profileById.get(m.user_id);return '<div class="chat-group-member"><span class="chat-avatar">'+(p?.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p?.display_name||'?').slice(0,1).toUpperCase()))+'</span><span><b>'+chatEsc(p?.display_name||'Former member')+'</b><small>'+(p?.role==='owner'?'Owner':'Staff')+'</small></span>'+(canManage&&m.user_id!==currentUser.id?'<button type="button" class="chat-member-remove" data-remove-group-member="'+chatEsc(m.user_id)+'">Remove</button>':'')+'</div>'}).join('');
+ const eligibleByKey=new Map();
+ const addEligible=(profile,displayName)=>{
+  if(!profile||profile.is_archived||!['owner','staff'].includes(profile.role))return;
+  const staffId=String(profile.staff_id||'').trim().toUpperCase();
+  const key=profile.role==='staff'&&staffId?'staff:'+staffId:'user:'+profile.id;
+  if(!eligibleByKey.has(key))eligibleByKey.set(key,{...profile,display_name:displayName||profile.display_name});
+ };
+ if(currentRole==='owner'){
+  // Owner sees the complete activity feed: only the exact profile currently
+  // linked to each Staff ID is eligible for a new group membership.
+  const latestByStaffId=new Map();
+  for(const activity of activityRows||[]){
+   const staffId=String(activity.staff_id||'').trim().toUpperCase();
+   const profile=profileById.get(activity.user_id);
+   if(!staffId||!profile||profile.role!=='staff'||profile.is_archived)continue;
+   if(!latestByStaffId.has(staffId))latestByStaffId.set(staffId,{profile,displayName:activity.display_name});
+  }
+  latestByStaffId.forEach(x=>addEligible(x.profile,x.displayName));
+ }else{
+  // Staff RLS only exposes their own activity row. Use the already deduplicated
+  // Team Chat contact list, which now contains only the visible current profiles.
+  (chatContacts||[]).forEach(p=>addEligible(profileById.get(p.id),p.display_name));
+  addEligible(profileById.get(currentUser.id));
+ }
+ (profiles||[]).filter(p=>p.role==='owner').forEach(p=>addEligible(p));
+ const candidates=[...eligibleByKey.values()].filter(p=>!memberIds.has(p.id)).sort((a,b)=>String(a.display_name||'').localeCompare(String(b.display_name||''),undefined,{sensitivity:'base'}));
+ const addHtml=candidates.map(p=>'<label class="chat-group-member"><input type="checkbox" name="chatGroupAddMember" value="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').slice(0,1).toUpperCase()))+'</span><span><b>'+chatEsc(p.display_name||'Staff')+'</b><small>'+(p.role==='owner'?'Owner':'Staff')+(p.role==='staff'&&p.staff_id?' · ID '+chatEsc(p.staff_id):'')+'</small></span></label>').join('')||'<small>No additional current Staff Login Activity members available.</small>';
  const {data:avatarData}=group.avatar_path?await sb.storage.from('team-chat-images').createSignedUrl(group.avatar_path,3600):{data:null};
  layer.innerHTML='<div class="chat-modal-backdrop"><form class="chat-create-modal chat-group-settings-modal" id="chatGroupSettingsForm"><div class="chat-modal-head"><div><b>'+chatText('Group settings','ตั้งค่ากลุ่ม','Group ဆက်တင်များ')+'</b><small>'+chatEsc(group.name)+'</small></div><button type="button" class="chat-modal-close" id="chatGroupSettingsClose">×</button></div><label class="chat-modal-label">'+chatText('Group photo','รูปกลุ่ม','Group ပုံ')+'</label><div class="chat-group-photo-edit">'+(avatarData?.signedUrl?'<img src="'+chatEsc(avatarData.signedUrl)+'" alt="">':'<span>👥</span>')+'<input type="file" id="chatGroupPhoto" accept="image/jpeg,image/png,image/webp" '+(canManage?'':'disabled')+'></div><label class="chat-modal-label">'+chatText('Group name','ชื่อกลุ่ม','Group အမည်')+'</label><input id="chatGroupNameEdit" maxlength="80" minlength="2" required value="'+chatEsc(group.name)+'" '+(canManage?'':'disabled')+'><div class="chat-modal-label">'+chatText('Members','สมาชิก','အဖွဲ့ဝင်များ')+' · '+(members||[]).length+'</div><div class="chat-group-member-list">'+memberHtml+'</div>'+(canManage?'<div class="chat-modal-label">'+chatText('Add members','เพิ่มสมาชิก','အဖွဲ့ဝင်အသစ်ထည့်ရန်')+'</div><div class="chat-group-member-list">'+addHtml+'</div>':'<small>Only the group creator or Owner can change group details and membership.</small>')+'<div class="chat-modal-actions"><button type="button" class="chat-modal-cancel" id="chatGroupSettingsCancel">Close</button>'+(canManage?'<button type="submit" class="gold">Save changes</button>':'<button type="button" class="chat-member-remove" id="chatLeaveGroup">Leave group</button>')+'</div></form></div>';
  const close=()=>layer.innerHTML='';document.getElementById('chatGroupSettingsClose').onclick=close;document.getElementById('chatGroupSettingsCancel').onclick=close;
@@ -3871,6 +3899,7 @@ async function chatOpenGroupSettings(){
  }catch(err){alert('Could not save group settings: '+(err.message||err));submit.disabled=false}
  };
 }
+
 async function chatSelectGroup(id){
  const group=chatGroups.find(g=>g.id===id);if(!group)return;
  chatActiveGroupId=id;chatPeerId='';
