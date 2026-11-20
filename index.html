@@ -5344,8 +5344,18 @@ async function renderPayroll(){
   const targetChanged=nextTargetUserId!==loadedTargetUserId;
   const previousCalendarScroll=calendar.querySelector('#payrollCalendarScroller')?.scrollLeft||0;
   targetUserId=nextTargetUserId;
-  const {data:setting,error:se}=await sb.from('payroll_settings').select('daily_rate,period_start,period_end').eq('user_id',targetUserId).maybeSingle();
+  let payrollAliasIds=[targetUserId],payrollStaffId=null;
+  const {data:identity,error:identityError}=await sb.from('profiles').select('staff_id').eq('id',targetUserId).maybeSingle();
+  if(identityError)throw identityError;
+  payrollStaffId=String(identity?.staff_id||'').trim().toUpperCase()||null;
+  if(payrollStaffId){
+   const {data:aliases,error:aliasError}=await sb.from('profiles').select('id,staff_id').eq('role','staff').not('staff_id','is',null);
+   if(aliasError)throw aliasError;
+   payrollAliasIds=[...new Set([targetUserId,...(aliases||[]).filter(x=>String(x.staff_id||'').trim().toUpperCase()===payrollStaffId).map(x=>x.id).filter(Boolean)])];
+  }
+  const {data:settingRows,error:se}=await sb.from('payroll_settings').select('daily_rate,period_start,period_end,updated_at,user_id').in('user_id',payrollAliasIds).order('updated_at',{ascending:false});
   if(se)throw se;
+  const setting=(settingRows||[])[0]||null;
   if(setting){
    rate.value=setting.daily_rate;
    if(targetChanged){start.value=setting.period_start;end.value=setting.period_end}
@@ -5366,9 +5376,15 @@ async function renderPayroll(){
    summary.textContent=reportText('Choose a valid start date and closing date.','กรุณาเลือกวันเริ่มต้นและวันสิ้นสุดที่ถูกต้อง');
    return;
   }
-  const {data:rows,error}=await sb.from('payroll_attendance').select('work_date,status,note').eq('user_id',targetUserId).gte('work_date',start.value).lte('work_date',end.value).order('work_date');
+  const {data:rows,error}=await sb.from('payroll_attendance').select('work_date,status,note,updated_at,user_id').in('user_id',payrollAliasIds).gte('work_date',start.value).lte('work_date',end.value).order('updated_at',{ascending:false});
   if(error)throw error;
-  attendance=rows||[];
+  // Keep all legacy rows in storage; show only the latest update for each date across the Staff ID aliases.
+  const latestByDate=new Map();
+  for(const row of (rows||[])){
+   const previous=latestByDate.get(row.work_date);
+   if(!previous||new Date(row.updated_at||0).getTime()>new Date(previous.updated_at||0).getTime())latestByDate.set(row.work_date,row);
+  }
+  attendance=[...latestByDate.values()];
   const map=new Map(attendance.map(x=>[x.work_date,x]));
   const from=new Date(start.value+'T12:00:00'),to=new Date(end.value+'T12:00:00');
   const days=[];
