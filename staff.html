@@ -3703,7 +3703,7 @@ async function chatRenderMessageList(){
  if(!rows.length){pane.innerHTML='<div class="chat-empty-state"><span>💬</span><b>'+chatText('Start the conversation','เริ่มการสนทนา','စကားစပြောပါ')+'</b><small>'+chatText('Send a message or photo','ส่งข้อความหรือรูปภาพ','စာ သို့မဟုတ် ဓာတ်ပုံ ပို့ပါ')+'</small></div>';return}
  const html=await Promise.all(rows.map(async m=>{
   let image='';
-  if(m.image_path){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Chat image could not be loaded:',e)}}
+  if(m.image_path&&!m.deleted_at){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Chat image could not be loaded:',e)}}
   const mine=m.sender_id===currentUser.id;
   return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(image||'')+await chatMessageBodyHtml(m)+chatMessageActionsHtml(m,false)+'<time>'+chatTime(m.created_at)+(m.edited_at?' · Edited':'')+(mine?(m.read_at?' · ✓✓':' · ✓'):'')+'</time></article>';
  }));
