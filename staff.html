@@ -3702,7 +3702,7 @@ async function chatRenderGroupMessageList(){
  const html=await Promise.all(rows.map(async m=>{
   let image='';
   if(m.image_path&&!m.deleted_at){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Group image could not be loaded:',e)}}
-  const mine=myIds.has(m.sender_id);
+  const mine=m.sender_id===currentUser.id;
   const sender=mine?chatText('You','คุณ','သင်'):(names.get(m.sender_id)||chatText('Team member','สมาชิกทีม','အဖွဲ့ဝင်'));
   return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(!mine?'<small class="chat-group-sender">'+chatEsc(sender)+'</small>':'')+(image||'')+await chatMessageBodyHtml(m)+chatMessageActionsHtml(m,true)+'<time>'+chatTime(m.created_at)+(m.edited_at?' · Edited':'')+'</time></article>';
  }));
@@ -3762,7 +3762,7 @@ async function chatRenderMessageList(){
  const html=await Promise.all(rows.map(async m=>{
   let image='';
   if(m.image_path&&!m.deleted_at){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Chat image could not be loaded:',e)}}
-  const mine=m.sender_id===currentUser.id;
+  const mine=myIds.has(m.sender_id);
   return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(image||'')+await chatMessageBodyHtml(m)+chatMessageActionsHtml(m,false)+'<time>'+chatTime(m.created_at)+(m.edited_at?' · Edited':'')+(mine?(m.read_at?' · ✓✓':' · ✓'):'')+'</time></article>';
  }));
  if(!document.getElementById('teamChatMessages'))return;
