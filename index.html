@@ -3441,6 +3441,73 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
  .team-chat-overlay .team-chat-groups.is-empty{flex:0 0 48px!important;height:48px!important;max-height:48px!important}
 }
 </style>
+<style id="team-chat-ux-refresh-v1">
+/* Team Chat visual refinement only — preserves existing markup, handlers and data flow. */
+.team-chat-overlay{background:rgba(3,12,22,.78)!important;backdrop-filter:blur(10px)!important}
+.team-chat-overlay .team-chat-shell{
+  width:min(1240px,100%)!important;height:min(90dvh,880px)!important;
+  grid-template-columns:minmax(270px,320px) minmax(0,1fr)!important;
+  border:1px solid rgba(222,184,103,.34)!important;border-radius:22px!important;
+  background:#081b2b!important;box-shadow:0 24px 70px rgba(0,0,0,.48)!important
+}
+.team-chat-sidebar{background:linear-gradient(180deg,#102b42 0%,#0a2033 100%)!important;border-right:1px solid rgba(215,177,100,.2)!important}
+.team-chat-title{padding:18px 16px 13px!important}
+.team-chat-title h2{font-size:19px!important;letter-spacing:.2px}
+.team-chat-title small{font-size:11px!important;color:#aebfd0!important}
+.chat-search{min-height:42px!important;margin:0 12px 10px!important;width:calc(100% - 24px)!important;border-radius:13px!important;background:#071827!important;border-color:#38566d!important}
+.chat-list-heading,.chat-groups-heading{padding:10px 15px 7px!important;font-size:11px!important;letter-spacing:.45px!important;text-transform:uppercase;color:#e9c77e!important}
+.team-chat-contacts{padding:4px 9px 12px!important;scrollbar-width:thin;scrollbar-color:#45647b transparent}
+.chat-contact{min-height:66px!important;padding:10px!important;margin:3px 0!important;border:1px solid transparent!important;border-radius:14px!important;transition:background .16s,border-color .16s!important}
+.chat-contact:hover{background:rgba(80,119,148,.16)!important}
+.chat-contact.active{background:linear-gradient(110deg,rgba(211,170,86,.19),rgba(34,75,103,.65))!important;border-color:rgba(222,184,103,.48)!important;outline:0!important}
+.chat-avatar{width:42px!important;height:42px!important;flex-basis:42px!important;box-shadow:0 2px 8px #0003}
+.chat-contact-copy b{font-size:13px!important;font-weight:750!important}
+.chat-contact-copy small,.chat-contact-preview{font-size:11px!important;color:#afc0cf!important}
+.chat-contact-meta time{font-size:10px!important}
+.chat-unread{background:#e3bb68!important;min-width:20px!important;height:20px!important}
+.team-chat-conversation{background:radial-gradient(ellipse at 85% 0%,rgba(38,83,112,.38),transparent 42%),#081b2b!important}
+.team-chat-peer{min-height:68px!important;padding:12px 18px!important;background:rgba(11,34,52,.92)!important;border-bottom:1px solid rgba(211,177,112,.2)!important}
+.chat-peer-avatar{width:42px!important;height:42px!important;flex-basis:42px!important}
+.chat-peer-title-copy b{font-size:14px!important;font-weight:750!important}
+.chat-peer-title-copy small{font-size:11px!important;color:#aebfd0!important}
+.chat-translate-toggle{min-height:38px!important;padding:7px 12px!important;border-radius:12px!important;font-size:11px!important}
+.team-chat-messages{padding:20px clamp(12px,3vw,28px)!important;gap:12px!important;scrollbar-width:thin;scrollbar-color:#38566d transparent}
+.chat-bubble{max-width:min(76%,600px)!important;padding:11px 14px 8px!important;border-radius:17px!important}
+.chat-bubble.mine{background:linear-gradient(140deg,#f0d18d,#c99b4c)!important;color:#14283a!important;border-bottom-right-radius:5px!important}
+.chat-bubble.theirs{background:#15364f!important;border:1px solid #31546e!important;color:#f2f6fa!important;border-bottom-left-radius:5px!important}
+.chat-bubble-text{font-size:14px!important;line-height:1.55!important}
+.chat-bubble time{font-size:10px!important;opacity:.7!important}
+.chat-empty-state{max-width:300px;margin:auto!important;padding:28px!important}
+.team-chat-compose{padding:13px 16px max(12px,env(safe-area-inset-bottom))!important;background:#0b2438!important;border-top:1px solid rgba(211,177,112,.2)!important}
+.chat-compose-row{align-items:flex-end!important;gap:9px!important}
+.chat-attach{width:42px!important;height:42px!important;flex-basis:42px!important;border-radius:13px!important;font-size:22px!important}
+.chat-compose-row textarea{min-height:42px!important;max-height:130px!important;padding:11px 13px!important;border-radius:14px!important;background:#061827!important;border-color:#3a5b74!important;font-size:14px!important}
+.chat-send{width:44px!important;height:42px!important;flex-basis:44px!important;border-radius:13px!important}
+.chat-compose-hint{font-size:10px!important;margin:6px 0 0 52px!important}
+.chat-file-preview{font-size:11px!important}
+.chat-modal-close{width:38px!important;height:38px!important;border-radius:12px!important}
+.chat-create-modal{border-color:rgba(222,184,103,.4)!important;box-shadow:0 22px 70px #000b!important}
+.chat-group-contact{min-height:56px!important}
+@media(max-width:820px){
+ .team-chat-overlay{padding:0!important}
+ .team-chat-overlay .team-chat-shell{width:100%!important;height:100dvh!important;max-height:100dvh!important;min-height:0!important;border:0!important;border-radius:0!important;grid-template-columns:1fr!important}
+ .team-chat-overlay .team-chat-sidebar{border-radius:0!important}
+ .team-chat-overlay .team-chat-peer{padding:12px 12px!important;min-height:64px!important}
+ .team-chat-overlay .team-chat-messages{padding:14px 12px!important;gap:10px!important}
+ .chat-bubble{max-width:88%!important;padding:10px 12px 7px!important}
+ .team-chat-compose{padding:10px 10px max(12px,env(safe-area-inset-bottom))!important}
+ .chat-compose-row{gap:7px!important}
+ .chat-attach{width:40px!important;height:40px!important;flex-basis:40px!important}
+ .chat-send{width:42px!important;height:40px!important;flex-basis:42px!important}
+ .chat-compose-hint{margin-left:47px!important}
+}
+@media(max-width:390px){
+ .team-chat-peer{gap:6px!important}
+ .chat-translate-toggle{padding:6px 8px!important;font-size:10px!important}
+ .chat-peer-avatar{width:36px!important;height:36px!important;flex-basis:36px!important}
+}
+@media(prefers-reduced-motion:reduce){.chat-contact{transition:none!important}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
