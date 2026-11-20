@@ -3429,36 +3429,7 @@ function printStaffCvQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"><script>
-(function(){
- if(window.__staffChatPushVoiceBound)return;
- window.__staffChatPushVoiceBound=true;
- let pending=null;
- async function announce(sender,body){
-  const text=String(sender||'Team member')+' sent a message. '+(String(body||'').trim()||'Photo attachment');
-  if(document.visibilityState!=='visible'){pending={sender,body};return}
-  if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')return;
-  const synth=window.speechSynthesis;
-  let voices=synth.getVoices();
-  if(!voices.length){await Promise.race([new Promise(resolve=>synth.addEventListener('voiceschanged',resolve,{once:true})),new Promise(resolve=>setTimeout(resolve,900))]);voices=synth.getVoices()}
-  const thai=/[\u0E00-\u0E7F]/.test(text),myanmar=/[\u1000-\u109F]/.test(text),lang=thai?'th':myanmar?'my':'en';
-  const saved=localStorage.getItem('staff-emergency-thai-voice-uri-v1')||'';
-  const voice=voices.find(v=>v.voiceURI===saved)||voices.find(v=>(v.lang||'').toLowerCase().startsWith(lang))||voices.find(v=>(v.lang||'').toLowerCase().startsWith('en'))||voices[0];
-  const utterance=new SpeechSynthesisUtterance(text);
-  if(voice){utterance.voice=voice;utterance.lang=voice.lang||'en-US'}else utterance.lang=thai?'th-TH':myanmar?'my-MM':'en-US';
-  utterance.rate=.96;utterance.pitch=1;utterance.volume=1;synth.speak(utterance);
- }
- function retry(){if(pending&&document.visibilityState==='visible'){const item=pending;pending=null;announce(item.sender,item.body).catch(error=>console.warn('Chat voice retry failed:',error))}}
- document.addEventListener('visibilitychange',retry);window.addEventListener('focus',retry);
- if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',event=>{
-  const data=event.data||{};
-  if(data.type!=='STAFF_CHAT_MESSAGE_VOICE'||data.event_type!=='chat_message')return;
-  try{window.playStaffAlarmTone?.()}catch(error){console.warn('Chat notification tone failed:',error)}
-  announce(data.sender_name,data.body).catch(error=>console.warn('Chat voice announcement failed:',error));
- });
-})();
-</script>
-</body></html>');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
@@ -5047,4 +5018,33 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
 
 </style>
 
+<script>
+(function(){
+ if(window.__staffChatPushVoiceBound)return;
+ window.__staffChatPushVoiceBound=true;
+ let pending=null;
+ async function announce(sender,body){
+  const text=String(sender||'Team member')+' sent a message. '+(String(body||'').trim()||'Photo attachment');
+  if(document.visibilityState!=='visible'){pending={sender,body};return}
+  if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')return;
+  const synth=window.speechSynthesis;
+  let voices=synth.getVoices();
+  if(!voices.length){await Promise.race([new Promise(resolve=>synth.addEventListener('voiceschanged',resolve,{once:true})),new Promise(resolve=>setTimeout(resolve,900))]);voices=synth.getVoices()}
+  const thai=/[\u0E00-\u0E7F]/.test(text),myanmar=/[\u1000-\u109F]/.test(text),lang=thai?'th':myanmar?'my':'en';
+  const saved=localStorage.getItem('staff-emergency-thai-voice-uri-v1')||'';
+  const voice=voices.find(v=>v.voiceURI===saved)||voices.find(v=>(v.lang||'').toLowerCase().startsWith(lang))||voices.find(v=>(v.lang||'').toLowerCase().startsWith('en'))||voices[0];
+  const utterance=new SpeechSynthesisUtterance(text);
+  if(voice){utterance.voice=voice;utterance.lang=voice.lang||'en-US'}else utterance.lang=thai?'th-TH':myanmar?'my-MM':'en-US';
+  utterance.rate=.96;utterance.pitch=1;utterance.volume=1;synth.speak(utterance);
+ }
+ function retry(){if(pending&&document.visibilityState==='visible'){const item=pending;pending=null;announce(item.sender,item.body).catch(error=>console.warn('Chat voice retry failed:',error))}}
+ document.addEventListener('visibilitychange',retry);window.addEventListener('focus',retry);
+ if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',event=>{
+  const data=event.data||{};
+  if(data.type!=='STAFF_CHAT_MESSAGE_VOICE'||data.event_type!=='chat_message')return;
+  try{window.playStaffAlarmTone?.()}catch(error){console.warn('Chat notification tone failed:',error)}
+  announce(data.sender_name,data.body).catch(error=>console.warn('Chat voice announcement failed:',error));
+ });
+})();
+</script>
 </body></html>
