@@ -3657,9 +3657,10 @@ async function chatGetIdentityIds(profileId){
  if(!me||me.is_archived)return [profileId];
  if(me.role!=='staff'||!String(me.staff_id||'').trim())return [profileId];
  const staffKey=String(me.staff_id).trim().toUpperCase();
- const {data:aliases,error}=await sb.from('profiles').select('id').eq('role','staff').eq('is_archived',false).ilike('staff_id',staffKey);
+ const {data:aliases,error}=await sb.from('profiles').select('id,staff_id').eq('role','staff').eq('is_archived',false);
  if(error)throw error;
- return [...new Set([profileId,...(aliases||[]).map(p=>p.id)])];
+ const matching=(aliases||[]).filter(p=>String(p.staff_id||'').trim().toUpperCase()===staffKey).map(p=>p.id);
+ return [...new Set([profileId,...matching])];
 }
 async function chatLoadMessages(){
  const uid=currentUser.id;
