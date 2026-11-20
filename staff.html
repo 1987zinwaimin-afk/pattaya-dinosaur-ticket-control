@@ -3217,7 +3217,13 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
   listenRealtime();
   render();
   showStaffWelcome(sharedProfile,selectedStaffDepartment);
- }catch(e){showCloudError('Could not load cloud tickets: '+e.message)}
+ }catch(e){
+  // Keep the Staff ticket screen usable when the Cloud read temporarily fails.
+  // The local cache was painted above; never clear it or replace it with an empty array here.
+  console.error('Staff Cloud ticket load failed; preserving the current ticket view:',e);
+  try{render()}catch(renderError){console.error('Staff fallback render failed:',renderError)}
+  showCloudError('Could not load cloud tickets: '+(e?.message||String(e)));
+ }
  Promise.allSettled(backgroundTasks);
 }
 // Staff ID lookup: existing IDs fill the registered name; new IDs remain available for self-registration.
