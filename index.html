@@ -4234,7 +4234,15 @@ function chatEnsureRealtime(){
     if(page==='chat')chatRefresh(true);
     chatUpdateUnreadBadge();
    }
-  }).subscribe();
+  })
+  // Keep the contact list aligned with Staff Login Activity and Owner profile edits.
+  .on('postgres_changes',{event:'*',schema:'public',table:'staff_login_activity'},()=>{
+   if(page==='chat')chatRefresh(true);
+  })
+  .on('postgres_changes',{event:'*',schema:'public',table:'profiles'},()=>{
+   if(page==='chat')chatRefresh(true);
+  })
+  .subscribe();
 }
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
