@@ -3810,7 +3810,7 @@ async function chatSendMessage(event){
  }finally{if(send)send.disabled=false;bodyEl?.focus()}
 }
 function chatMessageActionsHtml(message,isGroup){
- if(message.sender_id!==currentUser?.id||message.deleted_at)return '';
+ if(!currentUser)return '';
  const id=chatEsc(message.id);
  const group=isGroup?'true':'false';
  const own=message.sender_id===currentUser?.id;
