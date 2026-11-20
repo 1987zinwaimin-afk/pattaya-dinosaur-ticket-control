@@ -3988,7 +3988,7 @@ if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('messag
  const data=event.data||{};
  if(data.type!=='STAFF_CHAT_MESSAGE_VOICE'||data.event_type!=='chat_message')return;
  try{playStaffLoginTone(getStaffNotifyPrefs().sound)}catch(error){console.warn('Chat notification tone failed:',error)}
- speakOwnerChatMessage(data.sender_name,data.body).catch(error=>console.warn('Chat voice announcement failed:',error));
+ // Chat message text is intentionally not spoken aloud. Keep notification tone only.
 })}
 const OWNER_PUSH_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
 function urlBase64ToUint8Array(value){const padding='='.repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
@@ -4710,7 +4710,7 @@ async function chatUnsendMessage(id,isGroup){
  const rows=isGroup?chatGroupMessages:chatAllMessages;const row=rows.find(m=>m.id===id);
  if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;if(!confirm('Unsend this message for everyone in this conversation?'))return;
  const table=isGroup?'team_chat_group_messages':'team_chat_messages';
- const {data,error}=await sb.from(table).update({body:'',deleted_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',id).eq('sender_id',currentUser.id).is('deleted_at',null).select('id').maybeSingle();
+ const {data,error}=await sb.from(table).update({body:'This message was unsent',deleted_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',id).eq('sender_id',currentUser.id).is('deleted_at',null).select('id').maybeSingle();
  if(error||!data){alert('Message could not be unsent: '+(error?.message||'Permission denied or message already changed.'));return}
  if(isGroup){await chatLoadGroupMessages(chatActiveGroupId);await chatRenderGroupMessageList()}else{await chatLoadMessages();await chatRenderMessageList()}chatDrawContacts();chatDrawGroups();await chatUpdateUnreadBadge();
 }

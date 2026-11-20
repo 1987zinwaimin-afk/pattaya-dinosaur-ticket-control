@@ -3858,7 +3858,7 @@ async function chatUnsendMessage(id,isGroup){
  const rows=isGroup?chatGroupMessages:chatAllMessages;const row=rows.find(m=>m.id===id);
  if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;if(!confirm('Unsend this message for everyone in this conversation?'))return;
  const table=isGroup?'team_chat_group_messages':'team_chat_messages';
- const {data,error}=await sb.from(table).update({body:'',deleted_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',id).eq('sender_id',currentUser.id).is('deleted_at',null).select('id').maybeSingle();
+ const {data,error}=await sb.from(table).update({body:'This message was unsent',deleted_at:new Date().toISOString(),edited_at:new Date().toISOString()}).eq('id',id).eq('sender_id',currentUser.id).is('deleted_at',null).select('id').maybeSingle();
  if(error||!data){alert('Message could not be unsent: '+(error?.message||'Permission denied or message already changed.'));return}
  if(isGroup){await chatLoadGroupMessages(chatActiveGroupId);await chatRenderGroupMessageList()}else{await chatLoadMessages();await chatRenderMessageList()}chatDrawContacts();chatDrawGroups();await chatUpdateUnreadBadge();
 }
@@ -5124,7 +5124,7 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
   const data=event.data||{};
   if(data.type!=='STAFF_CHAT_MESSAGE_VOICE'||data.event_type!=='chat_message')return;
   try{window.playStaffAlarmTone?.()}catch(error){console.warn('Chat notification tone failed:',error)}
-  announce(data.sender_name,data.body).catch(error=>console.warn('Chat voice announcement failed:',error));
+  // Chat message text is intentionally not spoken aloud. Keep notification tone only.
  });
 })();
 </script>
