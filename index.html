@@ -4358,7 +4358,7 @@ async function restoreTicket(id){
  const next=mapCloud(data);tickets=tickets.map(x=>String(x.id)===String(id)?next:x);lastCloudRows.set(String(id),data);lastCloudFingerprint='';localStorage.setItem('tctl-new-tickets',JSON.stringify(tickets));render(true);
 }
 
-let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
+let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatRefreshQueued=false,chatRefreshQueuedContacts=false,chatPollTimer=null,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
 let chatHiddenMessageIds=new Set();
 async function chatLoadHiddenMessages(){
  const {data,error}=await sb.from('team_chat_hidden_messages').select('direct_message_id,group_message_id').eq('user_id',currentUser.id);
@@ -4388,6 +4388,7 @@ function chatEnsureRealtime(){
  if(!currentUser)return;
  if(chatChannel&&chatChannelUserId===currentUser.id)return;
  if(chatChannel)sb.removeChannel(chatChannel);
+ if(chatPollTimer){clearInterval(chatPollTimer);chatPollTimer=null;}
  chatChannelUserId=currentUser.id;
  chatChannel=sb.channel('team-chat-'+currentUser.id)
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_messages'},payload=>{
@@ -4410,7 +4411,9 @@ function chatEnsureRealtime(){
   })
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_groups'},()=>{if(page==='chat')chatRefresh(true)})
   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_group_members'},()=>{if(page==='chat')chatRefresh(true)})
-  .subscribe();
+  .subscribe(status=>{console.log('Team Chat realtime status:',status)});
+ // Realtime is primary; a lightweight foreground sync is the fallback for dropped or delayed socket events.
+ chatPollTimer=setInterval(()=>{if(page==='chat'&&document.visibilityState==='visible'&&currentUser?.id===chatChannelUserId)chatRefresh(false)},2500);
 }
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
@@ -4624,7 +4627,9 @@ function chatDrawContacts(){
  }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
 async function chatRefresh(reloadContacts){
- if(chatRefreshBusy||!currentUser||page!=='chat')return;
+ if(!currentUser||page!=='chat')return;
+ // Never drop an incoming event while another refresh is in progress.
+ if(chatRefreshBusy){chatRefreshQueued=true;chatRefreshQueuedContacts=chatRefreshQueuedContacts||!!reloadContacts;return;}
  chatRefreshBusy=true;
  try{
   if(reloadContacts){await chatLoadContacts();await chatLoadGroups()}
@@ -4634,7 +4639,10 @@ async function chatRefresh(reloadContacts){
   else if(chatPeerId){await chatRenderMessageList()}
   await chatUpdateUnreadBadge();
  }catch(e){console.error('Chat refresh failed:',e);const pane=document.getElementById('teamChatMessages');if(pane)pane.innerHTML='<div class="chat-error">'+chatEsc(e.message||e)+'</div>'}
- finally{chatRefreshBusy=false}
+ finally{
+  chatRefreshBusy=false;
+  if(chatRefreshQueued){const reload=chatRefreshQueuedContacts;chatRefreshQueued=false;chatRefreshQueuedContacts=false;setTimeout(()=>chatRefresh(reload),0)}
+ }
 }
 async function chatSelectPeer(id){
  if(!chatContacts.some(p=>p.id===id))return;
