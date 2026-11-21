@@ -3833,74 +3833,7 @@ function printStaffCvQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">
-<style id="pdk-staff-subscription-expiry-reminder-v1">
-#pdkSubscriptionExpiryReminder{position:fixed;inset:0;z-index:2147483200;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,7,16,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-#pdkSubscriptionExpiryReminder.is-open{display:flex}
-#pdkSubscriptionExpiryReminder .pdk-expiry-card{width:min(100%,390px);padding:18px;border:1px solid rgba(244,202,112,.72);border-radius:19px;background:linear-gradient(145deg,#123653,#071a2d);box-shadow:0 18px 55px rgba(0,0,0,.55);color:#f5f8fc}
-#pdkSubscriptionExpiryReminder .pdk-expiry-heading{display:flex;align-items:center;gap:9px;margin:0 0 10px;color:#ffd778;font-size:18px;line-height:1.25}
-#pdkSubscriptionExpiryReminder .pdk-expiry-copy{margin:0 0 9px;color:#f2f6fa;font-size:13px;line-height:1.45}
-#pdkSubscriptionExpiryReminder .pdk-expiry-thai{margin:0 0 12px;color:#d6e3ee;font-size:13px;line-height:1.5}
-#pdkSubscriptionExpiryReminder .pdk-expiry-date{padding:9px 11px;margin:0 0 14px;border:1px solid rgba(244,202,112,.35);border-radius:11px;background:rgba(255,255,255,.06);color:#ffe3a0;font-size:13px;font-weight:750}
-#pdkSubscriptionExpiryReminder .pdk-expiry-ok{width:100%;min-height:42px;border:1px solid #ffe5a7;border-radius:11px;background:linear-gradient(135deg,#ffe29a,#dba43b);color:#13263a;font-size:13px;font-weight:850}
-@media(max-width:380px){#pdkSubscriptionExpiryReminder .pdk-expiry-card{padding:15px}#pdkSubscriptionExpiryReminder .pdk-expiry-heading{font-size:16px}}
-</style>
-<script id="pdk-staff-subscription-expiry-reminder-v1">
-(function(){
- if(window.__pdkStaffExpiryReminderBound)return;
- window.__pdkStaffExpiryReminderBound=true;
- let checking=false;
- const zone='Asia/Bangkok';
- const dateKey=d=>new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
- const dateLabel=d=>new Intl.DateTimeFormat('en-GB',{timeZone:zone,day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
- function getOverlay(){
-  let el=document.getElementById('pdkSubscriptionExpiryReminder');
-  if(el)return el;
-  el=document.createElement('div');el.id='pdkSubscriptionExpiryReminder';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','pdkExpiryTitle');
-  el.innerHTML='<section class="pdk-expiry-card"><h2 class="pdk-expiry-heading" id="pdkExpiryTitle">⚠️ Subscription Expiring Soon</h2><p class="pdk-expiry-copy" id="pdkExpiryEnglish"></p><p class="pdk-expiry-thai" id="pdkExpiryThai"></p><div class="pdk-expiry-date" id="pdkExpiryDate"></div><button type="button" class="pdk-expiry-ok" id="pdkExpiryOk">OK, Got It</button></section>';
-  document.body.appendChild(el);
-  const close=()=>{el.classList.remove('is-open');};
-  el.querySelector('#pdkExpiryOk').addEventListener('click',close);
-  return el;
- }
- async function check(){
-  if(checking||document.visibilityState==='hidden')return;
-  checking=true;
-  try{
-   if(!window.sb||!currentUser||currentRole!=='staff')return;
-   const {data,error}=await sb.from('staff_subscription').select('expires_at').eq('subscription_key','normal_staff').maybeSingle();
-   if(error)throw error;
-   if(!data||!data.expires_at)return;
-   const expiry=new Date(data.expires_at);
-   if(!Number.isFinite(expiry.getTime()))return;
-   const today=dateKey(new Date());
-   const expiryDay=dateKey(expiry);
-   const todayUtc=Date.parse(today+'T00:00:00Z');
-   const expiryUtc=Date.parse(expiryDay+'T00:00:00Z');
-   const days=Math.round((expiryUtc-todayUtc)/86400000);
-   if(days<0||days>3)return;
-   const staffKey=String(currentStaffId||currentUser.id||'staff');
-   const storageKey='pdk-staff-expiry-reminder-v1:'+staffKey+':'+expiryDay+':'+today;
-   if(localStorage.getItem(storageKey)==='shown')return;
-   const el=getOverlay();
-   const english=days===1?'Your Staff subscription will expire in 1 day.':'Your Staff subscription will expire in '+days+' days.';
-   const thai=days===1?'การสมัครใช้งาน Staff ของคุณจะหมดอายุใน 1 วัน':'การสมัครใช้งาน Staff ของคุณจะหมดอายุใน '+days+' วัน';
-   el.querySelector('#pdkExpiryEnglish').textContent=english+' Please contact the Owner to arrange the renewal before the expiry date to avoid interruption to Staff Website access.';
-   el.querySelector('#pdkExpiryThai').textContent=thai+' กรุณาติดต่อ Owner เพื่อต่ออายุก่อนวันหมดอายุ เพื่อให้สามารถเข้าใช้งาน Staff Website ได้อย่างต่อเนื่อง';
-   el.querySelector('#pdkExpiryDate').textContent='Expiry Date / วันหมดอายุ: '+dateLabel(expiry);
-   el.classList.add('is-open');
-   try{localStorage.setItem(storageKey,'shown')}catch(storageError){console.warn('Staff expiry reminder state could not be saved:',storageError)}
-  }catch(error){console.warn('Staff subscription expiry reminder check failed:',error?.message||error)}
-  finally{checking=false}
- }
- window.pdkCheckStaffSubscriptionExpiry=check;
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
- window.addEventListener('focus',check);
- window.setInterval(check,60000);
- window.setTimeout(check,1800);
-})();
-</script>
-</body></html>');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
@@ -5221,6 +5154,73 @@ document.getElementById('language').onchange=e=>{lang=e.target.value;localStorag
 })();
 
 installUILanguageObserver();applyUILanguage();
+</script>
+
+<style id="pdk-staff-subscription-expiry-reminder-v1">
+#pdkSubscriptionExpiryReminder{position:fixed;inset:0;z-index:2147483200;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,7,16,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#pdkSubscriptionExpiryReminder.is-open{display:flex}
+#pdkSubscriptionExpiryReminder .pdk-expiry-card{width:min(100%,390px);padding:18px;border:1px solid rgba(244,202,112,.72);border-radius:19px;background:linear-gradient(145deg,#123653,#071a2d);box-shadow:0 18px 55px rgba(0,0,0,.55);color:#f5f8fc}
+#pdkSubscriptionExpiryReminder .pdk-expiry-heading{display:flex;align-items:center;gap:9px;margin:0 0 10px;color:#ffd778;font-size:18px;line-height:1.25}
+#pdkSubscriptionExpiryReminder .pdk-expiry-copy{margin:0 0 9px;color:#f2f6fa;font-size:13px;line-height:1.45}
+#pdkSubscriptionExpiryReminder .pdk-expiry-thai{margin:0 0 12px;color:#d6e3ee;font-size:13px;line-height:1.5}
+#pdkSubscriptionExpiryReminder .pdk-expiry-date{padding:9px 11px;margin:0 0 14px;border:1px solid rgba(244,202,112,.35);border-radius:11px;background:rgba(255,255,255,.06);color:#ffe3a0;font-size:13px;font-weight:750}
+#pdkSubscriptionExpiryReminder .pdk-expiry-ok{width:100%;min-height:42px;border:1px solid #ffe5a7;border-radius:11px;background:linear-gradient(135deg,#ffe29a,#dba43b);color:#13263a;font-size:13px;font-weight:850}
+@media(max-width:380px){#pdkSubscriptionExpiryReminder .pdk-expiry-card{padding:15px}#pdkSubscriptionExpiryReminder .pdk-expiry-heading{font-size:16px}}
+</style>
+<script id="pdk-staff-subscription-expiry-reminder-v1">
+(function(){
+ if(window.__pdkStaffExpiryReminderBound)return;
+ window.__pdkStaffExpiryReminderBound=true;
+ let checking=false;
+ const zone='Asia/Bangkok';
+ const dateKey=d=>new Intl.DateTimeFormat('en-CA',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit'}).format(d);
+ const dateLabel=d=>new Intl.DateTimeFormat('en-GB',{timeZone:zone,day:'2-digit',month:'2-digit',year:'numeric'}).format(d);
+ function getOverlay(){
+  let el=document.getElementById('pdkSubscriptionExpiryReminder');
+  if(el)return el;
+  el=document.createElement('div');el.id='pdkSubscriptionExpiryReminder';el.setAttribute('role','dialog');el.setAttribute('aria-modal','true');el.setAttribute('aria-labelledby','pdkExpiryTitle');
+  el.innerHTML='<section class="pdk-expiry-card"><h2 class="pdk-expiry-heading" id="pdkExpiryTitle">⚠️ Subscription Expiring Soon</h2><p class="pdk-expiry-copy" id="pdkExpiryEnglish"></p><p class="pdk-expiry-thai" id="pdkExpiryThai"></p><div class="pdk-expiry-date" id="pdkExpiryDate"></div><button type="button" class="pdk-expiry-ok" id="pdkExpiryOk">OK, Got It</button></section>';
+  document.body.appendChild(el);
+  const close=()=>{el.classList.remove('is-open');};
+  el.querySelector('#pdkExpiryOk').addEventListener('click',close);
+  return el;
+ }
+ async function check(){
+  if(checking||document.visibilityState==='hidden')return;
+  checking=true;
+  try{
+   if(!window.sb||!currentUser||currentRole!=='staff')return;
+   const {data,error}=await sb.from('staff_subscription').select('expires_at').eq('subscription_key','normal_staff').maybeSingle();
+   if(error)throw error;
+   if(!data||!data.expires_at)return;
+   const expiry=new Date(data.expires_at);
+   if(!Number.isFinite(expiry.getTime()))return;
+   const today=dateKey(new Date());
+   const expiryDay=dateKey(expiry);
+   const todayUtc=Date.parse(today+'T00:00:00Z');
+   const expiryUtc=Date.parse(expiryDay+'T00:00:00Z');
+   const days=Math.round((expiryUtc-todayUtc)/86400000);
+   if(days<0||days>3)return;
+   const staffKey=String(currentStaffId||currentUser.id||'staff');
+   const storageKey='pdk-staff-expiry-reminder-v1:'+staffKey+':'+expiryDay+':'+today;
+   if(localStorage.getItem(storageKey)==='shown')return;
+   const el=getOverlay();
+   const english=days===1?'Your Staff subscription will expire in 1 day.':'Your Staff subscription will expire in '+days+' days.';
+   const thai=days===1?'การสมัครใช้งาน Staff ของคุณจะหมดอายุใน 1 วัน':'การสมัครใช้งาน Staff ของคุณจะหมดอายุใน '+days+' วัน';
+   el.querySelector('#pdkExpiryEnglish').textContent=english+' Please contact the Owner to arrange the renewal before the expiry date to avoid interruption to Staff Website access.';
+   el.querySelector('#pdkExpiryThai').textContent=thai+' กรุณาติดต่อ Owner เพื่อต่ออายุก่อนวันหมดอายุ เพื่อให้สามารถเข้าใช้งาน Staff Website ได้อย่างต่อเนื่อง';
+   el.querySelector('#pdkExpiryDate').textContent='Expiry Date / วันหมดอายุ: '+dateLabel(expiry);
+   el.classList.add('is-open');
+   try{localStorage.setItem(storageKey,'shown')}catch(storageError){console.warn('Staff expiry reminder state could not be saved:',storageError)}
+  }catch(error){console.warn('Staff subscription expiry reminder check failed:',error?.message||error)}
+  finally{checking=false}
+ }
+ window.pdkCheckStaffSubscriptionExpiry=check;
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
+ window.addEventListener('focus',check);
+ window.setInterval(check,60000);
+ window.setTimeout(check,1800);
+})();
 </script>
 <!-- Staff-only safety cleanup: remove accidentally rendered CSS patch text without touching ticket data or Owner UI. -->
 <script>
