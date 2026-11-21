@@ -5208,10 +5208,10 @@ installUILanguageObserver();applyUILanguage();
    const storageKey='pdk-staff-expiry-reminder-v1:'+staffKey+':'+expiryDay+':'+today;
    if(!forceAfterWelcome&&localStorage.getItem(storageKey)==='shown')return;
    const el=getOverlay();
-   const english=days===1?'Your Staff subscription will expire in 1 day.':'Your Staff subscription will expire in '+days+' days.';
-   const thai=days===1?'การสมัครใช้งาน Staff ของคุณจะหมดอายุใน 1 วัน':'การสมัครใช้งาน Staff ของคุณจะหมดอายุใน '+days+' วัน';
-   el.querySelector('#pdkExpiryEnglish').textContent=english+' Please contact the Owner to arrange the renewal before the expiry date to avoid interruption to Staff Website access.';
-   el.querySelector('#pdkExpiryThai').textContent=thai+' กรุณาติดต่อ Owner เพื่อต่ออายุก่อนวันหมดอายุ เพื่อให้สามารถเข้าใช้งาน Staff Website ได้อย่างต่อเนื่อง';
+   const english='Your application subscription will expire in '+days+' '+(days===1?'day':'days')+'. Please contact the owner to renew before the expiration date to avoid interruption of website access.';
+   const thai='การสมัครใช้งานแอปพลิเคชันของคุณจะหมดอายุในอีก '+days+' วัน กรุณาติดต่อเจ้าของเพื่อดำเนินการต่ออายุก่อนวันหมดอายุ เพื่อป้องกันการหยุดชะงักในการเข้าใช้งานเว็บไซต์';
+   el.querySelector('#pdkExpiryEnglish').textContent=english;
+   el.querySelector('#pdkExpiryThai').textContent=thai;
    el.querySelector('#pdkExpiryDate').textContent='Expiry Date / วันหมดอายุ: '+dateLabel(expiry);
    el.classList.add('is-open');
    try{localStorage.setItem(storageKey,'shown')}catch(storageError){console.warn('Staff expiry reminder state could not be saved:',storageError)}
