@@ -5407,7 +5407,7 @@ function bindOwnerStaffSubscription(){
    priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
    if(savedQr){preview.src=savedQr;preview.hidden=false;preview.style.display='block'}else{preview.hidden=true;preview.style.display='none'}
    const active=!!data.expires_at&&new Date(data.expires_at).getTime()>Date.now();
-   status.innerHTML='<strong style="color:'+(active?'#73dfa8':'#ff9aa6')+'">'+(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED / NOT ACTIVATED')+'</strong><div class="subtle" style="margin-top:6px">Expires: '+fmtDate(data.expires_at)+'</div><div class="subtle">Subscription renewal: '+(active?'active':'awaiting payment approval')+' · Manual access switch is controlled separately+'</div>';
+    status.textContent=(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED - NOT ACTIVATED')+' · Expires: '+fmtDate(data.expires_at)+' · Manual access switch is separate.';status.style.color=active?'#73dfa8':'#ff9aa6';
   }catch(e){status.textContent='Could not load subscription: '+(e.message||String(e))}
   await loadPayments();
  };
