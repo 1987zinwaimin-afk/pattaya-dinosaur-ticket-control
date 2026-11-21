@@ -6036,3 +6036,54 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
 }
 </style>
 </body></html>
+
+<style id="pdk-staff-access-maintenance-center-v1">
+/* Center the closed-access maintenance notice without changing login or payment behavior. */
+#staffSiteAccessOverlay{
+ display:grid!important;
+ place-items:center!important;
+ align-content:center!important;
+ min-height:100dvh!important;
+ height:100dvh!important;
+ padding:max(16px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom))!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+ box-sizing:border-box!important;
+}
+#staffSiteAccessOverlay .staff-site-access-card{
+ display:flex!important;
+ flex-direction:column!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:min(100%,460px)!important;
+ max-width:460px!important;
+ margin:auto!important;
+ padding:clamp(20px,5vw,30px)!important;
+ text-align:center!important;
+}
+#staffSiteAccessOverlay #staffSiteAccessTitle{
+ order:-1!important;
+ display:block!important;
+ width:100%!important;
+ margin:0 0 12px!important;
+ color:#f6d58f!important;
+ font-size:clamp(88px,25vw,148px)!important;
+ font-weight:950!important;
+ line-height:.92!important;
+ letter-spacing:.015em!important;
+ text-shadow:0 7px 28px rgba(0,0,0,.48),0 0 24px rgba(244,202,112,.16)!important;
+}
+#staffSiteAccessOverlay #staffSiteAccessMessage{
+ width:100%!important;
+ margin:0!important;
+ color:#f1f5fa!important;
+ font-size:clamp(15px,4vw,18px)!important;
+ line-height:1.55!important;
+ text-align:center!important;
+ overflow-wrap:anywhere!important;
+}
+@media(max-height:620px){
+ #staffSiteAccessOverlay{align-content:start!important}
+ #staffSiteAccessOverlay .staff-site-access-card{margin:auto!important}
+}
+</style>
