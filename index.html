@@ -5390,7 +5390,7 @@ function renderStaffSubscriptionCardHtml(){
  '<div id="ownerStaffSubscriptionStatus" class="panel" style="padding:12px;margin-bottom:12px">Loading subscription…</div>'+
  '<div class="owner-subscription-manual-dates"><h4>🗓️ Owner Date Control</h4><p>Set the exact dates that the shared Staff subscription should cover. The expiry date remains valid through the end of that day (Thailand time).</p><div class="owner-subscription-date-inputs"><label for="ownerStaffSubscriptionStartDate">START DATE<input id="ownerStaffSubscriptionStartDate" type="date"></label><label for="ownerStaffSubscriptionExpiryDate">EXPIRY DATE<input id="ownerStaffSubscriptionExpiryDate" type="date"></label></div><button type="button" class="gold" id="ownerStaffSubscriptionSaveDates">Save Subscription Dates</button><p id="ownerStaffSubscriptionDateResult" role="status"></p></div>'+
  '<label for="ownerStaffSubscriptionPrice">Monthly fee (THB)</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000" step="0.01" placeholder="Set monthly fee">'+
- '<label for="ownerStaffSubscriptionQr">Bank QR image</label><input id="ownerStaffSubscriptionQr" type="file" accept="image/*">'+
+ '<label for="ownerStaffSubscriptionQr">Bank QR image</label><p class="subtle" style="margin:4px 0 8px">Choose a new image to replace the currently saved Bank QR. The replacement becomes active only after you press Save fee and Bank QR.</p><button type="button" class="gold" id="ownerStaffSubscriptionReplaceQr" style="margin:0 0 8px">Replace Bank QR</button><input id="ownerStaffSubscriptionQr" type="file" accept="image/*" style="display:none">'+
  '<img id="ownerStaffSubscriptionQrPreview" alt="PromptPay QR preview" hidden style="display:block;max-width:220px;max-height:220px;object-fit:contain;background:#fff;padding:8px;border-radius:12px;margin:10px 0">'+
  '<button type="button" class="gold" id="ownerStaffSubscriptionSave" style="width:100%;margin-top:12px">Save fee and Bank QR</button>'+
  '<p id="ownerStaffSubscriptionSaveResult" class="subtle" role="status"></p>'+
@@ -5399,6 +5399,8 @@ function renderStaffSubscriptionCardHtml(){
 function bindOwnerStaffSubscription(){
  const priceInput=document.getElementById('ownerStaffSubscriptionPrice'),qrInput=document.getElementById('ownerStaffSubscriptionQr'),preview=document.getElementById('ownerStaffSubscriptionQrPreview'),save=document.getElementById('ownerStaffSubscriptionSave'),status=document.getElementById('ownerStaffSubscriptionStatus'),result=document.getElementById('ownerStaffSubscriptionSaveResult'),list=document.getElementById('ownerStaffSubscriptionPayments'),startDateInput=document.getElementById('ownerStaffSubscriptionStartDate'),expiryDateInput=document.getElementById('ownerStaffSubscriptionExpiryDate'),saveDates=document.getElementById('ownerStaffSubscriptionSaveDates'),dateResult=document.getElementById('ownerStaffSubscriptionDateResult');
  if(!priceInput||!qrInput||!preview||!save||!status||!result||!list||!startDateInput||!expiryDateInput||!saveDates||!dateResult||currentRole!=='owner')return;
+ const replaceQrButton=document.getElementById('ownerStaffSubscriptionReplaceQr');
+ if(replaceQrButton)replaceQrButton.addEventListener('click',()=>{if(!busy)qrInput.click()});
  let savedQr='',busy=false,selectionVersion=0;
  const draftDbName='pdk-owner-bank-qr-drafts-v1',draftStore='qrDrafts',draftKey='normal_staff_subscription';
  const openDraftDb=()=>new Promise((resolve,reject)=>{
@@ -5516,7 +5518,8 @@ function bindOwnerStaffSubscription(){
    if(verifyError)throw verifyError;
    if(!verified||Number(verified.monthly_price)!==amount||verified.promptpay_qr_data!==savedQr)throw new Error('Save verification failed. Please try again.');
    await clearQrDraft();
-   result.textContent='Saved and verified. Monthly fee and Bank QR are now active in the shared subscription settings.';
+   qrInput.value='';
+   result.textContent='Saved and verified. The previous Bank QR has been replaced in the active subscription record; Staff now receive only the new QR.';
    await load();
   }catch(e){result.textContent='Save failed: '+(e.message||String(e));console.error('Owner Staff subscription settings save failed:',e)}
   finally{busy=false;save.disabled=false;save.textContent='Save fee and Bank QR'}
