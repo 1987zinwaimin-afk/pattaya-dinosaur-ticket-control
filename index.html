@@ -6200,54 +6200,6 @@ function monthlyReportBuildHtml(data){
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
   '
-<style id="pdk-owner-settings-premium-layout-v1">
-.owner-settings-page{display:grid;gap:14px;max-width:1040px;margin:0 auto;padding:2px 0 24px}
-.owner-settings-heading{display:flex;align-items:center;gap:13px;padding:8px 3px 5px}
-.owner-settings-heading-icon{width:48px;height:48px;display:grid;place-items:center;flex:0 0 48px;border:1px solid rgba(255,215,120,.42);border-radius:15px;background:linear-gradient(145deg,#214766,#0b233b);font-size:24px;box-shadow:0 5px 14px #0003}
-.owner-settings-heading h2{margin:0;color:#ffda85;font-size:clamp(21px,4vw,27px)}
-.owner-settings-heading p,.owner-settings-card-heading p{margin:3px 0 0;color:#b8cadd;font-size:12px;line-height:1.4}
-.owner-settings-card{margin:0!important;padding:15px!important;border:1px solid #315573!important;border-radius:19px!important;background:linear-gradient(145deg,#102d49,#071b30 92%)!important;box-shadow:0 8px 22px #0003,inset 0 1px #ffffff0b!important}
-.owner-settings-card-heading{display:flex;align-items:center;gap:11px;margin-bottom:13px}
-.owner-settings-card-heading h3{margin:0;color:#f6f8fc;font-size:16px}
-.owner-settings-icon{width:39px;height:39px;display:grid;place-items:center;flex:0 0 39px;border:1px solid rgba(255,215,120,.28);border-radius:12px;background:rgba(244,202,112,.1);font-size:19px}
-.owner-settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.owner-settings-field{min-width:0}
-.owner-settings-field label,.owner-settings-inner>label{margin:0 0 6px;font-size:12px;font-weight:750;color:#c5d5e4}
-.owner-settings-inner{display:grid;gap:9px}
-.owner-settings-action-row{display:flex;gap:8px;flex-wrap:wrap;margin:0}
-.owner-settings-action-row button{flex:1 1 140px;min-width:0;min-height:42px;padding:9px 10px;font-size:12px;border-radius:11px}
-.owner-settings-voice{padding:12px;border:1px solid #345574;border-radius:14px;background:rgba(3,17,31,.38)}
-.owner-settings-check{display:flex!important;align-items:flex-start;gap:9px;margin:0 0 9px!important;color:#f6f8fc!important}
-.owner-settings-check input{width:19px;height:19px;flex:0 0 19px;margin:1px 0 0;accent-color:#e9b94f}
-.owner-settings-check span{display:grid;gap:3px}
-.owner-settings-check b{font-size:13px;color:#f6f8fc}
-.owner-settings-check small{font-size:11px;color:#afc4d9}
-.owner-settings-thai-phrase{padding:9px 11px;margin:8px 0;border:1px solid rgba(244,202,112,.28);border-radius:10px;background:rgba(244,202,112,.08);color:#ffdc91;font-weight:800;text-align:center;letter-spacing:.2px}
-.owner-settings-save{width:100%;min-height:45px;margin-top:2px}
-.owner-settings-status{margin:0;padding:8px 10px;border-radius:9px;background:rgba(49,153,105,.12);color:#a6e8c4}
-.owner-settings-note{margin:2px 0 0;color:#9fb3c7;font-size:11px;line-height:1.5}
-.owner-settings-section{min-width:0}
-.owner-settings-section>.panel{margin:0!important}
-#ownerStaffSiteAccessPanel,#ownerStaffSubscriptionPanel{padding:15px!important;border-radius:19px!important;box-shadow:0 8px 22px #0003,inset 0 1px #ffffff0b!important}
-#ownerStaffSiteAccessPanel h3,#ownerStaffSubscriptionPanel h3{font-size:16px;color:#f7f9fc}
-#ownerStaffSiteAccessPanel>p,#ownerStaffSubscriptionPanel>p{font-size:12px;line-height:1.5}
-#ownerStaffSubscriptionPanel #ownerStaffSubscriptionStatus{background:rgba(3,17,31,.48)!important;border:1px solid #315573!important;border-radius:13px!important}
-#ownerStaffSubscriptionPanel #ownerStaffSubscriptionQr{padding:10px;font-size:12px}
-#ownerStaffSubscriptionPanel #ownerStaffSubscriptionQrPreview{max-width:min(220px,100%)!important;max-height:220px!important;margin:12px auto!important}
-#ownerStaffSubscriptionPanel #ownerStaffSubscriptionSave{min-height:45px}
-#ownerStaffSubscriptionPanel h4{padding-top:10px;border-top:1px solid #315573;color:#ffda85;font-size:14px}
-#ownerStaffSubscriptionPayments{display:grid;gap:9px}
-.owner-settings-backup>button{width:100%;min-height:44px}
-@media(max-width:560px){
- .owner-settings-page{gap:11px;padding-left:1px;padding-right:1px}
- .owner-settings-heading{padding:5px 2px}
- .owner-settings-heading-icon{width:43px;height:43px;flex-basis:43px}
- .owner-settings-card{padding:12px!important;border-radius:16px!important}
- .owner-settings-fields{grid-template-columns:1fr;gap:9px}
- .owner-settings-card-heading{margin-bottom:11px}
- #ownerStaffSiteAccessPanel,#ownerStaffSubscriptionPanel{padding:12px!important}
-}
-</style>
 </body></html>';
 }
 function monthlyReportExcelContent(data){
@@ -7257,6 +7209,54 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
  position:fixed!important;top:calc(env(safe-area-inset-top,0px) + 12px)!important;
  left:12px!important;right:12px!important;width:auto!important;max-width:560px!important;
  margin:0 auto!important;z-index:2147483647!important;pointer-events:auto!important
+}
+</style>
+<style id="pdk-owner-settings-premium-layout-v1">
+.owner-settings-page{display:grid;gap:14px;max-width:1040px;margin:0 auto;padding:2px 0 24px}
+.owner-settings-heading{display:flex;align-items:center;gap:13px;padding:8px 3px 5px}
+.owner-settings-heading-icon{width:48px;height:48px;display:grid;place-items:center;flex:0 0 48px;border:1px solid rgba(255,215,120,.42);border-radius:15px;background:linear-gradient(145deg,#214766,#0b233b);font-size:24px;box-shadow:0 5px 14px #0003}
+.owner-settings-heading h2{margin:0;color:#ffda85;font-size:clamp(21px,4vw,27px)}
+.owner-settings-heading p,.owner-settings-card-heading p{margin:3px 0 0;color:#b8cadd;font-size:12px;line-height:1.4}
+.owner-settings-card{margin:0!important;padding:15px!important;border:1px solid #315573!important;border-radius:19px!important;background:linear-gradient(145deg,#102d49,#071b30 92%)!important;box-shadow:0 8px 22px #0003,inset 0 1px #ffffff0b!important}
+.owner-settings-card-heading{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+.owner-settings-card-heading h3{margin:0;color:#f6f8fc;font-size:16px}
+.owner-settings-icon{width:39px;height:39px;display:grid;place-items:center;flex:0 0 39px;border:1px solid rgba(255,215,120,.28);border-radius:12px;background:rgba(244,202,112,.1);font-size:19px}
+.owner-settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.owner-settings-field{min-width:0}
+.owner-settings-field label,.owner-settings-inner>label{margin:0 0 6px;font-size:12px;font-weight:750;color:#c5d5e4}
+.owner-settings-inner{display:grid;gap:9px}
+.owner-settings-action-row{display:flex;gap:8px;flex-wrap:wrap;margin:0}
+.owner-settings-action-row button{flex:1 1 140px;min-width:0;min-height:42px;padding:9px 10px;font-size:12px;border-radius:11px}
+.owner-settings-voice{padding:12px;border:1px solid #345574;border-radius:14px;background:rgba(3,17,31,.38)}
+.owner-settings-check{display:flex!important;align-items:flex-start;gap:9px;margin:0 0 9px!important;color:#f6f8fc!important}
+.owner-settings-check input{width:19px;height:19px;flex:0 0 19px;margin:1px 0 0;accent-color:#e9b94f}
+.owner-settings-check span{display:grid;gap:3px}
+.owner-settings-check b{font-size:13px;color:#f6f8fc}
+.owner-settings-check small{font-size:11px;color:#afc4d9}
+.owner-settings-thai-phrase{padding:9px 11px;margin:8px 0;border:1px solid rgba(244,202,112,.28);border-radius:10px;background:rgba(244,202,112,.08);color:#ffdc91;font-weight:800;text-align:center;letter-spacing:.2px}
+.owner-settings-save{width:100%;min-height:45px;margin-top:2px}
+.owner-settings-status{margin:0;padding:8px 10px;border-radius:9px;background:rgba(49,153,105,.12);color:#a6e8c4}
+.owner-settings-note{margin:2px 0 0;color:#9fb3c7;font-size:11px;line-height:1.5}
+.owner-settings-section{min-width:0}
+.owner-settings-section>.panel{margin:0!important}
+#ownerStaffSiteAccessPanel,#ownerStaffSubscriptionPanel{padding:15px!important;border-radius:19px!important;box-shadow:0 8px 22px #0003,inset 0 1px #ffffff0b!important}
+#ownerStaffSiteAccessPanel h3,#ownerStaffSubscriptionPanel h3{font-size:16px;color:#f7f9fc}
+#ownerStaffSiteAccessPanel>p,#ownerStaffSubscriptionPanel>p{font-size:12px;line-height:1.5}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionStatus{background:rgba(3,17,31,.48)!important;border:1px solid #315573!important;border-radius:13px!important}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionQr{padding:10px;font-size:12px}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionQrPreview{max-width:min(220px,100%)!important;max-height:220px!important;margin:12px auto!important}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionSave{min-height:45px}
+#ownerStaffSubscriptionPanel h4{padding-top:10px;border-top:1px solid #315573;color:#ffda85;font-size:14px}
+#ownerStaffSubscriptionPayments{display:grid;gap:9px}
+.owner-settings-backup>button{width:100%;min-height:44px}
+@media(max-width:560px){
+ .owner-settings-page{gap:11px;padding-left:1px;padding-right:1px}
+ .owner-settings-heading{padding:5px 2px}
+ .owner-settings-heading-icon{width:43px;height:43px;flex-basis:43px}
+ .owner-settings-card{padding:12px!important;border-radius:16px!important}
+ .owner-settings-fields{grid-template-columns:1fr;gap:9px}
+ .owner-settings-card-heading{margin-bottom:11px}
+ #ownerStaffSiteAccessPanel,#ownerStaffSubscriptionPanel{padding:12px!important}
 }
 </style>
 </body></html>
