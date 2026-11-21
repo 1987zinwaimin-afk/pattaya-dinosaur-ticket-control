@@ -5334,7 +5334,29 @@ function bindOwnerStaffSiteAccessControl(){
    if(error)throw error;
    if(!data)throw new Error('No access-control row was updated.');
    paint(data.is_open,data.updated_at);
-   status.insertAdjacentHTML('beforeend','<div style="margin-top:7px;font-weight:700">'+(data.is_open?'Staff website reopened.':'Staff website closed.')+'</div>');
+   const resultLine=document.createElement('div');
+   resultLine.style.cssText='margin-top:9px;font-weight:700;line-height:1.5';
+   if(data.is_open){
+    resultLine.textContent='Staff website reopened. Sending the sound and notification message to registered Staff devices…';
+    status.appendChild(resultLine);
+    try{
+     const {data:pushResult,error:pushError}=await sb.functions.invoke('notify-staff-login',{body:{action:'staff_site_reopened'}});
+     if(pushError)throw pushError;
+     const webSent=Number(pushResult?.sent||0),androidSent=Number(pushResult?.androidSent||0);
+     const totalSent=webSent+androidSent;
+     resultLine.textContent=totalSent>0
+      ? 'Staff website reopened. Restoration notification sent to '+totalSent+' registered Staff device(s).'
+      : 'Staff website reopened, but no Staff devices are registered for push notifications yet. Ask Staff to enable Alarm Notifications in Settings.';
+     if(Number(pushResult?.failed||0)+Number(pushResult?.androidFailed||0)>0)resultLine.textContent+=' Some devices could not be reached.';
+     console.info('Staff access restoration push result:',pushResult);
+    }catch(pushError){
+     resultLine.textContent='Staff website reopened, but the restoration notification could not be confirmed: '+(pushError?.message||String(pushError));
+     console.error('Staff access restoration notification failed:',pushError);
+    }
+   }else{
+    resultLine.textContent='Staff website closed. All Staff access is blocked; saved records are kept.';
+    status.appendChild(resultLine);
+   }
   }catch(error){
    status.textContent='Could not save Staff Website setting: '+(error.message||String(error));
    console.error('Owner Staff Website access update failed:',error);
