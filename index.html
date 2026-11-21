@@ -5534,15 +5534,27 @@ function renderSettings(){
  try{
   root.dataset.uiPage='settings';
   const themeOptions=[['dark','🌙 Luxury Navy Gold'],['light','☀️ Premium Light']];
-  root.innerHTML='<section class="panel"><h2>⚙️ '+(lang==='th'?'ตั้งค่า':lang==='my'?'ဆက်တင်များ':'Settings')+'</h2><p class="subtle">Account and display preferences</p>'+
-   '<div class="summary-row"><span>Language / ภาษา / ဘာသာစကား</span><select id="ownerSettingsLanguage" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div>'+
-   '<div class="summary-row"><span>Display theme</span><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div>'+
-   (currentRole==='owner'?'<section class="panel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.4);border-radius:16px"><h3 style="margin:0 0 6px">🔔 Owner Notification Sound & Thai Voice</h3><p class="subtle" style="margin:0 0 12px">Choose the sound for Staff Login and Emergency Alarm notifications on this Owner device.</p><label for="ownerNotifySound">Notification sound</label><select id="ownerNotifySound"><option value="bell">🔔 Bell — Classic</option><option value="ding">🔔 Ding — Short</option><option value="alert">🚨 Alert — Double tone</option></select><div class="actions" style="margin:8px 0 14px"><button type="button" id="ownerTestNotifySound">▶ Test notification sound</button></div><div style="padding:12px;border:1px solid var(--line);border-radius:12px"><label style="display:flex;align-items:center;gap:10px;color:var(--text)"><input id="ownerThaiVoiceEnabled" type="checkbox" style="width:20px;height:20px"> Enable Thai voice announcement</label><p class="subtle" style="margin:8px 0">เฮียเข้าไปในสวนแล้ว</p><label for="ownerThaiVoiceSelect">Thai voice selection</label><select id="ownerThaiVoiceSelect"></select><div class="actions" style="margin-top:8px"><button type="button" id="ownerTestThaiVoice">▶ Test Thai voice</button><button type="button" id="ownerRefreshThaiVoices">↻ Refresh voices</button></div></div><button type="button" class="gold" id="ownerSaveNotifyPrefs" style="width:100%;margin-top:12px">Save notification settings</button><p id="ownerNotifySaved" class="subtle" role="status" style="display:none;margin:10px 0 0"></p><p class="subtle" style="margin:10px 0 0">Note: Custom sound and Thai speech work while the Owner website is open. When the app is closed, Android/iOS uses the system notification sound configured in phone settings.</p></section>':'')+
-   (currentRole==='owner'?renderStaffSiteAccessCardHtml():'')+
-   (currentRole==='owner'?renderStaffSubscriptionCardHtml():'')+
-    (currentRole==='owner'?renderEventLocationsSettingsHtml():'')+
-   '<button type="button" class="gold" id="ownerExportBackup">Export ticket backup (JSON)</button></section>';
-  if(currentRole==='owner'){bindEventLocationManager();bindOwnerNotificationSettings();bindOwnerStaffSiteAccessControl();bindOwnerStaffSubscription();}
+  const owner=currentRole==='owner';
+  root.innerHTML=
+   '<div class="owner-settings-page">'+
+    '<header class="owner-settings-heading"><div class="owner-settings-heading-icon">⚙️</div><div><h2>Settings</h2><p>Manage your account, notifications and Staff access</p></div></header>'+
+    '<section class="panel owner-settings-card owner-settings-preferences"><div class="owner-settings-card-heading"><span class="owner-settings-icon">🎨</span><div><h3>General Preferences</h3><p>Language and display appearance</p></div></div>'+
+     '<div class="owner-settings-fields"><div class="owner-settings-field"><label for="ownerSettingsLanguage">Language / ภาษา / ဘာသာစကား</label><select id="ownerSettingsLanguage" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div>'+
+     '<div class="owner-settings-field"><label for="ownerSettingsTheme">Display theme</label><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div></div></section>'+
+    (owner?'<section class="panel owner-settings-card owner-settings-notifications"><div class="owner-settings-card-heading"><span class="owner-settings-icon">🔔</span><div><h3>Notification Centre</h3><p>Manage Owner device alerts, sound and Thai voice in one place</p></div></div>'+
+     '<div class="owner-settings-inner"><label for="ownerNotifySound">Notification sound</label><select id="ownerNotifySound"><option value="bell">🔔 Bell — Classic</option><option value="ding">🔔 Ding — Short</option><option value="alert">🚨 Alert — Double tone</option></select>'+
+     '<div class="owner-settings-action-row"><button type="button" id="ownerTestNotifySound">▶ Test notification sound</button></div>'+
+     '<div class="owner-settings-voice"><label class="owner-settings-check"><input id="ownerThaiVoiceEnabled" type="checkbox"> <span><b>Enable Thai voice announcement</b><small>Play the Thai announcement for supported notifications</small></span></label>'+
+     '<div class="owner-settings-thai-phrase">เฮียเข้าไปในสวนแล้ว</div><label for="ownerThaiVoiceSelect">Thai voice selection</label><select id="ownerThaiVoiceSelect"></select>'+
+     '<div class="owner-settings-action-row"><button type="button" id="ownerTestThaiVoice">▶ Test Thai voice</button><button type="button" id="ownerRefreshThaiVoices">↻ Refresh voices</button></div></div>'+
+     '<button type="button" class="gold owner-settings-save" id="ownerSaveNotifyPrefs">Save notification settings</button><p id="ownerNotifySaved" class="subtle owner-settings-status" role="status" style="display:none"></p>'+
+     '<p class="owner-settings-note">Custom sound and Thai speech work while the Owner website is open. When the app is closed, Android/iOS uses the system notification sound configured in phone settings.</p></div></section>':'')+
+    (owner?'<section class="owner-settings-section owner-settings-access">'+renderStaffSiteAccessCardHtml()+'</section>':'')+
+    (owner?'<section class="owner-settings-section owner-settings-subscription">'+renderStaffSubscriptionCardHtml()+'</section>':'')+
+    (owner?'<section class="owner-settings-section owner-settings-event">'+renderEventLocationsSettingsHtml()+'</section>':'')+
+    '<section class="panel owner-settings-card owner-settings-backup"><div class="owner-settings-card-heading"><span class="owner-settings-icon">🗃️</span><div><h3>Data Backup</h3><p>Export a copy of the current ticket records</p></div></div><button type="button" class="gold" id="ownerExportBackup">Export ticket backup (JSON)</button></section>'+
+   '</div>';
+  if(owner){bindEventLocationManager();bindOwnerNotificationSettings();bindOwnerStaffSiteAccessControl();bindOwnerStaffSubscription();}
   const language=root.querySelector('#ownerSettingsLanguage');
   const themeSelect=root.querySelector('#ownerSettingsTheme');
   if(language){language.value=lang;language.addEventListener('change',()=>{lang=language.value;localStorage.setItem('tctl-lang',lang);render(true);applyUILanguage()});}
@@ -6187,7 +6199,56 @@ function monthlyReportBuildHtml(data){
  '<h2>Daily ticket details</h2>'+dailySections+
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
-  '</body></html>';
+  '
+<style id="pdk-owner-settings-premium-layout-v1">
+.owner-settings-page{display:grid;gap:14px;max-width:1040px;margin:0 auto;padding:2px 0 24px}
+.owner-settings-heading{display:flex;align-items:center;gap:13px;padding:8px 3px 5px}
+.owner-settings-heading-icon{width:48px;height:48px;display:grid;place-items:center;flex:0 0 48px;border:1px solid rgba(255,215,120,.42);border-radius:15px;background:linear-gradient(145deg,#214766,#0b233b);font-size:24px;box-shadow:0 5px 14px #0003}
+.owner-settings-heading h2{margin:0;color:#ffda85;font-size:clamp(21px,4vw,27px)}
+.owner-settings-heading p,.owner-settings-card-heading p{margin:3px 0 0;color:#b8cadd;font-size:12px;line-height:1.4}
+.owner-settings-card{margin:0!important;padding:15px!important;border:1px solid #315573!important;border-radius:19px!important;background:linear-gradient(145deg,#102d49,#071b30 92%)!important;box-shadow:0 8px 22px #0003,inset 0 1px #ffffff0b!important}
+.owner-settings-card-heading{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+.owner-settings-card-heading h3{margin:0;color:#f6f8fc;font-size:16px}
+.owner-settings-icon{width:39px;height:39px;display:grid;place-items:center;flex:0 0 39px;border:1px solid rgba(255,215,120,.28);border-radius:12px;background:rgba(244,202,112,.1);font-size:19px}
+.owner-settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.owner-settings-field{min-width:0}
+.owner-settings-field label,.owner-settings-inner>label{margin:0 0 6px;font-size:12px;font-weight:750;color:#c5d5e4}
+.owner-settings-inner{display:grid;gap:9px}
+.owner-settings-action-row{display:flex;gap:8px;flex-wrap:wrap;margin:0}
+.owner-settings-action-row button{flex:1 1 140px;min-width:0;min-height:42px;padding:9px 10px;font-size:12px;border-radius:11px}
+.owner-settings-voice{padding:12px;border:1px solid #345574;border-radius:14px;background:rgba(3,17,31,.38)}
+.owner-settings-check{display:flex!important;align-items:flex-start;gap:9px;margin:0 0 9px!important;color:#f6f8fc!important}
+.owner-settings-check input{width:19px;height:19px;flex:0 0 19px;margin:1px 0 0;accent-color:#e9b94f}
+.owner-settings-check span{display:grid;gap:3px}
+.owner-settings-check b{font-size:13px;color:#f6f8fc}
+.owner-settings-check small{font-size:11px;color:#afc4d9}
+.owner-settings-thai-phrase{padding:9px 11px;margin:8px 0;border:1px solid rgba(244,202,112,.28);border-radius:10px;background:rgba(244,202,112,.08);color:#ffdc91;font-weight:800;text-align:center;letter-spacing:.2px}
+.owner-settings-save{width:100%;min-height:45px;margin-top:2px}
+.owner-settings-status{margin:0;padding:8px 10px;border-radius:9px;background:rgba(49,153,105,.12);color:#a6e8c4}
+.owner-settings-note{margin:2px 0 0;color:#9fb3c7;font-size:11px;line-height:1.5}
+.owner-settings-section{min-width:0}
+.owner-settings-section>.panel{margin:0!important}
+#ownerStaffSiteAccessPanel,#ownerStaffSubscriptionPanel{padding:15px!important;border-radius:19px!important;box-shadow:0 8px 22px #0003,inset 0 1px #ffffff0b!important}
+#ownerStaffSiteAccessPanel h3,#ownerStaffSubscriptionPanel h3{font-size:16px;color:#f7f9fc}
+#ownerStaffSiteAccessPanel>p,#ownerStaffSubscriptionPanel>p{font-size:12px;line-height:1.5}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionStatus{background:rgba(3,17,31,.48)!important;border:1px solid #315573!important;border-radius:13px!important}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionQr{padding:10px;font-size:12px}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionQrPreview{max-width:min(220px,100%)!important;max-height:220px!important;margin:12px auto!important}
+#ownerStaffSubscriptionPanel #ownerStaffSubscriptionSave{min-height:45px}
+#ownerStaffSubscriptionPanel h4{padding-top:10px;border-top:1px solid #315573;color:#ffda85;font-size:14px}
+#ownerStaffSubscriptionPayments{display:grid;gap:9px}
+.owner-settings-backup>button{width:100%;min-height:44px}
+@media(max-width:560px){
+ .owner-settings-page{gap:11px;padding-left:1px;padding-right:1px}
+ .owner-settings-heading{padding:5px 2px}
+ .owner-settings-heading-icon{width:43px;height:43px;flex-basis:43px}
+ .owner-settings-card{padding:12px!important;border-radius:16px!important}
+ .owner-settings-fields{grid-template-columns:1fr;gap:9px}
+ .owner-settings-card-heading{margin-bottom:11px}
+ #ownerStaffSiteAccessPanel,#ownerStaffSubscriptionPanel{padding:12px!important}
+}
+</style>
+</body></html>';
 }
 function monthlyReportExcelContent(data){
  const xmlEscape=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
