@@ -4162,7 +4162,7 @@ async function chatUnsendMessage(id,isGroup){
   // Use the existing sender-owned UPDATE permission and soft-delete marker.
   // Direct DELETE is intentionally not granted by the chat table RLS policies.
   const {data,error}=await sb.from(table)
-   .update({deleted_at:new Date().toISOString(),body:'',image_path:null})
+   .update({deleted_at:new Date().toISOString(),body:'[Message unsent]',image_path:null})
    .eq('id',id)
    .in('sender_id',senderIds)
    .is('deleted_at',null)
