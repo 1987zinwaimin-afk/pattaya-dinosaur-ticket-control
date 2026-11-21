@@ -2722,6 +2722,27 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
  #staffSiteAccessOverlay h1{font-size:42px!important}
 }
 </style>
+<style id="pdk-staff-subscription-step-modals-v1">
+#staffSubscriptionPaymentPanel{width:100%;margin:14px 0 0;text-align:center}
+#staffSubscriptionPaymentPanel .staff-subscription-open{display:block;width:min(100%,330px);min-height:48px;margin:14px auto 0;border:1px solid #f4d88f;border-radius:13px;background:linear-gradient(135deg,#ffe5a0,#dca63d);color:#17283a;font-size:15px;font-weight:850}
+.staff-subscription-modal[hidden]{display:none!important}
+.staff-subscription-modal{position:fixed;inset:0;z-index:2147483648;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(0,0,0,.78);box-sizing:border-box;overflow-y:auto}
+.staff-subscription-modal-card{position:relative;width:min(100%,420px);max-height:calc(100dvh - 28px);overflow-y:auto;padding:22px 18px 18px;border:1px solid rgba(239,199,119,.65);border-radius:20px;background:linear-gradient(145deg,#102e49,#061629);box-shadow:0 20px 65px #0009;color:#f6f8fc;text-align:center;box-sizing:border-box}
+.staff-subscription-modal-card h2{margin:4px 28px 16px;color:#ffdc91;font-size:21px;line-height:1.25}
+.staff-subscription-close{position:absolute;right:10px;top:8px;width:36px;height:36px;min-height:36px;padding:0;border:1px solid #49647d;border-radius:10px;background:#17334d;color:#fff;font-size:24px;line-height:1}
+.staff-subscription-fee-label{color:#b9cadb;font-size:13px}
+.staff-subscription-fee{margin:5px 0 12px;color:#ffe09b;font-size:32px;font-weight:900;line-height:1.15}
+.staff-subscription-note,.staff-subscription-warning{margin:8px 0 16px;color:#d3dfeb;font-size:13px;line-height:1.5}
+.staff-subscription-warning{padding:10px;border:1px dashed #c49a4a;border-radius:12px;color:#ffe0a0}
+.staff-subscription-primary{display:block;width:100%;min-height:48px;margin:14px 0 0;border:1px solid #ffe8ad;border-radius:12px;background:linear-gradient(135deg,#ffe5a0,#dca63d);color:#14283b;font-size:15px;font-weight:850}
+.staff-subscription-bank-qr{display:block;width:min(100%,270px);max-height:270px;object-fit:contain;margin:8px auto 14px;padding:8px;background:#fff;border-radius:12px;box-sizing:border-box}
+.staff-subscription-pay-card form{text-align:left}
+.staff-subscription-pay-card label{display:block;margin:10px 0 5px;color:#cbd9e6;font-size:13px}
+.staff-subscription-pay-card input{display:block;width:100%;min-height:43px;padding:10px;border:1px solid #49647d;border-radius:10px;background:#04182b;color:#fff;box-sizing:border-box}
+.staff-subscription-pay-card input[type=file]{font-size:12px}
+.staff-subscription-result{margin:12px 0 0;color:#d2deea;font-size:13px;line-height:1.45;overflow-wrap:anywhere}
+@media(max-width:420px){.staff-subscription-modal{padding:9px}.staff-subscription-modal-card{padding:20px 14px 15px;border-radius:16px}.staff-subscription-modal-card h2{font-size:19px}.staff-subscription-fee{font-size:29px}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -2768,9 +2789,10 @@ function renderStaffSiteAccessGate(mode,detail=''){
  const pay=document.getElementById('staffSubscriptionPaymentPanel');
  if(!overlay||!message||!title||!code||!retry)return;
  if(mode==='closed'){
-  // Keep the original maintenance message for the independent manual access switch.
-  message.textContent='We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.';
-  message.hidden=false;title.hidden=true;code.hidden=true;retry.hidden=true;
+  title.textContent='404';
+  title.hidden=false;
+  message.textContent='apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.';
+  message.hidden=false;code.hidden=true;retry.hidden=true;
   if(pay){pay.hidden=false;renderStaffSubscriptionPaymentPanel();}
  }else{
   title.textContent='Staff access unavailable';
@@ -2790,32 +2812,58 @@ function renderStaffSubscriptionPaymentPanel(){
  const signature=[price,qr,sub.expires_at||''].join('|');
  if(root.dataset.signature===signature)return;
  root.dataset.signature=signature;
- root.innerHTML='<div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(232,190,104,.3);text-align:left">'+
-  '<h2 style="margin:0 0 8px;color:#f3d18b;font-size:21px">Renew Staff Subscription</h2>'+
-  '<p style="margin:0 0 12px;font-size:14px">One payment renews the shared Staff subscription for one month. This is separate from the manual Staff Website Access Control switch.</p>'+
-  '<div style="padding:12px;border:1px solid rgba(232,190,104,.35);border-radius:13px;text-align:center;margin-bottom:12px"><div style="font-size:13px;color:#c7d6e4">Monthly fee</div><strong style="display:block;color:#ffdc8d;font-size:30px">฿'+price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>'+
-  (sub.expires_at?'<div style="font-size:12px;color:#c7d6e4">Last expiry: '+new Date(sub.expires_at).toLocaleDateString()+'</div>':'<div style="font-size:12px;color:#c7d6e4">Subscription not activated yet</div>')+'</div>'+
-  (qr?'<img src="'+qr+'" alt="Bank QR" style="display:block;width:min(100%,260px);max-height:260px;object-fit:contain;margin:0 auto 12px;padding:8px;background:#fff;border-radius:12px">':'<p style="padding:12px;border:1px dashed #c49a4a;border-radius:12px;text-align:center">Bank QR has not been configured yet. Please contact the Owner.</p>')+
-  '<form id="staffSubscriptionPaymentForm">'+
-  '<label style="display:block;margin:10px 0 5px;color:#d2deea;font-size:13px">Staff ID</label><input id="staffSubscriptionStaffId" required maxlength="32" style="width:100%;padding:12px;border-radius:10px;border:1px solid #49647d;background:#06182b;color:#fff;box-sizing:border-box" placeholder="Your Staff ID">'+
-  '<label style="display:block;margin:10px 0 5px;color:#d2deea;font-size:13px">Staff name</label><input id="staffSubscriptionStaffName" required maxlength="80" style="width:100%;padding:12px;border-radius:10px;border:1px solid #49647d;background:#06182b;color:#fff;box-sizing:border-box" placeholder="Your name">'+
-  '<label style="display:block;margin:10px 0 5px;color:#d2deea;font-size:13px">Payment slip image</label><input id="staffSubscriptionSlip" type="file" accept="image/*" required style="width:100%;padding:10px;border-radius:10px;border:1px solid #49647d;background:#06182b;color:#fff;box-sizing:border-box">'+
-  '<button type="submit" '+(price<=0||!qr?'disabled':'')+' style="width:100%;margin-top:14px">Submit payment for all Staff</button><p id="staffSubscriptionPaymentResult" role="status" style="font-size:13px;color:#d2deea"></p></form></div>';
+ root.innerHTML=
+  '<button type="button" id="staffOpenSubscription" class="staff-subscription-open">Monthly Subscription</button>'+
+  '<div id="staffSubscriptionFeeModal" class="staff-subscription-modal" hidden role="dialog" aria-modal="true" aria-labelledby="staffSubscriptionFeeTitle">'+
+   '<div class="staff-subscription-modal-card">'+
+    '<button type="button" class="staff-subscription-close" data-close-subscription="fee" aria-label="Close">×</button>'+
+    '<h2 id="staffSubscriptionFeeTitle">Monthly Subscription</h2>'+
+    '<div class="staff-subscription-fee-label">Monthly fee</div>'+
+    '<div class="staff-subscription-fee">฿'+price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+    '<p class="staff-subscription-note">One approved payment restores access for all Staff accounts for one month.</p>'+
+    (price>0&&qr?'<button type="button" id="staffOpenPayNow" class="staff-subscription-primary">Pay Now</button>':'<p class="staff-subscription-warning">Monthly fee or Bank QR has not been configured. Please contact the Owner.</p>')+
+   '</div>'+
+  '</div>'+
+  '<div id="staffSubscriptionPayModal" class="staff-subscription-modal" hidden role="dialog" aria-modal="true" aria-labelledby="staffSubscriptionPayTitle">'+
+   '<div class="staff-subscription-modal-card staff-subscription-pay-card">'+
+    '<button type="button" class="staff-subscription-close" data-close-subscription="pay" aria-label="Close">×</button>'+
+    '<h2 id="staffSubscriptionPayTitle">Pay Monthly Subscription</h2>'+
+    '<div class="staff-subscription-fee">฿'+price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'+
+    (qr?'<img class="staff-subscription-bank-qr" src="'+qr+'" alt="Bank payment QR">':'<p class="staff-subscription-warning">Bank QR has not been configured yet. Please contact the Owner.</p>')+
+    '<form id="staffSubscriptionPaymentForm">'+
+     '<label for="staffSubscriptionStaffId">Staff ID</label><input id="staffSubscriptionStaffId" required maxlength="32" autocomplete="off" placeholder="Your Staff ID">'+
+     '<label for="staffSubscriptionStaffName">Staff name</label><input id="staffSubscriptionStaffName" required maxlength="80" autocomplete="name" placeholder="Your name">'+
+     '<label for="staffSubscriptionSlip">Payment slip</label><input id="staffSubscriptionSlip" type="file" accept="image/*" required>'+
+     '<button type="submit" class="staff-subscription-primary" '+(price<=0||!qr?'disabled':'')+'>Payment Request</button>'+
+     '<p id="staffSubscriptionPaymentResult" class="staff-subscription-result" role="status"></p>'+
+    '</form>'+
+   '</div>'+
+  '</div>';
+ const feeModal=document.getElementById('staffSubscriptionFeeModal');
+ const payModal=document.getElementById('staffSubscriptionPayModal');
+ document.getElementById('staffOpenSubscription')?.addEventListener('click',()=>{feeModal.hidden=false});
+ document.getElementById('staffOpenPayNow')?.addEventListener('click',()=>{feeModal.hidden=true;payModal.hidden=false});
+ root.querySelectorAll('[data-close-subscription]').forEach(btn=>btn.addEventListener('click',()=>{const which=btn.dataset.closeSubscription;(which==='fee'?feeModal:payModal).hidden=true}));
+ [feeModal,payModal].forEach(modal=>modal?.addEventListener('click',e=>{if(e.target===modal)modal.hidden=true}));
  const form=document.getElementById('staffSubscriptionPaymentForm');
  if(form)form.onsubmit=async e=>{
-  e.preventDefault();const result=document.getElementById('staffSubscriptionPaymentResult'),btn=form.querySelector('button[type="submit"]');
+  e.preventDefault();
+  const result=document.getElementById('staffSubscriptionPaymentResult'),btn=form.querySelector('button[type="submit"]');
   try{
-   btn.disabled=true;btn.textContent='Submitting…';
+   btn.disabled=true;btn.textContent='Sending…';result.style.color='#d2deea';result.textContent='Uploading payment request…';
    const file=document.getElementById('staffSubscriptionSlip').files?.[0];
-   if(!file||!file.type.startsWith('image/'))throw new Error('Please select a payment slip image.');
+   if(!file||!file.type.startsWith('image/'))throw new Error('Please choose your bank payment slip image.');
    if(file.size>2400000)throw new Error('Please use a slip image smaller than 2.4 MB.');
-   const slip=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read the slip image.'));reader.readAsDataURL(file)});
-   const {error}=await sb.from('staff_subscription_payments').insert({staff_id:document.getElementById('staffSubscriptionStaffId').value.trim(),staff_name:document.getElementById('staffSubscriptionStaffName').value.trim(),amount:price,slip_data:slip});
+   const staffId=document.getElementById('staffSubscriptionStaffId').value.trim();
+   const staffName=document.getElementById('staffSubscriptionStaffName').value.trim();
+   if(!staffId||!staffName)throw new Error('Enter your Staff ID and name.');
+   const slip=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read the payment slip.'));reader.readAsDataURL(file)});
+   const {error}=await sb.from('staff_subscription_payments').insert({staff_id:staffId,staff_name:staffName,amount:price,slip_data:slip,status:'pending'});
    if(error)throw error;
-   result.textContent='Payment slip submitted. The Owner will review it. The subscription renewal will be recorded after Owner approval.';
+   result.style.color='#8de2b0';result.textContent='Payment Request sent successfully. The Owner will check your slip and approve access for all Staff.';
    form.reset();
-  }catch(err){result.textContent=err.message||String(err);result.style.color='#ff9aa6'}
-  finally{btn.disabled=price<=0||!qr;btn.textContent='Submit payment for all Staff'}
+  }catch(err){result.style.color='#ff9aa6';result.textContent=err.message||String(err)}
+  finally{btn.disabled=price<=0||!qr;btn.textContent='Payment Request'}
  };
 }
 async function checkStaffSiteAccess(){
