@@ -5386,7 +5386,7 @@ function bindOwnerStaffSiteAccessControl(){
 function renderStaffSubscriptionCardHtml(){
  return '<section class="panel" id="ownerStaffSubscriptionPanel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.55);border-radius:16px;background:linear-gradient(135deg,rgba(20,51,76,.96),rgba(8,25,42,.96))">'+
  '<h3 style="margin:0 0 6px">💳 Shared Staff Monthly Subscription</h3>'+
- '<p class="subtle" style="margin:0 0 12px">One payment is shared by all Normal Staff accounts. Owner approval renews the subscription and restores the Staff Website.</p>'+
+ '<p class="subtle" style="margin:0 0 12px">One payment is shared by all Normal Staff accounts. Each Owner approval records the exact start and expiry date, then renews for one calendar month.</p>'+
  '<div id="ownerStaffSubscriptionStatus" class="panel" style="padding:12px;margin-bottom:12px">Loading subscription…</div>'+
  '<label for="ownerStaffSubscriptionPrice">Monthly fee (THB)</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000" step="0.01" placeholder="Set monthly fee">'+
  '<label for="ownerStaffSubscriptionQr">Bank QR image</label><input id="ownerStaffSubscriptionQr" type="file" accept="image/*">'+
@@ -5409,7 +5409,7 @@ function bindOwnerStaffSubscription(){
  const saveQrDraft=async blob=>{const db=await openDraftDb();await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readwrite');tx.objectStore(draftStore).put({blob,name:blob.name||'Bank QR image',type:blob.type||'image/png',savedAt:Date.now()},draftKey);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('Could not preserve the selected QR image.'));tx.onabort=()=>reject(tx.error||new Error('QR draft storage was interrupted.'))});db.close()};
  const readQrDraft=async()=>{const db=await openDraftDb();const value=await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readonly'),req=tx.objectStore(draftStore).get(draftKey);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)});db.close();return value};
  const clearQrDraft=async()=>{try{const db=await openDraftDb();await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readwrite');tx.objectStore(draftStore).delete(draftKey);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){console.warn('Owner QR draft cleanup failed:',e)}};
- const fmtDate=v=>v?new Date(v).toLocaleString():'Not activated';
+ const fmtDate=v=>v?new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(v))+' (Thailand time)':'Not activated';
  const showQr=(src)=>{preview.src=src;preview.hidden=false;preview.style.display='block'};
  async function prepareBankQr(file){
   if(!file||!file.type||!file.type.startsWith('image/'))throw new Error('Please select a PNG, JPG, or WebP Bank QR image.');
@@ -5441,7 +5441,7 @@ function bindOwnerStaffSubscription(){
  }
  const load=async()=>{
   try{
-   const {data,error}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at,updated_at').eq('subscription_key','normal_staff').single();
+   const {data,error}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,starts_at,expires_at,updated_at').eq('subscription_key','normal_staff').single();
    if(error)throw error;if(!data)throw new Error('Subscription settings are missing.');
    priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
    if(savedQr){showQr(savedQr);await clearQrDraft()}
@@ -5452,8 +5452,14 @@ function bindOwnerStaffSubscription(){
      if(draft?.blob){result.textContent='Restoring the Bank QR image selected earlier…';savedQr=await prepareBankQr(draft.blob);showQr(savedQr);result.textContent='Your selected Bank QR image has been restored. Press Save fee and Bank QR to store it.'}
     }catch(draftError){result.textContent='Could not restore the temporary QR image: '+(draftError.message||String(draftError))}
    }
-   const active=!!data.expires_at&&new Date(data.expires_at).getTime()>Date.now();
-   status.textContent=(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED - NOT ACTIVATED')+' · Expires: '+fmtDate(data.expires_at)+' · Manual access switch is separate.';status.style.color=active?'#73dfa8':'#ff9aa6';
+   const now=Date.now(),expiryMs=data.expires_at?new Date(data.expires_at).getTime():0;
+   const active=!!expiryMs&&expiryMs>now,daysLeft=active?Math.ceil((expiryMs-now)/86400000):0;
+   status.innerHTML='<div class="owner-subscription-state"><strong class="owner-subscription-state-label"></strong><span class="owner-subscription-days"></span></div><div class="owner-subscription-period-grid"><div><small>START DATE</small><b class="owner-subscription-start"></b></div><div><small>EXPIRY DATE</small><b class="owner-subscription-expiry"></b></div></div><p class="owner-subscription-footnote">All Normal Staff accounts share this subscription. Dates and times are shown in Thailand time (UTC+7). Manual Staff Website Access Control remains a separate switch.</p>';
+   status.querySelector('.owner-subscription-state-label').textContent=active?'SUBSCRIPTION ACTIVE':(data.expires_at?'SUBSCRIPTION EXPIRED':'NOT ACTIVATED');
+   status.querySelector('.owner-subscription-days').textContent=active?(daysLeft+' day'+(daysLeft===1?'':'s')+' remaining'):'No active days';
+   status.querySelector('.owner-subscription-start').textContent=fmtDate(data.starts_at);
+   status.querySelector('.owner-subscription-expiry').textContent=fmtDate(data.expires_at);
+   status.style.color=active?'#73dfa8':'#ff9aa6';
   }catch(e){status.textContent='Could not load subscription: '+(e.message||String(e))}
   await loadPayments();
  };
@@ -7257,5 +7263,18 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
  .owner-settings-card-heading{margin-bottom:11px}
  #ownerStaffSiteAccessPanel,#ownerStaffSubscriptionPanel{padding:12px!important}
 }
+</style>
+
+<style id="pdk-owner-subscription-period-display-v1">
+#ownerStaffSubscriptionStatus{display:grid!important;gap:11px}
+.owner-subscription-state{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.owner-subscription-state-label{font-size:13px;letter-spacing:.35px;color:#ffd778}
+.owner-subscription-days{font-size:12px;font-weight:800;color:#f6f8fc;padding:5px 9px;border:1px solid #52718b;border-radius:999px;background:#0a2138}
+.owner-subscription-period-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.owner-subscription-period-grid>div{min-width:0;padding:10px;border:1px solid #315573;border-radius:12px;background:rgba(3,17,31,.42)}
+.owner-subscription-period-grid small{display:block;color:#aFC4d9;font-size:10px;font-weight:800;letter-spacing:.65px;margin-bottom:5px}
+.owner-subscription-period-grid b{display:block;color:#fff;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
+.owner-subscription-footnote{margin:0;color:#aFC4d9;font-size:10px;line-height:1.45}
+@media(max-width:420px){.owner-subscription-period-grid{gap:7px}.owner-subscription-period-grid>div{padding:8px}.owner-subscription-period-grid b{font-size:12px}}
 </style>
 </body></html>
