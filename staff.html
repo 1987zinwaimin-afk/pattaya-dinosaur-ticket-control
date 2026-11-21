@@ -2666,6 +2666,9 @@ function renderStaffSubscriptionPaymentPanel(){
  const sub=staffSubscriptionInfo||{};
  const price=Number(sub.monthly_price||0);
  const qr=sub.promptpay_qr_data||'';
+ const signature=[price,qr,sub.expires_at||''].join('|');
+ if(root.dataset.signature===signature)return;
+ root.dataset.signature=signature;
  root.innerHTML='<div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(232,190,104,.3);text-align:left">'+
   '<h2 style="margin:0 0 8px;color:#f3d18b;font-size:21px">Renew Staff Subscription</h2>'+
   '<p style="margin:0 0 12px;font-size:14px">One payment renews access for all Staff accounts for one month.</p>'+
