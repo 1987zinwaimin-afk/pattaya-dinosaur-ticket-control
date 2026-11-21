@@ -5475,7 +5475,7 @@ function bindOwnerStaffSubscription(){
   }catch(e){list.textContent='Could not load payment requests: '+(e.message||String(e))}
  }
  async function review(id,approve){
-  if(!window.confirm(approve?'Approve this payment and activate all Staff accounts for one month?':'Reject this payment request?'))return;
+  if(!window.confirm(approve?'Approve this payment and renew the shared subscription for one month? The manual Staff Website switch will remain unchanged.':'Reject this payment request?'))return;
   try{
    const {data,error}=await sb.rpc('staff_subscription_review_payment',{p_payment_id:id,p_approve:approve,p_note:''});
    if(error)throw error;
