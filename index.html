@@ -5449,13 +5449,25 @@ function bindOwnerStaffSubscription(){
    if(error)throw error;if(!data)throw new Error('Subscription settings are missing.');
    priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
    startDateInput.value=dateForInput(data.starts_at);expiryDateInput.value=dateForInput(data.expires_at);
-   if(savedQr){showQr(savedQr);await clearQrDraft()}
-   else{
-    preview.removeAttribute('src');preview.hidden=true;preview.style.display='none';
-    try{
-     const draft=await readQrDraft();
-     if(draft?.blob){result.textContent='Restoring the Bank QR image selected earlier…';savedQr=await prepareBankQr(draft.blob);showQr(savedQr);result.textContent='Your selected Bank QR image has been restored. Press Save fee and Bank QR to store it.'}
-    }catch(draftError){result.textContent='Could not restore the temporary QR image: '+(draftError.message||String(draftError))}
+   // Check the temporary replacement first: Android may reload the page after Gallery selection.
+   // A pending draft must take priority over the currently saved QR until the Owner confirms Save.
+   let restoredDraft=false;
+   try{
+    const draft=await readQrDraft();
+    if(draft?.blob){
+     result.textContent='Restoring the replacement Bank QR image selected earlier…';
+     savedQr=await prepareBankQr(draft.blob);
+     showQr(savedQr);
+     restoredDraft=true;
+     result.textContent='Replacement Bank QR restored. Press Save fee and Bank QR to activate it.';
+    }
+   }catch(draftError){
+    console.warn('Could not restore pending Bank QR replacement:',draftError);
+    result.textContent='Could not restore the selected replacement QR: '+(draftError.message||String(draftError));
+   }
+   if(!restoredDraft){
+    if(savedQr)showQr(savedQr);
+    else{preview.removeAttribute('src');preview.hidden=true;preview.style.display='none'}
    }
    const now=Date.now(),expiryMs=data.expires_at?new Date(data.expires_at).getTime():0;
    const active=!!expiryMs&&expiryMs>now,daysLeft=active?Math.ceil((expiryMs-now)/86400000):0;
