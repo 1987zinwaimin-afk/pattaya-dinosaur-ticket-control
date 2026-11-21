@@ -5388,6 +5388,7 @@ function renderStaffSubscriptionCardHtml(){
  '<h3 style="margin:0 0 6px">💳 Shared Staff Monthly Subscription</h3>'+
  '<p class="subtle" style="margin:0 0 12px">One payment is shared by all Normal Staff accounts. Each Owner approval records the exact start and expiry date, then renews for one calendar month.</p>'+
  '<div id="ownerStaffSubscriptionStatus" class="panel" style="padding:12px;margin-bottom:12px">Loading subscription…</div>'+
+ '<div class="owner-subscription-manual-dates"><h4>🗓️ Owner Date Control</h4><p>Set the exact dates that the shared Staff subscription should cover. The expiry date remains valid through the end of that day (Thailand time).</p><div class="owner-subscription-date-inputs"><label for="ownerStaffSubscriptionStartDate">START DATE<input id="ownerStaffSubscriptionStartDate" type="date"></label><label for="ownerStaffSubscriptionExpiryDate">EXPIRY DATE<input id="ownerStaffSubscriptionExpiryDate" type="date"></label></div><button type="button" class="gold" id="ownerStaffSubscriptionSaveDates">Save Subscription Dates</button><p id="ownerStaffSubscriptionDateResult" role="status"></p></div>'+
  '<label for="ownerStaffSubscriptionPrice">Monthly fee (THB)</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000" step="0.01" placeholder="Set monthly fee">'+
  '<label for="ownerStaffSubscriptionQr">Bank QR image</label><input id="ownerStaffSubscriptionQr" type="file" accept="image/*">'+
  '<img id="ownerStaffSubscriptionQrPreview" alt="PromptPay QR preview" hidden style="display:block;max-width:220px;max-height:220px;object-fit:contain;background:#fff;padding:8px;border-radius:12px;margin:10px 0">'+
@@ -5396,8 +5397,8 @@ function renderStaffSubscriptionCardHtml(){
  '<h4 style="margin:18px 0 8px">Payment requests</h4><div id="ownerStaffSubscriptionPayments" class="subtle">Loading payment requests…</div></section>';
 }
 function bindOwnerStaffSubscription(){
- const priceInput=document.getElementById('ownerStaffSubscriptionPrice'),qrInput=document.getElementById('ownerStaffSubscriptionQr'),preview=document.getElementById('ownerStaffSubscriptionQrPreview'),save=document.getElementById('ownerStaffSubscriptionSave'),status=document.getElementById('ownerStaffSubscriptionStatus'),result=document.getElementById('ownerStaffSubscriptionSaveResult'),list=document.getElementById('ownerStaffSubscriptionPayments');
- if(!priceInput||!qrInput||!preview||!save||!status||!result||!list||currentRole!=='owner')return;
+ const priceInput=document.getElementById('ownerStaffSubscriptionPrice'),qrInput=document.getElementById('ownerStaffSubscriptionQr'),preview=document.getElementById('ownerStaffSubscriptionQrPreview'),save=document.getElementById('ownerStaffSubscriptionSave'),status=document.getElementById('ownerStaffSubscriptionStatus'),result=document.getElementById('ownerStaffSubscriptionSaveResult'),list=document.getElementById('ownerStaffSubscriptionPayments'),startDateInput=document.getElementById('ownerStaffSubscriptionStartDate'),expiryDateInput=document.getElementById('ownerStaffSubscriptionExpiryDate'),saveDates=document.getElementById('ownerStaffSubscriptionSaveDates'),dateResult=document.getElementById('ownerStaffSubscriptionDateResult');
+ if(!priceInput||!qrInput||!preview||!save||!status||!result||!list||!startDateInput||!expiryDateInput||!saveDates||!dateResult||currentRole!=='owner')return;
  let savedQr='',busy=false,selectionVersion=0;
  const draftDbName='pdk-owner-bank-qr-drafts-v1',draftStore='qrDrafts',draftKey='normal_staff_subscription';
  const openDraftDb=()=>new Promise((resolve,reject)=>{
@@ -5410,6 +5411,7 @@ function bindOwnerStaffSubscription(){
  const readQrDraft=async()=>{const db=await openDraftDb();const value=await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readonly'),req=tx.objectStore(draftStore).get(draftKey);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)});db.close();return value};
  const clearQrDraft=async()=>{try{const db=await openDraftDb();await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readwrite');tx.objectStore(draftStore).delete(draftKey);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){console.warn('Owner QR draft cleanup failed:',e)}};
  const fmtDate=v=>v?new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(v))+' (Thailand time)':'Not activated';
+ const dateForInput=v=>{if(!v)return '';const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(v));const get=t=>parts.find(p=>p.type===t)?.value||'';return get('year')+'-'+get('month')+'-'+get('day')};
  const showQr=(src)=>{preview.src=src;preview.hidden=false;preview.style.display='block'};
  async function prepareBankQr(file){
   if(!file||!file.type||!file.type.startsWith('image/'))throw new Error('Please select a PNG, JPG, or WebP Bank QR image.');
@@ -5444,6 +5446,7 @@ function bindOwnerStaffSubscription(){
    const {data,error}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,starts_at,expires_at,updated_at').eq('subscription_key','normal_staff').single();
    if(error)throw error;if(!data)throw new Error('Subscription settings are missing.');
    priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
+   startDateInput.value=dateForInput(data.starts_at);expiryDateInput.value=dateForInput(data.expires_at);
    if(savedQr){showQr(savedQr);await clearQrDraft()}
    else{
     preview.removeAttribute('src');preview.hidden=true;preview.style.display='none';
@@ -5482,6 +5485,22 @@ function bindOwnerStaffSubscription(){
    result.textContent='Bank QR upload failed: '+(e.message||String(e));
    qrInput.value='';
   }finally{if(thisSelection===selectionVersion)save.disabled=false}
+ });
+ saveDates.addEventListener('click',async e=>{
+  e.preventDefault();e.stopPropagation();
+  if(saveDates.disabled)return;
+  const startDate=startDateInput.value,expiryDate=expiryDateInput.value;
+  if(!startDate||!expiryDate){dateResult.textContent='Please select both START DATE and EXPIRY DATE.';return}
+  if(expiryDate<startDate){dateResult.textContent='EXPIRY DATE must be the same as or later than START DATE.';return}
+  saveDates.disabled=true;saveDates.textContent='Saving dates…';dateResult.textContent='Saving the Owner-selected subscription period…';
+  try{
+   const {data,error}=await sb.rpc('staff_subscription_set_dates',{p_start_date:startDate,p_expiry_date:expiryDate});
+   if(error)throw error;
+   if(!data?.success)throw new Error('The database did not confirm the date update.');
+   dateResult.textContent='Subscription dates saved successfully. Staff coverage now follows the selected dates.';
+   await load();
+  }catch(e){dateResult.textContent='Could not save dates: '+(e.message||String(e));console.error('Owner subscription date save failed:',e)}
+  finally{saveDates.disabled=false;saveDates.textContent='Save Subscription Dates'}
  });
  save.addEventListener('click',async e=>{
   e.preventDefault();e.stopPropagation();
@@ -7276,5 +7295,17 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
 .owner-subscription-period-grid b{display:block;color:#fff;font-size:13px;line-height:1.4;overflow-wrap:anywhere}
 .owner-subscription-footnote{margin:0;color:#aFC4d9;font-size:10px;line-height:1.45}
 @media(max-width:420px){.owner-subscription-period-grid{gap:7px}.owner-subscription-period-grid>div{padding:8px}.owner-subscription-period-grid b{font-size:12px}}
+</style>
+
+<style id="pdk-owner-subscription-manual-dates-v1">
+.owner-subscription-manual-dates{margin:14px 0;padding:13px;border:1px solid rgba(244,202,112,.42);border-radius:14px;background:rgba(4,20,35,.48)}
+.owner-subscription-manual-dates h4{margin:0 0 5px;color:#ffda87;font-size:14px}
+.owner-subscription-manual-dates>p{margin:0 0 11px;color:#b8c9d8;font-size:11px;line-height:1.5}
+.owner-subscription-date-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.owner-subscription-date-inputs label{display:block;min-width:0;color:#d7e3ed;font-size:10px;font-weight:800;letter-spacing:.5px}
+.owner-subscription-date-inputs input{display:block;width:100%;min-width:0;box-sizing:border-box;margin-top:6px;padding:10px;border:1px solid #49657d;border-radius:10px;background:#0b2135;color:#fff;color-scheme:dark;font:inherit;font-size:13px}
+#ownerStaffSubscriptionSaveDates{width:100%;margin-top:2px}
+#ownerStaffSubscriptionDateResult{margin:8px 0 0;color:#b8c9d8;font-size:11px;line-height:1.45}
+@media(max-width:420px){.owner-subscription-manual-dates{padding:10px}.owner-subscription-date-inputs{gap:7px}.owner-subscription-date-inputs input{padding:9px 6px;font-size:12px}}
 </style>
 </body></html>
