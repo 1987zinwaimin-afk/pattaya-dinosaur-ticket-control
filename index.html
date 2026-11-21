@@ -5119,7 +5119,7 @@ async function chatUnsendMessage(id,isGroup){
   // The chat tables intentionally allow senders to UPDATE their own messages,
   // but do not grant client-side DELETE. Mark the message as unsent instead.
   const {data,error}=await sb.from(table)
-   .update({deleted_at:new Date().toISOString(),body:'',image_path:null})
+   .update({deleted_at:new Date().toISOString(),body:'[Message unsent]',image_path:null})
    .eq('id',id).in('sender_id',senderIds).is('deleted_at',null)
    .select('id,deleted_at').maybeSingle();
   if(error||!data)throw error||new Error('Permission denied or message already changed.');
