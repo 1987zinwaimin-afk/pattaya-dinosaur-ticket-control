@@ -5386,7 +5386,7 @@ function bindOwnerStaffSiteAccessControl(){
 function renderStaffSubscriptionCardHtml(){
  return '<section class="panel" id="ownerStaffSubscriptionPanel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.55);border-radius:16px;background:linear-gradient(135deg,rgba(20,51,76,.96),rgba(8,25,42,.96))">'+
  '<h3 style="margin:0 0 6px">💳 Shared Staff Monthly Subscription</h3>'+
- '<p class="subtle" style="margin:0 0 12px">One monthly payment renews the shared subscription for all Normal Staff accounts. This is separate from the manual Staff Website Access Control switch.</p>'+
+ '<p class="subtle" style="margin:0 0 12px">One payment is shared by all Normal Staff accounts. Owner approval renews the subscription and restores the Staff Website.</p>'+
  '<div id="ownerStaffSubscriptionStatus" class="panel" style="padding:12px;margin-bottom:12px">Loading subscription…</div>'+
  '<label for="ownerStaffSubscriptionPrice">Monthly fee (THB)</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000" step="0.01" placeholder="Set monthly fee">'+
  '<label for="ownerStaffSubscriptionQr">Bank QR image</label><input id="ownerStaffSubscriptionQr" type="file" accept="image/*">'+
@@ -5475,7 +5475,7 @@ function bindOwnerStaffSubscription(){
   }catch(e){list.textContent='Could not load payment requests: '+(e.message||String(e))}
  }
  async function review(id,approve){
-  if(!window.confirm(approve?'Approve this payment and renew the shared subscription for one month? The manual Staff Website switch will remain unchanged.':'Reject this payment request?'))return;
+  if(!window.confirm(approve?'Approve this payment and renew the shared subscription for one month? This will reopen the Staff Website for all Staff accounts.':'Reject this payment request?'))return;
   try{
    const {data,error}=await sb.rpc('staff_subscription_review_payment',{p_payment_id:id,p_approve:approve,p_note:''});
    if(error)throw error;
