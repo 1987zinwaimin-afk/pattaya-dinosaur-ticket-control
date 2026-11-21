@@ -5285,6 +5285,71 @@ async function sendOwnerEmergencyAlarm(button){
  }catch(e){await window.showEmergencyAlarmDialog({mode:'error',title:'Alarm could not be sent',message:e.message||String(e)})}
  finally{if(btn){btn.disabled=false;btn.textContent='🚨';}}
 }
+
+function renderStaffSiteAccessCardHtml(){
+ return '<section class="panel" id="ownerStaffSiteAccessPanel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.55);border-radius:16px;background:linear-gradient(135deg,rgba(20,51,76,.96),rgba(8,25,42,.96))">'+
+ '<h3 style="margin:0 0 6px">🔐 Staff Website Access Control</h3>'+
+ '<p class="subtle" style="margin:0 0 12px">Owner can temporarily close or reopen the entire Normal Staff website. Existing Staff sessions are signed out when access is closed. Ticket, payroll, profile and chat records are kept.</p>'+
+ '<div id="ownerStaffAccessStatus" role="status" aria-live="polite" style="padding:12px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px">Checking Staff Website status…</div>'+
+ '<button type="button" class="gold" id="ownerStaffAccessToggle" style="width:100%" disabled>Loading access status…</button>'+
+ '<p id="ownerStaffAccessUpdated" class="subtle" style="margin:9px 0 0"></p></section>';
+}
+function bindOwnerStaffSiteAccessControl(){
+ const button=document.getElementById('ownerStaffAccessToggle');
+ const status=document.getElementById('ownerStaffAccessStatus');
+ const updated=document.getElementById('ownerStaffAccessUpdated');
+ if(!button||!status||!updated||currentRole!=='owner')return;
+ let isOpen=null,busy=false;
+ const paint=(open,stamp)=>{
+  isOpen=!!open;
+  status.style.borderColor=isOpen?'rgba(73,190,130,.55)':'rgba(239,95,112,.65)';
+  status.style.background=isOpen?'rgba(35,130,86,.14)':'rgba(160,45,58,.16)';
+  status.innerHTML=isOpen?'<strong style="color:#73dfa8">● STAFF WEBSITE OPEN</strong><div class="subtle" style="margin-top:5px">Staff can sign in and use the website.</div>':'<strong style="color:#ff9aa6">● STAFF WEBSITE CLOSED</strong><div class="subtle" style="margin-top:5px">All Staff sessions are blocked. Reopen access to allow Staff to sign in again.</div>';
+  button.disabled=busy;
+  button.textContent=isOpen?'🔒 Close Staff Website':'🔓 Re-open Staff Website';
+  updated.textContent=stamp?'Last changed: '+new Date(stamp).toLocaleString():'';
+ };
+ const load=async()=>{
+  if(busy)return;
+  button.disabled=true;button.textContent='Checking…';
+  try{
+   const {data,error}=await sb.from('staff_site_access_control').select('is_open,updated_at').eq('control_key','normal_staff').single();
+   if(error)throw error;
+   if(!data)throw new Error('Staff access setting was not found.');
+   paint(data.is_open,data.updated_at);
+  }catch(error){
+   isOpen=null;status.textContent='Could not read Staff Website status: '+(error.message||String(error));
+   button.disabled=true;button.textContent='Access status unavailable';
+   console.error('Owner Staff Website access load failed:',error);
+  }
+ };
+ button.onclick=async()=>{
+  if(busy||isOpen===null)return;
+  const next=!isOpen;
+  const prompt=next?'Re-open the Staff website for all Staff accounts?':'Close the Staff website for all Staff accounts now? Active Staff sessions will be signed out. No records will be deleted.';
+  if(!window.confirm(prompt))return;
+  busy=true;button.disabled=true;button.textContent='Saving…';
+  try{
+   const {data,error}=await sb.from('staff_site_access_control').update({is_open:next,updated_at:new Date().toISOString(),updated_by:currentUser?.id||null}).eq('control_key','normal_staff').select('is_open,updated_at').single();
+   if(error)throw error;
+   if(!data)throw new Error('No access-control row was updated.');
+   paint(data.is_open,data.updated_at);
+   status.insertAdjacentHTML('beforeend','<div style="margin-top:7px;font-weight:700">'+(data.is_open?'Staff website reopened.':'Staff website closed.')+'</div>');
+  }catch(error){
+   status.textContent='Could not save Staff Website setting: '+(error.message||String(error));
+   console.error('Owner Staff Website access update failed:',error);
+   await load();
+  }finally{busy=false;button.disabled=isOpen===null; if(isOpen!==null)button.textContent=isOpen?'🔒 Close Staff Website':'🔓 Re-open Staff Website';}
+ };
+ load();
+ if(!window.ownerStaffAccessRealtimeChannel){
+  window.ownerStaffAccessRealtimeChannel=sb.channel('owner-staff-site-access-control')
+   .on('postgres_changes',{event:'UPDATE',schema:'public',table:'staff_site_access_control',filter:'control_key=eq.normal_staff'},payload=>{
+    if(payload?.new&&typeof payload.new.is_open==='boolean')paint(payload.new.is_open,payload.new.updated_at);
+   }).subscribe();
+ }
+}
+
 function renderSettings(){
  const root=document.getElementById('pageContent');
  if(!root)return;
@@ -5295,9 +5360,10 @@ function renderSettings(){
    '<div class="summary-row"><span>Language / ภาษา / ဘာသာစကား</span><select id="ownerSettingsLanguage" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div>'+
    '<div class="summary-row"><span>Display theme</span><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div>'+
    (currentRole==='owner'?'<section class="panel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.4);border-radius:16px"><h3 style="margin:0 0 6px">🔔 Owner Notification Sound & Thai Voice</h3><p class="subtle" style="margin:0 0 12px">Choose the sound for Staff Login and Emergency Alarm notifications on this Owner device.</p><label for="ownerNotifySound">Notification sound</label><select id="ownerNotifySound"><option value="bell">🔔 Bell — Classic</option><option value="ding">🔔 Ding — Short</option><option value="alert">🚨 Alert — Double tone</option></select><div class="actions" style="margin:8px 0 14px"><button type="button" id="ownerTestNotifySound">▶ Test notification sound</button></div><div style="padding:12px;border:1px solid var(--line);border-radius:12px"><label style="display:flex;align-items:center;gap:10px;color:var(--text)"><input id="ownerThaiVoiceEnabled" type="checkbox" style="width:20px;height:20px"> Enable Thai voice announcement</label><p class="subtle" style="margin:8px 0">เฮียเข้าไปในสวนแล้ว</p><label for="ownerThaiVoiceSelect">Thai voice selection</label><select id="ownerThaiVoiceSelect"></select><div class="actions" style="margin-top:8px"><button type="button" id="ownerTestThaiVoice">▶ Test Thai voice</button><button type="button" id="ownerRefreshThaiVoices">↻ Refresh voices</button></div></div><button type="button" class="gold" id="ownerSaveNotifyPrefs" style="width:100%;margin-top:12px">Save notification settings</button><p id="ownerNotifySaved" class="subtle" role="status" style="display:none;margin:10px 0 0"></p><p class="subtle" style="margin:10px 0 0">Note: Custom sound and Thai speech work while the Owner website is open. When the app is closed, Android/iOS uses the system notification sound configured in phone settings.</p></section>':'')+
-   (currentRole==='owner'?renderEventLocationsSettingsHtml():'')+
+   (currentRole==='owner'?renderStaffSiteAccessCardHtml():'')+
+    (currentRole==='owner'?renderEventLocationsSettingsHtml():'')
    '<button type="button" class="gold" id="ownerExportBackup">Export ticket backup (JSON)</button></section>';
-  if(currentRole==='owner'){bindEventLocationManager();bindOwnerNotificationSettings();}
+  if(currentRole==='owner'){bindEventLocationManager();bindOwnerNotificationSettings();bindOwnerStaffSiteAccessControl();}
   const language=root.querySelector('#ownerSettingsLanguage');
   const themeSelect=root.querySelector('#ownerSettingsTheme');
   if(language){language.value=lang;language.addEventListener('change',()=>{lang=language.value;localStorage.setItem('tctl-lang',lang);render(true);applyUILanguage()});}
