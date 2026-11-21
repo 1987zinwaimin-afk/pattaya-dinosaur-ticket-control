@@ -3621,7 +3621,7 @@ document.getElementById('authForm').onsubmit=async e=>{
  }
 };
 let restoringSavedSession=false;
-async async function restoreSavedSession(){
+async function restoreSavedSession(){
  if(restoringSavedSession||currentUser)return;
  if(!(await checkStaffSiteAccess()))return;
  restoringSavedSession=true;
