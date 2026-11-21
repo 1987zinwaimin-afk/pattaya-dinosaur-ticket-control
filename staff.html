@@ -2618,7 +2618,7 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 <section id="pageContent"></section>
 </main>
 
-<div id="staffSiteAccessOverlay" role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">တောင်းပန်ပါတယ်ခင်ဗျာ။ အခုချိန်မှာ Staff Account ကို အသုံးပြုလို့ မရသေးပါဘူးခင်ဗျာ။ ပြုပြင်နေဆဲမို့ ကျေးဇူးပြုပြီး ခေတ္တစောင့်ဆိုင်းပေးပါခင်ဗျာ။ ပြန်လည်အသုံးပြုလို့ရပါက အားလုံးရဲ့ဖုန်းတွေမှာ Noti တက်လာပေးပါလိမ့်မယ်ခင်ဗျာ။</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button></div></div><div class="auth-screen" id="authScreen"><div class="auth-card">
+<div id="staffSiteAccessOverlay" role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button></div></div><div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
 <form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="all">All Departments</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
@@ -2640,7 +2640,7 @@ function renderStaffSiteAccessGate(mode,detail=''){
  const overlay=document.getElementById('staffSiteAccessOverlay');
  const message=document.getElementById('staffSiteAccessMessage');
  if(!overlay||!message)return;
- message.textContent='တောင်းပန်ပါတယ်ခင်ဗျာ။ အခုချိန်မှာ Staff Account ကို အသုံးပြုလို့ မရသေးပါဘူးခင်ဗျာ။ ပြုပြင်နေဆဲမို့ ကျေးဇူးပြုပြီး ခေတ္တစောင့်ဆိုင်းပေးပါခင်ဗျာ။ ပြန်လည်အသုံးပြုလို့ရပါက အားလုံးရဲ့ဖုန်းတွေမှာ Noti တက်လာပေးပါလိမ့်မယ်ခင်ဗျာ။';
+ message.textContent='We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.';
  overlay.hidden=false;
 }
 async function checkStaffSiteAccess(){
