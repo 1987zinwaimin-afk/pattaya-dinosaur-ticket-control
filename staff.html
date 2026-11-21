@@ -2595,8 +2595,9 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 #staffSiteAccessOverlay{position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:22px;box-sizing:border-box;background:radial-gradient(ellipse at top,#173b58 0%,#071827 58%,#030b13 100%);color:#f4f7fb}
 #staffSiteAccessOverlay[hidden]{display:none!important}
 #staffSiteAccessOverlay .staff-site-access-card{width:min(100%,520px);box-sizing:border-box;padding:26px 22px;border:1px solid rgba(232,190,104,.55);border-radius:22px;background:linear-gradient(145deg,rgba(19,51,76,.98),rgba(7,22,37,.98));box-shadow:0 20px 70px rgba(0,0,0,.45);text-align:center}
-#staffSiteAccessOverlay h1{margin:8px 0 12px;color:#f3d18b;font-size:clamp(24px,6vw,34px);line-height:1.2}
-#staffSiteAccessOverlay p{color:#d2deea;line-height:1.6;margin:8px 0}
+#staffSiteAccessOverlay h1{margin:0 0 8px;color:#f3d18b;font-size:clamp(76px,22vw,112px);font-weight:900;letter-spacing:.025em;line-height:1;text-shadow:0 5px 24px rgba(0,0,0,.38)}
+#staffSiteAccessOverlay #staffSiteAccessDetail{margin:0 0 22px;color:#f0d18e;font-size:clamp(17px,4.8vw,22px);font-weight:800;letter-spacing:.08em;overflow-wrap:anywhere}
+#staffSiteAccessOverlay p{color:#d2deea;line-height:1.6;margin:8px 0;font-size:clamp(16px,4vw,19px)}
 #staffSiteAccessOverlay button{margin-top:14px;min-height:48px;padding:10px 22px;border:1px solid #e7c77f;border-radius:13px;background:linear-gradient(135deg,#f4d88f,#dcae51);color:#17283a;font-weight:800;font-size:16px}
 </style>
 </head>
@@ -2639,8 +2640,21 @@ let staffSiteAccessOpen=null,staffSiteAccessCheckPromise=null,staffSiteAccessPol
 function renderStaffSiteAccessGate(mode,detail=''){
  const overlay=document.getElementById('staffSiteAccessOverlay');
  const message=document.getElementById('staffSiteAccessMessage');
- if(!overlay||!message)return;
- message.textContent='We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.';
+ const title=document.getElementById('staffSiteAccessTitle');
+ const code=document.getElementById('staffSiteAccessDetail');
+ const retry=document.getElementById('staffSiteAccessRetry');
+ if(!overlay||!message||!title||!code||!retry)return;
+ if(mode==='closed'){
+  title.textContent='404';
+  code.textContent='DEPLOYMENT_NOT_FOUND';
+  message.textContent='Once access is restored, everyone will receive a notification on their phones.';
+  title.hidden=false;code.hidden=false;message.hidden=false;retry.hidden=true;
+ }else{
+  title.textContent='Staff access unavailable';
+  code.textContent='Please check your connection and try again.';
+  message.textContent='We cannot verify Staff website access right now. Access remains blocked until the Owner setting can be checked.';
+  title.hidden=false;code.hidden=false;message.hidden=false;retry.hidden=false;
+ }
  overlay.hidden=false;
 }
 async function checkStaffSiteAccess(){
