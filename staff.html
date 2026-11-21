@@ -5192,7 +5192,7 @@ installUILanguageObserver();applyUILanguage();
   if(!forceAfterWelcome&&!window.__staffWelcomeDismissed)return;
   checking=true;
   try{
-   if(!window.sb||!currentUser||currentRole!=='staff')return;
+   if(typeof sb==='undefined'||!sb||!currentUser||currentRole!=='staff')return;
    const {data,error}=await sb.from('staff_subscription').select('expires_at').eq('subscription_key','normal_staff').maybeSingle();
    if(error)throw error;
    if(!data||!data.expires_at)return;
