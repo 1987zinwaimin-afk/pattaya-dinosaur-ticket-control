@@ -5386,12 +5386,12 @@ function bindOwnerStaffSiteAccessControl(){
 function renderStaffSubscriptionCardHtml(){
  return '<section class="panel" id="ownerStaffSubscriptionPanel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.55);border-radius:16px;background:linear-gradient(135deg,rgba(20,51,76,.96),rgba(8,25,42,.96))">'+
  '<h3 style="margin:0 0 6px">💳 Shared Staff Monthly Subscription</h3>'+
- '<p class="subtle" style="margin:0 0 12px">One monthly payment activates every Normal Staff account. Owner access remains available. Configure the fee and PromptPay QR below.</p>'+
+ '<p class="subtle" style="margin:0 0 12px">One monthly payment renews the shared subscription for all Normal Staff accounts. This is separate from the manual Staff Website Access Control switch.</p>'+
  '<div id="ownerStaffSubscriptionStatus" class="panel" style="padding:12px;margin-bottom:12px">Loading subscription…</div>'+
  '<label for="ownerStaffSubscriptionPrice">Monthly fee (THB)</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000" step="0.01" placeholder="Set monthly fee">'+
- '<label for="ownerStaffSubscriptionQr">PromptPay QR image</label><input id="ownerStaffSubscriptionQr" type="file" accept="image/*">'+
+ '<label for="ownerStaffSubscriptionQr">Bank QR image</label><input id="ownerStaffSubscriptionQr" type="file" accept="image/*">'+
  '<img id="ownerStaffSubscriptionQrPreview" alt="PromptPay QR preview" hidden style="display:block;max-width:220px;max-height:220px;object-fit:contain;background:#fff;padding:8px;border-radius:12px;margin:10px 0">'+
- '<button type="button" class="gold" id="ownerStaffSubscriptionSave" style="width:100%;margin-top:12px">Save fee and PromptPay QR</button>'+
+ '<button type="button" class="gold" id="ownerStaffSubscriptionSave" style="width:100%;margin-top:12px">Save fee and Bank QR</button>'+
  '<p id="ownerStaffSubscriptionSaveResult" class="subtle" role="status"></p>'+
  '<h4 style="margin:18px 0 8px">Payment requests</h4><div id="ownerStaffSubscriptionPayments" class="subtle">Loading payment requests…</div></section>';
 }
@@ -5407,25 +5407,51 @@ function bindOwnerStaffSubscription(){
    priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
    if(savedQr){preview.src=savedQr;preview.hidden=false;preview.style.display='block'}else{preview.hidden=true;preview.style.display='none'}
    const active=!!data.expires_at&&new Date(data.expires_at).getTime()>Date.now();
-   status.innerHTML='<strong style="color:'+(active?'#73dfa8':'#ff9aa6')+'">'+(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED / NOT ACTIVATED')+'</strong><div class="subtle" style="margin-top:6px">Expires: '+fmtDate(data.expires_at)+'</div><div class="subtle">All Normal Staff accounts: '+(active?'eligible to access':'blocked until approval')+'</div>';
+   status.innerHTML='<strong style="color:'+(active?'#73dfa8':'#ff9aa6')+'">'+(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED / NOT ACTIVATED')+'</strong><div class="subtle" style="margin-top:6px">Expires: '+fmtDate(data.expires_at)+'</div><div class="subtle">Subscription renewal: '+(active?'active':'awaiting payment approval')+' · Manual access switch is controlled separately+'</div>';
   }catch(e){status.textContent='Could not load subscription: '+(e.message||String(e))}
   await loadPayments();
  };
+ async function prepareBankQr(file){
+  if(!file||!file.type.startsWith('image/'))throw new Error('Please choose a Bank QR image.');
+  if(file.size>8000000)throw new Error('Choose an image smaller than 8 MB.');
+  let bitmap;
+  try{bitmap=await createImageBitmap(file)}catch(_){
+   bitmap=await new Promise((resolve,reject)=>{const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not read the Bank QR image.'))};img.src=url});
+  }
+  let width=bitmap.width,height=bitmap.height;
+  const scale=Math.min(1,1200/Math.max(width,height));width=Math.max(1,Math.round(width*scale));height=Math.max(1,Math.round(height*scale));
+  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{alpha:false});
+  for(const maxSide of [1200,1000,850,700]){
+   const factor=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+   canvas.width=Math.max(1,Math.round(bitmap.width*factor));canvas.height=Math.max(1,Math.round(bitmap.height*factor));
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+   const data=canvas.toDataURL('image/png');
+   if(data.length<=1650000){if(bitmap.close)bitmap.close();return data;}
+  }
+  if(bitmap.close)bitmap.close();
+  throw new Error('Bank QR image is still too large after safe resizing. Please use a clearer, smaller QR image.');
+ }
  qrInput.onchange=async()=>{
   const file=qrInput.files?.[0];if(!file)return;
-  if(!file.type.startsWith('image/')||file.size>1800000){result.textContent='Choose an image smaller than 1.8 MB.';qrInput.value='';return}
-  try{savedQr=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||''));r.onerror=()=>reject(new Error('Could not read QR image'));r.readAsDataURL(file)});preview.src=savedQr;preview.hidden=false;preview.style.display='block';}catch(e){result.textContent=e.message}
+  try{result.textContent='Preparing Bank QR…';savedQr=await prepareBankQr(file);preview.src=savedQr;preview.hidden=false;preview.style.display='block';result.textContent='Bank QR ready. Press Save to store the fee and QR.'}
+  catch(e){savedQr='';preview.hidden=true;result.textContent=e.message||String(e);qrInput.value=''}
  };
  save.onclick=async()=>{
   if(busy)return;const amount=Number(priceInput.value);
   if(!Number.isFinite(amount)||amount<=0){result.textContent='Enter a monthly fee greater than zero.';return}
-  if(!savedQr){result.textContent='Please upload your PromptPay QR image.';return}
-  busy=true;save.disabled=true;save.textContent='Saving…';
+  if(!savedQr){result.textContent='Please upload your Bank QR image.';return}
+  busy=true;save.disabled=true;save.textContent='Saving…';result.textContent='Saving monthly fee and Bank QR…';
   try{
-   const {error}=await sb.from('staff_subscription').update({monthly_price:amount,promptpay_qr_data:savedQr,updated_at:new Date().toISOString(),updated_by:currentUser?.id||null}).eq('subscription_key','normal_staff');
-   if(error)throw error;result.textContent='Monthly fee and PromptPay QR saved.';
-  }catch(e){result.textContent='Save failed: '+(e.message||String(e))}
-  finally{busy=false;save.disabled=false;save.textContent='Save fee and PromptPay QR'}
+   const {data:rpcData,error}=await sb.rpc('staff_subscription_save_settings',{p_monthly_price:amount,p_qr_data:savedQr});
+   if(error)throw error;
+   const {data:verified,error:verifyError}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,updated_at').eq('subscription_key','normal_staff').single();
+   if(verifyError)throw verifyError;
+   if(!verified||Number(verified.monthly_price)!==amount||verified.promptpay_qr_data!==savedQr)throw new Error('Save verification failed. Please try again.');
+   result.textContent='Saved and verified. Monthly fee and Bank QR are now active in the shared subscription settings.';
+   await load();
+  }catch(e){result.textContent='Save failed: '+(e.message||String(e));console.error('Owner Staff subscription settings save failed:',e)}
+  finally{busy=false;save.disabled=false;save.textContent='Save fee and Bank QR'}
  };
  async function loadPayments(){
   try{
