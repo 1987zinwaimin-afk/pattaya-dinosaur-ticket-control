@@ -2768,10 +2768,9 @@ function renderStaffSiteAccessGate(mode,detail=''){
  const pay=document.getElementById('staffSubscriptionPaymentPanel');
  if(!overlay||!message||!title||!code||!retry)return;
  if(mode==='closed'){
-  title.textContent='STAFF WEBSITE PAUSED';
-  code.textContent='MONTHLY SUBSCRIPTION REQUIRED';
-  message.textContent='The shared Staff subscription has expired or the Owner has temporarily closed Staff access. One Staff member can submit the monthly payment for the whole team. Owner approval will reactivate every Staff account.';
-  title.hidden=false;code.hidden=false;message.hidden=false;retry.hidden=false;retry.textContent='Check subscription status';
+  // Keep the original maintenance message for the independent manual access switch.
+  message.textContent='We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.';
+  message.hidden=false;title.hidden=true;code.hidden=true;retry.hidden=true;
   if(pay){pay.hidden=false;renderStaffSubscriptionPaymentPanel();}
  }else{
   title.textContent='Staff access unavailable';
@@ -2793,7 +2792,7 @@ function renderStaffSubscriptionPaymentPanel(){
  root.dataset.signature=signature;
  root.innerHTML='<div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(232,190,104,.3);text-align:left">'+
   '<h2 style="margin:0 0 8px;color:#f3d18b;font-size:21px">Renew Staff Subscription</h2>'+
-  '<p style="margin:0 0 12px;font-size:14px">One payment renews access for all Staff accounts for one month.</p>'+
+  '<p style="margin:0 0 12px;font-size:14px">One payment renews the shared Staff subscription for one month. This is separate from the Owner's manual website access switch.</p>'+
   '<div style="padding:12px;border:1px solid rgba(232,190,104,.35);border-radius:13px;text-align:center;margin-bottom:12px"><div style="font-size:13px;color:#c7d6e4">Monthly fee</div><strong style="display:block;color:#ffdc8d;font-size:30px">฿'+price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>'+
   (sub.expires_at?'<div style="font-size:12px;color:#c7d6e4">Last expiry: '+new Date(sub.expires_at).toLocaleDateString()+'</div>':'<div style="font-size:12px;color:#c7d6e4">Subscription not activated yet</div>')+'</div>'+
   (qr?'<img src="'+qr+'" alt="PromptPay QR" style="display:block;width:min(100%,260px);max-height:260px;object-fit:contain;margin:0 auto 12px;padding:8px;background:#fff;border-radius:12px">':'<p style="padding:12px;border:1px dashed #c49a4a;border-radius:12px;text-align:center">PromptPay QR has not been configured yet. Please contact the Owner.</p>')+
@@ -2813,7 +2812,7 @@ function renderStaffSubscriptionPaymentPanel(){
    const slip=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read the slip image.'));reader.readAsDataURL(file)});
    const {error}=await sb.from('staff_subscription_payments').insert({staff_id:document.getElementById('staffSubscriptionStaffId').value.trim(),staff_name:document.getElementById('staffSubscriptionStaffName').value.trim(),amount:price,slip_data:slip});
    if(error)throw error;
-   result.textContent='Payment slip submitted. The Owner will review it. All Staff accounts will reopen after approval.';
+   result.textContent='Payment slip submitted. The Owner will review it. The subscription renewal will be recorded after Owner approval.';
    form.reset();
   }catch(err){result.textContent=err.message||String(err);result.style.color='#ff9aa6'}
   finally{btn.disabled=price<=0||!qr;btn.textContent='Submit payment for all Staff'}
@@ -2823,20 +2822,20 @@ async function checkStaffSiteAccess(){
  if(staffSiteAccessCheckPromise)return staffSiteAccessCheckPromise;
  staffSiteAccessCheckPromise=(async()=>{
   try{
-   const [{data,error},{data:sub,error:subError}]=await Promise.all([
-    sb.from('staff_site_access_control').select('is_open').eq('control_key','normal_staff').single(),
-    sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at').eq('subscription_key','normal_staff').single()
-   ]);
-   if(error)throw error;if(subError)throw subError;
-   if(!data||typeof data.is_open!=='boolean'||!sub)throw new Error('Staff subscription/access settings are missing or invalid.');
-   staffSubscriptionInfo=sub;
-   const subscriptionActive=!!sub.expires_at&&new Date(sub.expires_at).getTime()>Date.now();
-   staffSiteAccessOpen=data.is_open===true&&subscriptionActive;
+   const {data,error}=await sb.from('staff_site_access_control').select('is_open').eq('control_key','normal_staff').single();
+   if(error)throw error;
+   if(!data||typeof data.is_open!=='boolean')throw new Error('Staff access setting is missing or invalid.');
+   // Subscription is intentionally independent: it never overrides this manual switch.
+   try{
+    const {data:sub,error:subError}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at').eq('subscription_key','normal_staff').single();
+    if(!subError&&sub)staffSubscriptionInfo=sub;
+   }catch(subscriptionReadError){console.warn('Separate Staff subscription details unavailable:',subscriptionReadError?.message||subscriptionReadError)}
+   staffSiteAccessOpen=data.is_open===true;
    if(!staffSiteAccessOpen){
     renderStaffSiteAccessGate('closed');
     if(currentUser){
      currentUser=null;currentRole='staff';currentStaffId=null;cloudReady=false;
-     try{await sb.auth.signOut({scope:'local'})}catch(signOutError){console.warn('Staff local session sign-out after subscription expiry failed:',signOutError?.message||signOutError)}
+     try{await sb.auth.signOut({scope:'local'})}catch(signOutError){console.warn('Staff local session sign-out after manual access closure failed:',signOutError?.message||signOutError)}
     }
     return false;
    }
