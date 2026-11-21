@@ -59,11 +59,11 @@ self.addEventListener('push',event=>{
    renotify:true,
    timestamp:Number(data.timestamp)||Date.now(),
    data:{url:data.url||'https://pattaya-dinosaur-ticket-control-eight.vercel.app/',event_type:data.event_type||'login',message_id:data.message_id||null},
-   vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:isChat?[300,120,300]:[250,100,250],
+   vibrate:data.event_type==='emergency_alarm'?[1200,300,1200,300,1600,300,1600]:data.event_type==='staff_site_reopened'?[400,150,400,150,800]:isChat?[300,120,300]:[250,100,250],
    silent:false, // Allow the OS/browser notification channel to play its configured sound.
    renotify:true,
    actions:(data.event_type==='emergency_alarm'||isChat||data.event_type==='login')?[{action:'open',title:'Open App'}]:[],
-   requireInteraction:['emergency_alarm','chat_message','login','app_open'].includes(data.event_type)
+   requireInteraction:['emergency_alarm','chat_message','login','app_open','staff_site_reopened'].includes(data.event_type)
   };
   if(data.event_type==='emergency_alarm'){
    try{
@@ -86,8 +86,9 @@ self.addEventListener('notificationclick',event=>{
  const isEmergency=data.event_type==='emergency_alarm';
  const isStaffOrigin=self.location.hostname==='pattaya-dinosaur-ticket-control.vercel.app';
  const isChat=data.event_type==='chat_message';
- const target=(isEmergency||isChat)
-  ? self.location.origin+(isStaffOrigin?'/staff.html':'/')
+ const isStaffRestored=data.event_type==='staff_site_reopened';
+ const target=(isEmergency||isChat||isStaffRestored)
+  ? self.location.origin+'/staff.html'
   : (data.url||self.location.origin+'/');
  event.waitUntil((async()=>{
   const clientsList=await self.clients.matchAll({type:'window',includeUncontrolled:true});
