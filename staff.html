@@ -2822,28 +2822,43 @@ async function checkStaffSiteAccess(){
  if(staffSiteAccessCheckPromise)return staffSiteAccessCheckPromise;
  staffSiteAccessCheckPromise=(async()=>{
   try{
-   const {data,error}=await sb.from('staff_site_access_control').select('is_open').eq('control_key','normal_staff').single();
+   // Manual access is the only gate for the Staff website. Check it first and
+   // never wait for subscription details before allowing an OPEN website.
+   const {data,error}=await sb.from('staff_site_access_control')
+    .select('is_open').eq('control_key','normal_staff').maybeSingle();
    if(error)throw error;
    if(!data||typeof data.is_open!=='boolean')throw new Error('Staff access setting is missing or invalid.');
-   // Subscription is intentionally independent: it never overrides this manual switch.
-   try{
-    const {data:sub,error:subError}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at').eq('subscription_key','normal_staff').single();
-    if(!subError&&sub)staffSubscriptionInfo=sub;
-   }catch(subscriptionReadError){console.warn('Separate Staff subscription details unavailable:',subscriptionReadError?.message||subscriptionReadError)}
    staffSiteAccessOpen=data.is_open===true;
-   if(!staffSiteAccessOpen){
-    renderStaffSiteAccessGate('closed');
-    if(currentUser){
-     currentUser=null;currentRole='staff';currentStaffId=null;cloudReady=false;
-     try{await sb.auth.signOut({scope:'local'})}catch(signOutError){console.warn('Staff local session sign-out after manual access closure failed:',signOutError?.message||signOutError)}
-    }
-    return false;
+   const overlay=document.getElementById('staffSiteAccessOverlay');
+   if(staffSiteAccessOpen){
+    if(overlay){overlay.hidden=true;overlay.style.display='none';}
+    // Subscription details are independent and are loaded only for the closed
+    // maintenance/payment screen. Their status can never block an OPEN site.
+    return true;
    }
-   const gate=document.getElementById('staffSiteAccessOverlay');if(gate)gate.hidden=true;
-   return true;
+   if(overlay){overlay.hidden=false;overlay.style.removeProperty('display');}
+   renderStaffSiteAccessGate('closed');
+   if(currentUser){
+    currentUser=null;currentRole='staff';currentStaffId=null;cloudReady=false;
+    try{await sb.auth.signOut({scope:'local'})}
+    catch(signOutError){console.warn('Staff local session sign-out after manual access closure failed:',signOutError?.message||signOutError)}
+   }
+   // Load optional renewal information after the manual CLOSED state is applied.
+   sb.from('staff_subscription')
+    .select('monthly_price,promptpay_qr_data,expires_at')
+    .eq('subscription_key','normal_staff').maybeSingle()
+    .then(({data:sub,error:subError})=>{
+     if(subError)throw subError;
+     if(sub)staffSubscriptionInfo=sub;
+     renderStaffSiteAccessGate('closed');
+    })
+    .catch(subscriptionReadError=>console.warn('Separate Staff subscription details unavailable:',subscriptionReadError?.message||subscriptionReadError));
+   return false;
   }catch(error){
-   staffSiteAccessOpen=null;renderStaffSiteAccessGate('unavailable',error?.message||String(error));
-   console.warn('Staff website access check failed; access remains blocked:',error?.message||error);return false;
+   staffSiteAccessOpen=null;
+   renderStaffSiteAccessGate('unavailable',error?.message||String(error));
+   console.warn('Staff website access check failed; access remains blocked:',error?.message||error);
+   return false;
   }
  })().finally(()=>{staffSiteAccessCheckPromise=null});
  return staffSiteAccessCheckPromise;
