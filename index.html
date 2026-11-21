@@ -4163,7 +4163,7 @@ function listenRealtime(){
   .on('postgres_changes',{event:'*',schema:'public',table:'event_staff_login_activity'},()=>{if(currentRole==='owner')pollEventStaffLoginNotifications()})
   .subscribe(status=>{console.log('Ticket / Staff activity realtime status:',status)});
  if(cloudPollTimer)clearInterval(cloudPollTimer);
- cloudPollTimer=setInterval(async()=>{await refreshCloudTickets(false);if(currentRole==='owner')await refreshEventLocations(false)},3000);
+ cloudPollTimer=setInterval(async()=>{await refreshCloudTickets(false);if(currentRole==='owner')await refreshEventLocations(false)},15000);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){refreshCloudTickets(true);refreshEventLocations(true);if(currentRole==='owner')pollStaffLoginNotifications()}});
  window.addEventListener('focus',()=>{refreshCloudTickets(true);refreshEventLocations(true);if(currentRole==='owner')pollStaffLoginNotifications()});
 }
@@ -4366,7 +4366,7 @@ async function pollEventStaffLoginNotifications(){
  }catch(e){console.warn('Event Staff login notification check failed',e.message)}
 }
 
-function startStaffLoginNotifications(){if(staffNotifyTimer)clearInterval(staffNotifyTimer);staffNotifyBaseline=false;staffNotifySeen={};staffNotifyStartedAt=Date.now();eventStaffNotifyBaseline=false;eventStaffNotifySeen={};eventStaffNotifyStartedAt=Date.now();pollStaffLoginNotifications();pollEventStaffLoginNotifications();staffNotifyTimer=setInterval(()=>{pollStaffLoginNotifications();pollEventStaffLoginNotifications()},5000)}
+function startStaffLoginNotifications(){if(staffNotifyTimer)clearInterval(staffNotifyTimer);staffNotifyBaseline=false;staffNotifySeen={};staffNotifyStartedAt=Date.now();eventStaffNotifyBaseline=false;eventStaffNotifySeen={};eventStaffNotifyStartedAt=Date.now();pollStaffLoginNotifications();pollEventStaffLoginNotifications();staffNotifyTimer=setInterval(()=>{pollStaffLoginNotifications();pollEventStaffLoginNotifications()},10000)}
 let ownerSessionStartPromise=null,ownerSessionStartUserId=null;
 async function startCloudSession(session){
  if(!session?.user)throw new Error('No active login session was returned. Please sign in again.');
@@ -4654,7 +4654,7 @@ function chatEnsureRealtime(){
   if(chatChannel&&chatChannelUserId===currentUser.id){
    if(!chatPollTimer)chatPollTimer=setInterval(()=>{
     if(document.visibilityState==='visible'&&document.getElementById('teamChatMessages')&&currentUser?.id===chatChannelUserId&&!chatRefreshBusy)chatRefresh(false);
-   },2500);
+   },10000);
    return;
   }
   if(chatChannel)sb.removeChannel(chatChannel);
@@ -4697,7 +4697,7 @@ function chatEnsureRealtime(){
    if(document.visibilityState!=='visible'||!document.getElementById('teamChatMessages'))return;
    if(currentUser?.id!==chatChannelUserId||chatRefreshBusy)return;
    chatRefresh(false);
-  },2500);
+  },10000);
  }
 async function chatUpdateUnreadBadge(){
  if(!currentUser)return;
