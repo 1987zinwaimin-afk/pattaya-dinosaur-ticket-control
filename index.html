@@ -5109,8 +5109,9 @@ async function chatEditMessage(id,isGroup){
 }
 async function chatUnsendMessage(id,isGroup){
  const rows=isGroup?chatGroupMessages:chatAllMessages;
+ const senderIds=[...new Set((chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]).filter(Boolean))];
  const row=rows.find(m=>m.id===id);
- if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;
+ if(!row||!senderIds.includes(row.sender_id)||row.deleted_at)return;
  if(!confirm('Unsend this message for everyone in this conversation?'))return;
  const table=isGroup?'team_chat_group_messages':'team_chat_messages';
  const removedImagePath=row.image_path||null;
@@ -5119,7 +5120,7 @@ async function chatUnsendMessage(id,isGroup){
   // but do not grant client-side DELETE. Mark the message as unsent instead.
   const {data,error}=await sb.from(table)
    .update({deleted_at:new Date().toISOString(),body:'',image_path:null})
-   .eq('id',id).eq('sender_id',currentUser.id).is('deleted_at',null)
+   .eq('id',id).in('sender_id',senderIds).is('deleted_at',null)
    .select('id,deleted_at').maybeSingle();
   if(error||!data)throw error||new Error('Permission denied or message already changed.');
   chatHiddenMessageIds.delete(id);
