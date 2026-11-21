@@ -5398,85 +5398,104 @@ function renderStaffSubscriptionCardHtml(){
 function bindOwnerStaffSubscription(){
  const priceInput=document.getElementById('ownerStaffSubscriptionPrice'),qrInput=document.getElementById('ownerStaffSubscriptionQr'),preview=document.getElementById('ownerStaffSubscriptionQrPreview'),save=document.getElementById('ownerStaffSubscriptionSave'),status=document.getElementById('ownerStaffSubscriptionStatus'),result=document.getElementById('ownerStaffSubscriptionSaveResult'),list=document.getElementById('ownerStaffSubscriptionPayments');
  if(!priceInput||!qrInput||!preview||!save||!status||!result||!list||currentRole!=='owner')return;
- let savedQr='',busy=false;
+ let savedQr='',busy=false,selectionVersion=0;
+ const draftDbName='pdk-owner-bank-qr-drafts-v1',draftStore='qrDrafts',draftKey='normal_staff_subscription';
+ const openDraftDb=()=>new Promise((resolve,reject)=>{
+  if(!('indexedDB'in window)){reject(new Error('This browser cannot keep a temporary QR upload draft.'));return;}
+  const req=indexedDB.open(draftDbName,1);
+  req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains(draftStore))db.createObjectStore(draftStore)};
+  req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||new Error('Could not open temporary QR storage.'));
+ });
+ const saveQrDraft=async blob=>{const db=await openDraftDb();await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readwrite');tx.objectStore(draftStore).put({blob,name:blob.name||'Bank QR image',type:blob.type||'image/png',savedAt:Date.now()},draftKey);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('Could not preserve the selected QR image.'));tx.onabort=()=>reject(tx.error||new Error('QR draft storage was interrupted.'))});db.close()};
+ const readQrDraft=async()=>{const db=await openDraftDb();const value=await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readonly'),req=tx.objectStore(draftStore).get(draftKey);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error)});db.close();return value};
+ const clearQrDraft=async()=>{try{const db=await openDraftDb();await new Promise((resolve,reject)=>{const tx=db.transaction(draftStore,'readwrite');tx.objectStore(draftStore).delete(draftKey);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){console.warn('Owner QR draft cleanup failed:',e)}};
  const fmtDate=v=>v?new Date(v).toLocaleString():'Not activated';
- const load=async()=>{
-  try{
-   const {data,error}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at,updated_at').eq('subscription_key','normal_staff').single();
-   if(error)throw error;if(!data)throw new Error('Subscription settings are missing.');
-   priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
-   if(savedQr){preview.src=savedQr;preview.hidden=false;preview.style.display='block'}else{preview.hidden=true;preview.style.display='none'}
-   const active=!!data.expires_at&&new Date(data.expires_at).getTime()>Date.now();
-    status.textContent=(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED - NOT ACTIVATED')+' · Expires: '+fmtDate(data.expires_at)+' · Manual access switch is separate.';status.style.color=active?'#73dfa8':'#ff9aa6';
-  }catch(e){status.textContent='Could not load subscription: '+(e.message||String(e))}
-  await loadPayments();
- };
+ const showQr=(src)=>{preview.src=src;preview.hidden=false;preview.style.display='block'};
  async function prepareBankQr(file){
   if(!file||!file.type||!file.type.startsWith('image/'))throw new Error('Please select a PNG, JPG, or WebP Bank QR image.');
   if(file.size>12000000)throw new Error('Please choose an image smaller than 12 MB.');
   let bitmap=null;
   try{
-   if(typeof createImageBitmap==='function')bitmap=await createImageBitmap(file);
-   else throw new Error('ImageBitmap is unavailable');
+   if(typeof createImageBitmap!=='function')throw new Error('ImageBitmap is unavailable');
+   // Ask the browser to decode directly at a small size to avoid Android memory spikes.
+   bitmap=await createImageBitmap(file,{resizeWidth:700,resizeHeight:700,resizeQuality:'high'});
   }catch(_){
    bitmap=await new Promise((resolve,reject)=>{
     const url=URL.createObjectURL(file),img=new Image();
     img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
-    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('This image format cannot be opened on this phone. Please use a PNG or JPG screenshot of the Bank QR.'))};
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('This image format cannot be opened. Please use a PNG or JPG screenshot of the Bank QR.'))};
     img.src=url;
    });
   }
   const sourceWidth=bitmap.width||bitmap.naturalWidth,sourceHeight=bitmap.height||bitmap.naturalHeight;
   if(!sourceWidth||!sourceHeight){if(bitmap.close)bitmap.close();throw new Error('The selected Bank QR image has invalid dimensions.');}
-  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{alpha:false});
-  if(!ctx){if(bitmap.close)bitmap.close();throw new Error('This browser cannot prepare the Bank QR image. Please use Chrome.');}
-  let output='';
-  for(const maxSide of [1000,850,700,600,500]){
-   const factor=Math.min(1,maxSide/Math.max(sourceWidth,sourceHeight));
-   canvas.width=Math.max(1,Math.round(sourceWidth*factor));
-   canvas.height=Math.max(1,Math.round(sourceHeight*factor));
-   ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
-   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
-   ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
-   output=canvas.toDataURL('image/png');
-   // Keep the RPC request comfortably below common mobile/API payload limits.
-   if(output.length<=900000)break;
-  }
+  const factor=Math.min(1,700/Math.max(sourceWidth,sourceHeight));
+  const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(sourceWidth*factor));canvas.height=Math.max(1,Math.round(sourceHeight*factor));
+  const ctx=canvas.getContext('2d',{alpha:false});
+  if(!ctx){if(bitmap.close)bitmap.close();throw new Error('This browser cannot prepare the QR image. Please use Chrome.');}
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+  const output=canvas.toDataURL('image/jpeg',0.88);
   if(bitmap.close)bitmap.close();
-  if(!output||output.length>900000)throw new Error('The QR image is too detailed or large. Please take a cropped screenshot of only the Bank QR and upload it again.');
+  if(!output||output.length>900000)throw new Error('The QR image is too large. Please crop the image to show only the Bank QR and try again.');
   return output;
  }
- qrInput.onchange=async()=>{
-  const file=qrInput.files?.[0];if(!file)return;
-  const previousQr=savedQr;
+ const load=async()=>{
   try{
-   result.textContent='Preparing Bank QR image…';save.disabled=true;
+   const {data,error}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at,updated_at').eq('subscription_key','normal_staff').single();
+   if(error)throw error;if(!data)throw new Error('Subscription settings are missing.');
+   priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
+   if(savedQr){showQr(savedQr);await clearQrDraft()}
+   else{
+    preview.removeAttribute('src');preview.hidden=true;preview.style.display='none';
+    try{
+     const draft=await readQrDraft();
+     if(draft?.blob){result.textContent='Restoring the Bank QR image selected earlier…';savedQr=await prepareBankQr(draft.blob);showQr(savedQr);result.textContent='Your selected Bank QR image has been restored. Press Save fee and Bank QR to store it.'}
+    }catch(draftError){result.textContent='Could not restore the temporary QR image: '+(draftError.message||String(draftError))}
+   }
+   const active=!!data.expires_at&&new Date(data.expires_at).getTime()>Date.now();
+   status.textContent=(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED - NOT ACTIVATED')+' · Expires: '+fmtDate(data.expires_at)+' · Manual access switch is separate.';status.style.color=active?'#73dfa8':'#ff9aa6';
+  }catch(e){status.textContent='Could not load subscription: '+(e.message||String(e))}
+  await loadPayments();
+ };
+ qrInput.addEventListener('change',async()=>{
+  const file=qrInput.files?.[0];if(!file)return;
+  const thisSelection=++selectionVersion,previousQr=savedQr;
+  save.disabled=true;result.textContent='Safely keeping the selected Bank QR image…';
+  try{
+   // Persist the original file before decoding; Android may reload the tab when returning from Gallery.
+   await saveQrDraft(file);
+   if(thisSelection!==selectionVersion)return;
+   result.textContent='Preparing Bank QR image…';
    const preparedQr=await prepareBankQr(file);
-   savedQr=preparedQr;preview.src=preparedQr;preview.hidden=false;preview.style.display='block';
-   result.textContent='Bank QR image is ready ('+Math.round(preparedQr.length/1024)+' KB). Enter the monthly fee if needed, then press Save fee and Bank QR.';
+   if(thisSelection!==selectionVersion)return;
+   savedQr=preparedQr;showQr(preparedQr);
+   result.textContent='Bank QR image is ready. Press Save fee and Bank QR to store it.';
   }catch(e){
    savedQr=previousQr;
-   if(previousQr){preview.src=previousQr;preview.hidden=false;preview.style.display='block'}else{preview.removeAttribute('src');preview.hidden=true;preview.style.display='none'}
+   if(previousQr)showQr(previousQr);else{preview.removeAttribute('src');preview.hidden=true;preview.style.display='none'}
    result.textContent='Bank QR upload failed: '+(e.message||String(e));
    qrInput.value='';
-  }finally{save.disabled=false}
- };
- save.onclick=async()=>{
-  if(busy)return;const amount=Number(priceInput.value);
+  }finally{if(thisSelection===selectionVersion)save.disabled=false}
+ });
+ save.addEventListener('click',async e=>{
+  e.preventDefault();e.stopPropagation();
+  if(busy)return;
+  const amount=Number(priceInput.value);
   if(!Number.isFinite(amount)||amount<=0){result.textContent='Enter a monthly fee greater than zero.';return}
   if(!savedQr){result.textContent='Please upload your Bank QR image.';return}
   busy=true;save.disabled=true;save.textContent='Saving…';result.textContent='Saving monthly fee and Bank QR…';
   try{
-   const {data:rpcData,error}=await sb.rpc('staff_subscription_save_settings',{p_monthly_price:amount,p_qr_data:savedQr});
+   const {error}=await sb.rpc('staff_subscription_save_settings',{p_monthly_price:amount,p_qr_data:savedQr});
    if(error)throw error;
    const {data:verified,error:verifyError}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,updated_at').eq('subscription_key','normal_staff').single();
    if(verifyError)throw verifyError;
    if(!verified||Number(verified.monthly_price)!==amount||verified.promptpay_qr_data!==savedQr)throw new Error('Save verification failed. Please try again.');
+   await clearQrDraft();
    result.textContent='Saved and verified. Monthly fee and Bank QR are now active in the shared subscription settings.';
    await load();
   }catch(e){result.textContent='Save failed: '+(e.message||String(e));console.error('Owner Staff subscription settings save failed:',e)}
   finally{busy=false;save.disabled=false;save.textContent='Save fee and Bank QR'}
- };
+ });
  async function loadPayments(){
   try{
    const {data,error}=await sb.from('staff_subscription_payments').select('id,staff_id,staff_name,amount,slip_data,status,submitted_at').order('submitted_at',{ascending:false}).limit(40);
