@@ -5383,6 +5383,82 @@ function bindOwnerStaffSiteAccessControl(){
  }
 }
 
+function renderStaffSubscriptionCardHtml(){
+ return '<section class="panel" id="ownerStaffSubscriptionPanel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.55);border-radius:16px;background:linear-gradient(135deg,rgba(20,51,76,.96),rgba(8,25,42,.96))">'+
+ '<h3 style="margin:0 0 6px">💳 Shared Staff Monthly Subscription</h3>'+
+ '<p class="subtle" style="margin:0 0 12px">One monthly payment activates every Normal Staff account. Owner access remains available. Configure the fee and PromptPay QR below.</p>'+
+ '<div id="ownerStaffSubscriptionStatus" class="panel" style="padding:12px;margin-bottom:12px">Loading subscription…</div>'+
+ '<label for="ownerStaffSubscriptionPrice">Monthly fee (THB)</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000" step="0.01" placeholder="Set monthly fee">'+
+ '<label for="ownerStaffSubscriptionQr">PromptPay QR image</label><input id="ownerStaffSubscriptionQr" type="file" accept="image/*">'+
+ '<img id="ownerStaffSubscriptionQrPreview" alt="PromptPay QR preview" hidden style="display:block;max-width:220px;max-height:220px;object-fit:contain;background:#fff;padding:8px;border-radius:12px;margin:10px 0">'+
+ '<button type="button" class="gold" id="ownerStaffSubscriptionSave" style="width:100%;margin-top:12px">Save fee and PromptPay QR</button>'+
+ '<p id="ownerStaffSubscriptionSaveResult" class="subtle" role="status"></p>'+
+ '<h4 style="margin:18px 0 8px">Payment requests</h4><div id="ownerStaffSubscriptionPayments" class="subtle">Loading payment requests…</div></section>';
+}
+function bindOwnerStaffSubscription(){
+ const priceInput=document.getElementById('ownerStaffSubscriptionPrice'),qrInput=document.getElementById('ownerStaffSubscriptionQr'),preview=document.getElementById('ownerStaffSubscriptionQrPreview'),save=document.getElementById('ownerStaffSubscriptionSave'),status=document.getElementById('ownerStaffSubscriptionStatus'),result=document.getElementById('ownerStaffSubscriptionSaveResult'),list=document.getElementById('ownerStaffSubscriptionPayments');
+ if(!priceInput||!qrInput||!preview||!save||!status||!result||!list||currentRole!=='owner')return;
+ let savedQr='',busy=false;
+ const fmtDate=v=>v?new Date(v).toLocaleString():'Not activated';
+ const load=async()=>{
+  try{
+   const {data,error}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at,updated_at').eq('subscription_key','normal_staff').single();
+   if(error)throw error;if(!data)throw new Error('Subscription settings are missing.');
+   priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
+   if(savedQr){preview.src=savedQr;preview.hidden=false;preview.style.display='block'}else{preview.hidden=true;preview.style.display='none'}
+   const active=!!data.expires_at&&new Date(data.expires_at).getTime()>Date.now();
+   status.innerHTML='<strong style="color:'+(active?'#73dfa8':'#ff9aa6')+'">'+(active?'● SUBSCRIPTION ACTIVE':'● SUBSCRIPTION EXPIRED / NOT ACTIVATED')+'</strong><div class="subtle" style="margin-top:6px">Expires: '+fmtDate(data.expires_at)+'</div><div class="subtle">All Normal Staff accounts: '+(active?'eligible to access':'blocked until approval')+'</div>';
+  }catch(e){status.textContent='Could not load subscription: '+(e.message||String(e))}
+  await loadPayments();
+ };
+ qrInput.onchange=async()=>{
+  const file=qrInput.files?.[0];if(!file)return;
+  if(!file.type.startsWith('image/')||file.size>1800000){result.textContent='Choose an image smaller than 1.8 MB.';qrInput.value='';return}
+  try{savedQr=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result||''));r.onerror=()=>reject(new Error('Could not read QR image'));r.readAsDataURL(file)});preview.src=savedQr;preview.hidden=false;preview.style.display='block';}catch(e){result.textContent=e.message}
+ };
+ save.onclick=async()=>{
+  if(busy)return;const amount=Number(priceInput.value);
+  if(!Number.isFinite(amount)||amount<=0){result.textContent='Enter a monthly fee greater than zero.';return}
+  if(!savedQr){result.textContent='Please upload your PromptPay QR image.';return}
+  busy=true;save.disabled=true;save.textContent='Saving…';
+  try{
+   const {error}=await sb.from('staff_subscription').update({monthly_price:amount,promptpay_qr_data:savedQr,updated_at:new Date().toISOString(),updated_by:currentUser?.id||null}).eq('subscription_key','normal_staff');
+   if(error)throw error;result.textContent='Monthly fee and PromptPay QR saved.';
+  }catch(e){result.textContent='Save failed: '+(e.message||String(e))}
+  finally{busy=false;save.disabled=false;save.textContent='Save fee and PromptPay QR'}
+ };
+ async function loadPayments(){
+  try{
+   const {data,error}=await sb.from('staff_subscription_payments').select('id,staff_id,staff_name,amount,slip_data,status,submitted_at').order('submitted_at',{ascending:false}).limit(40);
+   if(error)throw error;
+   list.innerHTML='';
+   if(!data?.length){list.textContent='No payment requests yet.';return}
+   data.forEach(payment=>{
+    const card=document.createElement('div');card.className='panel';card.style.cssText='padding:12px;margin:8px 0';
+    const info=document.createElement('div');info.textContent=payment.staff_name+' ('+payment.staff_id+') · ฿'+Number(payment.amount).toLocaleString()+' · '+payment.status.toUpperCase()+' · '+new Date(payment.submitted_at).toLocaleString();card.appendChild(info);
+    const actions=document.createElement('div');actions.className='actions';actions.style.margin='8px 0 0';
+    const slip=document.createElement('button');slip.type='button';slip.textContent='View payment slip';slip.onclick=()=>{const w=window.open();if(w){w.document.write('<title>Payment slip</title><img alt="Payment slip" src="'+payment.slip_data+'" style="max-width:100%;height:auto">');w.document.close()}};
+    actions.appendChild(slip);
+    if(payment.status==='pending'){
+     const approve=document.createElement('button');approve.type='button';approve.className='gold';approve.textContent='Approve · 1 month';approve.onclick=()=>review(payment.id,true);
+     const reject=document.createElement('button');reject.type='button';reject.className='red';reject.textContent='Reject';reject.onclick=()=>review(payment.id,false);
+     actions.append(approve,reject);
+    }
+    card.appendChild(actions);list.appendChild(card);
+   });
+  }catch(e){list.textContent='Could not load payment requests: '+(e.message||String(e))}
+ }
+ async function review(id,approve){
+  if(!window.confirm(approve?'Approve this payment and activate all Staff accounts for one month?':'Reject this payment request?'))return;
+  try{
+   const {data,error}=await sb.rpc('staff_subscription_review_payment',{p_payment_id:id,p_approve:approve,p_note:''});
+   if(error)throw error;
+   result.textContent=approve?'Payment approved. All Staff access has been reactivated.':'Payment rejected.';
+   await load();
+  }catch(e){result.textContent='Review failed: '+(e.message||String(e))}
+ }
+ load();
+}
 function renderSettings(){
  const root=document.getElementById('pageContent');
  if(!root)return;
@@ -5394,9 +5470,10 @@ function renderSettings(){
    '<div class="summary-row"><span>Display theme</span><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div>'+
    (currentRole==='owner'?'<section class="panel" style="margin:16px 0;padding:16px;border:1px solid rgba(244,202,112,.4);border-radius:16px"><h3 style="margin:0 0 6px">🔔 Owner Notification Sound & Thai Voice</h3><p class="subtle" style="margin:0 0 12px">Choose the sound for Staff Login and Emergency Alarm notifications on this Owner device.</p><label for="ownerNotifySound">Notification sound</label><select id="ownerNotifySound"><option value="bell">🔔 Bell — Classic</option><option value="ding">🔔 Ding — Short</option><option value="alert">🚨 Alert — Double tone</option></select><div class="actions" style="margin:8px 0 14px"><button type="button" id="ownerTestNotifySound">▶ Test notification sound</button></div><div style="padding:12px;border:1px solid var(--line);border-radius:12px"><label style="display:flex;align-items:center;gap:10px;color:var(--text)"><input id="ownerThaiVoiceEnabled" type="checkbox" style="width:20px;height:20px"> Enable Thai voice announcement</label><p class="subtle" style="margin:8px 0">เฮียเข้าไปในสวนแล้ว</p><label for="ownerThaiVoiceSelect">Thai voice selection</label><select id="ownerThaiVoiceSelect"></select><div class="actions" style="margin-top:8px"><button type="button" id="ownerTestThaiVoice">▶ Test Thai voice</button><button type="button" id="ownerRefreshThaiVoices">↻ Refresh voices</button></div></div><button type="button" class="gold" id="ownerSaveNotifyPrefs" style="width:100%;margin-top:12px">Save notification settings</button><p id="ownerNotifySaved" class="subtle" role="status" style="display:none;margin:10px 0 0"></p><p class="subtle" style="margin:10px 0 0">Note: Custom sound and Thai speech work while the Owner website is open. When the app is closed, Android/iOS uses the system notification sound configured in phone settings.</p></section>':'')+
    (currentRole==='owner'?renderStaffSiteAccessCardHtml():'')+
+   (currentRole==='owner'?renderStaffSubscriptionCardHtml():'')+
     (currentRole==='owner'?renderEventLocationsSettingsHtml():'')
    '<button type="button" class="gold" id="ownerExportBackup">Export ticket backup (JSON)</button></section>';
-  if(currentRole==='owner'){bindEventLocationManager();bindOwnerNotificationSettings();bindOwnerStaffSiteAccessControl();}
+  if(currentRole==='owner'){bindEventLocationManager();bindOwnerNotificationSettings();bindOwnerStaffSiteAccessControl();bindOwnerStaffSubscription();}
   const language=root.querySelector('#ownerSettingsLanguage');
   const themeSelect=root.querySelector('#ownerSettingsTheme');
   if(language){language.value=lang;language.addEventListener('change',()=>{lang=language.value;localStorage.setItem('tctl-lang',lang);render(true);applyUILanguage()});}
