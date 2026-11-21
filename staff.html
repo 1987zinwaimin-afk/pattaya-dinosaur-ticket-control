@@ -2619,7 +2619,7 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 <section id="pageContent"></section>
 </main>
 
-<div id="staffSiteAccessOverlay" role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button></div></div><div class="auth-screen" id="authScreen"><div class="auth-card">
+<div id="staffSiteAccessOverlay" role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button><div id="staffSubscriptionPaymentPanel" hidden></div></div></div><div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
 <form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="all">All Departments</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
@@ -2643,33 +2643,75 @@ function renderStaffSiteAccessGate(mode,detail=''){
  const title=document.getElementById('staffSiteAccessTitle');
  const code=document.getElementById('staffSiteAccessDetail');
  const retry=document.getElementById('staffSiteAccessRetry');
+ const pay=document.getElementById('staffSubscriptionPaymentPanel');
  if(!overlay||!message||!title||!code||!retry)return;
  if(mode==='closed'){
-  title.textContent='404';
-  code.textContent='DEPLOYMENT_NOT_FOUND';
-  message.textContent='Once access is restored, everyone will receive a notification on their phones.';
-  title.hidden=false;code.hidden=false;message.hidden=false;retry.hidden=true;
+  title.textContent='STAFF WEBSITE PAUSED';
+  code.textContent='MONTHLY SUBSCRIPTION REQUIRED';
+  message.textContent='The shared Staff subscription has expired or the Owner has temporarily closed Staff access. One Staff member can submit the monthly payment for the whole team. Owner approval will reactivate every Staff account.';
+  title.hidden=false;code.hidden=false;message.hidden=false;retry.hidden=false;retry.textContent='Check subscription status';
+  if(pay){pay.hidden=false;renderStaffSubscriptionPaymentPanel();}
  }else{
   title.textContent='Staff access unavailable';
   code.textContent='Please check your connection and try again.';
   message.textContent='We cannot verify Staff website access right now. Access remains blocked until the Owner setting can be checked.';
-  title.hidden=false;code.hidden=false;message.hidden=false;retry.hidden=false;
+  title.hidden=false;code.hidden=false;message.hidden=false;retry.hidden=false;retry.textContent='Try again';
+  if(pay)pay.hidden=true;
  }
  overlay.hidden=false;
+}
+let staffSubscriptionInfo=null;
+function renderStaffSubscriptionPaymentPanel(){
+ const root=document.getElementById('staffSubscriptionPaymentPanel');if(!root)return;
+ const sub=staffSubscriptionInfo||{};
+ const price=Number(sub.monthly_price||0);
+ const qr=sub.promptpay_qr_data||'';
+ root.innerHTML='<div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(232,190,104,.3);text-align:left">'+
+  '<h2 style="margin:0 0 8px;color:#f3d18b;font-size:21px">Renew Staff Subscription</h2>'+
+  '<p style="margin:0 0 12px;font-size:14px">One payment renews access for all Staff accounts for one month.</p>'+
+  '<div style="padding:12px;border:1px solid rgba(232,190,104,.35);border-radius:13px;text-align:center;margin-bottom:12px"><div style="font-size:13px;color:#c7d6e4">Monthly fee</div><strong style="display:block;color:#ffdc8d;font-size:30px">฿'+price.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</strong>'+
+  (sub.expires_at?'<div style="font-size:12px;color:#c7d6e4">Last expiry: '+new Date(sub.expires_at).toLocaleDateString()+'</div>':'<div style="font-size:12px;color:#c7d6e4">Subscription not activated yet</div>')+'</div>'+
+  (qr?'<img src="'+qr+'" alt="PromptPay QR" style="display:block;width:min(100%,260px);max-height:260px;object-fit:contain;margin:0 auto 12px;padding:8px;background:#fff;border-radius:12px">':'<p style="padding:12px;border:1px dashed #c49a4a;border-radius:12px;text-align:center">PromptPay QR has not been configured yet. Please contact the Owner.</p>')+
+  '<form id="staffSubscriptionPaymentForm">'+
+  '<label style="display:block;margin:10px 0 5px;color:#d2deea;font-size:13px">Staff ID</label><input id="staffSubscriptionStaffId" required maxlength="32" style="width:100%;padding:12px;border-radius:10px;border:1px solid #49647d;background:#06182b;color:#fff;box-sizing:border-box" placeholder="Your Staff ID">'+
+  '<label style="display:block;margin:10px 0 5px;color:#d2deea;font-size:13px">Staff name</label><input id="staffSubscriptionStaffName" required maxlength="80" style="width:100%;padding:12px;border-radius:10px;border:1px solid #49647d;background:#06182b;color:#fff;box-sizing:border-box" placeholder="Your name">'+
+  '<label style="display:block;margin:10px 0 5px;color:#d2deea;font-size:13px">Payment slip image</label><input id="staffSubscriptionSlip" type="file" accept="image/*" required style="width:100%;padding:10px;border-radius:10px;border:1px solid #49647d;background:#06182b;color:#fff;box-sizing:border-box">'+
+  '<button type="submit" '+(price<=0||!qr?'disabled':'')+' style="width:100%;margin-top:14px">Submit payment for all Staff</button><p id="staffSubscriptionPaymentResult" role="status" style="font-size:13px;color:#d2deea"></p></form></div>';
+ const form=document.getElementById('staffSubscriptionPaymentForm');
+ if(form)form.onsubmit=async e=>{
+  e.preventDefault();const result=document.getElementById('staffSubscriptionPaymentResult'),btn=form.querySelector('button[type="submit"]');
+  try{
+   btn.disabled=true;btn.textContent='Submitting…';
+   const file=document.getElementById('staffSubscriptionSlip').files?.[0];
+   if(!file||!file.type.startsWith('image/'))throw new Error('Please select a payment slip image.');
+   if(file.size>2400000)throw new Error('Please use a slip image smaller than 2.4 MB.');
+   const slip=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read the slip image.'));reader.readAsDataURL(file)});
+   const {error}=await sb.from('staff_subscription_payments').insert({staff_id:document.getElementById('staffSubscriptionStaffId').value.trim(),staff_name:document.getElementById('staffSubscriptionStaffName').value.trim(),amount:price,slip_data:slip});
+   if(error)throw error;
+   result.textContent='Payment slip submitted. The Owner will review it. All Staff accounts will reopen after approval.';
+   form.reset();
+  }catch(err){result.textContent=err.message||String(err);result.style.color='#ff9aa6'}
+  finally{btn.disabled=price<=0||!qr;btn.textContent='Submit payment for all Staff'}
+ };
 }
 async function checkStaffSiteAccess(){
  if(staffSiteAccessCheckPromise)return staffSiteAccessCheckPromise;
  staffSiteAccessCheckPromise=(async()=>{
   try{
-   const {data,error}=await sb.from('staff_site_access_control').select('is_open').eq('control_key','normal_staff').single();
-   if(error)throw error;
-   if(!data||typeof data.is_open!=='boolean')throw new Error('Staff access setting is missing or invalid.');
-   staffSiteAccessOpen=data.is_open===true;
+   const [{data,error},{data:sub,error:subError}]=await Promise.all([
+    sb.from('staff_site_access_control').select('is_open').eq('control_key','normal_staff').single(),
+    sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,expires_at').eq('subscription_key','normal_staff').single()
+   ]);
+   if(error)throw error;if(subError)throw subError;
+   if(!data||typeof data.is_open!=='boolean'||!sub)throw new Error('Staff subscription/access settings are missing or invalid.');
+   staffSubscriptionInfo=sub;
+   const subscriptionActive=!!sub.expires_at&&new Date(sub.expires_at).getTime()>Date.now();
+   staffSiteAccessOpen=data.is_open===true&&subscriptionActive;
    if(!staffSiteAccessOpen){
     renderStaffSiteAccessGate('closed');
     if(currentUser){
      currentUser=null;currentRole='staff';currentStaffId=null;cloudReady=false;
-     try{await sb.auth.signOut({scope:'local'})}catch(signOutError){console.warn('Staff local session sign-out after Owner closure failed:',signOutError?.message||signOutError)}
+     try{await sb.auth.signOut({scope:'local'})}catch(signOutError){console.warn('Staff local session sign-out after subscription expiry failed:',signOutError?.message||signOutError)}
     }
     return false;
    }
