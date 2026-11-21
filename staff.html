@@ -4151,31 +4151,43 @@ async function chatEditMessage(id,isGroup){
  if(isGroup){await chatLoadGroupMessages(chatActiveGroupId);await chatRenderGroupMessageList()}else{await chatLoadMessages();await chatRenderMessageList()}chatDrawContacts();
 }
 async function chatUnsendMessage(id,isGroup){
- const rows=isGroup?chatGroupMessages:chatAllMessages;const row=rows.find(m=>m.id===id);
+ const rows=isGroup?chatGroupMessages:chatAllMessages;
+ const row=rows.find(m=>m.id===id);
  if(!row||row.sender_id!==currentUser?.id||row.deleted_at)return;
- if(!confirm('Unsend this message permanently for everyone in this conversation? This cannot be undone.'))return;
+ if(!confirm('Unsend this message for everyone in this conversation?'))return;
  const table=isGroup?'team_chat_group_messages':'team_chat_messages';
+ const removedImagePath=row.image_path||null;
  try{
-  if(row.image_path){
-   const {error:storageError}=await sb.storage.from('team-chat-images').remove([row.image_path]);
-   if(storageError)throw storageError;
-  }
-  const {data,error}=await sb.from(table).delete().eq('id',id).eq('sender_id',currentUser.id).select('id').maybeSingle();
-  if(error||!data)throw error||new Error('Permission denied or message already removed.');
+  // Use the existing sender-owned UPDATE permission and soft-delete marker.
+  // Direct DELETE is intentionally not granted by the chat table RLS policies.
+  const {data,error}=await sb.from(table)
+   .update({deleted_at:new Date().toISOString(),body:'',image_path:null})
+   .eq('id',id)
+   .eq('sender_id',currentUser.id)
+   .is('deleted_at',null)
+   .select('id,deleted_at')
+   .maybeSingle();
+  if(error||!data)throw error||new Error('Permission denied or message already changed.');
   chatHiddenMessageIds.delete(id);
   if(isGroup){
-   chatGroupMessages=chatGroupMessages.filter(m=>m.id!==id);
+   chatGroupMessages=chatGroupMessages.map(m=>m.id===id?{...m,deleted_at:data.deleted_at,body:'',image_path:null}:m);
    await chatLoadGroupMessages(chatActiveGroupId);
    await chatRenderGroupMessageList();
   }else{
-   chatAllMessages=chatAllMessages.filter(m=>m.id!==id);
+   chatAllMessages=chatAllMessages.map(m=>m.id===id?{...m,deleted_at:data.deleted_at,body:'',image_path:null}:m);
    await chatLoadMessages();
    await chatRenderMessageList();
   }
   chatDrawContacts();chatDrawGroups();await chatUpdateUnreadBadge();
+  // Image cleanup is best-effort and must not block a successful unsend.
+  if(removedImagePath){
+   void sb.storage.from('team-chat-images').remove([removedImagePath])
+    .then(({error:storageError})=>{if(storageError)console.warn('Unsent image cleanup pending:',storageError)})
+    .catch(storageError=>console.warn('Unsent image cleanup pending:',storageError));
+  }
  }catch(error){
-  console.error('Permanent chat unsend failed:',error);
-  alert('Message could not be permanently removed: '+(error?.message||error));
+  console.error('Team Chat unsend failed:',error);
+  alert('Message could not be unsent: '+(error?.message||error));
  }
 }
 
