@@ -3436,6 +3436,7 @@ document.getElementById('authForm').onsubmit=async e=>{
 let restoringSavedSession=false;
 async function restoreSavedSession(){
  if(restoringSavedSession||currentUser)return;
+ if(!(await checkStaffSiteAccess()))return;
  restoringSavedSession=true;
  try{
   const {data,error}=await sb.auth.getSession();
@@ -3466,8 +3467,9 @@ async function restoreSavedSession(){
  }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.'}finally{restoringSavedSession=false}
 }
 let staffForegroundNotificationAt=0;
-function handleStaffAppForeground(){
+async function handleStaffAppForeground(){
  if(document.visibilityState!=='visible')return;
+ if(!(await checkStaffSiteAccess()))return;
  if(!currentUser){restoreSavedSession();return}
  if(currentRole!=='staff')return;
  // Mobile browsers may suspend the first retry while the tab is backgrounded.
