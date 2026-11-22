@@ -3399,9 +3399,11 @@ async function recordStaffActivity(active,firstLogin){
 async function checkStaffBirthdayPostcard(){
  if(!sb||!currentStaffId||currentRole!=='staff')return;
  try{
-  const {data,error}=await sb.from('staff_directory').select('birth_date,display_name').eq('staff_id',currentStaffId).maybeSingle();
+  // Read the signed-in Staff member's own birthday through the protected RPC.
+  // Direct table SELECT may be blocked by staff_directory RLS on Staff sessions.
+  const {data:birthdayData,error}=await sb.rpc('get_my_staff_birthday');
   if(error)throw error;
-  const birthday=String(data?.birth_date||'').slice(0,10);
+  const birthday=String(birthdayData||'').slice(0,10);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(birthday))return;
   const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const today={};for(const p of parts)if(p.type!=='literal')today[p.type]=p.value;
@@ -3410,7 +3412,7 @@ async function checkStaffBirthdayPostcard(){
   const year=today.year;
   const key='pdk-birthday-postcard:'+String(currentStaffId).toUpperCase()+':'+year;
   try{if(localStorage.getItem(key)==='shown')return}catch(storageReadError){}
-  const name=String(data?.display_name||currentUser?.user_metadata?.display_name||document.getElementById('authName')?.value||'Team Member').trim();
+  const name=String(currentUser?.user_metadata?.display_name||document.getElementById('authName')?.value||'Team Member').trim();
   const layer=document.createElement('div');
   layer.id='staffBirthdayPostcard';
   layer.style.cssText='position:fixed;inset:0;z-index:100200;display:grid;place-items:center;padding:14px;background:radial-gradient(circle at 15% 10%,#27618b99,transparent 42%),rgba(2,10,22,.94);backdrop-filter:blur(10px);overflow:auto';
