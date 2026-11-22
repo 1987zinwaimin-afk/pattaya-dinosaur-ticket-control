@@ -3611,6 +3611,8 @@ document.getElementById('authStaffId').addEventListener('keydown',event=>{
 });
 document.getElementById('authStaffId').addEventListener('input',()=>{
  clearTimeout(staffNameLookupTimer);
+ // Clear the previous employee's date on shared devices; the signed-in ID's saved date is reloaded after verification.
+ const birthday=document.getElementById('authBirthDate');if(birthday)birthday.value='';
  const name=document.getElementById('authName');
  name.value='';name.readOnly=false;name.dataset.resolvedStaffId='';
  name.placeholder='Enter your name';
