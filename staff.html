@@ -3402,7 +3402,7 @@ async function checkStaffBirthdayPostcard(){
   const {data,error}=await sb.from('staff_directory').select('birth_date,display_name').eq('staff_id',currentStaffId).maybeSingle();
   if(error)throw error;
   const birthday=String(data?.birth_date||'').slice(0,10);
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(birthday))return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(birthday))return;
   const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const today={};for(const p of parts)if(p.type!=='literal')today[p.type]=p.value;
   const monthDay=birthday.slice(5);
