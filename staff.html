@@ -2770,7 +2770,7 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 
 <div id="staffSiteAccessOverlay" role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button><div id="staffSubscriptionPaymentPanel" hidden></div></div></div><div class="auth-screen" id="authScreen"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
-<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="all">All Departments</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
+<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="authBirthDate">Date of Birth</label><input id="authBirthDate" type="date" autocomplete="bday" aria-describedby="authBirthDateHint"><small id="authBirthDateHint" style="display:block;margin:-5px 0 12px;color:#aebed0;font-size:12px">Enter your birthday to receive your annual Birthday Postcard. You can leave this blank and add it later.</small><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="all">All Departments</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
 
@@ -3687,6 +3687,20 @@ document.getElementById('authForm').onsubmit=async e=>{
   if(claimError)throw claimError;
   if(!claimed)throw new Error('Staff ID could not be verified.');
   currentStaffId=claimed;
+  // Birthday is optional for existing Staff login. Retrieve the saved value, then
+  // securely save only when this Staff member supplied/changed their own date.
+  const birthdayInput=document.getElementById('authBirthDate');
+  const enteredBirthday=birthdayInput?.value||'';
+  const {data:savedBirthday,error:birthdayReadError}=await sb.rpc('get_my_staff_birthday');
+  if(birthdayReadError)throw birthdayReadError;
+  if(enteredBirthday){
+   if(enteredBirthday>new Date().toISOString().slice(0,10))throw new Error('Date of Birth cannot be in the future.');
+   const {error:birthdaySaveError}=await sb.rpc('save_my_staff_birthday',{p_birth_date:enteredBirthday});
+   if(birthdaySaveError)throw birthdaySaveError;
+   if(birthdayInput)birthdayInput.value=enteredBirthday;
+  }else if(birthdayInput&&savedBirthday){
+   birthdayInput.value=String(savedBirthday).slice(0,10);
+  }
   if(!knownProfile){
    const {data:verifiedProfile,error:verifiedProfileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',session.user.id).maybeSingle();
    if(verifiedProfileError)throw verifiedProfileError;
@@ -3724,6 +3738,11 @@ async function restoreSavedSession(){
   if(profile?.role==='staff'){
    document.getElementById('authName').value=profile.display_name||'';
    document.getElementById('authStaffId').value=profile.staff_id||'';
+   // Load the signed-in Staff member's own saved birthday into the login form for next time.
+   try{
+    const {data:birthday,error:birthdayError}=await sb.rpc('get_my_staff_birthday');
+    if(!birthdayError&&birthday)document.getElementById('authBirthDate').value=String(birthday).slice(0,10);
+   }catch(birthdayLoadError){console.warn('Staff birthday could not be loaded:',birthdayLoadError)}
    if(!staffLoginSubmitting){const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';document.getElementById('staffDepartment').value=['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale';}
    const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';
    await startCloudSession(data.session,true,profile,'app_open',['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale');
