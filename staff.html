@@ -3397,20 +3397,23 @@ async function recordStaffActivity(active,firstLogin){
 }
 
 async function checkStaffBirthdayPostcard(){
- if(!sb||!currentStaffId||currentRole!=='staff')return;
+ if(!sb||!currentStaffId||currentRole!=='staff'||document.getElementById('staffBirthdayPostcard'))return;
  try{
   // Read the signed-in Staff member's own birthday through the protected RPC.
   // Direct table SELECT may be blocked by staff_directory RLS on Staff sessions.
   const {data:birthdayData,error}=await sb.rpc('get_my_staff_birthday');
   if(error)throw error;
-  const birthday=String(birthdayData||'').slice(0,10);
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(birthday))return;
+  const birthday=String(birthdayData||'').trim().slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(birthday)){
+   console.info('Birthday postcard skipped: no valid saved Date of Birth for this Staff account.');
+   return;
+  }
   const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
   const today={};for(const p of parts)if(p.type!=='literal')today[p.type]=p.value;
   const monthDay=birthday.slice(5);
   if(monthDay!==today.month+'-'+today.day)return;
   const year=today.year;
-  const key='pdk-birthday-postcard-v2:'+String(currentStaffId).toUpperCase()+':'+year;
+  const key='pdk-birthday-postcard-v3:'+String(currentStaffId).toUpperCase()+':'+year;
   try{if(localStorage.getItem(key)==='shown')return}catch(storageReadError){}
   const name=String(currentUser?.user_metadata?.display_name||document.getElementById('authName')?.value||'Team Member').trim();
   const layer=document.createElement('div');
