@@ -99,6 +99,7 @@ button:disabled{opacity:.7;cursor:wait}
  window.addEventListener('beforeinstallprompt',event=>{
   event.preventDefault();
   deferredPrompt=event;
+  manualSteps.hidden=true;
   installButton.disabled=false;
   installButton.textContent='📲 Install Staff App';
   status.textContent='Ready to install. Tap the button to open the phone’s Install confirmation.';
