@@ -4765,7 +4765,8 @@ async function chatPresenceStart(){
 async function chatPresenceStop(){
  const userId=chatPresenceUserId||currentUser?.id;
  if(userId&&currentUser?.id===userId){
-  try{await chatPresenceWrite(false,userId)}catch(error){console.warn('Could not save offline status:',error?.message||error)}
+  let offlineWriteTimer=null;
+  try{await Promise.race([chatPresenceWrite(false,userId),new Promise(resolve=>{offlineWriteTimer=setTimeout(resolve,1200)})])}catch(error){console.warn('Could not save offline status:',error?.message||error)}finally{if(offlineWriteTimer)clearTimeout(offlineWriteTimer)}
  }
  if(chatPresenceHeartbeatTimer){clearInterval(chatPresenceHeartbeatTimer);chatPresenceHeartbeatTimer=null}
  if(chatPresenceUiTimer){clearInterval(chatPresenceUiTimer);chatPresenceUiTimer=null}
