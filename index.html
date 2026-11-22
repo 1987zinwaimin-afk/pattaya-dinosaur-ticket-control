@@ -6773,7 +6773,7 @@ async function saveStaffProfile(e){
  const oldDisplayName=document.getElementById('staffProfileOldName').value.trim();
  if(!userId){err.textContent='This login record is not linked to a staff account. Ask that staff member to log in once, then refresh this page.';return}
  if(!name){err.textContent='Please enter a staff name.';return}
- if(birthDate&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(birthDate)){err.textContent='Please enter a valid birthday.';return}
+ if(birthDate&&!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)){err.textContent='Please enter a valid birthday.';return}
  if(birthDate&&birthDate>new Date().toISOString().slice(0,10)){err.textContent='Birthday cannot be in the future.';return}
  if(birthDate&&!document.getElementById('staffProfileId').value.trim()){err.textContent='Assign a Staff ID before saving a birthday.';return}
  if(staffAvatarCropState&&(file||staffAvatarCropState.fromExisting)){try{const cropped=exportStaffAvatarCrop();const blob=await (await fetch(cropped)).blob();file=new File([blob],'staff-profile-crop.jpg',{type:'image/jpeg'})}catch(cropError){err.textContent='Could not prepare cropped photo: '+(cropError.message||cropError);return}}
