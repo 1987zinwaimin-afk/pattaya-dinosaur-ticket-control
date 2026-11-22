@@ -6659,10 +6659,11 @@ async function deleteEventStaffAccount(eventStaffId,displayName,button){
  if(!confirm('Permanently delete Event Staff account '+displayName+' (ID: '+eventStaffId+') and its login history? Ticket data and Event records will be kept. This action cannot be undone.'))return;
  const original=button.textContent;button.disabled=true;button.textContent='Deleting…';
  try{
-  const {data:deletedRows,error}=await withStaffDataTimeout(sb.from('event_staff_accounts').delete().eq('event_staff_id',eventStaffId).select('event_staff_id'),'Delete Event Staff Account');
+  const {data:deleted,error}=await withStaffDataTimeout(sb.rpc('delete_event_staff_account',{p_event_staff_id:eventStaffId}),'Delete Event Staff Account');
   if(error)throw error;
-  if(!deletedRows?.length)throw new Error('Event Staff account was not found or could not be deleted. No data was changed.');
-  // event_staff_login_activity is removed by its existing ON DELETE CASCADE foreign key.
+  if(!deleted)throw new Error('Event Staff account was not found. No data was changed.');
+  // The owner-only database function archives this Event Staff login identity,
+  // deletes its account row, and lets the existing FK cascade remove login history.
   // Ticket and Event records are not modified.
   alert('Event Staff account '+displayName+' and its login history have been deleted. Ticket and Event data were kept.');
   await loadEventStaffAccounts();
