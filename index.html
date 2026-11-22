@@ -5597,6 +5597,7 @@ function renderSettings(){
     '<section class="panel owner-settings-card owner-settings-preferences"><div class="owner-settings-card-heading"><span class="owner-settings-icon">🎨</span><div><h3>General Preferences</h3><p>Language and display appearance</p></div></div>'+
      '<div class="owner-settings-fields"><div class="owner-settings-field"><label for="ownerSettingsLanguage">Language / ภาษา / ဘာသာစကား</label><select id="ownerSettingsLanguage" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div>'+
      '<div class="owner-settings-field"><label for="ownerSettingsTheme">Display theme</label><select id="ownerSettingsTheme" aria-label="Display theme">'+themeOptions.map(([v,label])=>'<option value="'+v+'">'+label+'</option>').join('')+'</select></div></div></section>'+
+    (owner?'<section class="panel owner-settings-card owner-settings-password"><div class="owner-settings-card-heading"><span class="owner-settings-icon">🔐</span><div><h3>Change Owner Login Password</h3><p>Update the password used for this Owner account</p></div></div><form id="ownerChangePasswordForm" class="owner-settings-inner" autocomplete="off"><label for="ownerCurrentPassword">Current password</label><input id="ownerCurrentPassword" type="password" autocomplete="current-password" required minlength="8" placeholder="Enter current password"><label for="ownerNewPassword">New password</label><input id="ownerNewPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"><label for="ownerConfirmNewPassword">Confirm new password</label><input id="ownerConfirmNewPassword" type="password" autocomplete="new-password" required minlength="8" placeholder="Enter new password again"><button type="submit" class="gold owner-settings-save" id="ownerChangePasswordSubmit">Change login password</button><p id="ownerChangePasswordStatus" class="subtle owner-settings-status" role="status" aria-live="polite"></p><p class="owner-settings-note">For security, your current password will be verified before the new password is saved. Your Owner account will remain signed in.</p></form></section>':'')+
     (owner?'<section class="panel owner-settings-card owner-settings-notifications"><div class="owner-settings-card-heading"><span class="owner-settings-icon">🔔</span><div><h3>Notification Centre</h3><p>Manage Owner device alerts, sound and Thai voice in one place</p></div></div>'+
      '<div class="owner-settings-inner"><label for="ownerNotifySound">Notification sound</label><select id="ownerNotifySound"><option value="bell">🔔 Bell — Classic</option><option value="ding">🔔 Ding — Short</option><option value="alert">🚨 Alert — Double tone</option></select>'+
      '<div class="owner-settings-action-row"><button type="button" id="ownerTestNotifySound">▶ Test notification sound</button></div>'+
@@ -5615,6 +5616,34 @@ function renderSettings(){
   const themeSelect=root.querySelector('#ownerSettingsTheme');
   if(language){language.value=lang;language.addEventListener('change',()=>{lang=language.value;localStorage.setItem('tctl-lang',lang);render(true);applyUILanguage()});}
   if(themeSelect){themeSelect.value=theme;themeSelect.addEventListener('change',()=>{theme=themeSelect.value;localStorage.setItem('tctl-theme-owner',theme);applyTheme()});}
+  const passwordForm=root.querySelector('#ownerChangePasswordForm');
+  if(passwordForm)passwordForm.addEventListener('submit',async event=>{
+   event.preventDefault();
+   if(currentRole!=='owner'||!currentUser?.id||!currentUser?.email)return;
+   const currentInput=root.querySelector('#ownerCurrentPassword');
+   const newInput=root.querySelector('#ownerNewPassword');
+   const confirmInput=root.querySelector('#ownerConfirmNewPassword');
+   const status=root.querySelector('#ownerChangePasswordStatus');
+   const submit=root.querySelector('#ownerChangePasswordSubmit');
+   const currentPassword=currentInput.value,newPassword=newInput.value,confirmPassword=confirmInput.value;
+   if(newPassword.length<8){status.textContent='New password must contain at least 8 characters.';return}
+   if(newPassword!==confirmPassword){status.textContent='The new passwords do not match.';return}
+   if(newPassword===currentPassword){status.textContent='Choose a password different from your current password.';return}
+   const ownerId=currentUser.id,ownerEmail=currentUser.email;
+   submit.disabled=true;status.textContent='Verifying current password…';
+   try{
+    const {data:verified,error:verifyError}=await withAuthTimeout(sb.auth.signInWithPassword({email:ownerEmail,password:currentPassword}),'Verify current Owner password',20000);
+    if(verifyError)throw new Error('Current password is incorrect. Please check and try again.');
+    if(!verified?.user||verified.user.id!==ownerId)throw new Error('Owner account verification failed. Password was not changed.');
+    status.textContent='Current password verified. Saving new password…';
+    const {data:updated,error:updateError}=await withAuthTimeout(sb.auth.updateUser({password:newPassword}),'Change Owner password',20000);
+    if(updateError)throw updateError;
+    if(updated?.user)currentUser=updated.user;
+    currentInput.value='';newInput.value='';confirmInput.value='';
+    status.textContent='Owner login password changed successfully. You are still signed in. Use the new password next time you log in.';
+   }catch(error){console.error('Owner password change failed:',error);status.textContent=error.message||'Password could not be changed. Please try again.'}
+   finally{submit.disabled=false}
+  });
   const backup=root.querySelector('#ownerExportBackup');
   if(backup)backup.addEventListener('click',()=>{const blob=new Blob([JSON.stringify(tickets,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='pattaya-dinosaur-owner-ticket-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)});
   if(typeof window.renderDeviceUiModeControls==='function')window.renderDeviceUiModeControls(root);
@@ -7339,6 +7368,8 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
 #ownerStaffSubscriptionDateResult{margin:8px 0 0;color:#b8c9d8;font-size:11px;line-height:1.45}
 @media(max-width:420px){.owner-subscription-manual-dates{padding:10px}.owner-subscription-date-inputs{gap:7px}.owner-subscription-date-inputs input{padding:9px 6px;font-size:12px}}
 </style>
+
+<style id="owner-password-settings-style">#pageContent .owner-settings-password .owner-settings-inner{display:grid;gap:9px}#pageContent .owner-settings-password input[type=password]{width:100%;min-height:46px;padding:11px 13px;border:1px solid rgba(170,190,210,.3);border-radius:11px;background:rgba(2,17,32,.72);color:inherit;font:inherit;box-sizing:border-box}#pageContent .owner-settings-password input[type=password]:focus{outline:2px solid rgba(232,185,79,.72);outline-offset:1px}#pageContent .owner-settings-password button:disabled{opacity:.6;cursor:wait}#pageContent .owner-settings-password #ownerChangePasswordStatus{min-height:1.3em;margin:2px 0}</style>
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
