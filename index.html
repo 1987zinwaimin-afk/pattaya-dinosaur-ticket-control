@@ -3672,6 +3672,22 @@ body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
  #teamChatOverlay[data-owner-view="true"].chat-show-conversation .chat-back{display:inline-flex!important}
 }
 </style>
+
+<style id="team-chat-presence-seen-v1">
+.chat-avatar-wrap{position:relative;display:block;width:36px;height:36px;flex:0 0 36px}
+.chat-avatar-wrap .chat-avatar{width:36px;height:36px}
+.chat-presence-dot{position:absolute;right:-1px;bottom:-1px;width:11px;height:11px;border:2px solid #0b2438;border-radius:50%;box-sizing:content-box}
+.chat-presence-dot.online{background:#38d68e;box-shadow:0 0 0 2px rgba(56,214,142,.18)}
+.chat-presence-dot.offline{background:#8192a1}
+.chat-contact-presence{font-size:10px;font-weight:700}
+.chat-contact-presence.online{color:#72e4ad}
+.chat-contact-presence.offline{color:#a8b9c9}
+.chat-peer-online{color:#72e4ad!important}
+.chat-message-status{font-weight:850;margin-left:4px;white-space:nowrap}
+.chat-message-status.is-seen{color:#075d3d}
+.chat-message-status.is-sent{color:#314b62}
+</style>
+
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -4423,6 +4439,7 @@ async function startCloudSession(session){
   if(currentRole==='owner'&&page==='customervisits')renderCustomerVisits();
   try{const {data:themeRow,error:themeError}=await sb.from('theme_preferences').select('theme').eq('preference_key','owner:'+requestedUserId).maybeSingle();if(themeError)throw themeError;if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme-owner',theme);applyTheme()}}catch(themeLoadError){console.warn('Owner theme could not be loaded:',themeLoadError)}
   if(currentRole!=='owner'){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('This account is not marked as Owner. Please use the existing Owner account; do not create another account.')}
+   chatPresenceStart().catch(error=>console.warn('Owner Team Chat presence startup failed:',error?.message||error));
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
   refreshOwnerPushSubscription().catch(e=>console.warn('Owner push subscription refresh failed:',e.message||e));
   document.getElementById('authScreen').style.display='none';
@@ -4634,6 +4651,7 @@ async function restoreTicket(id){
 }
 
 let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
+let chatAliasIdsByProfileId=new Map();
 const chatGroupAvatarUrls=new Map();
 let chatSelfAliasIds=[],chatAliasIdsByProfileId=new Map(),chatCanonicalIdByAliasId=new Map(),chatRefreshPending=false,chatRefreshPendingReloadContacts=false;
 let chatPollTimer=null,chatRealtimeStatus='CLOSED';
@@ -4662,6 +4680,99 @@ async function chatMessageBodyHtml(message){if(message.deleted_at)return '<div c
 function chatUpdateTranslateButton(){const button=document.getElementById('teamChatTranslateToggle');if(!button)return;button.classList.toggle('is-on',chatTranslateEnabled);button.setAttribute('aria-pressed',String(chatTranslateEnabled));button.textContent=chatTranslateEnabled?'🌐 Translate ON':'🌐 Translate OFF';button.title=chatTranslateEnabled?'Turn message translation off':'Turn message translation on';}
 async function chatToggleTranslate(){chatTranslateEnabled=!chatTranslateEnabled;localStorage.setItem('team-chat-translate-enabled-v1',String(chatTranslateEnabled));chatUpdateTranslateButton();if(chatActiveGroupId)await chatRenderGroupMessageList();else if(chatPeerId)await chatRenderMessageList();}
 function chatTime(value){try{return new Intl.DateTimeFormat(undefined,{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(_){return ''}}
+
+/* Team Chat presence: durable last-seen heartbeat plus realtime updates. */
+let chatPresenceChannel=null,chatPresenceUserId='',chatPresenceHeartbeatTimer=null,chatPresenceUiTimer=null;
+let chatPresenceRows=new Map();
+function chatPresenceFor(profile){
+ if(!profile?.id)return {online:false,lastSeen:null};
+ const ids=profile.role==='staff'&&profile.staff_id
+  ?(chatAliasIdsByProfileId.get(profile.id)||[profile.id]):[profile.id];
+ const rows=ids.map(id=>chatPresenceRows.get(id)).filter(Boolean);
+ rows.sort((a,b)=>(Date.parse(b.last_seen||'')||0)-(Date.parse(a.last_seen||'')||0));
+ const row=rows[0]||null,lastSeen=row?.last_seen||null,age=lastSeen?Date.now()-(Date.parse(lastSeen)||0):Infinity;
+ return {online:!!row?.is_online&&age<90000,lastSeen};
+}
+function chatPresenceLabel(state){
+ if(state?.online)return chatText('Online','ออนไลน์','အွန်လိုင်း');
+ if(!state?.lastSeen)return chatText('Offline · not seen yet','ออฟไลน์ · ยังไม่เคยออนไลน์','အော့ဖ်လိုင်း · မတွေ့ရသေးပါ');
+ const age=Math.max(0,Date.now()-(Date.parse(state.lastSeen)||Date.now()));
+ const minutes=Math.floor(age/60000);
+ if(minutes<1)return chatText('Offline · just now','ออฟไลน์ · เมื่อสักครู่','အော့ဖ်လိုင်း · ယခုလေးတင်');
+ if(minutes<60)return chatText('Offline · '+minutes+' min ago','ออฟไลน์ · '+minutes+' นาทีที่แล้ว','အော့ဖ်လိုင်း · လွန်ခဲ့သော '+minutes+' မိနစ်');
+ const hours=Math.floor(minutes/60);
+ if(hours<24)return chatText('Offline · '+hours+' hr ago','ออฟไลน์ · '+hours+' ชั่วโมงที่แล้ว','အော့ဖ်လိုင်း · လွန်ခဲ့သော '+hours+' နာရီ');
+ const days=Math.floor(hours/24);
+ return chatText('Offline · '+days+' day'+(days===1?'':'s')+' ago','ออฟไลน์ · '+days+' วันที่แล้ว','အော့ဖ်လိုင်း · လွန်ခဲ့သော '+days+' ရက်');
+}
+async function chatPresenceLoad(){
+ const {data,error}=await sb.from('team_chat_presence').select('user_id,last_seen,is_online');
+ if(error)throw error;
+ chatPresenceRows=new Map((data||[]).map(row=>[row.user_id,row]));
+ if(document.getElementById('teamChatContacts'))chatDrawContacts();
+ chatUpdatePeerPresence();
+}
+async function chatPresenceWrite(isOnline=true,userId=chatPresenceUserId){
+ if(!userId||currentUser?.id!==userId)return;
+ const now=new Date().toISOString();
+ const row={user_id:userId,last_seen:now,is_online:!!isOnline,updated_at:now};
+ const {error}=await sb.from('team_chat_presence').upsert(row,{onConflict:'user_id'});
+ if(error)throw error;
+ chatPresenceRows.set(userId,row);
+ if(document.getElementById('teamChatContacts'))chatDrawContacts();
+ chatUpdatePeerPresence();
+}
+function chatUpdatePeerPresence(){
+ const sub=document.getElementById('teamChatPeerRole');
+ if(!sub||!chatPeerId)return;
+ const peer=chatContacts.find(p=>p.id===chatPeerId);
+ if(!peer)return;
+ const state=chatPresenceFor(peer);
+ sub.textContent=(peer.role==='owner'?'👑 Owner':'Staff')+' · '+chatPresenceLabel(state);
+ sub.classList.toggle('chat-peer-online',state.online);
+}
+async function chatPresenceStart(){
+ if(!currentUser?.id)return;
+ const userId=currentUser.id;
+ if(chatPresenceUserId&&chatPresenceUserId!==userId)await chatPresenceStop();
+ chatPresenceUserId=userId;
+ try{await chatPresenceLoad()}catch(error){console.warn('Team Chat presence could not be loaded:',error?.message||error)}
+ if(!chatPresenceChannel){
+  chatPresenceChannel=sb.channel('team-chat-presence-'+userId)
+   .on('postgres_changes',{event:'*',schema:'public',table:'team_chat_presence'},payload=>{
+    const row=payload.new||payload.old||{};
+    if(payload.eventType==='DELETE')chatPresenceRows.delete(row.user_id);
+    else if(row.user_id)chatPresenceRows.set(row.user_id,row);
+    if(document.getElementById('teamChatContacts'))chatDrawContacts();
+    chatUpdatePeerPresence();
+   })
+   .subscribe(status=>{
+    if(status==='SUBSCRIBED')chatPresenceWrite(true,userId).catch(error=>console.warn('Presence heartbeat failed:',error?.message||error));
+    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')console.warn('Team Chat presence realtime status:',status);
+   });
+ }
+ if(chatPresenceHeartbeatTimer)clearInterval(chatPresenceHeartbeatTimer);
+ chatPresenceHeartbeatTimer=setInterval(()=>{
+  if(currentUser?.id===userId&&document.visibilityState==='visible')chatPresenceWrite(true,userId).catch(error=>console.warn('Presence heartbeat failed:',error?.message||error));
+ },45000);
+ if(chatPresenceUiTimer)clearInterval(chatPresenceUiTimer);
+ chatPresenceUiTimer=setInterval(()=>{
+  if(document.getElementById('teamChatContacts'))chatDrawContacts();
+  chatUpdatePeerPresence();
+ },15000);
+ await chatPresenceWrite(true,userId).catch(error=>console.warn('Initial presence heartbeat failed:',error?.message||error));
+}
+async function chatPresenceStop(){
+ const userId=chatPresenceUserId||currentUser?.id;
+ if(userId&&currentUser?.id===userId){
+  try{await chatPresenceWrite(false,userId)}catch(error){console.warn('Could not save offline status:',error?.message||error)}
+ }
+ if(chatPresenceHeartbeatTimer){clearInterval(chatPresenceHeartbeatTimer);chatPresenceHeartbeatTimer=null}
+ if(chatPresenceUiTimer){clearInterval(chatPresenceUiTimer);chatPresenceUiTimer=null}
+ if(chatPresenceChannel){try{await sb.removeChannel(chatPresenceChannel)}catch(error){console.warn('Presence channel cleanup failed:',error)}chatPresenceChannel=null}
+ chatPresenceUserId='';
+}
+
 function chatEnsureRealtime(){
   if(!currentUser)return;
   // Restore the foreground fallback even when the Realtime channel already exists.
@@ -4983,17 +5094,18 @@ async function chatRenderMessageList(){
   let image='';
   if(m.image_path&&!m.deleted_at){try{const {data,error}=await sb.storage.from('team-chat-images').createSignedUrl(m.image_path,3600);if(!error&&data?.signedUrl)image='<a href="'+chatEsc(data.signedUrl)+'" target="_blank" rel="noopener"><img class="chat-message-image" src="'+chatEsc(data.signedUrl)+'" alt="Shared image" loading="lazy"></a>'}catch(e){console.warn('Chat image could not be loaded:',e)}}
   const mine=selfIds.has(m.sender_id);
-  return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(image||'')+await chatMessageBodyHtml(m)+chatMessageActionsHtml(m,false)+'<time>'+chatTime(m.created_at)+(m.edited_at?' · Edited':'')+(mine?(m.read_at?' · ✓✓':' · ✓'):'')+'</time></article>';
+  return '<article class="chat-bubble '+(mine?'mine':'theirs')+'">'+(image||'')+await chatMessageBodyHtml(m)+chatMessageActionsHtml(m,false)+'<time>'+chatTime(m.created_at)+(m.edited_at?' · Edited':'')+(mine?'<span class="chat-message-status '+(m.read_at?'is-seen':'is-sent')+'">'+(m.read_at?'✓✓ '+chatText('Seen','อ่านแล้ว','ဖတ်ပြီး'):'✓ '+chatText('Sent','ส่งแล้ว','ပို့ပြီး'))+'</span>':'')+'</time></article>';
  }));
  if(!document.getElementById('teamChatMessages'))return;
  pane.innerHTML=html.join('');
  pane.scrollTop=pane.scrollHeight;
- const unread=rows.filter(m=>m.recipient_id===currentUser.id&&!m.read_at);
+ const selfIdentityIds=[...selfIds];
+ const unread=rows.filter(m=>selfIds.has(m.recipient_id)&&!m.read_at);
  if(unread.length){
-  const ids=unread.map(m=>m.id);
-  const {error}=await sb.from('team_chat_messages').update({read_at:new Date().toISOString()}).in('id',ids).eq('recipient_id',currentUser.id).is('read_at',null);
-  if(error)console.warn('Could not mark chat messages read:',error);
-  else{chatAllMessages=chatAllMessages.map(m=>ids.includes(m.id)?{...m,read_at:new Date().toISOString()}:m);chatUpdateUnreadBadge()}
+  const ids=unread.map(m=>m.id),seenAt=new Date().toISOString();
+  const {error}=await sb.from('team_chat_messages').update({read_at:seenAt}).in('id',ids).in('recipient_id',selfIdentityIds).is('read_at',null);
+  if(error)console.warn('Could not mark chat messages seen:',error);
+  else{chatAllMessages=chatAllMessages.map(m=>ids.includes(m.id)?{...m,read_at:seenAt}:m);chatUpdateUnreadBadge()}
  }
 }
 function chatDrawContacts(){
@@ -5021,10 +5133,10 @@ function chatDrawContacts(){
   return String(a.display_name||'').localeCompare(String(b.display_name||''),undefined,{sensitivity:'base'});
  });
  list.innerHTML=rows.map(p=>{
-  const identity=p.role==='owner'?'👑 Owner':'Staff',last=latestByPeer[p.id];
+  const identity=p.role==='owner'?'👑 Owner':'Staff',last=latestByPeer[p.id],presence=chatPresenceFor(p),presenceText=chatPresenceLabel(presence);
   const preview=last?(last.image_path?(last.body?'📷 '+last.body:'📷 Photo'):((selfIds.has(last.sender_id)?'You: ':'')+(last.body||''))):'Start a conversation';
   const when=last?new Date(last.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'';
-  return '<button type="button" class="chat-contact '+(p.id===chatPeerId?'active':'')+'" data-chat-peer="'+chatEsc(p.id)+'"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').trim().slice(0,1).toUpperCase()))+'</span><span class="chat-contact-copy"><b>'+chatEsc(p.display_name||'Unnamed')+'</b><small>'+chatEsc(identity)+'</small><span class="chat-contact-preview">'+chatEsc(preview)+'</span></span><span class="chat-contact-meta">'+(when?'<time>'+chatEsc(when)+'</time>':'')+(unreadBy[p.id]?'<span class="chat-unread">'+unreadBy[p.id]+'</span>':'')+'</span></button>';
+  return '<button type="button" class="chat-contact '+(p.id===chatPeerId?'active':'')+'" data-chat-peer="'+chatEsc(p.id)+'"><span class="chat-avatar-wrap"><span class="chat-avatar">'+(p.avatar_url?'<img src="'+chatEsc(p.avatar_url)+'" alt="">':chatEsc((p.display_name||'?').trim().slice(0,1).toUpperCase()))+'</span><i class="chat-presence-dot '+(presence.online?'online':'offline')+'"></i></span><span class="chat-contact-copy"><b>'+chatEsc(p.display_name||'Unnamed')+'</b><small>'+chatEsc(identity)+' · <span class="chat-contact-presence '+(presence.online?'online':'offline')+'">'+chatEsc(presenceText)+'</span></small><span class="chat-contact-preview">'+chatEsc(preview)+'</span></span><span class="chat-contact-meta">'+(when?'<time>'+chatEsc(when)+'</time>':'')+(unreadBy[p.id]?'<span class="chat-unread">'+unreadBy[p.id]+'</span>':'')+'</span></button>';
  }).join('')||'<div class="chat-no-contacts">'+chatText('No matching team members','ไม่พบสมาชิกทีม','အဖွဲ့ဝင် မတွေ့ပါ')+'</div>';
 }
 async function chatRefresh(reloadContacts){
@@ -5059,7 +5171,7 @@ async function chatSelectPeer(id){
  const peer=chatContacts.find(p=>p.id===id);
  const title=document.getElementById('teamChatPeerName'),sub=document.getElementById('teamChatPeerRole'),avatar=document.querySelector('.team-chat-peer .chat-peer-avatar');
  if(title)title.textContent=peer?.display_name||'Team member';
- if(sub)sub.textContent=peer?.role==='owner'?'👑 Owner':'Staff';
+ if(sub)sub.textContent=(peer?.role==='owner'?'👑 Owner':'Staff')+' · '+chatPresenceLabel(chatPresenceFor(peer));
  if(avatar){if(peer?.avatar_url)avatar.innerHTML='<img src="'+chatEsc(peer.avatar_url)+'" alt="">';else avatar.textContent=(peer?.display_name||'?').trim().slice(0,1).toUpperCase()}
  await chatLoadMessages();await chatRenderMessageList();await chatUpdateUnreadBadge();
 }
@@ -5221,7 +5333,7 @@ async function renderTeamChat(){
   document.getElementById('teamChatForm').onsubmit=chatSendMessage;
   document.getElementById('teamChatTranslateToggle').onclick=chatToggleTranslate;chatUpdateTranslateButton();
   document.getElementById('teamChatFile').onchange=e=>{const f=e.target.files?.[0],p=document.getElementById('teamChatPreview');if(p)p.textContent=f?'📎 '+f.name:''};
-  chatEnsureRealtime();await chatUpdateUnreadBadge();
+  chatEnsureRealtime();chatPresenceStart().catch(error=>console.warn('Team Chat presence startup failed:',error?.message||error));await chatUpdateUnreadBadge();
  }catch(e){console.error('Team Chat failed to initialize:',e);const list=document.getElementById('teamChatContacts');if(list)list.innerHTML='<div class="chat-error">'+chatEsc(e.message||e)+'</div>'}
 }
 function renderArchivedTickets(){
@@ -6915,6 +7027,7 @@ document.getElementById('language').onchange=e=>{lang=e.target.value;localStorag
  if(!currentUser){document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');return}
  button.disabled=true;button.textContent='Logging out…';
  try{
+  await chatPresenceStop();
   const {error}=await withAuthTimeout(sb.auth.signOut({scope:'local'}),'Owner logout',12000);
   if(error)throw error;
   if(cloudChannel){await sb.removeChannel(cloudChannel);cloudChannel=null}
