@@ -3993,7 +3993,7 @@ async function restoreTicket(id){
 
 let chatPeerId='',chatContacts=[],chatAllMessages=[],chatChannel=null,chatChannelUserId='',chatRefreshBusy=false,chatGroups=[],chatGroupMembers=[],chatGroupMessages=[],chatActiveGroupId='';
 const chatGroupAvatarUrls=new Map();
-let chatSelfAliasIds=[],chatAliasIdsByProfileId=new Map(),chatCanonicalIdByAliasId=new Map(),chatRefreshPending=false,chatRefreshPendingReloadContacts=false;
+let chatSelfAliasIds=[],chatAliasProfilesById=new Map(),chatCanonicalIdByAliasId=new Map(),chatRefreshPending=false,chatRefreshPendingReloadContacts=false;
 let chatPollTimer=null,chatRealtimeStatus='CLOSED';
 let chatHiddenMessageIds=new Set(),chatHiddenMessageUserId='';
 async function chatLoadHiddenMessages(){
@@ -4031,7 +4031,7 @@ let chatPresenceRows=new Map();
 function chatPresenceFor(profile){
  if(!profile?.id)return {online:false,lastSeen:null};
  const ids=profile.role==='staff'&&profile.staff_id
-  ?(chatAliasIdsByProfileId.get(profile.id)||[profile.id]):[profile.id];
+  ?(chatAliasProfilesById.get(profile.id)||[profile.id]):[profile.id];
  const rows=ids.map(id=>chatPresenceRows.get(id)).filter(Boolean);
  rows.sort((a,b)=>(Date.parse(b.last_seen||'')||0)-(Date.parse(a.last_seen||'')||0));
  const row=rows[0]||null,lastSeen=row?.last_seen||null,age=lastSeen?Date.now()-(Date.parse(lastSeen)||0):Infinity;
@@ -4197,7 +4197,7 @@ async function chatLoadContacts(){
    aliasesByStaffId.get(staffId).push(profile.id);
   }
  }
- chatAliasIdsByProfileId=new Map(allProfiles.map(profile=>{
+ chatAliasProfilesById=new Map(allProfiles.map(profile=>{
   const staffId=String(profile.staff_id||'').trim().toUpperCase();
   return [profile.id,profile.role==='staff'&&staffId?(aliasesByStaffId.get(staffId)||[profile.id]):[profile.id]];
  }));
@@ -4269,7 +4269,7 @@ async function chatLoadContacts(){
  }
  const signedIn=profileById.get(currentUser.id);
  chatSelfAliasIds=signedIn?.role==='staff'&&signedIn.staff_id
-  ?(chatAliasIdsByProfileId.get(currentUser.id)||[currentUser.id])
+  ?(chatAliasProfilesById.get(currentUser.id)||[currentUser.id])
   :[currentUser.id];
 }
 async function chatLoadMessages(){
@@ -4431,7 +4431,7 @@ async function chatSelectGroup(id){
 async function chatRenderMessageList(){
  const pane=document.getElementById('teamChatMessages');if(!pane)return;
  const selfIds=new Set(chatSelfAliasIds?.length?chatSelfAliasIds:[currentUser.id]);
- const peerIds=new Set(chatAliasIdsByProfileId.get(chatPeerId)||[chatPeerId]);
+ const peerIds=new Set(chatAliasProfilesById.get(chatPeerId)||[chatPeerId]);
  const rows=chatAllMessages.filter(m=>!m.deleted_at&&!chatHiddenMessageIds.has(m.id)&&((selfIds.has(m.sender_id)&&peerIds.has(m.recipient_id))||(peerIds.has(m.sender_id)&&selfIds.has(m.recipient_id))));
  if(!rows.length){pane.innerHTML='<div class="chat-empty-state"><span>💬</span><b>'+chatText('Start the conversation','เริ่มการสนทนา','စကားစပြောပါ')+'</b><small>'+chatText('Send a message or photo','ส่งข้อความหรือรูปภาพ','စာ သို့မဟုတ် ဓာတ်ပုံ ပို့ပါ')+'</small></div>';return}
  const html=await Promise.all(rows.map(async m=>{
