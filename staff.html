@@ -2768,7 +2768,7 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 <section id="pageContent"></section>
 </main>
 
-<div id="staffSiteAccessOverlay" role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button><div id="staffSubscriptionPaymentPanel" hidden></div></div></div><div class="auth-screen" id="authScreen"><div class="auth-card">
+<div id="staffSiteAccessOverlay" hidden role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button><div id="staffSubscriptionPaymentPanel" hidden></div></div></div><div class="auth-screen" id="authScreen" style="display:none" aria-hidden="true"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
 <form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="authBirthDate">Date of Birth</label><input id="authBirthDate" type="date" autocomplete="bday" aria-describedby="authBirthDateHint"><small id="authBirthDateHint" style="display:block;margin:-5px 0 12px;color:#aebed0;font-size:12px">Enter your birthday to receive your annual Birthday Postcard. You can leave this blank and add it later.</small><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="all">All Departments</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
@@ -3768,7 +3768,7 @@ async function restoreSavedSession(){
  try{
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
-  if(!data.session)return;
+  if(!data.session){const authScreen=document.getElementById('authScreen');if(authScreen){authScreen.style.display='grid';authScreen.setAttribute('aria-hidden','false')}return;}
   let profile=null,lastProfileError=null;
   // A freshly reopened phone may need a moment for the network/profile query to become available.
   for(let attempt=0;attempt<3;attempt++){
@@ -3791,12 +3791,13 @@ async function restoreSavedSession(){
    await startCloudSession(data.session,true,profile,'app_open',['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale');
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
+   const authScreen=document.getElementById('authScreen');if(authScreen){authScreen.style.display='grid';authScreen.setAttribute('aria-hidden','false')}
   }else{
    // Do not destroy a valid persisted session just because the profile request is temporarily unavailable.
    console.warn('Saved Staff session profile is temporarily unavailable:',lastProfileError?.message||'No profile returned');
    document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.';
   }
- }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.'}finally{restoringSavedSession=false}
+ }catch(e){console.error('Could not restore saved Staff session',e);document.getElementById('authError').textContent='Saved login is kept. Please check your connection and reopen the app.';if(staffSiteAccessOpen===true){const authScreen=document.getElementById('authScreen');if(authScreen){authScreen.style.display='grid';authScreen.setAttribute('aria-hidden','false')}}}finally{restoringSavedSession=false}
 }
 let staffForegroundNotificationAt=0;
 async function handleStaffAppForeground(){
