@@ -5403,7 +5403,7 @@ function renderStaffSubscriptionCardHtml(){
  '<p class="subtle" style="margin:0 0 12px">One payment is shared by all Normal Staff accounts. Each Owner approval records the exact start and expiry date, then renews for one calendar month.</p>'+
  '<div id="ownerStaffSubscriptionStatus" class="panel" style="padding:12px;margin-bottom:12px">Loading subscription…</div>'+
  '<div class="owner-subscription-manual-dates"><h4>🗓️ Owner Date Control</h4><p>Set the exact dates that the shared Staff subscription should cover. The expiry date remains valid through the end of that day (Thailand time).</p><div class="owner-subscription-date-inputs"><label for="ownerStaffSubscriptionStartDate">START DATE<input id="ownerStaffSubscriptionStartDate" type="date"></label><label for="ownerStaffSubscriptionExpiryDate">EXPIRY DATE<input id="ownerStaffSubscriptionExpiryDate" type="date"></label></div><button type="button" class="gold" id="ownerStaffSubscriptionSaveDates">Save Subscription Dates</button><p id="ownerStaffSubscriptionDateResult" role="status"></p></div>'+
- '<label for="ownerStaffSubscriptionPrice">Monthly fee (THB)</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000" step="0.01" placeholder="Set monthly fee">'+
+ '<label for="ownerStaffSubscriptionCurrency">Currency / ငွေကြေး</label><select id="ownerStaffSubscriptionCurrency"><option value="THB">THB – Thai Baht (฿)</option><option value="MMK">MMK – Myanmar Kyat (K)</option></select><label for="ownerStaffSubscriptionPrice">Monthly fee</label><input id="ownerStaffSubscriptionPrice" type="number" min="1" max="1000000000" step="0.01" placeholder="Set monthly fee">'+
  '<label for="ownerStaffSubscriptionQr">Bank QR image</label><p class="subtle" style="margin:4px 0 8px">Choose a new image to replace the currently saved Bank QR. The replacement becomes active only after you press Save fee and Bank QR.</p><button type="button" class="gold" id="ownerStaffSubscriptionReplaceQr" style="margin:0 0 8px">Replace Bank QR</button><input id="ownerStaffSubscriptionQr" type="file" accept="image/*" style="display:none">'+
  '<img id="ownerStaffSubscriptionQrPreview" alt="PromptPay QR preview" hidden style="display:block;max-width:220px;max-height:220px;object-fit:contain;background:#fff;padding:8px;border-radius:12px;margin:10px 0">'+
  '<button type="button" class="gold" id="ownerStaffSubscriptionSave" style="width:100%;margin-top:12px">Save fee and Bank QR</button>'+
@@ -5411,8 +5411,8 @@ function renderStaffSubscriptionCardHtml(){
  '<h4 style="margin:18px 0 8px">Payment requests</h4><div id="ownerStaffSubscriptionPayments" class="subtle">Loading payment requests…</div></section>';
 }
 function bindOwnerStaffSubscription(){
- const priceInput=document.getElementById('ownerStaffSubscriptionPrice'),qrInput=document.getElementById('ownerStaffSubscriptionQr'),preview=document.getElementById('ownerStaffSubscriptionQrPreview'),save=document.getElementById('ownerStaffSubscriptionSave'),status=document.getElementById('ownerStaffSubscriptionStatus'),result=document.getElementById('ownerStaffSubscriptionSaveResult'),list=document.getElementById('ownerStaffSubscriptionPayments'),startDateInput=document.getElementById('ownerStaffSubscriptionStartDate'),expiryDateInput=document.getElementById('ownerStaffSubscriptionExpiryDate'),saveDates=document.getElementById('ownerStaffSubscriptionSaveDates'),dateResult=document.getElementById('ownerStaffSubscriptionDateResult');
- if(!priceInput||!qrInput||!preview||!save||!status||!result||!list||!startDateInput||!expiryDateInput||!saveDates||!dateResult||currentRole!=='owner')return;
+ const priceInput=document.getElementById('ownerStaffSubscriptionPrice'),currencyInput=document.getElementById('ownerStaffSubscriptionCurrency'),qrInput=document.getElementById('ownerStaffSubscriptionQr'),preview=document.getElementById('ownerStaffSubscriptionQrPreview'),save=document.getElementById('ownerStaffSubscriptionSave'),status=document.getElementById('ownerStaffSubscriptionStatus'),result=document.getElementById('ownerStaffSubscriptionSaveResult'),list=document.getElementById('ownerStaffSubscriptionPayments'),startDateInput=document.getElementById('ownerStaffSubscriptionStartDate'),expiryDateInput=document.getElementById('ownerStaffSubscriptionExpiryDate'),saveDates=document.getElementById('ownerStaffSubscriptionSaveDates'),dateResult=document.getElementById('ownerStaffSubscriptionDateResult');
+ if(!priceInput||!currencyInput||!qrInput||!preview||!save||!status||!result||!list||!startDateInput||!expiryDateInput||!saveDates||!dateResult||currentRole!=='owner')return;
  const replaceQrButton=document.getElementById('ownerStaffSubscriptionReplaceQr');
  if(replaceQrButton)replaceQrButton.addEventListener('click',()=>{if(!busy)qrInput.click()});
  let savedQr='',busy=false,selectionVersion=0;
@@ -5459,9 +5459,9 @@ function bindOwnerStaffSubscription(){
  }
  const load=async()=>{
   try{
-   const {data,error}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,starts_at,expires_at,updated_at').eq('subscription_key','normal_staff').single();
+   const {data,error}=await sb.from('staff_subscription').select('monthly_price,currency_code,promptpay_qr_data,starts_at,expires_at,updated_at').eq('subscription_key','normal_staff').single();
    if(error)throw error;if(!data)throw new Error('Subscription settings are missing.');
-   priceInput.value=Number(data.monthly_price||0)||'';savedQr=data.promptpay_qr_data||'';
+   priceInput.value=Number(data.monthly_price||0)||'';currencyInput.value=data.currency_code==='MMK'?'MMK':'THB';priceInput.step=currencyInput.value==='MMK'?'1':'0.01';priceInput.max=currencyInput.value==='MMK'?'1000000000':'1000000';savedQr=data.promptpay_qr_data||'';
    startDateInput.value=dateForInput(data.starts_at);expiryDateInput.value=dateForInput(data.expires_at);
    // Check the temporary replacement first: Android may reload the page after Gallery selection.
    // A pending draft must take priority over the currently saved QR until the Owner confirms Save.
@@ -5533,16 +5533,17 @@ function bindOwnerStaffSubscription(){
  save.addEventListener('click',async e=>{
   e.preventDefault();e.stopPropagation();
   if(busy)return;
-  const amount=Number(priceInput.value);
-  if(!Number.isFinite(amount)||amount<=0){result.textContent='Enter a monthly fee greater than zero.';return}
+  const amount=Number(priceInput.value),currency=currencyInput.value==='MMK'?'MMK':'THB';
+  const maximum=currency==='MMK'?1000000000:1000000;
+  if(!Number.isFinite(amount)||amount<=0||amount>maximum){result.textContent='Enter a valid monthly fee for '+currency+'.';return}
   if(!savedQr){result.textContent='Please upload your Bank QR image.';return}
   busy=true;save.disabled=true;save.textContent='Saving…';result.textContent='Saving monthly fee and Bank QR…';
   try{
-   const {error}=await sb.rpc('staff_subscription_save_settings',{p_monthly_price:amount,p_qr_data:savedQr});
+   const {error}=await sb.rpc('staff_subscription_save_settings_v2',{p_monthly_price:amount,p_qr_data:savedQr,p_currency_code:currency});
    if(error)throw error;
-   const {data:verified,error:verifyError}=await sb.from('staff_subscription').select('monthly_price,promptpay_qr_data,updated_at').eq('subscription_key','normal_staff').single();
+   const {data:verified,error:verifyError}=await sb.from('staff_subscription').select('monthly_price,currency_code,promptpay_qr_data,updated_at').eq('subscription_key','normal_staff').single();
    if(verifyError)throw verifyError;
-   if(!verified||Number(verified.monthly_price)!==amount||verified.promptpay_qr_data!==savedQr)throw new Error('Save verification failed. Please try again.');
+   if(!verified||Number(verified.monthly_price)!==amount||verified.currency_code!==currency||verified.promptpay_qr_data!==savedQr)throw new Error('Save verification failed. Please try again.');
    await clearQrDraft();
    qrInput.value='';
    result.textContent='Saved and verified. The previous Bank QR has been replaced in the active subscription record; Staff now receive only the new QR.';
@@ -5552,13 +5553,13 @@ function bindOwnerStaffSubscription(){
  });
  async function loadPayments(){
   try{
-   const {data,error}=await sb.from('staff_subscription_payments').select('id,staff_id,staff_name,amount,slip_data,status,submitted_at').order('submitted_at',{ascending:false}).limit(40);
+   const {data,error}=await sb.from('staff_subscription_payments').select('id,staff_id,staff_name,amount,currency_code,slip_data,status,submitted_at').order('submitted_at',{ascending:false}).limit(40);
    if(error)throw error;
    list.innerHTML='';
    if(!data?.length){list.textContent='No payment requests yet.';return}
    data.forEach(payment=>{
     const card=document.createElement('div');card.className='panel';card.style.cssText='padding:12px;margin:8px 0';
-    const info=document.createElement('div');info.textContent=payment.staff_name+' ('+payment.staff_id+') · ฿'+Number(payment.amount).toLocaleString()+' · '+payment.status.toUpperCase()+' · '+new Date(payment.submitted_at).toLocaleString();card.appendChild(info);
+    const info=document.createElement('div');const paymentCurrency=payment.currency_code==='MMK'?'MMK':'THB';const paymentSymbol=paymentCurrency==='MMK'?'K ':'฿';const paymentDigits=paymentCurrency==='MMK'?0:2;info.textContent=payment.staff_name+' ('+payment.staff_id+') · '+paymentSymbol+Number(payment.amount).toLocaleString('en-US',{minimumFractionDigits:paymentDigits,maximumFractionDigits:paymentDigits})+' '+paymentCurrency+' · '+payment.status.toUpperCase()+' · '+new Date(payment.submitted_at).toLocaleString();card.appendChild(info);
     const actions=document.createElement('div');actions.className='actions';actions.style.margin='8px 0 0';
     const slip=document.createElement('button');slip.type='button';slip.textContent='View payment slip';slip.onclick=()=>{const w=window.open();if(w){w.document.write('<title>Payment slip</title><img alt="Payment slip" src="'+payment.slip_data+'" style="max-width:100%;height:auto">');w.document.close()}};
     actions.appendChild(slip);
