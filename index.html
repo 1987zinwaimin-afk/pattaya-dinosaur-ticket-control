@@ -4258,6 +4258,18 @@ async function refreshOwnerPushSubscription(){
  if(error)throw error;
  console.info('Owner push subscription refreshed for this device');
 }
+function positionOwnerLoginToast(toast){
+ const header=document.querySelector('.brand-header');
+ const headerBottom=header?header.getBoundingClientRect().bottom:0;
+ const top=Math.max(8,Math.ceil(headerBottom+8));
+ document.documentElement.style.setProperty('--owner-login-toast-top',top+'px');
+ toast.style.position='fixed';
+ toast.style.left='12px';
+ toast.style.right='12px';
+ toast.style.margin='0 auto';
+ toast.style.width='min(560px,calc(100vw - 24px))';
+ toast.style.pointerEvents='none';
+}
 function showStaffLoginNotice(row){
  const p=getStaffNotifyPrefs();
  const depts={sale:'Sale Ticket Department',entry:'Entry Ticket Department',playing:'Playing Ticket Department',event:'Event Ticket Department',all:'All Departments'};
@@ -4275,6 +4287,7 @@ function showStaffLoginNotice(row){
  toast.className='header-activity-toast staff-login-toast';
  toast.querySelector('.notify-details').textContent=name+'  ·  ID '+id+'  ·  '+dept;
  toast.title=fullMsg;
+ positionOwnerLoginToast(toast);
  toast.style.display='flex';
  clearTimeout(window.staffLoginToastTimer);
  window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},7000);
@@ -4338,6 +4351,7 @@ function showEventStaffActivityNotice(row,loggedIn){
  toast.querySelector('.notify-details').textContent=name+(id?'  ·  ID '+id:'')+'  ·  '+dept;
  toast.querySelector('.notify-status b').textContent=status;
  toast.title=message;
+ positionOwnerLoginToast(toast);
  toast.style.display='flex';
  clearTimeout(window.eventStaffLoginToastTimer);
  window.eventStaffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},7000);
@@ -7324,3 +7338,18 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
 @media(max-width:420px){.owner-subscription-manual-dates{padding:10px}.owner-subscription-date-inputs{gap:7px}.owner-subscription-date-inputs input{padding:9px 6px;font-size:12px}}
 </style>
 </body></html>
+
+<style id="pdk-owner-login-toast-menu-clearance-v1">
+/* Owner login alerts sit below the sticky dinosaur header, never over the Menu control. */
+#staffLoginToast,#eventStaffLoginToast{
+ position:fixed!important;
+ top:var(--owner-login-toast-top,110px)!important;
+ left:12px!important;
+ right:12px!important;
+ width:min(560px,calc(100vw - 24px))!important;
+ max-width:560px!important;
+ margin:0 auto!important;
+ z-index:19!important;
+ pointer-events:none!important;
+}
+</style>
