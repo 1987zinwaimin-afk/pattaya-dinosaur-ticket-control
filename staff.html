@@ -6310,6 +6310,27 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
  #teamChatOverlay.chat-show-conversation #teamChatSend{visibility:visible!important;opacity:1!important}
 }
 </style>
+
+<style id="pdk-loy-krathong-clean-fallback-v8">
+/* Clean festival scene fallback: disable the corrupted raster layer only. */
+#appDateTime .pdk-festival-art{
+  position:absolute!important;inset:0!important;overflow:hidden!important;
+  background:#06172d!important;background-image:none!important;
+}
+#appDateTime .pdk-festival-scene{
+  display:block!important;position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;max-width:none!important;
+  opacity:1!important;visibility:visible!important;
+}
+#appDateTime .pdk-festival-art::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:linear-gradient(90deg,rgba(2,12,29,.28),transparent 36%,transparent 64%,rgba(2,12,29,.28)),
+             linear-gradient(180deg,rgba(2,12,29,.05),transparent 48%,rgba(2,12,29,.24));
+}
+#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock,
+#appDateTime .app-holiday-label{position:relative;z-index:5!important}
+</style>
+
 </body></html>
 
 <style id="pdk-staff-access-maintenance-center-v1">
