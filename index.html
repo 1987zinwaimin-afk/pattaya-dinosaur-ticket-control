@@ -8289,16 +8289,24 @@ function openThailandFestivalDate(date){
  const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  const active=new WeakMap();
  function themeFor(host){
-  if(host.id==='appDateTime'){
-   const t=host.dataset.festivalTheme||'';
-   return t==='loy-krathong'?'loy':t;
-  }
+  const card=host.closest&&host.closest('#appDateTime');
+  if(card){const t=card.dataset.festivalTheme||'';return t==='loy-krathong'?'loy':t;}
   return host.dataset.theme||'national';
  }
+ function unmount(host){
+  if(!host)return;
+  const old=host.querySelector(':scope > .pdk-auto-festival-canvas');
+  if(old)old.remove();
+  host.dataset.autoFestivalCanvas='';
+  host.dataset.autoFestivalTheme='';
+ }
  function mount(host){
-  if(!host||host.dataset.autoFestivalCanvas==='yes')return;
-  const theme=themeFor(host);if(!theme)return;
-  host.dataset.autoFestivalCanvas='yes';
+  if(!host)return;
+  const theme=themeFor(host);
+  if(!theme){unmount(host);return;}
+  if(host.dataset.autoFestivalCanvas==='yes'&&host.dataset.autoFestivalTheme===theme)return;
+  if(host.dataset.autoFestivalCanvas==='yes')unmount(host);
+  host.dataset.autoFestivalCanvas='yes';host.dataset.autoFestivalTheme=theme;
   if(getComputedStyle(host).position==='static')host.style.position='relative';
   const canvas=document.createElement('canvas');canvas.className='pdk-auto-festival-canvas';canvas.setAttribute('aria-hidden','true');host.appendChild(canvas);
   const ctx=canvas.getContext('2d');if(!ctx)return;
@@ -8327,7 +8335,7 @@ function openThailandFestivalDate(date){
    ctx.restore();
   }
   function draw(){
-   if(!host.isConnected){cancelAnimationFrame(raf);return}
+   if(!host.isConnected||!canvas.isConnected){cancelAnimationFrame(raf);return}
    frame++;ctx.clearRect(0,0,w,h);
    particles.forEach((p,i)=>{
     p.x+=p.vx;p.y+=p.vy;if(p.y>1.08){p.y=-.08;p.x=rand(0,1)}if(p.x<-.08)p.x=1.08;if(p.x>1.08)p.x=-.08;
@@ -8353,10 +8361,8 @@ function openThailandFestivalDate(date){
   draw();active.set(host,{canvas,theme});
  }
  function scan(){
-  const card=document.querySelector('#appDateTime[data-festival-theme]');
-  if(card&&card.classList.contains('has-festival-theme')){
-   const art=card.querySelector('.pdk-festival-art');if(art)mount(art);
-  }
+  const card=document.getElementById('appDateTime');
+  if(card){const art=card.querySelector('.pdk-festival-art');if(art)mount(art);}
   document.querySelectorAll('#pdkThailandFestivalModal .pdk-fc-hero').forEach(mount);
  }
  const observer=new MutationObserver(scan);
