@@ -3803,7 +3803,7 @@ const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-owner-auth-v1'}});
 let authMode="signin",currentUser=null,currentRole="staff",cloudReady=false,cloudChannel=null;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန',icon:'🎪'}];
-const PAGES=[{id:'chat',en:'Team Chat',th:'แชททีม',my:'အဖွဲ့လိုက် စကားပြော',icon:'💬'},{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',my:'ဒက်ရှ်ဘုတ်',icon:'◈'},...DEPTS,{id:'train',en:'Garden Train',th:'Garden Train',my:'Garden Train',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',my:'လစဉ်အနှစ်ချုပ်',icon:'▥'},{id:'payroll',en:'Staff Payroll',th:'เงินเดือนพนักงาน',my:'ဝန်ထမ်းလစာ',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်',icon:'♧'},{id:'archive',en:'Archived Tickets',th:'ตั๋วที่เก็บถาวร',my:'သိမ်းဆည်းထားသော လက်မှတ်များ',icon:'🗂️'},{id:'eventhistory',en:'Event History',th:'ประวัติงานอีเวนต์',my:'ပွဲမှတ်တမ်း',icon:'🗂️'},{id:'customervisits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'},{id:'settings',en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ',icon:'⚙'}];
+const PAGES=[{id:'chat',en:'Team Chat',th:'แชททีม',my:'အဖွဲ့လိုက် စကားပြော',icon:'💬'},{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',my:'ဒက်ရှ်ဘုတ်',icon:'◈'},...DEPTS,{id:'train',en:'Garden Train',th:'Garden Train',my:'Garden Train',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',my:'လစဉ်အနှစ်ချုပ်',icon:'▥'},{id:'payroll',en:'Staff Payroll',th:'เงินเดือนพนักงาน',my:'ဝန်ထမ်းလစာ',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်',icon:'♧'},{id:'archive',en:'Archived Tickets',th:'ตั๋วที่เก็บถาวร',my:'သိမ်းဆည်းထားသော လက်မှတ်များ',icon:'🗂️'},{id:'eventhistory',en:'Event History',th:'ประวัติงานอีเวนต์',my:'ပွဲမှတ်တမ်း',icon:'🗂️'},{id:'festivals',en:'Thailand Festival Calendar',th:'ปฏิทินเทศกาลไทย',my:'ထိုင်းပွဲတော် ပြက္ခဒိန်',icon:'🎉'},{id:'customervisits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'},{id:'settings',en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ',icon:'⚙'}];
 const T={en:{types:'Ticket types',qty:'Total quantity',value:'Inventory value',add:'＋ Add Ticket',save:'▤ Save Report',share:'↗ Share Report',search:'⌕ Search tickets...',none:'No tickets saved yet.',noHint:'Use Add Ticket to create your first real ticket.',sold:'Tickets sold',total:'Total',edit:'✎ Edit',more:'⋮ More',addQty:'＋ Add quantity',clear:'Clear quantity',del:'Delete ticket',name:'Ticket name',price:'Price (THB)',initial:'Initial quantity',image:'Ticket image',saveTicket:'Save ticket',cancel:'Cancel',location:'Event location',records:'Ticket records',today:'Today',month:'Month',custom:'Custom range',from:'From date',to:'To date',report:'Generate report',staffName:'Staff name',department:'Department',loginHistory:'Staff login activity is not connected yet.',cloud:'Cloud status',cloudMsg:'Connected to Ticket Control Live cloud database. Ticket changes sync in real time.',light:'Light theme',dark:'Dark theme',noReport:'No report data for this range.',addSuccess:'Ticket saved in this browser.',quantityPrompt:'Enter quantity to add',editTitle:'Edit ticket',newTitle:'Add ticket',reportSaved:'Report downloaded.',staffNotice:'Manage staff profiles, login activity and active status.'},th:{types:'ประเภทตั๋ว',qty:'จำนวนตั๋วทั้งหมด',value:'มูลค่าสต็อก',add:'＋ เพิ่มตั๋ว',save:'▤ บันทึกรายงาน',share:'↗ แชร์รายงาน',search:'⌕ ค้นหาตั๋ว...',none:'ยังไม่มีตั๋วที่บันทึก',noHint:'กดเพิ่มตั๋วเพื่อสร้างรายการแรก',sold:'จำนวนที่ขาย',total:'รวม',edit:'✎ แก้ไข',more:'⋮ เพิ่มเติม',addQty:'＋ เพิ่มจำนวน',clear:'ล้างจำนวน',del:'ลบตั๋ว',name:'ชื่อตั๋ว',price:'ราคา (THB)',initial:'จำนวนเริ่มต้น',image:'รูปภาพตั๋ว',saveTicket:'บันทึกตั๋ว',cancel:'ยกเลิก',location:'สถานที่จัดงาน',records:'รายการตั๋ว',today:'รายวัน',month:'รายเดือน',custom:'ช่วงวันที่กำหนด',from:'ตั้งแต่วันที่',to:'ถึงวันที่',report:'สร้างรายงาน',staffName:'ชื่อพนักงาน',department:'แผนก',loginHistory:'ยังไม่ได้เชื่อมต่อประวัติการเข้าสู่ระบบ',cloud:'สถานะคลาวด์',cloudMsg:'เชื่อมต่อฐานข้อมูล Ticket Control Live แล้ว รายการตั๋วจะซิงก์แบบเรียลไทม์',light:'ธีมสว่าง',dark:'ธีมมืด',noReport:'ไม่มีข้อมูลรายงานในช่วงนี้',addSuccess:'บันทึกตั๋วในเบราว์เซอร์แล้ว',quantityPrompt:'ใส่จำนวนที่ต้องการเพิ่ม',editTitle:'แก้ไขตั๋ว',newTitle:'เพิ่มตั๋ว',reportSaved:'ดาวน์โหลดรายงานแล้ว',staffNotice:'ยังไม่ได้ตั้งค่าบัญชีพนักงานและการเข้าสู่ระบบที่ปลอดภัย'}};
 let lang=localStorage.getItem('tctl-lang')||'en',page='dashboard',tickets=readTickets(),lastInput={},theme=localStorage.getItem('tctl-theme-owner')||'dark';if(theme==='emerald'||theme==='midnight'||theme==='luxury'){theme='dark';localStorage.setItem('tctl-theme-owner',theme);}
 function readTickets(){
@@ -4683,8 +4683,8 @@ function eventTicketMatchesLocation(ticket,id){
 }
 function departmentTickets(){return tickets.filter(t=>!t.isArchived&&t.department===page&&(page!=='event'||eventTicketMatchesLocation(t,activeEventLocationNo)))}
 function canViewOwnerStaffActivity(){return !!(currentUser&&currentRole==='owner')}
-function navRender(){const nav=document.getElementById('nav');if(!nav)return;const allowedPages=PAGES.filter(p=>p.id!=='staff'||canViewOwnerStaffActivity());nav.innerHTML=allowedPages.map(p=>'<button type="button" class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');if(!nav.dataset.clickBound){nav.addEventListener('click',function(e){const b=e.target.closest('button[data-page]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();go(b.dataset.page)},true);nav.dataset.clickBound='1'}}
-function go(p){if(p==='staff'&&!canViewOwnerStaffActivity()){alert('Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p!=='event')activeEventLocationNo='';page=p;const pageRoot=document.getElementById('pageContent');if(pageRoot)delete pageRoot.dataset.uiPage;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render(true)}
+function navRender(){const nav=document.getElementById('nav');if(!nav)return;const allowedPages=PAGES.filter(p=>(p.id!=='staff'||canViewOwnerStaffActivity())&&(p.id!=='festivals'||canViewOwnerStaffActivity()));nav.innerHTML=allowedPages.map(p=>'<button type="button" class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');if(!nav.dataset.clickBound){nav.addEventListener('click',function(e){const b=e.target.closest('button[data-page]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();go(b.dataset.page)},true);nav.dataset.clickBound='1'}}
+function go(p){if(p==='festivals'&&!canViewOwnerStaffActivity()){alert('Thailand Festival Calendar ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p==='staff'&&!canViewOwnerStaffActivity()){alert('Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p!=='event')activeEventLocationNo='';page=p;const pageRoot=document.getElementById('pageContent');if(pageRoot)delete pageRoot.dataset.uiPage;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render(true)}
 async function archiveTicket(id){
  const t=tickets.find(x=>String(x.id)===String(id));if(!t||t.isArchived)return;
  if(!currentUser||!cloudReady){alert('Cloud connection is not ready. Please reconnect before archiving.');return}
@@ -5412,7 +5412,7 @@ let visible=dep()?departmentTickets():tickets.filter(t=>!t.isArchived);
 let total=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0),0):visible.reduce((a,t)=>a+t.quantity,0),value=backdateEntryDate?visible.reduce((a,t)=>a+(Number(backdateSalesByTicket[t.id])||0)*(Number(t.price)||0),0):visible.reduce((a,t)=>a+t.quantity*(t.price||0),0);
 document.getElementById('stats').innerHTML='<div class="stat"><span>'+tr('types')+'</span><strong>'+visible.length+'</strong></div><div class="stat"><span>'+tr('qty')+'</span><strong>'+total.toLocaleString()+'</strong></div><div class="stat"><span>'+tr('value')+'</span><strong>'+money(value)+'</strong></div>';
 document.getElementById('stats').style.display=dep()?'':'none';
-if(page==='chat')renderTeamChat();else if(page==='train')renderTrain();else if(dep())renderDept(visible);else if(page==='archive')renderArchivedTickets();else if(page==='dashboard')renderDashboard();else if(page==='monthly')renderMonthly();else if(page==='payroll')renderPayroll();else if(page==='settings')renderSettings();else if(page==='eventhistory')renderOwnerEventHistory();else if(page==='customervisits')renderCustomerVisits();else if(page==='owner'||page==='staff')renderDatabase();else renderDashboard();
+if(page==='chat')renderTeamChat();else if(page==='train')renderTrain();else if(dep())renderDept(visible);else if(page==='archive')renderArchivedTickets();else if(page==='dashboard')renderDashboard();else if(page==='monthly')renderMonthly();else if(page==='payroll')renderPayroll();else if(page==='settings')renderSettings();else if(page==='eventhistory')renderOwnerEventHistory();else if(page==='festivals')renderThailandFestivalCalendar();else if(page==='customervisits')renderCustomerVisits();else if(page==='owner'||page==='staff')renderDatabase();else renderDashboard();
  }catch(error){
   console.error('Owner page render failed:',error);
   const root=document.getElementById('pageContent');
@@ -7600,6 +7600,221 @@ input,select{border-color:rgba(94,179,222,.55)!important;background:#061a30!impo
 @media(max-width:700px){.stat,.panel{box-shadow:0 7px 18px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.10)!important}#appDateTime .pdk-festival-video{filter:saturate(1.42) contrast(1.08) brightness(1.10)!important}}
 @media(prefers-reduced-motion:no-preference){.stat,.panel,.ticket,button{transition:filter .18s ease,box-shadow .18s ease,border-color .18s ease}.stat:hover,.panel:hover,.ticket:hover{filter:brightness(1.055)}}
 </style>
+
+<style id="pdk-thailand-annual-festival-calendar-v1">
+.pdk-festival-calendar{display:grid;gap:14px}
+.pdk-fc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pdk-fc-head h2{margin:0;color:#ffe08a;font-size:clamp(20px,4vw,27px)}
+.pdk-fc-head p{margin:5px 0 0;color:#c7d9eb;font-size:13px}
+.pdk-fc-year{font-size:18px;font-weight:900;color:#fff1b8;border:1px solid #f3d28a;border-radius:13px;padding:8px 14px;background:linear-gradient(130deg,#8d5b19,#d69a35 60%,#7d4d19)}
+.pdk-fc-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pdk-fc-summary>div{padding:11px;border:1px solid #5e8fb3;border-radius:15px;background:linear-gradient(145deg,#16496c,#0a2845);min-width:0}
+.pdk-fc-summary b{display:block;color:#ffe08a;font-size:21px}
+.pdk-fc-summary span{display:block;color:#d7e8f6;font-size:11px;line-height:1.35}
+.pdk-fc-legend{display:flex;flex-wrap:wrap;gap:8px 14px;color:#d7e8f6;font-size:11px}
+.pdk-fc-legend span{display:inline-flex;align-items:center;gap:5px}
+.pdk-fc-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.pdk-fc-months{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.pdk-fc-month{min-width:0;padding:11px;border:1px solid rgba(108,185,226,.38);border-radius:17px;background:linear-gradient(150deg,rgba(19,62,91,.97),rgba(5,25,45,.98));box-shadow:0 8px 20px #0003}
+.pdk-fc-month h3{margin:0 0 8px;color:#ffe08a;font-size:14px;display:flex;justify-content:space-between;gap:5px}
+.pdk-fc-month h3 small{font-size:10px;color:#a9cbe0;font-weight:600}
+.pdk-fc-week,.pdk-fc-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.pdk-fc-week span{text-align:center;color:#9dbbd1;font-size:9px;font-weight:800;padding:3px 0}
+.pdk-fc-day{position:relative;min-width:0;min-height:34px;padding:3px 0!important;border:1px solid transparent!important;border-radius:8px!important;box-shadow:none!important;background:rgba(255,255,255,.045)!important;color:#eef7ff!important;font-size:11px!important;font-weight:750!important;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pdk-fc-day:active{transform:scale(.95)}
+.pdk-fc-day.is-weekend{color:#ffb4bf!important}
+.pdk-fc-day.has-event{background:linear-gradient(145deg,rgba(23,133,164,.78),rgba(24,65,116,.9))!important;border-color:rgba(107,218,255,.55)!important;color:#fff!important}
+.pdk-fc-day.is-official{background:linear-gradient(145deg,rgba(154,105,34,.92),rgba(99,58,24,.96))!important;border-color:#f2cb76!important}
+.pdk-fc-day.is-expected{background:linear-gradient(145deg,rgba(117,66,158,.9),rgba(58,42,107,.96))!important;border-color:#c5a4ff!important}
+.pdk-fc-day.is-today{outline:2px solid #fff!important;outline-offset:1px}
+.pdk-fc-day .pdk-fc-mark{width:5px;height:5px;border-radius:50%;background:#73e7ff;display:block}
+.pdk-fc-day.is-official .pdk-fc-mark{background:#ffe08a}
+.pdk-fc-day.is-expected .pdk-fc-mark{background:#d6b8ff}
+.pdk-fc-empty{min-height:34px}
+.pdk-fc-upcoming{display:grid;gap:7px}
+.pdk-fc-upcoming-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:13px;background:rgba(5,24,42,.58);border:1px solid rgba(108,185,226,.25)}
+.pdk-fc-upcoming-date{flex:0 0 54px;text-align:center;border-radius:10px;padding:6px 3px;background:linear-gradient(145deg,#a56d27,#68421c);color:#fff2c6;font-size:11px;font-weight:900}
+.pdk-fc-upcoming-item strong{display:block;color:#fff;font-size:13px}
+.pdk-fc-upcoming-item small{display:block;color:#b9d0e2;font-size:10px;margin-top:2px}
+.pdk-fc-source{font-size:11px;color:#a9c3d7;line-height:1.5}
+.pdk-fc-source a{color:#8ddfff;text-decoration:underline}
+.pdk-fc-modal{position:fixed;inset:0;z-index:10050;background:rgba(1,8,19,.82);backdrop-filter:blur(9px);display:none;align-items:center;justify-content:center;padding:14px}
+.pdk-fc-modal.open{display:flex}
+.pdk-fc-dialog{width:min(570px,100%);max-height:min(88dvh,820px);overflow:auto;border:1px solid rgba(255,220,145,.72);border-radius:23px;background:linear-gradient(155deg,#123d5b,#06182e 80%);box-shadow:0 24px 80px #000b;position:relative}
+.pdk-fc-hero{height:175px;position:relative;overflow:hidden;display:flex;align-items:flex-end;padding:16px;background:linear-gradient(135deg,#075477,#102a65 55%,#542f73)}
+.pdk-fc-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 25%,#fff7 0 2px,transparent 3px),radial-gradient(circle at 76% 32%,#ffe5a566 0 3px,transparent 4px),linear-gradient(0deg,#06172be8,transparent 75%);background-size:43px 43px,59px 59px,auto}
+.pdk-fc-hero[data-theme="loy"]{background-image:linear-gradient(0deg,#06172bda,transparent 80%),url('/pdk-loy-krathong-photoreal.webp');background-size:cover;background-position:center 54%}
+.pdk-fc-hero[data-theme="songkran"]{background:linear-gradient(130deg,#0c8bb2,#20c6b1 48%,#e7ad52)}
+.pdk-fc-hero[data-theme="buddhist"]{background:linear-gradient(130deg,#6c4b9e,#273d77 52%,#d6a64b)}
+.pdk-fc-hero[data-theme="chinese"]{background:linear-gradient(130deg,#9b1e35,#e35b34 55%,#f1b34c)}
+.pdk-fc-hero[data-theme="royal"]{background:linear-gradient(130deg,#102b59,#7251a2 52%,#d8a84f)}
+.pdk-fc-hero[data-theme="vegetarian"]{background:linear-gradient(130deg,#0b795d,#174d48 52%,#b38a36)}
+.pdk-fc-hero[data-theme="national"]{background:linear-gradient(130deg,#145b8d,#12365e 52%,#c18c3c)}
+.pdk-fc-hero-icon{position:absolute;right:22px;top:20px;font-size:76px;line-height:1;filter:drop-shadow(0 8px 12px #0007)}
+.pdk-fc-hero-copy{position:relative;z-index:1}
+.pdk-fc-hero-copy small{color:#ffe7ad;font-size:10px;font-weight:900;letter-spacing:1.4px}
+.pdk-fc-hero-copy h2{margin:4px 0 0;color:#fff;font-size:clamp(20px,5vw,27px);text-shadow:0 2px 12px #0009}
+.pdk-fc-close{position:absolute;right:11px;top:11px;z-index:3;width:38px;height:38px;padding:0!important;border-radius:50%!important;background:#04182dcc!important;border:1px solid #ffffff77!important;box-shadow:none!important;font-size:22px!important}
+.pdk-fc-modal-body{padding:16px}
+.pdk-fc-date-line{color:#ffe08a;font-weight:850;font-size:13px;margin-bottom:9px}
+.pdk-fc-event{padding:12px;margin:9px 0;border:1px solid rgba(125,190,224,.35);border-radius:15px;background:rgba(3,20,37,.48)}
+.pdk-fc-event h3{margin:0 0 6px;color:#fff;font-size:16px}
+.pdk-fc-event p{margin:0;color:#d5e5f1;font-size:13px;line-height:1.6}
+.pdk-fc-tag{display:inline-block;margin:0 0 7px;padding:4px 8px;border-radius:20px;background:#176a7a;color:#e4fbff;font-size:10px;font-weight:850}
+.pdk-fc-tag.official{background:#79551e;color:#fff0bf}
+.pdk-fc-tag.expected{background:#553c88;color:#e9dcff}
+.pdk-fc-empty-note{padding:16px;border:1px dashed #6b8ba8;border-radius:14px;color:#d5e5f1;text-align:center}
+@media(max-width:900px){.pdk-fc-months{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.pdk-fc-months{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.pdk-fc-month{padding:8px;border-radius:13px}.pdk-fc-month h3{font-size:12px}.pdk-fc-day{min-height:31px;font-size:10px!important}.pdk-fc-empty{min-height:31px}.pdk-fc-summary span{font-size:10px}.pdk-fc-summary b{font-size:18px}.pdk-fc-hero{height:150px}.pdk-fc-hero-icon{font-size:62px;right:15px}.pdk-fc-modal-body{padding:12px}}
+</style>
+<script id="pdk-thailand-annual-festival-calendar-script">
+function renderThailandFestivalCalendar(){
+ const root=document.getElementById('pageContent');
+ if(!root)return;
+ root.dataset.uiPage='festivals';
+ if(!currentUser||currentRole!=='owner'){
+  root.innerHTML='<section class="panel"><h2>🎉 Thailand Festival Calendar</h2><p class="subtle">Owner access only.</p></section>';return;
+ }
+ const localeMonth=lang==='my'?'en-US':(lang==='th'?'th-TH':'en-US');
+ const monthNames=Array.from({length:12},(_,m)=>new Intl.DateTimeFormat(localeMonth,{month:'long',timeZone:'Asia/Bangkok'}).format(new Date(Date.UTC(2027,m,1))));
+ const labels=lang==='my'?{sub:'တစ်နှစ်စာ ထိုင်းနိုင်ငံ၏ နေ့ထူးနေ့မြတ်၊ ရိုးရာပွဲတော်များနှင့် အားလပ်ရက်များ',official:'တရားဝင်ရုံးပိတ်ရက်',cultural:'ရိုးရာ / ဘာသာရေးပွဲတော်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',upcoming:'လာမည့်ပွဲတော်များ',source:'ရက်စွဲများကို အဖွဲ့အစည်းများ၏ ကြေညာချက်အလိုက် ပြင်ဆင်နိုင်ပါသည်။',noEvent:'ဒီနေ့အတွက် မှတ်တမ်းတင်ထားသော ပွဲတော် သို့မဟုတ် ရုံးပိတ်ရက် မရှိသေးပါ။',noDesc:'အခြားဒေသဆိုင်ရာပွဲများကို ထပ်မံကြေညာလာပါက ပြက္ခဒိန်တွင် ထည့်သွင်းနိုင်ပါသည်။',type:'အမျိုးအစား',holiday:'တရားဝင်အားလပ်ရက်',observance:'ရိုးရာ / ဘာသာရေးနေ့',date:'ရက်စွဲ',count:'မှတ်သားထားသောနေ့များ',eventCount:'ပွဲတော် / အားလပ်ရက်များ'}:
+ lang==='th'?{sub:'วันสำคัญ วันหยุด และเทศกาลประเพณีของประเทศไทยตลอดทั้งปี',official:'วันหยุดทางการ',cultural:'เทศกาล / วันสำคัญ',expected:'วันที่คาดการณ์ · รอยืนยัน',upcoming:'เทศกาลที่กำลังจะมาถึง',source:'วันที่อาจเปลี่ยนแปลงตามประกาศของหน่วยงานหรือผู้จัดงาน',noEvent:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',noDesc:'สามารถเพิ่มกิจกรรมท้องถิ่นได้เมื่อมีการประกาศเพิ่มเติม',type:'ประเภท',holiday:'วันหยุดทางการ',observance:'เทศกาล / วันสำคัญ',date:'วันที่',count:'วันที่ทำเครื่องหมาย',eventCount:'เทศกาล / วันหยุด'}:
+ {sub:'Thailand public holidays, cultural celebrations and traditional festivals — full year preview',official:'Official public holiday',cultural:'Cultural / religious festival',expected:'Expected date · awaiting confirmation',upcoming:'Upcoming festivals',source:'Dates marked expected may change when organisers publish final programmes.',noEvent:'No major festival or public holiday is listed for this date.',noDesc:'Local events can be added when organisers publish their schedules.',type:'Category',holiday:'Official holiday',observance:'Cultural / religious day',date:'Date',count:'Marked dates',eventCount:'Festivals / holidays'};
+ const events=[];
+ const add=(date,title,desc,kind,theme,icon,status)=>events.push({date,title,desc,kind,theme,icon,status});
+ add('2027-01-01','New Year’s Day','The first day of the Gregorian calendar year. A nationwide public holiday in Thailand.','holiday','national','🎆','official');
+ add('2027-01-09','Thailand National Children’s Day','Children’s Day is observed on the second Saturday of January, with family activities and special events across Thailand.','cultural','national','🧒','cultural');
+ add('2027-01-16','Thailand Teachers’ Day','A day to honour teachers and the teaching profession. Schools and education organisations hold appreciation activities.','cultural','national','📚','cultural');
+ add('2027-02-06','Chinese New Year','Thai-Chinese communities celebrate Lunar New Year with family gatherings, temple visits, red decorations, lion dances and street festivities. The date is the lunar New Year day; local programmes may run on nearby dates.','cultural','chinese','🧧','cultural');
+ add('2027-02-21','Makha Bucha Day','An important Buddhist holy day on the full moon of the third lunar month. Many people visit temples, make merit and join candlelight processions. The actual observance falls on Sunday 21 February.','religious','buddhist','🪷','cultural');
+ add('2027-02-22','Substitution for Makha Bucha Day','Substitute public holiday observed on Monday after Makha Bucha falls on Sunday 21 February.','holiday','buddhist','🪷','official');
+ add('2027-04-06','Chakri Memorial Day','A national day commemorating the establishment of the Chakri Dynasty. Government offices and many banks observe the public holiday.','holiday','royal','👑','official');
+ add('2027-04-13','Songkran Festival · Day 1','Thai New Year celebrations begin. Water blessings, family reunions, merit-making and water festivities take place throughout Thailand.','festival','songkran','💦','official');
+ add('2027-04-14','Songkran Festival · Day 2','Songkran continues with water celebrations, temple visits and family traditions. Major tourist areas may host large public events.','festival','songkran','💦','official');
+ add('2027-04-15','Songkran Festival · Day 3','The final day of the main national Songkran holiday period. Local celebrations can continue beyond these dates.','festival','songkran','💦','official');
+ add('2027-05-01','National Labour Day','A day recognising workers. It falls on Saturday in 2027; the substitute holiday for many financial institutions is Monday 3 May.','holiday','national','⚒️','cultural');
+ add('2027-05-03','Substitution for National Labour Day','Substitute holiday listed for Monday 3 May 2027.','holiday','national','⚒️','official');
+ add('2027-05-04','Coronation Day','Commemorates the coronation of King Maha Vajiralongkorn. A national public holiday.','holiday','royal','👑','official');
+ add('2027-05-20','Visakha Bucha Day','One of the most important Buddhist holy days, commemorating the birth, enlightenment and passing of the Buddha. Temple visits and candlelight processions are common.','religious','buddhist','🪷','official');
+ add('2027-06-03','H.M. Queen Suthida’s Birthday','A national public holiday marking Her Majesty Queen Suthida’s birthday.','holiday','royal','💜','official');
+ add('2027-07-18','Asarnha Bucha Day','Buddhist holy day marking the Buddha’s first sermon. Many people visit temples and participate in candlelight processions.','religious','buddhist','🪷','cultural');
+ add('2027-07-19','Khao Phansa · Buddhist Lent begins','The beginning of the Buddhist Lent period, when monks traditionally remain in their temples for the rainy-season retreat. Some provinces hold candle or merit-making events.','festival','buddhist','🕯️','cultural');
+ add('2027-07-19','Substitution for Asarnha Bucha Day','The 2027 holiday calendar lists Monday 19 July as the substitute holiday for Asarnha Bucha, which falls on Sunday 18 July.','holiday','buddhist','🪷','official');
+ add('2027-07-28','H.M. King Maha Vajiralongkorn’s Birthday','A national public holiday celebrating the birthday of His Majesty King Maha Vajiralongkorn.','holiday','royal','👑','official');
+ add('2027-08-12','Queen Sirikit The Queen Mother’s Birthday · National Mother’s Day','A national public holiday and Mother’s Day in Thailand. Families honour mothers and the Queen Mother.','holiday','royal','💙','official');
+ add('2027-09-30','Phuket Vegetarian Festival · Expected opening','The Phuket Vegetarian Festival is expected to begin around 30 September and run into early October. The nine-day Taoist celebration features shrine ceremonies, processions and vegetarian food. Final local programme dates should be checked with Phuket organisers.','festival','vegetarian','🥬','expected');
+ add('2027-10-01','Phuket Vegetarian Festival · Expected','Expected continuation of Phuket’s nine-day Vegetarian Festival. Shrine ceremonies, processions and jay vegetarian food are central to the celebration.','festival','vegetarian','🥬','expected');
+ add('2027-10-02','Phuket Vegetarian Festival · Expected','Expected festival day in Phuket. Event times and procession routes depend on the participating shrines.','festival','vegetarian','🥬','expected');
+ add('2027-10-03','Phuket Vegetarian Festival · Expected','Expected festival day in Phuket, with ceremonies and vegetarian food offerings.','festival','vegetarian','🥬','expected');
+ add('2027-10-04','Phuket Vegetarian Festival · Expected','Expected festival day in Phuket. Check local shrine announcements for procession schedules.','festival','vegetarian','🥬','expected');
+ add('2027-10-05','Phuket Vegetarian Festival · Expected','Expected festival day in Phuket, with shrine rituals and community activities.','festival','vegetarian','🥬','expected');
+ add('2027-10-06','Phuket Vegetarian Festival · Expected','Expected festival day in Phuket. Local programme details are subject to organiser confirmation.','festival','vegetarian','🥬','expected');
+ add('2027-10-07','Phuket Vegetarian Festival · Expected','Expected festival day in Phuket, with vegetarian food and shrine activities.','festival','vegetarian','🥬','expected');
+ add('2027-10-08','Phuket Vegetarian Festival · Expected closing','Expected final day of the Phuket Vegetarian Festival period. Exact closing ceremonies and procession schedules require local confirmation.','festival','vegetarian','🥬','expected');
+ add('2027-10-13','King Bhumibol Adulyadej The Great Memorial Day','A national day of remembrance for King Bhumibol Adulyadej The Great.','holiday','royal','🕯️','official');
+ add('2027-10-15','Ok Phansa · Expected','The end of Buddhist Lent is expected around this date in 2027. In some regions it is marked with merit-making, illuminated boat processions and local river festivals. Local dates and programmes may vary.','festival','buddhist','🪷','expected');
+ add('2027-10-23','King Chulalongkorn Memorial Day','A national day commemorating King Chulalongkorn (Rama V).','holiday','royal','👑','cultural');
+ add('2027-10-25','Substitution for King Chulalongkorn Memorial Day','Substitute public holiday listed for Monday 25 October after the anniversary falls on Saturday 23 October.','holiday','royal','👑','official');
+ add('2027-11-13','Loy Krathong Festival · Expected','Loy Krathong is traditionally celebrated on the full moon night of the 12th Thai lunar month. People float decorated krathongs on rivers and ponds to pay respect to the water. The 2027 date is currently an expected date; local authorities may confirm event schedules later.','festival','loy','🪷','expected');
+ add('2027-11-13','Yi Peng Lantern Festival · Expected','Northern Thailand, especially Chiang Mai, celebrates Yi Peng with lantern traditions around the same period as Loy Krathong. Public release events and safety rules depend on local organisers.','festival','loy','🏮','expected');
+ add('2027-12-05','King Bhumibol’s Birthday · National Day · Father’s Day','A national day honouring King Bhumibol Adulyadej The Great and observed as Thailand’s National Day and Father’s Day.','holiday','royal','💛','cultural');
+ add('2027-12-06','Substitution for 5 December Holiday','Substitute public holiday listed for Monday 6 December because 5 December falls on Sunday.','holiday','royal','💛','official');
+ add('2027-12-10','Constitution Day','A national public holiday commemorating the promulgation of Thailand’s first permanent constitution.','holiday','national','📜','official');
+ add('2027-12-31','New Year’s Eve','The final day of the year. Countdown celebrations and fireworks may be organised in major cities and tourist destinations.','holiday','national','🎆','official');
+ const dateKey=d=>'2027-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+ const todayParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+ const part=t=>todayParts.find(x=>x.type===t)?.value||'';
+ const today=part('year')+'-'+part('month')+'-'+part('day');
+ const uniqueDates=new Set(events.map(e=>e.date));
+ const eventMap=new Map();
+ events.forEach(e=>{if(!eventMap.has(e.date))eventMap.set(e.date,[]);eventMap.get(e.date).push(e)});
+ const monthHtml=monthNames.map((name,m)=>{
+  const first=new Date(Date.UTC(2027,m,1)).getUTCDay(),offset=(first+6)%7,days=new Date(Date.UTC(2027,m+1,0)).getUTCDate();
+  let cells='';
+  for(let i=0;i<offset;i++)cells+='<span class="pdk-fc-empty"></span>';
+  for(let d=1;d<=days;d++){
+   const date='2027-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+   const dayEvents=eventMap.get(date)||[];
+   const weekend=new Date(Date.UTC(2027,m,d)).getUTCDay()%6===0;
+   const classes=['pdk-fc-day',weekend?'is-weekend':'',dayEvents.length?'has-event':'',dayEvents.some(e=>e.status==='official')?'is-official':'',dayEvents.some(e=>e.status==='expected')&&!dayEvents.some(e=>e.status==='official')?'is-expected':'',date===today?'is-today':''].filter(Boolean).join(' ');
+   cells+='<button type="button" class="'+classes+'" data-pdk-fc-date="'+date+'" aria-label="'+date+(dayEvents.length?' · '+dayEvents.map(e=>e.title).join(', '):'')+'">'+d+(dayEvents.length?'<i class="pdk-fc-mark"></i>':'')+'</button>';
+  }
+  const marked=events.filter(e=>Number(e.date.slice(5,7))===m+1).length;
+  return '<section class="pdk-fc-month"><h3>'+name+' <small>'+marked+' '+(lang==='my'?'နေ့':lang==='th'?'วัน':'dates')+'</small></h3><div class="pdk-fc-week">'+(lang==='my'?['တန','တင်္ဂ','ဗုဒ္ဓ','ကြာ','သော','သော','တန'][0]&&['Mon','Tue','Wed','Thu','Fri','Sat','Sun']:lang==='th'?['จ','อ','พ','พฤ','ศ','ส','อา']:['M','T','W','T','F','S','S']).map(x=>'<span>'+x+'</span>').join('')+'</div><div class="pdk-fc-days">'+cells+'</div></section>';
+ }).join('');
+ const upcoming=[...events.filter(e=>e.date>=today)].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,7);
+ const dateLabel=date=>new Intl.DateTimeFormat(localeMonth,{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}).format(new Date(date+'T00:00:00Z'));
+ root.innerHTML='<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 Thailand Festival Calendar</h2><p>'+labels.sub+'</p></div><span class="pdk-fc-year">2027 · B.E. 2570</span></div><div class="pdk-fc-summary" style="margin-top:13px"><div><b>12</b><span>Months to preview</span></div><div><b>'+uniqueDates.size+'</b><span>'+labels.count+'</span></div><div><b>'+events.length+'</b><span>'+labels.eventCount+'</span></div></div><div class="pdk-fc-legend" style="margin-top:12px"><span><i class="pdk-fc-dot" style="background:#ffe08a"></i>'+labels.official+'</span><span><i class="pdk-fc-dot" style="background:#73e7ff"></i>'+labels.cultural+'</span><span><i class="pdk-fc-dot" style="background:#d6b8ff"></i>'+labels.expected+'</span></div></section><section class="panel"><h3 style="margin:0 0 10px;color:#ffe08a">✨ '+labels.upcoming+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<div class="pdk-fc-upcoming-item"><div class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</div><div><strong>'+e.icon+' '+e.title+'</strong><small>'+e.kind+' · '+(e.status==='official'?labels.holiday:e.status==='expected'?labels.expected:labels.observance)+'</small></div></div>').join('')+'</div></section><div class="pdk-fc-months">'+monthHtml+'</div><p class="pdk-fc-source">'+labels.source+'<br>2027 holiday references: <a href="https://www.set.or.th/en/about/event-calendar/holiday?year=2027" target="_blank" rel="noopener">Stock Exchange of Thailand</a> · <a href="https://www.bangkokbank.com/en/about-us/bank-holidays" target="_blank" rel="noopener">Bangkok Bank / Bank of Thailand holiday list</a>. Dates marked expected are not official public-holiday confirmations.</p></div>';
+ root.querySelectorAll('[data-pdk-fc-date]').forEach(btn=>btn.addEventListener('click',()=>openThailandFestivalDate(btn.dataset.pdkFcDate)));
+}
+function openThailandFestivalDate(date){
+ const root=document.getElementById('pdkThailandFestivalModal');
+ if(root)root.remove();
+ const monthNames=new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-US',{month:'long',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z'));
+ const dateText=new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-US',{timeZone:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(date+'T00:00:00Z'));
+ const fallback=window.__pdkThailandFestivalLookup?.[date]||[];
+ const selected=fallback;
+ const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
+ const title=selected[0]?.title||'Thailand Calendar';
+ const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const labels=lang==='my'?{no:'ဒီနေ့အတွက် ပွဲတော် သို့မဟုတ် အားလပ်ရက် မရှိသေးပါ။',kind:'အမျိုးအစား',official:'တရားဝင်ရုံးပိတ်ရက်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',cultural:'ရိုးရာ / ဘာသာရေးနေ့',close:'ပိတ်ရန်'}:lang==='th'?{no:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',kind:'ประเภท',official:'วันหยุดทางการ',expected:'วันที่คาดการณ์ · รอยืนยัน',cultural:'เทศกาล / วันสำคัญ',close:'ปิด'}:{no:'No major festival or public holiday is listed for this date.',kind:'Category',official:'Official public holiday',expected:'Expected date · awaiting confirmation',cultural:'Cultural / religious day',close:'Close'};
+ const dialog=document.createElement('div');
+ dialog.id='pdkThailandFestivalModal';dialog.className='pdk-fc-modal open';dialog.setAttribute('role','presentation');
+ dialog.innerHTML='<section class="pdk-fc-dialog" role="dialog" aria-modal="true" aria-labelledby="pdkFcTitle"><div class="pdk-fc-hero" data-theme="'+theme+'"><button type="button" class="pdk-fc-close" aria-label="Close">×</button><div class="pdk-fc-hero-icon">'+icon+'</div><div class="pdk-fc-hero-copy"><small>PATTAYA DINOSAUR KINGDOM · THAILAND 2027</small><h2 id="pdkFcTitle">'+(selected.length?escHtml(title):'Thailand Festival Calendar')+'</h2></div></div><div class="pdk-fc-modal-body"><div class="pdk-fc-date-line">📅 '+dateText+'</div>'+(selected.length?selected.map(e=>'<article class="pdk-fc-event"><span class="pdk-fc-tag '+(e.status==='official'?'official':e.status==='expected'?'expected':'')+'">'+(e.status==='official'?labels.official:e.status==='expected'?labels.expected:labels.cultural)+'</span><h3>'+e.icon+' '+escHtml(e.title)+'</h3><p>'+escHtml(e.desc)+'</p></article>').join(''):'<div class="pdk-fc-empty-note">'+labels.no+'<p style="margin:7px 0 0;font-size:12px">'+(lang==='my'?'ဒေသဆိုင်ရာပွဲများ ကြေညာလာပါက ထပ်မံထည့်သွင်းနိုင်ပါသည်။':lang==='th'?'สามารถเพิ่มกิจกรรมท้องถิ่นได้เมื่อมีประกาศเพิ่มเติม':'Local events can be added when organisers announce their programmes.')+'</p></div>')+'<div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="gold" data-fc-close>'+labels.close+'</button></div></div></section>';
+ document.body.appendChild(dialog);
+ const close=()=>dialog.remove();
+ dialog.querySelectorAll('.pdk-fc-close,[data-fc-close]').forEach(b=>b.addEventListener('click',close));
+ dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
+ const escHandler=e=>{if(e.key==='Escape'){close();document.removeEventListener('keydown',escHandler)}};
+ document.addEventListener('keydown',escHandler);
+}
+(function(){
+ const events=[
+ {date:'2027-01-01',title:'New Year’s Day',desc:'The first day of the Gregorian calendar year. A nationwide public holiday in Thailand.',kind:'holiday',theme:'national',icon:'🎆',status:'official'},
+ {date:'2027-01-09',title:'Thailand National Children’s Day',desc:'Children’s Day is observed on the second Saturday of January, with family activities and special events across Thailand.',kind:'cultural',theme:'national',icon:'🧒',status:'cultural'},
+ {date:'2027-01-16',title:'Thailand Teachers’ Day',desc:'A day to honour teachers and the teaching profession. Schools and education organisations hold appreciation activities.',kind:'cultural',theme:'national',icon:'📚',status:'cultural'},
+ {date:'2027-02-06',title:'Chinese New Year',desc:'Thai-Chinese communities celebrate Lunar New Year with family gatherings, temple visits, red decorations, lion dances and street festivities. The date is the lunar New Year day; local programmes may run on nearby dates.',kind:'cultural',theme:'chinese',icon:'🧧',status:'cultural'},
+ {date:'2027-02-21',title:'Makha Bucha Day',desc:'An important Buddhist holy day on the full moon of the third lunar month. Many people visit temples, make merit and join candlelight processions. The actual observance falls on Sunday 21 February.',kind:'religious',theme:'buddhist',icon:'🪷',status:'cultural'},
+ {date:'2027-02-22',title:'Substitution for Makha Bucha Day',desc:'Substitute public holiday observed on Monday after Makha Bucha falls on Sunday 21 February.',kind:'holiday',theme:'buddhist',icon:'🪷',status:'official'},
+ {date:'2027-04-06',title:'Chakri Memorial Day',desc:'A national day commemorating the establishment of the Chakri Dynasty. Government offices and many banks observe the public holiday.',kind:'holiday',theme:'royal',icon:'👑',status:'official'},
+ {date:'2027-04-13',title:'Songkran Festival · Day 1',desc:'Thai New Year celebrations begin. Water blessings, family reunions, merit-making and water festivities take place throughout Thailand.',kind:'festival',theme:'songkran',icon:'💦',status:'official'},
+ {date:'2027-04-14',title:'Songkran Festival · Day 2',desc:'Songkran continues with water celebrations, temple visits and family traditions. Major tourist areas may host large public events.',kind:'festival',theme:'songkran',icon:'💦',status:'official'},
+ {date:'2027-04-15',title:'Songkran Festival · Day 3',desc:'The final day of the main national Songkran holiday period. Local celebrations can continue beyond these dates.',kind:'festival',theme:'songkran',icon:'💦',status:'official'},
+ {date:'2027-05-01',title:'National Labour Day',desc:'A day recognising workers. It falls on Saturday in 2027; the substitute holiday for many financial institutions is Monday 3 May.',kind:'holiday',theme:'national',icon:'⚒️',status:'cultural'},
+ {date:'2027-05-03',title:'Substitution for National Labour Day',desc:'Substitute holiday listed for Monday 3 May 2027.',kind:'holiday',theme:'national',icon:'⚒️',status:'official'},
+ {date:'2027-05-04',title:'Coronation Day',desc:'Commemorates the coronation of King Maha Vajiralongkorn. A national public holiday.',kind:'holiday',theme:'royal',icon:'👑',status:'official'},
+ {date:'2027-05-20',title:'Visakha Bucha Day',desc:'One of the most important Buddhist holy days, commemorating the birth, enlightenment and passing of the Buddha. Temple visits and candlelight processions are common.',kind:'religious',theme:'buddhist',icon:'🪷',status:'official'},
+ {date:'2027-06-03',title:'H.M. Queen Suthida’s Birthday',desc:'A national public holiday marking Her Majesty Queen Suthida’s birthday.',kind:'holiday',theme:'royal',icon:'💜',status:'official'},
+ {date:'2027-07-18',title:'Asarnha Bucha Day',desc:'Buddhist holy day marking the Buddha’s first sermon. Many people visit temples and participate in candlelight processions.',kind:'religious',theme:'buddhist',icon:'🪷',status:'cultural'},
+ {date:'2027-07-19',title:'Khao Phansa · Buddhist Lent begins',desc:'The beginning of the Buddhist Lent period, when monks traditionally remain in their temples for the rainy-season retreat. Some provinces hold candle or merit-making events.',kind:'festival',theme:'buddhist',icon:'🕯️',status:'cultural'},
+ {date:'2027-07-19',title:'Substitution for Asarnha Bucha Day',desc:'The 2027 holiday calendar lists Monday 19 July as the substitute holiday for Asarnha Bucha, which falls on Sunday 18 July.',kind:'holiday',theme:'buddhist',icon:'🪷',status:'official'},
+ {date:'2027-07-28',title:'H.M. King Maha Vajiralongkorn’s Birthday',desc:'A national public holiday celebrating the birthday of His Majesty King Maha Vajiralongkorn.',kind:'holiday',theme:'royal',icon:'👑',status:'official'},
+ {date:'2027-08-12',title:'Queen Sirikit The Queen Mother’s Birthday · National Mother’s Day',desc:'A national public holiday and Mother’s Day in Thailand. Families honour mothers and the Queen Mother.',kind:'holiday',theme:'royal',icon:'💙',status:'official'},
+ {date:'2027-09-30',title:'Phuket Vegetarian Festival · Expected opening',desc:'The Phuket Vegetarian Festival is expected to begin around 30 September and run into early October. The nine-day Taoist celebration features shrine ceremonies, processions and vegetarian food. Final local programme dates should be checked with Phuket organisers.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-01',title:'Phuket Vegetarian Festival · Expected',desc:'Expected continuation of Phuket’s nine-day Vegetarian Festival. Shrine ceremonies, processions and jay vegetarian food are central to the celebration.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-02',title:'Phuket Vegetarian Festival · Expected',desc:'Expected festival day in Phuket. Event times and procession routes depend on the participating shrines.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-03',title:'Phuket Vegetarian Festival · Expected',desc:'Expected festival day in Phuket, with ceremonies and vegetarian food offerings.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-04',title:'Phuket Vegetarian Festival · Expected',desc:'Expected festival day in Phuket. Check local shrine announcements for procession schedules.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-05',title:'Phuket Vegetarian Festival · Expected',desc:'Expected festival day in Phuket, with shrine rituals and community activities.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-06',title:'Phuket Vegetarian Festival · Expected',desc:'Expected festival day in Phuket. Local programme details are subject to organiser confirmation.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-07',title:'Phuket Vegetarian Festival · Expected',desc:'Expected festival day in Phuket, with vegetarian food and shrine activities.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-08',title:'Phuket Vegetarian Festival · Expected closing',desc:'Expected final day of the Phuket Vegetarian Festival period. Exact closing ceremonies and procession schedules require local confirmation.',kind:'festival',theme:'vegetarian',icon:'🥬',status:'expected'},
+ {date:'2027-10-13',title:'King Bhumibol Adulyadej The Great Memorial Day',desc:'A national day of remembrance for King Bhumibol Adulyadej The Great.',kind:'holiday',theme:'royal',icon:'🕯️',status:'official'},
+ {date:'2027-10-15',title:'Ok Phansa · Expected',desc:'The end of Buddhist Lent is expected around this date in 2027. In some regions it is marked with merit-making, illuminated boat processions and local river festivals. Local dates and programmes may vary.',kind:'festival',theme:'buddhist',icon:'🪷',status:'expected'},
+ {date:'2027-10-23',title:'King Chulalongkorn Memorial Day',desc:'A national day commemorating King Chulalongkorn (Rama V).',kind:'holiday',theme:'royal',icon:'👑',status:'cultural'},
+ {date:'2027-10-25',title:'Substitution for King Chulalongkorn Memorial Day',desc:'Substitute public holiday listed for Monday 25 October after the anniversary falls on Saturday 23 October.',kind:'holiday',theme:'royal',icon:'👑',status:'official'},
+ {date:'2027-11-13',title:'Loy Krathong Festival · Expected',desc:'Loy Krathong is traditionally celebrated on the full moon night of the 12th Thai lunar month. People float decorated krathongs on rivers and ponds to pay respect to the water. The 2027 date is currently an expected date; local authorities may confirm event schedules later.',kind:'festival',theme:'loy',icon:'🪷',status:'expected'},
+ {date:'2027-11-13',title:'Yi Peng Lantern Festival · Expected',desc:'Northern Thailand, especially Chiang Mai, celebrates Yi Peng with lantern traditions around the same period as Loy Krathong. Public release events and safety rules depend on local organisers.',kind:'festival',theme:'loy',icon:'🏮',status:'expected'},
+ {date:'2027-12-05',title:'King Bhumibol’s Birthday · National Day · Father’s Day',desc:'A national day honouring King Bhumibol Adulyadej The Great and observed as Thailand’s National Day and Father’s Day.',kind:'holiday',theme:'royal',icon:'💛',status:'cultural'},
+ {date:'2027-12-06',title:'Substitution for 5 December Holiday',desc:'Substitute public holiday listed for Monday 6 December because 5 December falls on Sunday.',kind:'holiday',theme:'royal',icon:'💛',status:'official'},
+ {date:'2027-12-10',title:'Constitution Day',desc:'A national public holiday commemorating the promulgation of Thailand’s first permanent constitution.',kind:'holiday',theme:'national',icon:'📜',status:'official'},
+ {date:'2027-12-31',title:'New Year’s Eve',desc:'The final day of the year. Countdown celebrations and fireworks may be organised in major cities and tourist destinations.',kind:'holiday',theme:'national',icon:'🎆',status:'official'}
+ ];
+ window.__pdkThailandFestivalEvents=events;
+ window.__pdkThailandFestivalLookup=events.reduce((map,e)=>{(map[e.date]||(map[e.date]=[])).push(e);return map},{});
+})();
+</script>
+
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
