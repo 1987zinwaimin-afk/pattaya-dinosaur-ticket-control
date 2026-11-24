@@ -7922,3 +7922,34 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
  start();
 })();
 </script>
+
+
+<style id="pdk-loy-krathong-vivid-color-v1">
+/* Visual-only color and clarity pass for the shared Owner/Staff festival card. */
+#appDateTime .pdk-festival-video{
+  filter:saturate(1.32) contrast(1.07) brightness(1.08)!important;
+  image-rendering:auto!important;
+  backface-visibility:hidden!important;
+}
+#appDateTime .pdk-festival-scene{
+  filter:saturate(1.24) contrast(1.06) brightness(1.07)!important;
+}
+#appDateTime .pdk-festival-art:before{
+  background:
+    linear-gradient(90deg,rgba(2,10,27,.18),rgba(2,10,27,.015) 38%,rgba(2,10,27,.015) 62%,rgba(2,10,27,.18)),
+    linear-gradient(180deg,rgba(2,10,27,.025),transparent 45%,rgba(2,10,27,.10))!important;
+}
+#appDateTime.pdk-video-ready .pdk-festival-video{
+  opacity:1!important;
+}
+@media(max-width:700px){
+  #appDateTime .pdk-festival-video{
+    filter:saturate(1.28) contrast(1.06) brightness(1.07)!important;
+  }
+  #appDateTime .pdk-festival-art:before{
+    background:
+      linear-gradient(90deg,rgba(2,10,27,.20),rgba(2,10,27,.025) 42%,rgba(2,10,27,.025) 58%,rgba(2,10,27,.20)),
+      linear-gradient(180deg,rgba(2,10,27,.025),transparent 45%,rgba(2,10,27,.10))!important;
+  }
+}
+</style>
