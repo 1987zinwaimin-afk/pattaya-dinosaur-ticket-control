@@ -3707,7 +3707,7 @@ body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
  if(image){if(!image.complete)image.addEventListener('load',syncParkHeaderHeight,{once:true});if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(image)}}
 })();
 </script>
-<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
+<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i><i class="pdk-petal pdk-petal-one"></i><i class="pdk-petal pdk-petal-two"></i><i class="pdk-petal pdk-petal-three"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
 <div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><div class="menu-language-wrap"><label class="menu-language-label" for="language">Language / ภาษา</label><select class="menu-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="ownerLogout" class="red" style="width:100%">↪ Logout</button></div></aside>
 <main class="wrap">
 <section id="stats" class="stats"></section>
@@ -7641,4 +7641,14 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
 @keyframes pdkKrathongDrift{from{translate:-3px 0;filter:brightness(.92)}to{translate:5px -2px;filter:brightness(1.12)}}
 @media(max-width:520px){#appDateTime .pdk-sky-lantern{scale:.72}#appDateTime .pdk-krathong{scale:.8}}
 @media(prefers-reduced-motion:reduce){#appDateTime .pdk-festival-art *{animation:none!important}}
+</style>
+<style id="pdk-loy-krathong-detail-v4">
+#appDateTime .pdk-petal{position:absolute;bottom:18%;width:7px;height:12px;border-radius:100% 0 100% 0;background:linear-gradient(145deg,#fff0b3 0%,#f2b75b 48%,#b86d35 100%);box-shadow:0 0 7px rgba(255,203,123,.5);opacity:.8;animation:pdkPetalFloat 8s ease-in-out infinite}
+#appDateTime .pdk-petal-one{left:19%;animation-delay:-1.8s}
+#appDateTime .pdk-petal-two{left:62%;bottom:24%;transform:scale(.72) rotate(32deg);animation-delay:-5.2s}
+#appDateTime .pdk-petal-three{right:19%;bottom:15%;transform:scale(.62) rotate(-24deg);animation-delay:-3.4s}
+#appDateTime .pdk-festival-art:after{content:"";position:absolute;left:-15%;right:-15%;bottom:3%;height:18px;background:repeating-linear-gradient(174deg,transparent 0 12px,rgba(255,218,153,.14) 13px,transparent 15px 27px);filter:blur(2px);animation:pdkWaterSweep 9s linear infinite}
+@keyframes pdkPetalFloat{0%,100%{translate:0 0;rotate:-8deg;opacity:.45}50%{translate:12px -13px;rotate:24deg;opacity:.9}}
+@keyframes pdkWaterSweep{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+@media(prefers-reduced-motion:reduce){#appDateTime .pdk-petal,#appDateTime .pdk-festival-art:after{animation:none!important}}
 </style>
