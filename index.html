@@ -3707,7 +3707,7 @@ body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
  if(image){if(!image.complete)image.addEventListener('load',syncParkHeaderHeight,{once:true});if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(image)}}
 })();
 </script>
-<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
+<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i><i class="pdk-petal pdk-petal-one"></i><i class="pdk-petal pdk-petal-two"></i><i class="pdk-petal pdk-petal-three"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
 <div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><div class="menu-language-wrap"><label class="menu-language-label" for="language">Language / ภาษา</label><select class="menu-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="ownerLogout" class="red" style="width:100%">↪ Logout</button></div></aside>
 <main class="wrap">
 <section id="stats" class="stats"></section>
@@ -7615,4 +7615,40 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
 @keyframes pdkLoyCandle{from{opacity:.72;filter:drop-shadow(0 0 4px rgba(255,185,82,.35))}to{opacity:1;filter:drop-shadow(0 0 11px rgba(255,210,115,.8))}}
 @media(prefers-reduced-motion:reduce){#appDateTime[data-festival-theme]::before,#appDateTime[data-festival-theme]::after{animation:none!important}}
 
+</style>
+
+<style id="pdk-loy-krathong-artwork-v3">
+/* Decorative Loy Krathong artwork layer. Isolated from auth, data and clock logic. */
+#appDateTime.app-datetime{isolation:isolate;overflow:hidden}
+#appDateTime .pdk-festival-art{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;opacity:0;transition:opacity .6s ease}
+#appDateTime[data-festival-theme="loy-krathong"] .pdk-festival-art{opacity:1}
+#appDateTime .pdk-sky-lantern{position:absolute;display:block;width:10px;height:15px;top:8%;border-radius:4px 4px 3px 3px;background:linear-gradient(90deg,#a95b16 0%,#ffbd55 32%,#fff0ad 52%,#e78b26 100%);box-shadow:0 0 7px 3px rgba(255,178,66,.42),inset 0 0 5px rgba(255,246,194,.8);transform-origin:50% 100%;animation:pdkLanternFloat 8s ease-in-out infinite}
+#appDateTime .pdk-sky-lantern:before{content:"";position:absolute;left:2px;right:2px;bottom:-4px;height:5px;border-radius:50%;background:#ffcf72;filter:blur(3px);box-shadow:0 0 9px 4px rgba(255,177,68,.7)}
+#appDateTime .pdk-sky-lantern:after{content:"";position:absolute;left:4px;bottom:-3px;width:2px;height:4px;background:#ffe6a1}
+#appDateTime .pdk-lantern-one{left:13%;animation-delay:-2s}
+#appDateTime .pdk-lantern-two{left:49%;top:13%;transform:scale(.78);animation-delay:-5s;animation-duration:10s}
+#appDateTime .pdk-lantern-three{right:14%;top:6%;transform:scale(.9);animation-delay:-3.5s;animation-duration:9s}
+#appDateTime .pdk-water-light{position:absolute;bottom:13%;width:35px;height:7px;border-radius:50%;background:rgba(255,191,91,.78);filter:blur(5px);box-shadow:0 0 12px 5px rgba(255,175,65,.35);animation:pdkWaterGlow 2.6s ease-in-out infinite alternate}
+#appDateTime .pdk-water-one{left:28%}
+#appDateTime .pdk-water-two{right:27%;bottom:18%;animation-delay:-1.3s}
+#appDateTime .pdk-krathong{position:absolute;bottom:8%;width:26px;height:10px;border-radius:4px 4px 50% 50%;background:radial-gradient(ellipse at 50% 20%,#fff2a5 0 10%,#e9a83e 22%,#217d63 58%,#0a493f 100%);box-shadow:0 3px 7px rgba(0,0,0,.35),0 0 10px rgba(255,186,81,.4);animation:pdkKrathongDrift 7s ease-in-out infinite alternate}
+#appDateTime .pdk-krathong:before{content:"";position:absolute;left:11px;top:-8px;width:4px;height:10px;border-radius:100% 0 100% 0;transform:rotate(12deg);background:linear-gradient(#fff7c9,#ffad35);box-shadow:0 0 7px 2px rgba(255,190,82,.7)}
+#appDateTime .pdk-krathong-one{left:37%}
+#appDateTime .pdk-krathong-two{right:11%;bottom:12%;transform:scale(.78);animation-delay:-3s}
+#appDateTime.app-datetime>.app-datetime-date,#appDateTime.app-datetime>.app-datetime-clock{z-index:3}
+@keyframes pdkLanternFloat{0%,100%{translate:0 0;rotate:-2deg;filter:brightness(.92)}50%{translate:7px -8px;rotate:3deg;filter:brightness(1.2)}}
+@keyframes pdkWaterGlow{from{opacity:.48;transform:scaleX(.78)}to{opacity:1;transform:scaleX(1.18)}}
+@keyframes pdkKrathongDrift{from{translate:-3px 0;filter:brightness(.92)}to{translate:5px -2px;filter:brightness(1.12)}}
+@media(max-width:520px){#appDateTime .pdk-sky-lantern{scale:.72}#appDateTime .pdk-krathong{scale:.8}}
+@media(prefers-reduced-motion:reduce){#appDateTime .pdk-festival-art *{animation:none!important}}
+</style>
+<style id="pdk-loy-krathong-detail-v4">
+#appDateTime .pdk-petal{position:absolute;bottom:18%;width:7px;height:12px;border-radius:100% 0 100% 0;background:linear-gradient(145deg,#fff0b3 0%,#f2b75b 48%,#b86d35 100%);box-shadow:0 0 7px rgba(255,203,123,.5);opacity:.8;animation:pdkPetalFloat 8s ease-in-out infinite}
+#appDateTime .pdk-petal-one{left:19%;animation-delay:-1.8s}
+#appDateTime .pdk-petal-two{left:62%;bottom:24%;transform:scale(.72) rotate(32deg);animation-delay:-5.2s}
+#appDateTime .pdk-petal-three{right:19%;bottom:15%;transform:scale(.62) rotate(-24deg);animation-delay:-3.4s}
+#appDateTime .pdk-festival-art:after{content:"";position:absolute;left:-15%;right:-15%;bottom:3%;height:18px;background:repeating-linear-gradient(174deg,transparent 0 12px,rgba(255,218,153,.14) 13px,transparent 15px 27px);filter:blur(2px);animation:pdkWaterSweep 9s linear infinite}
+@keyframes pdkPetalFloat{0%,100%{translate:0 0;rotate:-8deg;opacity:.45}50%{translate:12px -13px;rotate:24deg;opacity:.9}}
+@keyframes pdkWaterSweep{from{transform:translateX(-8%)}to{transform:translateX(8%)}}
+@media(prefers-reduced-motion:reduce){#appDateTime .pdk-petal,#appDateTime .pdk-festival-art:after{animation:none!important}}
 </style>
