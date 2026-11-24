@@ -7226,7 +7226,7 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
  function updateThailandDateTime(){
   const now=new Date(),key=keyFmt.format(now),weekday=dayFmt.format(now),day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
   const events=(window.__pdkThailandFestivalLookup&&window.__pdkThailandFestivalLookup[key])||[],event=events[0]||null;
-  const label=holiday||observance||event?.title||(weekend?'Weekend':'');
+  const previewOverride=window.__pdkFestivalDateTimePreview||null;const label=previewOverride?.title||holiday||observance||event?.title||(weekend?'Weekend':'');
   dateEl.textContent=dateFmt.format(now).replace(/\//g,'.');dayEl.textContent=weekday;
   dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!(observance||event));
   if(holidayEl){holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!(observance||event));
@@ -7244,7 +7244,7 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
    else if(lower.includes('new year')||monthDay==='01-01'||monthDay==='12-31')theme='new-year';
    else if(monthDay==='02-14')theme='valentines';
    else if(holiday||observance||event)theme='thai-holiday';
-   if(card){card.dataset.festivalTheme=theme;card.dataset.festivalDate=key;card.classList.toggle('has-festival-theme',!!theme);}
+   if(previewOverride?.theme)theme=previewOverride.theme;if(card){card.dataset.festivalTheme=theme;card.dataset.festivalDate=key;card.dataset.previewTitle=previewOverride?.title||'';card.classList.toggle('is-calendar-preview',!!previewOverride);card.classList.toggle('has-festival-theme',!!theme);}
   }
   const thailandClock=new Date(now.getTime()+7*60*60*1000),clockHour=thailandClock.getUTCHours(),clockMinute=String(thailandClock.getUTCMinutes()).padStart(2,'0'),clockSecond=String(thailandClock.getUTCSeconds()).padStart(2,'0'),clockPeriod=clockHour>=12?'PM':'AM',clockHour12=clockHour%12||12;timeEl.textContent=String(clockHour12)+':'+clockMinute+':'+clockSecond+' '+clockPeriod;
  }
@@ -7912,8 +7912,26 @@ function openThailandFestivalDate(date){
  const labels=lang==='my'?{no:'ဒီနေ့အတွက် ပွဲတော် သို့မဟုတ် အားလပ်ရက် မရှိသေးပါ။',kind:'အမျိုးအစား',official:'တရားဝင်ရုံးပိတ်ရက်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',cultural:'ရိုးရာ / ဘာသာရေးနေ့',close:'ပိတ်ရန်'}:lang==='th'?{no:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',kind:'ประเภท',official:'วันหยุดทางการ',expected:'วันที่คาดการณ์ · รอยืนยัน',cultural:'เทศกาล / วันสำคัญ',close:'ปิด'}:{no:'No major festival or public holiday is listed for this date.',kind:'Category',official:'Official public holiday',expected:'Expected date · awaiting confirmation',cultural:'Cultural / religious day',close:'Close'};
  const dialog=document.createElement('div');
  dialog.id='pdkThailandFestivalModal';dialog.className='pdk-fc-modal open';dialog.setAttribute('role','presentation');
- dialog.innerHTML='<section class="pdk-fc-dialog" role="dialog" aria-modal="true" aria-labelledby="pdkFcTitle"><div class="pdk-fc-hero" data-theme="'+theme+'">'+heroMedia+themeScene+'<button type="button" class="pdk-fc-close" aria-label="Close">×</button><div class="pdk-fc-hero-icon">'+icon+'</div><div class="pdk-fc-hero-copy"><small>PATTAYA DINOSAUR KINGDOM · THAILAND 2027</small><h2 id="pdkFcTitle">'+(selected.length?escHtml(title):'Thailand Festival Calendar')+'</h2></div></div><div class="pdk-fc-modal-body"><div class="pdk-fc-date-line">📅 '+dateText+'</div>'+(selected.length?selected.map(e=>'<article class="pdk-fc-event"><span class="pdk-fc-tag '+(e.status==='official'?'official':e.status==='expected'?'expected':'')+'">'+(e.status==='official'?labels.official:e.status==='expected'?labels.expected:labels.cultural)+'</span><h3>'+e.icon+' '+escHtml(e.title)+'</h3><p>'+escHtml(e.desc)+'</p></article>').join(''):'<div class="pdk-fc-empty-note">'+labels.no+'<p style="margin:7px 0 0;font-size:12px">'+(lang==='my'?'ဒေသဆိုင်ရာပွဲများ ကြေညာလာပါက ထပ်မံထည့်သွင်းနိုင်ပါသည်။':lang==='th'?'สามารถเพิ่มกิจกรรมท้องถิ่นได้เมื่อมีประกาศเพิ่มเติม':'Local events can be added when organisers announce their programmes.')+'</p></div>')+'<div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="gold" data-fc-close>'+labels.close+'</button></div></div></section>';
+ dialog.innerHTML='<section class="pdk-fc-dialog" role="dialog" aria-modal="true" aria-labelledby="pdkFcTitle"><div class="pdk-fc-hero" data-theme="'+theme+'">'+heroMedia+themeScene+'<button type="button" class="pdk-fc-close" aria-label="Close">×</button><div class="pdk-fc-hero-icon">'+icon+'</div><div class="pdk-fc-hero-copy"><small>PATTAYA DINOSAUR KINGDOM · THAILAND 2027</small><h2 id="pdkFcTitle">'+(selected.length?escHtml(title):'Thailand Festival Calendar')+'</h2></div></div><div class="pdk-fc-modal-body"><div class="pdk-fc-date-line">📅 '+dateText+'</div>'+(selected.length?selected.map(e=>'<article class="pdk-fc-event"><span class="pdk-fc-tag '+(e.status==='official'?'official':e.status==='expected'?'expected':'')+'">'+(e.status==='official'?labels.official:e.status==='expected'?labels.expected:labels.cultural)+'</span><h3>'+e.icon+' '+escHtml(e.title)+'</h3><p>'+escHtml(e.desc)+'</p></article>').join(''):'<div class="pdk-fc-empty-note">'+labels.no+'<p style="margin:7px 0 0;font-size:12px">'+(lang==='my'?'ဒေသဆိုင်ရာပွဲများ ကြေညာလာပါက ထပ်မံထည့်သွင်းနိုင်ပါသည်။':lang==='th'?'สามารถเพิ่มกิจกรรมท้องถิ่นได้เมื่อมีประกาศเพิ่มเติม':'Local events can be added when organisers announce their programmes.')+'</p></div>')+'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" class="gold" data-fc-datetime-preview>▶ Preview in Date &amp; Time</button><button type="button" data-fc-close>'+labels.close+'</button></div></div></section>';
  document.body.appendChild(dialog);
+ dialog.querySelector('[data-fc-datetime-preview]')?.addEventListener('click',()=>{
+  const card=document.getElementById('appDateTime');if(!card)return;
+  const dateTheme=theme==='loy'?'loy-krathong':theme==='national'&&/new year/i.test(title.toLowerCase())?'new-year':theme;
+  window.__pdkFestivalDateTimePreview={theme:dateTheme,title:title,date:date,icon:icon};
+  card.dataset.festivalTheme=dateTheme;card.dataset.festivalDate=date;card.dataset.previewTitle=title;
+  card.classList.add('has-festival-theme','is-calendar-preview');
+  const holidayLabel=document.getElementById('appHolidayValue');
+  if(holidayLabel){holidayLabel.textContent=title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');}
+  const art=card.querySelector('.pdk-festival-art');
+  if(art){art.querySelector('.pdk-calendar-preview-art')?.remove();if(dateTheme!=='loy-krathong'){
+   const layer=document.createElement('div');layer.className='pdk-calendar-preview-art';layer.setAttribute('aria-hidden','true');
+   const map={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇'],children:['🦖','🎈','🎉','⭐'],'new-year':['🎆','✨','🎇','🌟']};
+   const symbols=map[dateTheme]||['✨',icon,'🌟','✨'];
+   layer.innerHTML=symbols.map((v,i)=>'<span class="pdk-calendar-preview-symbol p'+(i+1)+'">'+v+'</span>').join('');
+   art.appendChild(layer);
+  }}
+  close();
+ });
  const previousBodyOverflow=document.body.style.overflow;
  document.body.style.overflow='hidden';
  const close=()=>{if(!dialog.isConnected)return;dialog.remove();document.body.style.overflow=previousBodyOverflow;document.removeEventListener('keydown',escHandler)};
