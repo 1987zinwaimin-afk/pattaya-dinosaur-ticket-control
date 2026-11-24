@@ -7667,6 +7667,30 @@ input,select{border-color:rgba(94,179,222,.55)!important;background:#061a30!impo
 .pdk-fc-empty-note{padding:16px;border:1px dashed #6b8ba8;border-radius:14px;color:#d5e5f1;text-align:center}
 @media(max-width:900px){.pdk-fc-months{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.pdk-fc-months{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.pdk-fc-month{padding:8px;border-radius:13px}.pdk-fc-month h3{font-size:12px}.pdk-fc-day{min-height:31px;font-size:10px!important}.pdk-fc-empty{min-height:31px}.pdk-fc-summary span{font-size:10px}.pdk-fc-summary b{font-size:18px}.pdk-fc-hero{height:150px}.pdk-fc-hero-icon{font-size:62px;right:15px}.pdk-fc-modal-body{padding:12px}}
+
+/* Loy Krathong animated scene fallback: works even when mobile autoplay is restricted */
+.pdk-fc-hero[data-theme="loy"]{background-image:linear-gradient(180deg,rgba(3,15,35,.05),rgba(3,15,35,.2) 48%,#06172be8 100%),url('/pdk-loy-krathong-photoreal.webp');background-size:cover;background-position:center 54%}
+.pdk-fc-loy-scene{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+.pdk-fc-loy-scene:before{content:"";position:absolute;left:-5%;right:-5%;bottom:-27px;height:82px;background:radial-gradient(ellipse at 50% 0%,rgba(80,207,232,.38),transparent 68%),linear-gradient(180deg,rgba(8,93,127,.38),rgba(3,25,53,.72));border-radius:50% 50% 0 0;animation:pdkWaterGlow 4s ease-in-out infinite alternate}
+.pdk-fc-lantern{position:absolute;bottom:35px;width:21px;height:29px;border-radius:48% 48% 38% 38%;background:radial-gradient(ellipse at 50% 78%,#fff8a8 0 10%,#ffbd4c 35%,#ff7b35 72%,#b83b2c 100%);box-shadow:0 0 12px 5px #ffb43b88,0 0 30px 9px #ff8a2d44;animation:pdkLanternRise 7s ease-in-out infinite}
+.pdk-fc-lantern:before{content:"";position:absolute;left:4px;right:4px;top:5px;height:14px;border-left:1px solid #fff8;border-right:1px solid #fff8;border-radius:50%}
+.pdk-fc-lantern:after{content:"";position:absolute;left:8px;right:8px;bottom:-5px;height:7px;background:#ffdb7c;border-radius:50%;filter:blur(4px)}
+.pdk-fc-lantern.l1{left:12%;animation-delay:-1s;transform:scale(.8)}
+.pdk-fc-lantern.l2{left:29%;animation-delay:-4.3s;transform:scale(.62)}
+.pdk-fc-lantern.l3{left:49%;animation-delay:-2.1s;transform:scale(1.05)}
+.pdk-fc-lantern.l4{left:70%;animation-delay:-5.4s;transform:scale(.72)}
+.pdk-fc-lantern.l5{left:87%;animation-delay:-3.2s;transform:scale(.9)}
+.pdk-fc-krathong{position:absolute;bottom:18px;width:54px;height:17px;border-radius:0 0 50% 50%;background:linear-gradient(180deg,#f4c65c,#8b4c20);clip-path:polygon(0 0,100% 0,82% 75%,50% 100%,18% 75%);box-shadow:0 0 18px #ffb64d;animation:pdkKrathongDrift 9s ease-in-out infinite}
+.pdk-fc-krathong:before{content:"🪷";position:absolute;left:18px;top:-16px;font-size:19px;filter:drop-shadow(0 0 7px #ffd76c)}
+.pdk-fc-krathong.k1{left:23%;animation-delay:-2s}
+.pdk-fc-krathong.k2{left:66%;transform:scale(.8);animation-delay:-6s}
+.pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-icon{display:none}
+.pdk-fc-hero-video.is-blocked{opacity:0}
+@keyframes pdkLanternRise{0%{translate:0 20px;opacity:0;filter:blur(1px)}12%{opacity:1}55%{translate:12px -92px;opacity:1}100%{translate:-9px -188px;opacity:0}}
+@keyframes pdkKrathongDrift{0%,100%{translate:-5px 0;rotate:-3deg}50%{translate:22px -5px;rotate:3deg}}
+@keyframes pdkWaterGlow{from{opacity:.65;transform:translateX(-2%)}to{opacity:1;transform:translateX(2%)}}
+@media(prefers-reduced-motion:reduce){.pdk-fc-lantern,.pdk-fc-krathong,.pdk-fc-loy-scene:before{animation:none!important}}
+
 </style>
 <script id="pdk-thailand-annual-festival-calendar-script">
 function renderThailandFestivalCalendar(){
@@ -7757,7 +7781,7 @@ function openThailandFestivalDate(date){
  const selected=fallback;
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
- const heroMedia=theme==='loy'?'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="metadata" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-3" type="video/mp4"></video>':'';
+ const heroMedia=theme==='loy'?'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>':'';
  const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const labels=lang==='my'?{no:'ဒီနေ့အတွက် ပွဲတော် သို့မဟုတ် အားလပ်ရက် မရှိသေးပါ။',kind:'အမျိုးအစား',official:'တရားဝင်ရုံးပိတ်ရက်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',cultural:'ရိုးရာ / ဘာသာရေးနေ့',close:'ပိတ်ရန်'}:lang==='th'?{no:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',kind:'ประเภท',official:'วันหยุดทางการ',expected:'วันที่คาดการณ์ · รอยืนยัน',cultural:'เทศกาล / วันสำคัญ',close:'ปิด'}:{no:'No major festival or public holiday is listed for this date.',kind:'Category',official:'Official public holiday',expected:'Expected date · awaiting confirmation',cultural:'Cultural / religious day',close:'Close'};
  const dialog=document.createElement('div');
@@ -7766,6 +7790,8 @@ function openThailandFestivalDate(date){
  document.body.appendChild(dialog);
  const close=()=>dialog.remove();
  dialog.querySelectorAll('.pdk-fc-close,[data-fc-close]').forEach(b=>b.addEventListener('click',close));
+ const heroVideo=dialog.querySelector('.pdk-fc-hero-video');
+ if(heroVideo){heroVideo.muted=true;heroVideo.playsInline=true;heroVideo.addEventListener('error',()=>heroVideo.classList.add('is-blocked'),{once:true});const startFestivalVideo=()=>{const playAttempt=heroVideo.play();if(playAttempt&&typeof playAttempt.catch==='function')playAttempt.catch(()=>heroVideo.classList.add('is-blocked'))};if(heroVideo.readyState>=2)startFestivalVideo();else heroVideo.addEventListener('loadeddata',startFestivalVideo,{once:true});}
  dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
  const escHandler=e=>{if(e.key==='Escape'){close();document.removeEventListener('keydown',escHandler)}};
  document.addEventListener('keydown',escHandler);
