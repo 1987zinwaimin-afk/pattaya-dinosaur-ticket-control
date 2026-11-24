@@ -7753,3 +7753,80 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
 }
 @media(prefers-reduced-motion:reduce){#appDateTime .pdk-svg-lanterns,#appDateTime .pdk-svg-temple,#appDateTime .pdk-svg-reflections,#appDateTime .pdk-svg-krathong{animation:none!important}}
 </style>
+<style id="pdk-festival-card-compact-v6">
+/* Compact photo-led festival card. Display-only overrides; clock/date JS is untouched. */
+#appDateTime.app-datetime{
+ position:relative!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:space-between!important;
+ width:calc(100% - 28px)!important;max-width:1500px!important;min-height:0!important;height:auto!important;aspect-ratio:3/1!important;
+ margin:12px auto 16px!important;padding:clamp(13px,2.1vw,30px)!important;gap:12px!important;
+ overflow:hidden!important;isolation:isolate!important;border:2px solid #e8c779!important;border-radius:clamp(18px,2.6vw,34px)!important;
+ background:#071b3a!important;box-shadow:0 5px 22px rgba(0,0,0,.26),inset 0 0 0 3px rgba(255,228,160,.16)!important;
+}
+#appDateTime.app-datetime:before{content:"";position:absolute;inset:5px;border:1px solid rgba(255,225,150,.72);border-radius:inherit;z-index:6;pointer-events:none;box-shadow:inset 0 0 14px rgba(255,222,151,.12)}
+#appDateTime .pdk-festival-art{position:absolute!important;inset:0!important;z-index:0!important;display:block!important;opacity:1!important;pointer-events:none!important;overflow:hidden!important;background:#071b3a!important}
+#appDateTime .pdk-festival-scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;opacity:1!important}
+#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{
+ position:relative!important;z-index:5!important;display:flex!important;flex-direction:column!important;justify-content:flex-start!important;
+ gap:clamp(2px,.45vw,7px)!important;width:49%!important;min-width:0!important;margin:0!important;padding:0!important;
+}
+#appDateTime .app-datetime-clock{text-align:right!important;align-items:flex-end!important}
+#appDateTime .app-datetime-caption{display:flex!important;align-items:center!important;gap:7px!important;font-size:clamp(10px,1.45vw,21px)!important;line-height:1.05!important;letter-spacing:.12em!important;font-weight:850!important;color:#f6d58a!important;text-shadow:0 2px 5px #06132a!important}
+#appDateTime .app-datetime-date .app-datetime-caption:before{content:"▦";font-size:1.15em;color:#ffe2a0}
+#appDateTime .app-datetime-clock .app-datetime-caption:after{content:"◷";font-size:1.2em;color:#ffe2a0;order:-1}
+#appDateTime .app-datetime-date strong,#appDateTime .app-datetime-clock strong{
+ display:block!important;margin:0!important;color:#fff!important;font-weight:850!important;line-height:1.06!important;
+ font-variant-numeric:tabular-nums!important;text-shadow:0 2px 8px rgba(0,0,0,.8)!important;white-space:nowrap!important;
+}
+#appDateTime .app-datetime-date strong{font-size:clamp(20px,4.1vw,62px)!important;letter-spacing:.015em!important}
+#appDateTime .app-datetime-clock strong{font-size:clamp(19px,3.8vw,58px)!important;letter-spacing:0!important}
+#appDateTime #appWeekdayValue{
+ align-self:flex-start!important;display:inline-flex!important;align-items:center!important;gap:6px!important;width:max-content!important;max-width:100%!important;
+ margin:clamp(3px,.6vw,9px) 0 0!important;padding:5px 13px!important;border:1px solid rgba(255,218,135,.85)!important;border-radius:999px!important;
+ background:rgba(4,24,55,.88)!important;color:#ffe09a!important;font-family:Georgia,serif!important;
+ font-size:clamp(14px,2.2vw,31px)!important;font-weight:800!important;line-height:1.05!important;box-shadow:0 2px 9px rgba(0,0,0,.25)!important;
+}
+#appDateTime #appWeekdayValue:before{content:"✿";font-family:serif;color:#f6c85f;font-size:.9em}
+#appDateTime .app-datetime-zone{
+ display:inline-flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;max-width:100%!important;
+ margin:clamp(3px,.6vw,9px) 0 0!important;padding:5px 10px!important;border:1px solid rgba(255,218,135,.82)!important;border-radius:999px!important;
+ background:rgba(4,24,55,.9)!important;color:#fff!important;font-size:clamp(9px,1.3vw,19px)!important;line-height:1.1!important;
+ white-space:nowrap!important;box-shadow:0 2px 8px rgba(0,0,0,.25)!important
+}
+#appDateTime .app-datetime-zone:before{content:"◆";color:#f7ce6b;font-size:.9em}
+#appDateTime .app-holiday-label[hidden]{display:none!important}
+#appDateTime .app-holiday-label{
+ position:relative!important;z-index:5!important;display:block!important;max-width:100%!important;width:max-content!important;
+ margin:clamp(3px,.65vw,10px) 0 0!important;padding:5px 0 0!important;border-top:1px solid rgba(244,202,112,.7)!important;
+ color:#ffe09a!important;font-family:Georgia,serif!important;font-size:clamp(11px,1.75vw,25px)!important;
+ line-height:1.1!important;font-weight:800!important;text-shadow:0 2px 7px rgba(0,0,0,.95)!important
+}
+#appDateTime .pdk-sky-lantern,#appDateTime .pdk-water-light,#appDateTime .pdk-krathong,#appDateTime .pdk-petal{display:none!important}
+#appDateTime .pdk-festival-art:after{display:none!important}
+#appDateTime .pdk-svg-lanterns{animation:pdkLanternGroupFloat 12s ease-in-out infinite alternate!important}
+#appDateTime .pdk-svg-temple{animation:pdkTempleGlow 8s ease-in-out infinite alternate!important}
+#appDateTime .pdk-svg-reflections{animation:pdkReflection 7s ease-in-out infinite alternate!important}
+#appDateTime .pdk-svg-krathong{animation:pdkKrathongBob 8s ease-in-out infinite alternate!important}
+@media(max-width:700px){
+ #appDateTime.app-datetime{width:calc(100% - 20px)!important;aspect-ratio:3/1!important;min-height:0!important;height:auto!important;padding:12px 13px!important;gap:8px!important;border-radius:20px!important;margin:10px auto 14px!important}
+ #appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{width:49%!important;gap:3px!important}
+ #appDateTime .app-datetime-caption{font-size:clamp(9px,2vw,14px)!important;letter-spacing:.08em!important;gap:4px!important}
+ #appDateTime .app-datetime-date strong{font-size:clamp(18px,4.4vw,30px)!important}
+ #appDateTime .app-datetime-clock strong{font-size:clamp(17px,4.1vw,28px)!important}
+ #appDateTime #appWeekdayValue{font-size:clamp(13px,2.8vw,20px)!important;margin-top:3px!important;padding:4px 9px!important}
+ #appDateTime .app-datetime-zone{font-size:clamp(8px,1.7vw,12px)!important;margin-top:3px!important;padding:4px 7px!important}
+ #appDateTime .app-holiday-label{font-size:clamp(10px,2.25vw,16px)!important;margin-top:4px!important;padding-top:4px!important}
+ #appDateTime .pdk-festival-scene{opacity:1!important}
+}
+@media(max-width:390px){
+ #appDateTime.app-datetime{padding:9px 10px!important;border-radius:17px!important}
+ #appDateTime .app-datetime-caption{font-size:8px!important}
+ #appDateTime .app-datetime-date strong{font-size:clamp(16px,4.6vw,18px)!important}
+ #appDateTime .app-datetime-clock strong{font-size:clamp(15px,4.2vw,17px)!important}
+ #appDateTime #appWeekdayValue{font-size:12px!important;padding:3px 7px!important}
+ #appDateTime .app-datetime-zone{font-size:7px!important;padding:3px 5px!important}
+ #appDateTime .app-holiday-label{font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #appDateTime .pdk-svg-lanterns,#appDateTime .pdk-svg-temple,#appDateTime .pdk-svg-reflections,#appDateTime .pdk-svg-krathong{animation:none!important}
+}
+</style>
