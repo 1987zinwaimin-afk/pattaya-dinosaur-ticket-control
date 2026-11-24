@@ -6375,11 +6375,15 @@ input:focus,select:focus{border-color:#55d6ff!important;box-shadow:0 0 0 3px rgb
 </style>
 
 <style id="pdk-festival-single-layer-fix-v1">
-/* Keep the original Loy Krathong footage; other holidays use their own generated motion scene. */
+/* Strict single-layer rule: play the MP4 alone; show the SVG only as a fallback. */
+#appDateTime .pdk-festival-scene{display:none!important;opacity:0!important;visibility:hidden!important}
+#appDateTime .pdk-festival-video{display:block!important}
+#appDateTime.pdk-video-ready .pdk-festival-video{opacity:1!important;visibility:visible!important}
+#appDateTime.pdk-video-ready .pdk-festival-scene{display:none!important;opacity:0!important;visibility:hidden!important}
+#appDateTime.pdk-video-fallback .pdk-festival-video{display:none!important;opacity:0!important;visibility:hidden!important}
+#appDateTime.pdk-video-fallback .pdk-festival-scene{display:block!important;opacity:1!important;visibility:visible!important}
 #appDateTime:not([data-festival-theme="loy-krathong"]) .pdk-festival-video,
 #appDateTime:not([data-festival-theme="loy-krathong"]) .pdk-festival-scene{display:none!important}
-#appDateTime[data-festival-theme="loy-krathong"] .pdk-festival-video{display:block!important}
-#appDateTime[data-festival-theme="loy-krathong"] .pdk-festival-scene{display:block!important}
 #appDateTime .pdk-auto-festival-canvas{mix-blend-mode:screen;opacity:.72!important}
 </style>
 </body></html>
@@ -6823,8 +6827,8 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  if(!card||!video||video.dataset.controllerBound==='yes')return;
  video.dataset.controllerBound='yes';
  const isFestival=()=>card.dataset.festivalTheme==='loy-krathong';
- const reveal=()=>{if(isFestival()&&!video.paused)card.classList.add('pdk-video-ready')};
- const pause=()=>{video.pause();card.classList.remove('pdk-video-ready')};
+ const reveal=()=>{if(isFestival()&&!video.paused){card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')}};
+ const pause=()=>{video.pause();card.classList.remove('pdk-video-ready','pdk-video-fallback')};
  const start=async()=>{
   if(!isFestival()){pause();return}
   /* Set every silent/inline flag before requesting playback (Android Chrome requirement). */
@@ -6835,12 +6839,12 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
   if(video.networkState===HTMLMediaElement.NETWORK_EMPTY)video.load();
   if(!video.paused){reveal();return}
   try{await video.play();reveal()}
-  catch(error){card.classList.remove('pdk-video-ready');video.dataset.playbackBlocked='yes'}
+  catch(error){card.classList.remove('pdk-video-ready');card.classList.add('pdk-video-fallback');video.dataset.playbackBlocked='yes'}
  };
  video.addEventListener('loadeddata',()=>{if(isFestival()&&video.paused)start()});
  video.addEventListener('canplay',()=>{if(isFestival()&&video.paused)start()});
  video.addEventListener('playing',reveal);
- video.addEventListener('error',()=>{card.classList.remove('pdk-video-ready');video.dataset.playbackError=String(video.error&&video.error.code||'unknown')});
+ video.addEventListener('error',()=>{card.classList.remove('pdk-video-ready');if(isFestival())card.classList.add('pdk-video-fallback');video.dataset.playbackError=String(video.error&&video.error.code||'unknown')});
  const observer=new MutationObserver(start);
  observer.observe(card,{attributes:true,attributeFilter:['data-festival-theme']});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else start()});
