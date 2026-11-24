@@ -7896,7 +7896,7 @@ function openThailandFestivalDate(date){
  const festivalFootage={
   'New Year’s Day':{url:'/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
   'New Year’s Eve':{url:'/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
-  'Thailand National Children’s Day':{url:'https://www.pexels.com/download/video/8935531/',credit:'Children at school · Pexels'},
+  'Thailand National Children’s Day':{url:'/Thailand%20National%20Children%E2%80%99s%20Day.mp4?v=20261125-1',type:'video',credit:'Thailand National Children’s Day · Pattaya Dinosaur Kingdom'},
   'Thailand Teachers’ Day':{url:'https://www.pexels.com/download/video/8363822/',credit:'Teacher and students in class · Pexels'},
   'Chinese New Year':{url:'https://www.pexels.com/download/video/38873392/',credit:'Chinese New Year lion dance · Pexels'},
   'Makha Bucha Day':{url:'https://www.pexels.com/download/video/40881912/',credit:'Thai Buddhist night ceremony · Pexels'},
@@ -7925,8 +7925,8 @@ function openThailandFestivalDate(date){
   if(holidayLabel){holidayLabel.textContent=title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');}
   const art=card.querySelector('.pdk-festival-art');
   if(art){art.querySelector('.pdk-calendar-preview-art')?.remove();art.querySelector('.pdk-calendar-preview-video')?.remove();art.querySelector('.pdk-calendar-preview-gif')?.remove();if(dateTheme!=='loy-krathong'){
-   if(dateTheme==='new-year'){
-    const video=document.createElement('video');video.className='pdk-calendar-preview-video';video.src='/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1';video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload='auto';video.setAttribute('aria-hidden','true');video.setAttribute('autoplay','');video.setAttribute('muted','');video.setAttribute('loop','');video.setAttribute('playsinline','');video.addEventListener('error',()=>video.classList.add('pdk-calendar-preview-video-failed'),{once:true});art.appendChild(video);const playAttempt=video.play();if(playAttempt&&typeof playAttempt.catch==='function')playAttempt.catch(()=>{});
+   if(dateTheme==='new-year'||dateTheme==='children'){
+    const video=document.createElement('video');video.className='pdk-calendar-preview-video';video.src=dateTheme==='new-year'?'/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1':'/Thailand%20National%20Children%E2%80%99s%20Day.mp4?v=20261125-1';video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload='auto';video.setAttribute('aria-hidden','true');video.setAttribute('autoplay','');video.setAttribute('muted','');video.setAttribute('loop','');video.setAttribute('playsinline','');video.addEventListener('error',()=>video.classList.add('pdk-calendar-preview-video-failed'),{once:true});art.appendChild(video);const playAttempt=video.play();if(playAttempt&&typeof playAttempt.catch==='function')playAttempt.catch(()=>{});
    }else{
     const layer=document.createElement('div');layer.className='pdk-calendar-preview-art';layer.setAttribute('aria-hidden','true');
     const map={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇'],children:['🦖','🎈','🎉','⭐']};
