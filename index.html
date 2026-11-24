@@ -7894,7 +7894,7 @@ function openThailandFestivalDate(date){
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
  const festivalFootage={
-  'New Year’s Day':{url:'/new-years-fireworks.mp4',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
+  'New Year’s Day':{url:'/New%20Year%E2%80%99s%20.gif',type:'gif',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
   'Thailand National Children’s Day':{url:'https://www.pexels.com/download/video/8935531/',credit:'Children at school · Pexels'},
   'Thailand Teachers’ Day':{url:'https://www.pexels.com/download/video/8363822/',credit:'Teacher and students in class · Pexels'},
   'Chinese New Year':{url:'https://www.pexels.com/download/video/38873392/',credit:'Chinese New Year lion dance · Pexels'},
@@ -7925,10 +7925,7 @@ function openThailandFestivalDate(date){
   const art=card.querySelector('.pdk-festival-art');
   if(art){art.querySelector('.pdk-calendar-preview-art')?.remove();art.querySelector('.pdk-calendar-preview-video')?.remove();if(dateTheme!=='loy-krathong'){
    if(dateTheme==='new-year'){
-    const video=document.createElement('video');video.className='pdk-calendar-preview-video';video.muted=true;video.defaultMuted=true;video.loop=true;video.autoplay=true;video.playsInline=true;video.preload='auto';video.setAttribute('muted','');video.setAttribute('autoplay','');video.setAttribute('loop','');video.setAttribute('playsinline','');video.setAttribute('aria-hidden','true');
-    const source=document.createElement('source');source.src='/new-years-fireworks.mp4?v=20261124-1';source.type='video/mp4';video.appendChild(source);art.appendChild(video);
-    video.play().catch(()=>{video.classList.add('pdk-calendar-preview-video-failed')});
-    video.addEventListener('error',()=>video.classList.add('pdk-calendar-preview-video-failed'),{once:true});
+    const gif=document.createElement('img');gif.className='pdk-calendar-preview-gif';gif.src='/New%20Year%E2%80%99s%20.gif?v=20261124-2';gif.alt='New Year fireworks';gif.decoding='async';gif.setAttribute('aria-hidden','true');art.appendChild(gif);
    }else{
     const layer=document.createElement('div');layer.className='pdk-calendar-preview-art';layer.setAttribute('aria-hidden','true');
     const map={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇'],children:['🦖','🎈','🎉','⭐']};
@@ -8070,6 +8067,7 @@ function openThailandFestivalDate(date){
 <style id="pdk-calendar-date-time-preview-v1">
 /* Calendar Preview appears in the live Date & Time card; date and clock stay readable. */
 #appDateTime .pdk-calendar-preview-art{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+#appDateTime .pdk-calendar-preview-gif{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;display:block!important;pointer-events:none!important;z-index:1!important;}
 #appDateTime.is-calendar-preview .pdk-festival-art{opacity:1!important}
 #appDateTime .pdk-calendar-preview-symbol{position:absolute;font-size:clamp(20px,4vw,38px);line-height:1;filter:drop-shadow(0 3px 8px rgba(0,0,0,.45));will-change:transform,opacity}
 #appDateTime .pdk-calendar-preview-symbol.p1{left:8%;bottom:12%;animation:pdkCalendarPreviewFloatA 5s ease-in-out infinite}
