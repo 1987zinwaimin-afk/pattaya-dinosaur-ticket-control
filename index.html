@@ -7131,23 +7131,37 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
  const dayFmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',weekday:'long'});
  const timeFmt=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Bangkok',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
  const keyFmt=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'});
- const official={'2026-01-01':'New Year’s Day','2026-01-02':'Additional New Year Holiday','2026-03-03':'Makha Bucha Day','2026-04-06':'Chakri Memorial Day','2026-04-13':'Songkran Festival','2026-04-14':'Songkran Festival','2026-04-15':'Songkran Festival','2026-05-01':'National Labour Day','2026-05-04':'Coronation Day','2026-05-31':'Visakha Bucha Day','2026-06-01':'Substitution for Visakha Bucha Day','2026-06-03':'Queen Suthida’s Birthday','2026-07-28':'King Maha Vajiralongkorn’s Birthday','2026-07-29':'Asarnha Bucha Day','2026-08-12':'Queen Sirikit The Queen Mother’s Birthday · Mother’s Day','2026-10-13':'King Bhumibol Adulyadej Memorial Day','2026-10-23':'King Chulalongkorn Memorial Day','2026-12-05':'King Bhumibol’s Birthday · National Day · Father’s Day','2026-12-07':'Substitution for 5 December Holiday','2026-12-10':'Constitution Day','2026-12-31':'New Year’s Eve'};
- const special={'2026-01-10':'Thailand National Children’s Day','2026-01-16':'Thailand Teachers’ Day','2026-05-13':'Royal Ploughing Ceremony Day · Government offices only','2026-07-30':'Khao Phansa · Buddhist Lent begins','2026-10-26':'Ok Phansa · End of Buddhist Lent','2026-11-24':'Loy Krathong Festival'};
+ const official={
+ '2026-01-01':'New Year’s Day','2026-01-02':'Additional New Year Holiday','2026-03-03':'Makha Bucha Day','2026-04-06':'Chakri Memorial Day','2026-04-13':'Songkran Festival','2026-04-14':'Songkran Festival','2026-04-15':'Songkran Festival','2026-05-01':'National Labour Day','2026-05-04':'Coronation Day','2026-05-31':'Visakha Bucha Day','2026-06-01':'Substitution for Visakha Bucha Day','2026-06-03':'Queen Suthida’s Birthday','2026-07-28':'King Maha Vajiralongkorn’s Birthday','2026-07-29':'Asarnha Bucha Day','2026-08-12':'Queen Sirikit The Queen Mother’s Birthday · Mother’s Day','2026-10-13':'King Bhumibol Adulyadej Memorial Day','2026-10-23':'King Chulalongkorn Memorial Day','2026-12-05':'King Bhumibol’s Birthday · National Day · Father’s Day','2026-12-07':'Substitution for 5 December Holiday','2026-12-10':'Constitution Day','2026-12-31':'New Year’s Eve',
+ '2027-01-01':'New Year’s Day','2027-02-22':'Substitution for Makha Bucha Day','2027-04-06':'Chakri Memorial Day','2027-04-13':'Songkran Festival','2027-04-14':'Songkran Festival','2027-04-15':'Songkran Festival','2027-05-03':'Substitution for National Labour Day','2027-05-04':'Coronation Day','2027-05-20':'Visakha Bucha Day','2027-06-03':'Queen Suthida’s Birthday','2027-07-19':'Substitution for Asarnha Bucha Day','2027-07-28':'King Maha Vajiralongkorn’s Birthday','2027-08-12':'Queen Sirikit The Queen Mother’s Birthday · Mother’s Day','2027-10-25':'Substitution for King Chulalongkorn Memorial Day','2027-12-06':'Substitution for 5 December Holiday','2027-12-10':'Constitution Day','2027-12-31':'New Year’s Eve'
+ };
+ const special={
+ '2026-01-10':'Thailand National Children’s Day','2026-01-16':'Thailand Teachers’ Day','2026-02-17':'Chinese New Year','2026-05-13':'Royal Ploughing Ceremony Day · Government offices only','2026-07-30':'Khao Phansa · Buddhist Lent begins','2026-10-26':'Ok Phansa · End of Buddhist Lent','2026-11-24':'Loy Krathong Festival',
+ '2027-01-09':'Thailand National Children’s Day','2027-01-16':'Thailand Teachers’ Day','2027-02-06':'Chinese New Year','2027-02-21':'Makha Bucha Day','2027-07-18':'Asarnha Bucha Day','2027-07-19':'Khao Phansa · Buddhist Lent begins','2027-09-30':'Phuket Vegetarian Festival','2027-10-01':'Phuket Vegetarian Festival','2027-10-02':'Phuket Vegetarian Festival','2027-10-03':'Phuket Vegetarian Festival','2027-10-04':'Phuket Vegetarian Festival','2027-10-05':'Phuket Vegetarian Festival','2027-10-06':'Phuket Vegetarian Festival','2027-10-07':'Phuket Vegetarian Festival','2027-10-08':'Phuket Vegetarian Festival','2027-10-15':'Ok Phansa · Expected','2027-11-13':'Loy Krathong Festival · Expected'
+ };
  function updateThailandDateTime(){
   const now=new Date(),key=keyFmt.format(now),weekday=dayFmt.format(now),day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
+  const events=(window.__pdkThailandFestivalLookup&&window.__pdkThailandFestivalLookup[key])||[],event=events[0]||null;
+  const label=holiday||observance||event?.title||(weekend?'Weekend':'');
   dateEl.textContent=dateFmt.format(now).replace(/\//g,'.');dayEl.textContent=weekday;
-  dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);
-  if(holidayEl){const label=holiday||observance||(weekend?'Weekend':'');holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);
-  const card=document.getElementById('appDateTime'),lower=String(label||'').toLowerCase(),monthDay=key.slice(5);
-  let theme='';
-  if(lower.includes('loy krathong'))theme='loy-krathong';
-  else if(lower.includes('songkran'))theme='songkran';
-  else if(lower.includes('christmas')||monthDay==='12-25')theme='christmas';
-  else if(lower.includes('new year')||monthDay==='01-01'||monthDay==='12-31')theme='new-year';
-  else if(monthDay==='02-14')theme='valentines';
-  else if(holiday||observance)theme='thai-holiday';
-  if(card){card.dataset.festivalTheme=theme;card.classList.toggle('has-festival-theme',!!theme);}
- }
+  dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!(observance||event));
+  if(holidayEl){holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!(observance||event));
+   const card=document.getElementById('appDateTime'),lower=String(label||'').toLowerCase(),monthDay=key.slice(5);
+   let theme='';
+   const eventTheme=event?.theme||'';
+   if(eventTheme==='loy'||lower.includes('loy krathong'))theme='loy-krathong';
+   else if(eventTheme==='songkran'||lower.includes('songkran'))theme='songkran';
+   else if(eventTheme==='buddhist'||/makha|visakha|asarnha|khao phansa|ok phansa/i.test(lower))theme='buddhist';
+   else if(eventTheme==='chinese'||lower.includes('chinese new year'))theme='chinese';
+   else if(eventTheme==='royal'||/queen|king|chakri|coronation|memorial day/i.test(lower))theme='royal';
+   else if(eventTheme==='vegetarian'||lower.includes('vegetarian festival'))theme='vegetarian';
+   else if(eventTheme==='national'||/children.s day|teachers. day|labour day|constitution day|new year/i.test(lower))theme='national';
+   else if(lower.includes('christmas')||monthDay==='12-25')theme='christmas';
+   else if(lower.includes('new year')||monthDay==='01-01'||monthDay==='12-31')theme='new-year';
+   else if(monthDay==='02-14')theme='valentines';
+   else if(holiday||observance||event)theme='thai-holiday';
+   if(card){card.dataset.festivalTheme=theme;card.dataset.festivalDate=key;card.classList.toggle('has-festival-theme',!!theme);}
+  }
   const thailandClock=new Date(now.getTime()+7*60*60*1000),clockHour=thailandClock.getUTCHours(),clockMinute=String(thailandClock.getUTCMinutes()).padStart(2,'0'),clockSecond=String(thailandClock.getUTCSeconds()).padStart(2,'0'),clockPeriod=clockHour>=12?'PM':'AM',clockHour12=clockHour%12||12;timeEl.textContent=String(clockHour12)+':'+clockMinute+':'+clockSecond+' '+clockPeriod;
  }
  updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
@@ -8247,3 +8261,106 @@ function openThailandFestivalDate(date){
   }
 }
 </style>
+
+<style id="pdk-auto-festival-video-scenes-v1">
+/* Shared looping festival motion layer for the live Thailand date card and calendar popup. */
+#appDateTime .pdk-auto-festival-canvas,.pdk-fc-hero .pdk-auto-festival-canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:4!important;display:block!important;pointer-events:none!important;opacity:.92}
+.pdk-fc-hero .pdk-auto-festival-canvas{z-index:2!important;opacity:.95}
+#appDateTime[data-festival-theme="songkran"]{background:linear-gradient(120deg,#06385a,#087f9c 55%,#123e76)!important}
+#appDateTime[data-festival-theme="chinese"]{background:linear-gradient(120deg,#54111e,#a51f32 52%,#e18a35)!important}
+#appDateTime[data-festival-theme="buddhist"]{background:linear-gradient(120deg,#261d58,#59428b 52%,#bd873d)!important}
+#appDateTime[data-festival-theme="royal"]{background:linear-gradient(120deg,#071f49,#153f75 54%,#73512c)!important}
+#appDateTime[data-festival-theme="vegetarian"]{background:linear-gradient(120deg,#064b3b,#147454 54%,#8c762e)!important}
+#appDateTime[data-festival-theme="national"]{background:linear-gradient(120deg,#082b4c,#145c85 55%,#8a612e)!important}
+#appDateTime[data-festival-theme="thai-holiday"]{background:linear-gradient(120deg,#102747,#173c5b 55%,#493b37)!important}
+.pdk-fc-hero[data-theme="songkran"]{background:linear-gradient(130deg,#06476b,#0a9bb2 52%,#1764a0)!important}
+.pdk-fc-hero[data-theme="buddhist"]{background:linear-gradient(130deg,#34245f,#7652a2 54%,#c18a3e)!important}
+.pdk-fc-hero[data-theme="chinese"]{background:linear-gradient(130deg,#651326,#b42137 55%,#e6a13b)!important}
+.pdk-fc-hero[data-theme="royal"]{background:linear-gradient(130deg,#0b2856,#24528a 55%,#9b7136)!important}
+.pdk-fc-hero[data-theme="vegetarian"]{background:linear-gradient(130deg,#064c3a,#16805d 55%,#b08b36)!important}
+.pdk-fc-hero[data-theme="national"]{background:linear-gradient(130deg,#0b3a61,#176c91 55%,#c18b3c)!important}
+.pdk-fc-hero[data-theme="national"],.pdk-fc-hero[data-theme="royal"],.pdk-fc-hero[data-theme="vegetarian"],.pdk-fc-hero[data-theme="chinese"],.pdk-fc-hero[data-theme="buddhist"],.pdk-fc-hero[data-theme="songkran"]{isolation:isolate}
+@media(prefers-reduced-motion:reduce){#appDateTime .pdk-auto-festival-canvas,.pdk-fc-hero .pdk-auto-festival-canvas{opacity:.5}}
+</style>
+<script id="pdk-auto-festival-video-scenes-v1">
+(function(){
+ if(window.__pdkAutoFestivalScenesV1)return;
+ window.__pdkAutoFestivalScenesV1=true;
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const active=new WeakMap();
+ function themeFor(host){
+  if(host.id==='appDateTime'){
+   const t=host.dataset.festivalTheme||'';
+   return t==='loy-krathong'?'loy':t;
+  }
+  return host.dataset.theme||'national';
+ }
+ function mount(host){
+  if(!host||host.dataset.autoFestivalCanvas==='yes')return;
+  const theme=themeFor(host);if(!theme)return;
+  host.dataset.autoFestivalCanvas='yes';
+  if(getComputedStyle(host).position==='static')host.style.position='relative';
+  const canvas=document.createElement('canvas');canvas.className='pdk-auto-festival-canvas';canvas.setAttribute('aria-hidden','true');host.appendChild(canvas);
+  const ctx=canvas.getContext('2d');if(!ctx)return;
+  let w=1,h=1,dpr=1,frame=0,raf=0;
+  const rand=(min,max)=>min+Math.random()*(max-min);
+  const colors=theme==='songkran'?['#d9fbff','#8ceaff','#38d6ef','#ffffff']:
+   theme==='chinese'?['#ffdf80','#fff0b3','#ff6a4f','#f8c34d']:
+   theme==='buddhist'?['#ffe8a0','#ffd36d','#fff5d5','#d9a9ff']:
+   theme==='royal'?['#ffe6a0','#fff1c7','#8bc7ff','#f3c85e']:
+   theme==='vegetarian'?['#c7ffd8','#79e6a0','#ffe08a','#ffffff']:
+   theme==='national'?['#fff0b3','#ffd36d','#8be5ff','#ffffff']:
+   ['#ffe6a0','#ffd36d','#fff1c7','#8be5ff'];
+  const count=theme==='songkran'?54:theme==='loy'?26:38;
+  const particles=Array.from({length:count},()=>({x:rand(0,1),y:rand(0,1),vx:rand(-.001,.001),vy:rand(.0005,.003),r:rand(1.2,3.8),phase:rand(0,Math.PI*2),size:rand(5,13)}));
+  function resize(){
+   const rect=host.getBoundingClientRect();w=Math.max(1,rect.width);h=Math.max(1,rect.height);dpr=Math.min(window.devicePixelRatio||1,2);
+   canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);canvas.style.width='100%';canvas.style.height='100%';ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function lantern(x,y,scale,color){
+   ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=13;
+   ctx.beginPath();ctx.ellipse(0,0,7,10,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff4c7';ctx.fillRect(-1,9,2,5);ctx.restore();
+  }
+  function firework(x,y,phase,color){
+   const radius=8+((phase%1)*27);ctx.save();ctx.globalAlpha=1-(phase%1);ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.shadowColor=color;ctx.shadowBlur=8;
+   for(let i=0;i<10;i++){const a=i*Math.PI/5;ctx.beginPath();ctx.moveTo(x+Math.cos(a)*radius*.25,y+Math.sin(a)*radius*.25);ctx.lineTo(x+Math.cos(a)*radius,y+Math.sin(a)*radius);ctx.stroke()}
+   ctx.restore();
+  }
+  function draw(){
+   if(!host.isConnected){cancelAnimationFrame(raf);return}
+   frame++;ctx.clearRect(0,0,w,h);
+   particles.forEach((p,i)=>{
+    p.x+=p.vx;p.y+=p.vy;if(p.y>1.08){p.y=-.08;p.x=rand(0,1)}if(p.x<-.08)p.x=1.08;if(p.x>1.08)p.x=-.08;
+    const x=p.x*w,y=p.y*h,color=colors[i%colors.length],pulse=.55+.45*Math.sin(frame*.035+p.phase);
+    if(theme==='songkran'){
+     ctx.save();ctx.globalAlpha=.38+pulse*.45;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=9;ctx.beginPath();ctx.ellipse(x,y,p.r*.65,p.r*1.8,.3,0,Math.PI*2);ctx.fill();ctx.restore();
+    }else if(theme==='loy'){
+     if(i<7)lantern(x,y,Math.max(.45,p.size/11),color);
+     else{ctx.save();ctx.globalAlpha=.35+pulse*.4;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=9;ctx.beginPath();ctx.ellipse(x,y,5,2,Math.sin(frame*.02+p.phase),0,Math.PI*2);ctx.fill();ctx.restore()}
+    }else if(theme==='chinese'||theme==='national'){
+     if(i%9===0)firework(x,y,(frame*.004+p.phase)%1,color);
+     else{ctx.save();ctx.globalAlpha=.45+pulse*.45;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=9;ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();ctx.restore()}
+    }else if(theme==='vegetarian'){
+     ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(frame*.02+p.phase)*.7);ctx.globalAlpha=.35+pulse*.45;ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(0,0,3,7,0,0,Math.PI*2);ctx.fill();ctx.restore();
+    }else{
+     ctx.save();ctx.globalAlpha=.35+pulse*.55;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=12;ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();ctx.restore();
+     if(theme==='buddhist'&&i%8===0)lantern(x,y,Math.max(.35,p.size/14),'#ffd47a');
+    }
+   });
+   if(!reduced||frame%3===0)raf=requestAnimationFrame(draw);else raf=requestAnimationFrame(draw);
+  }
+  resize();if('ResizeObserver'in window)new ResizeObserver(resize).observe(host);else window.addEventListener('resize',resize,{passive:true});
+  draw();active.set(host,{canvas,theme});
+ }
+ function scan(){
+  const card=document.querySelector('#appDateTime[data-festival-theme]');
+  if(card&&card.classList.contains('has-festival-theme')){
+   const art=card.querySelector('.pdk-festival-art');if(art)mount(art);
+  }
+  document.querySelectorAll('#pdkThailandFestivalModal .pdk-fc-hero').forEach(mount);
+ }
+ const observer=new MutationObserver(scan);
+ observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['data-festival-theme','data-theme','class']});
+ scan();
+})();
+</script>
