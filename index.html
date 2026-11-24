@@ -7224,10 +7224,10 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
  '2027-01-09':'Thailand National Children’s Day','2027-01-16':'Thailand Teachers’ Day','2027-02-06':'Chinese New Year','2027-02-21':'Makha Bucha Day','2027-07-18':'Asarnha Bucha Day','2027-07-19':'Khao Phansa · Buddhist Lent begins','2027-09-30':'Phuket Vegetarian Festival','2027-10-01':'Phuket Vegetarian Festival','2027-10-02':'Phuket Vegetarian Festival','2027-10-03':'Phuket Vegetarian Festival','2027-10-04':'Phuket Vegetarian Festival','2027-10-05':'Phuket Vegetarian Festival','2027-10-06':'Phuket Vegetarian Festival','2027-10-07':'Phuket Vegetarian Festival','2027-10-08':'Phuket Vegetarian Festival','2027-10-15':'Ok Phansa · Expected','2027-11-13':'Loy Krathong Festival · Expected'
  };
  function updateThailandDateTime(){
-  const now=new Date(),key=keyFmt.format(now),weekday=dayFmt.format(now),day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
+  const now=new Date(),previewOverride=window.__pdkFestivalDateTimePreview||null,displayDate=previewOverride?.date?new Date(previewOverride.date+'T12:00:00Z'):now,key=previewOverride?.date||keyFmt.format(now),weekday=dayFmt.format(displayDate),day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
   const events=(window.__pdkThailandFestivalLookup&&window.__pdkThailandFestivalLookup[key])||[],event=events[0]||null;
-  const previewOverride=window.__pdkFestivalDateTimePreview||null;const label=previewOverride?.title||holiday||observance||event?.title||(weekend?'Weekend':'');
-  dateEl.textContent=dateFmt.format(now).replace(/\//g,'.');dayEl.textContent=weekday;
+  const label=previewOverride?.title||holiday||observance||event?.title||(weekend?'Weekend':'');
+  dateEl.textContent=dateFmt.format(displayDate).replace(/\//g,'.');dayEl.textContent=weekday;
   dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!(observance||event));
   if(holidayEl){holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!(observance||event));
    const card=document.getElementById('appDateTime'),lower=String(label||'').toLowerCase(),monthDay=key.slice(5);
