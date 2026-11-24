@@ -7894,7 +7894,7 @@ function openThailandFestivalDate(date){
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
  const festivalFootage={
-  'New Year’s Day':{url:'/New%20Year%E2%80%99s%20.gif',type:'gif',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
+  'New Year’s Day':{url:'/new-years-fireworks.mp4',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
   'Thailand National Children’s Day':{url:'https://www.pexels.com/download/video/8935531/',credit:'Children at school · Pexels'},
   'Thailand Teachers’ Day':{url:'https://www.pexels.com/download/video/8363822/',credit:'Teacher and students in class · Pexels'},
   'Chinese New Year':{url:'https://www.pexels.com/download/video/38873392/',credit:'Chinese New Year lion dance · Pexels'},
@@ -7923,12 +7923,19 @@ function openThailandFestivalDate(date){
   const holidayLabel=document.getElementById('appHolidayValue');
   if(holidayLabel){holidayLabel.textContent=title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');}
   const art=card.querySelector('.pdk-festival-art');
-  if(art){art.querySelector('.pdk-calendar-preview-art')?.remove();if(dateTheme!=='loy-krathong'){
-   const layer=document.createElement('div');layer.className='pdk-calendar-preview-art';layer.setAttribute('aria-hidden','true');
-   const map={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇'],children:['🦖','🎈','🎉','⭐'],'new-year':['🎆','✨','🎇','🌟']};
-   const symbols=map[dateTheme]||['✨',icon,'🌟','✨'];
-   layer.innerHTML=symbols.map((v,i)=>'<span class="pdk-calendar-preview-symbol p'+(i+1)+'">'+v+'</span>').join('');
-   art.appendChild(layer);
+  if(art){art.querySelector('.pdk-calendar-preview-art')?.remove();art.querySelector('.pdk-calendar-preview-video')?.remove();if(dateTheme!=='loy-krathong'){
+   if(dateTheme==='new-year'){
+    const video=document.createElement('video');video.className='pdk-calendar-preview-video';video.muted=true;video.defaultMuted=true;video.loop=true;video.autoplay=true;video.playsInline=true;video.preload='auto';video.setAttribute('muted','');video.setAttribute('autoplay','');video.setAttribute('loop','');video.setAttribute('playsinline','');video.setAttribute('aria-hidden','true');
+    const source=document.createElement('source');source.src='/new-years-fireworks.mp4?v=20261124-1';source.type='video/mp4';video.appendChild(source);art.appendChild(video);
+    video.play().catch(()=>{video.classList.add('pdk-calendar-preview-video-failed')});
+    video.addEventListener('error',()=>video.classList.add('pdk-calendar-preview-video-failed'),{once:true});
+   }else{
+    const layer=document.createElement('div');layer.className='pdk-calendar-preview-art';layer.setAttribute('aria-hidden','true');
+    const map={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇'],children:['🦖','🎈','🎉','⭐']};
+    const symbols=map[dateTheme]||['✨',icon,'🌟','✨'];
+    layer.innerHTML=symbols.map((v,i)=>'<span class="pdk-calendar-preview-symbol p'+(i+1)+'">'+v+'</span>').join('');
+    art.appendChild(layer);
+   }
   }}
   close();
  });
@@ -8086,6 +8093,11 @@ function openThailandFestivalDate(date){
 @media(prefers-reduced-motion:reduce){#appDateTime .pdk-calendar-preview-symbol{animation:none!important}}
 </style>
 
+
+<style id="pdk-new-year-mp4-datetime-preview-v1">
+#appDateTime .pdk-calendar-preview-video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;display:block!important;opacity:1!important;z-index:2!important;pointer-events:none!important;background:#06172d;filter:saturate(1.3) contrast(1.08) brightness(1.08)}
+#appDateTime .pdk-calendar-preview-video-failed{display:none!important}
+</style>
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
