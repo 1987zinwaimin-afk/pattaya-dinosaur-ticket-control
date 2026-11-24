@@ -6373,6 +6373,15 @@ input:focus,select:focus{border-color:#55d6ff!important;box-shadow:0 0 0 3px rgb
 @media(max-width:700px){.stat,.panel{box-shadow:0 7px 18px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.10)!important}#appDateTime .pdk-festival-video{filter:saturate(1.42) contrast(1.08) brightness(1.10)!important}}
 @media(prefers-reduced-motion:no-preference){.stat,.panel,.ticket,button{transition:filter .18s ease,box-shadow .18s ease,border-color .18s ease}.stat:hover,.panel:hover,.ticket:hover{filter:brightness(1.055)}}
 </style>
+
+<style id="pdk-festival-single-layer-fix-v1">
+/* Keep the original Loy Krathong footage; other holidays use their own generated motion scene. */
+#appDateTime:not([data-festival-theme="loy-krathong"]) .pdk-festival-video,
+#appDateTime:not([data-festival-theme="loy-krathong"]) .pdk-festival-scene{display:none!important}
+#appDateTime[data-festival-theme="loy-krathong"] .pdk-festival-video{display:block!important}
+#appDateTime[data-festival-theme="loy-krathong"] .pdk-festival-scene{display:block!important}
+#appDateTime .pdk-auto-festival-canvas{mix-blend-mode:screen;opacity:.72!important}
+</style>
 </body></html>
 
 <style id="pdk-staff-access-maintenance-center-v1">
@@ -6896,6 +6905,9 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  function unmount(host){if(!host)return;const old=host.querySelector(':scope > .pdk-auto-festival-canvas');if(old)old.remove();host.dataset.autoFestivalCanvas='';host.dataset.autoFestivalTheme='';}
  function mount(host){
   if(!host)return;const theme=themeFor(host);if(!theme){unmount(host);return;}
+  // Existing Loy Krathong MP4 + SVG fallback is the only animation layer for this theme.
+  if(theme==='loy'){unmount(host);return;}
+  if(host.classList.contains('pdk-festival-art'))host.querySelectorAll('.pdk-festival-video,.pdk-festival-scene').forEach(el=>el.style.display='none');
   if(host.dataset.autoFestivalCanvas==='yes'&&host.dataset.autoFestivalTheme===theme)return;
   if(host.dataset.autoFestivalCanvas==='yes')unmount(host);
   host.dataset.autoFestivalCanvas='yes';host.dataset.autoFestivalTheme=theme;
