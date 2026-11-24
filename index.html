@@ -8110,6 +8110,68 @@ function openThailandFestivalDate(date){
   image-rendering:auto!important;
 }
 </style>
+<style id="pdk-datetime-premium-refresh-v1">
+/* Premium Date & Time card: visual-only refresh; live clock and festival preview logic stay untouched. */
+#appDateTime.app-datetime{
+ position:relative!important;isolation:isolate!important;overflow:hidden!important;
+ width:min(calc(100% - 24px),760px)!important;min-height:94px!important;
+ margin:12px auto 16px!important;padding:14px 18px!important;
+ display:flex!important;align-items:center!important;justify-content:space-between!important;
+ gap:16px!important;border:1px solid rgba(112,211,255,.62)!important;border-radius:19px!important;
+ background:linear-gradient(112deg,rgba(5,18,42,.96),rgba(8,39,67,.94) 52%,rgba(12,48,75,.94))!important;
+ box-shadow:0 12px 30px rgba(0,0,0,.28),0 0 22px rgba(48,181,237,.15),inset 0 1px 0 rgba(255,255,255,.13)!important;
+}
+#appDateTime.app-datetime:after{
+ content:"";position:absolute;inset:0;z-index:1;pointer-events:none;border-radius:inherit;
+ background:linear-gradient(105deg,rgba(255,255,255,.045),transparent 42%,rgba(95,205,255,.055));
+}
+#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{
+ position:relative!important;z-index:2!important;min-width:0!important;gap:4px!important;
+}
+#appDateTime .app-datetime-caption{
+ display:inline-flex!important;align-items:center!important;gap:6px!important;
+ color:#8fe3ff!important;font-size:9px!important;letter-spacing:1.8px!important;
+ font-weight:900!important;text-transform:uppercase!important;
+}
+#appDateTime .app-datetime-date .app-datetime-caption:before{content:"▣";font-size:10px;color:#f5cb75}
+#appDateTime .app-datetime-clock .app-datetime-caption:before{content:"◷";font-size:12px;color:#f5cb75}
+#appDateTime .app-datetime-date strong{
+ color:#fff!important;font-size:clamp(21px,4.4vw,27px)!important;
+ line-height:1.15!important;font-weight:850!important;letter-spacing:.35px!important;
+ font-variant-numeric:tabular-nums!important;text-shadow:0 0 16px rgba(255,255,255,.16)!important;
+}
+#appDateTime .app-datetime-clock strong{
+ color:#fff1c5!important;font-size:clamp(22px,5vw,31px)!important;
+ line-height:1.12!important;font-weight:900!important;letter-spacing:.5px!important;
+ font-variant-numeric:tabular-nums!important;white-space:nowrap!important;
+ text-shadow:0 0 9px rgba(255,207,112,.35),0 0 22px rgba(81,194,255,.2)!important;
+}
+#appDateTime #appWeekdayValue{
+ color:#b9eaff!important;font-size:11px!important;font-weight:750!important;
+ letter-spacing:.8px!important;text-transform:uppercase!important;
+}
+#appDateTime .app-datetime-zone{
+ color:rgba(211,235,248,.82)!important;font-size:9px!important;
+ letter-spacing:.45px!important;white-space:nowrap!important;
+}
+#appDateTime .app-holiday-label{
+ max-width:100%!important;color:#ffe4a3!important;font-size:10px!important;
+ font-weight:800!important;line-height:1.25!important;text-shadow:0 1px 8px rgba(0,0,0,.5)!important;
+}
+@media(max-width:420px){
+ #appDateTime.app-datetime{min-height:86px!important;padding:12px 12px!important;gap:8px!important;border-radius:16px!important}
+ #appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{gap:4px!important}
+ #appDateTime .app-datetime-caption{font-size:8px!important;letter-spacing:1.25px!important}
+ #appDateTime .app-datetime-date strong{font-size:clamp(18px,5vw,22px)!important}
+ #appDateTime .app-datetime-clock strong{font-size:clamp(19px,5.4vw,24px)!important;letter-spacing:0!important}
+ #appDateTime #appWeekdayValue{font-size:10px!important}
+ #appDateTime .app-datetime-zone{font-size:8px!important}
+ #appDateTime .app-holiday-label{font-size:9px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ #appDateTime.app-datetime,#appDateTime.app-datetime:after{transition:none!important;animation:none!important}
+}
+</style>
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
