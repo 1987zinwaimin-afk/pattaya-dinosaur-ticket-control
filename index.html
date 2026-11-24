@@ -6448,7 +6448,16 @@ function monthlyReportBuildHtml(data){
  '<h2>Daily ticket details</h2>'+dailySections+
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
- '</body></html>';
+ '
+<style id="pdk-festival-single-layer-fix-v1">
+/* Keep the original Loy Krathong footage; other holidays use their own generated motion scene. */
+#appDateTime:not([data-festival-theme="loy-krathong"]) .pdk-festival-video,
+#appDateTime:not([data-festival-theme="loy-krathong"]) .pdk-festival-scene{display:none!important}
+#appDateTime[data-festival-theme="loy-krathong"] .pdk-festival-video{display:block!important}
+#appDateTime[data-festival-theme="loy-krathong"] .pdk-festival-scene{display:block!important}
+#appDateTime .pdk-auto-festival-canvas{mix-blend-mode:screen;opacity:.72!important}
+</style>
+</body></html>';
 
 }
 function monthlyReportExcelContent(data){
@@ -8304,6 +8313,9 @@ function openThailandFestivalDate(date){
   if(!host)return;
   const theme=themeFor(host);
   if(!theme){unmount(host);return;}
+  // Existing Loy Krathong MP4 + SVG fallback is the only animation layer for this theme.
+  if(theme==='loy'){unmount(host);return;}
+  if(host.classList.contains('pdk-festival-art'))host.querySelectorAll('.pdk-festival-video,.pdk-festival-scene').forEach(el=>el.style.display='none');
   if(host.dataset.autoFestivalCanvas==='yes'&&host.dataset.autoFestivalTheme===theme)return;
   if(host.dataset.autoFestivalCanvas==='yes')unmount(host);
   host.dataset.autoFestivalCanvas='yes';host.dataset.autoFestivalTheme=theme;
