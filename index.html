@@ -6533,28 +6533,7 @@ function monthlyReportBuildHtml(data){
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
  '
-<style id="pdk-festival-all-dates-preview-motion-v1">
-/* Every marked Thailand Festival Calendar date gets its own animated visual preview. */
-#pdkThailandFestivalModal .pdk-fc-hero{isolation:isolate!important}
-#pdkThailandFestivalModal .pdk-fc-theme-scene{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none;opacity:1}
-#pdkThailandFestivalModal .pdk-fc-theme-scene:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 24%,rgba(255,255,255,.28) 0 2px,transparent 3px),radial-gradient(circle at 76% 32%,rgba(255,226,155,.34) 0 3px,transparent 4px),radial-gradient(circle at 52% 78%,rgba(255,255,255,.18) 0 2px,transparent 3px);background-size:67px 67px,91px 91px,53px 53px;animation:pdkFestivalPreviewGlow 5s ease-in-out infinite alternate}
-#pdkThailandFestivalModal .pdk-fc-scene-item{position:absolute;display:block;font-size:clamp(28px,5vw,58px);line-height:1;filter:drop-shadow(0 5px 10px rgba(0,0,0,.38));will-change:transform,opacity}
-#pdkThailandFestivalModal .pdk-fc-scene-item.s1{left:9%;bottom:15%;animation:pdkFestivalPreviewFloatA 6s ease-in-out infinite}
-#pdkThailandFestivalModal .pdk-fc-scene-item.s2{left:34%;top:16%;animation:pdkFestivalPreviewFloatB 7s ease-in-out infinite .5s}
-#pdkThailandFestivalModal .pdk-fc-scene-item.s3{right:29%;bottom:13%;animation:pdkFestivalPreviewFloatA 8s ease-in-out infinite 1s}
-#pdkThailandFestivalModal .pdk-fc-scene-item.s4{right:8%;top:22%;animation:pdkFestivalPreviewTwinkle 3.5s ease-in-out infinite}
-#pdkThailandFestivalModal .pdk-fc-hero[data-theme="songkran"] .pdk-fc-theme-scene{background:linear-gradient(180deg,rgba(7,116,164,.06),rgba(4,99,157,.22))}
-#pdkThailandFestivalModal .pdk-fc-hero[data-theme="buddhist"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 80%,rgba(255,194,91,.22),transparent 62%)}
-#pdkThailandFestivalModal .pdk-fc-hero[data-theme="chinese"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 70%,rgba(255,91,35,.24),transparent 65%)}
-#pdkThailandFestivalModal .pdk-fc-hero[data-theme="royal"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 80%,rgba(255,211,116,.2),transparent 65%)}
-#pdkThailandFestivalModal .pdk-fc-hero[data-theme="vegetarian"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 75%,rgba(65,197,127,.2),transparent 65%)}
-#pdkThailandFestivalModal .pdk-fc-hero[data-theme="national"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 70%,rgba(255,181,74,.18),transparent 65%)}
-@keyframes pdkFestivalPreviewFloatA{0%,100%{transform:translate3d(0,0,0) rotate(-7deg);opacity:.78}50%{transform:translate3d(12px,-27px,0) rotate(8deg);opacity:1}}
-@keyframes pdkFestivalPreviewFloatB{0%,100%{transform:translate3d(0,0,0) rotate(5deg);opacity:.72}50%{transform:translate3d(-10px,22px,0) rotate(-8deg);opacity:1}}
-@keyframes pdkFestivalPreviewTwinkle{0%,100%{transform:scale(.82) rotate(-8deg);opacity:.58}50%{transform:scale(1.16) rotate(12deg);opacity:1}}
-@keyframes pdkFestivalPreviewGlow{from{opacity:.45;transform:translateY(0)}to{opacity:1;transform:translateY(-7px)}}
-@media(prefers-reduced-motion:reduce){#pdkThailandFestivalModal .pdk-fc-theme-scene:before,#pdkThailandFestivalModal .pdk-fc-scene-item{animation-duration:12s!important;animation-iteration-count:infinite!important}}
-</style>
+
 
 </body></html>';
 
@@ -8043,6 +8022,28 @@ function openThailandFestivalDate(date){
 .pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-copy,.pdk-fc-hero[data-theme="loy"] .pdk-fc-close{z-index:4}
 .pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-icon{z-index:4}
 @media(prefers-reduced-motion:reduce){.pdk-fc-hero[data-theme="loy"] .pdk-fc-lantern,.pdk-fc-hero[data-theme="loy"] .pdk-fc-krathong,.pdk-fc-hero[data-theme="loy"] .pdk-fc-loy-scene:before{animation:none!important}}
+</style>
+<style id="pdk-festival-all-dates-preview-motion-v1">
+/* Every marked Thailand Festival Calendar date gets its own animated visual preview. */
+#pdkThailandFestivalModal .pdk-fc-hero{isolation:isolate!important}
+#pdkThailandFestivalModal .pdk-fc-theme-scene{position:absolute;inset:0;z-index:3;overflow:hidden;pointer-events:none;opacity:1}
+#pdkThailandFestivalModal .pdk-fc-theme-scene:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 24%,rgba(255,255,255,.28) 0 2px,transparent 3px),radial-gradient(circle at 76% 32%,rgba(255,226,155,.34) 0 3px,transparent 4px),radial-gradient(circle at 52% 78%,rgba(255,255,255,.18) 0 2px,transparent 3px);background-size:67px 67px,91px 91px,53px 53px;animation:pdkFestivalPreviewGlow 5s ease-in-out infinite alternate}
+#pdkThailandFestivalModal .pdk-fc-scene-item{position:absolute;display:block;font-size:clamp(28px,5vw,58px);line-height:1;filter:drop-shadow(0 5px 10px rgba(0,0,0,.38));will-change:transform,opacity}
+#pdkThailandFestivalModal .pdk-fc-scene-item.s1{left:9%;bottom:15%;animation:pdkFestivalPreviewFloatA 6s ease-in-out infinite}
+#pdkThailandFestivalModal .pdk-fc-scene-item.s2{left:34%;top:16%;animation:pdkFestivalPreviewFloatB 7s ease-in-out infinite .5s}
+#pdkThailandFestivalModal .pdk-fc-scene-item.s3{right:29%;bottom:13%;animation:pdkFestivalPreviewFloatA 8s ease-in-out infinite 1s}
+#pdkThailandFestivalModal .pdk-fc-scene-item.s4{right:8%;top:22%;animation:pdkFestivalPreviewTwinkle 3.5s ease-in-out infinite}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="songkran"] .pdk-fc-theme-scene{background:linear-gradient(180deg,rgba(7,116,164,.06),rgba(4,99,157,.22))}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="buddhist"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 80%,rgba(255,194,91,.22),transparent 62%)}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="chinese"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 70%,rgba(255,91,35,.24),transparent 65%)}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="royal"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 80%,rgba(255,211,116,.2),transparent 65%)}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="vegetarian"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 75%,rgba(65,197,127,.2),transparent 65%)}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="national"] .pdk-fc-theme-scene{background:radial-gradient(ellipse at 50% 70%,rgba(255,181,74,.18),transparent 65%)}
+@keyframes pdkFestivalPreviewFloatA{0%,100%{transform:translate3d(0,0,0) rotate(-7deg);opacity:.78}50%{transform:translate3d(12px,-27px,0) rotate(8deg);opacity:1}}
+@keyframes pdkFestivalPreviewFloatB{0%,100%{transform:translate3d(0,0,0) rotate(5deg);opacity:.72}50%{transform:translate3d(-10px,22px,0) rotate(-8deg);opacity:1}}
+@keyframes pdkFestivalPreviewTwinkle{0%,100%{transform:scale(.82) rotate(-8deg);opacity:.58}50%{transform:scale(1.16) rotate(12deg);opacity:1}}
+@keyframes pdkFestivalPreviewGlow{from{opacity:.45;transform:translateY(0)}to{opacity:1;transform:translateY(-7px)}}
+@media(prefers-reduced-motion:reduce){#pdkThailandFestivalModal .pdk-fc-theme-scene:before,#pdkThailandFestivalModal .pdk-fc-scene-item{animation-duration:12s!important;animation-iteration-count:infinite!important}}
 </style>
 </body></html>
 
