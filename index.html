@@ -3700,6 +3700,56 @@ body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
 #appDateTime:not([data-festival-theme="loy-krathong"]) .pdk-festival-scene{display:none!important}
 #appDateTime .pdk-auto-festival-canvas{mix-blend-mode:screen;opacity:.72!important}
 </style>
+<style id="pdk-festival-calendar-full-preview-v1">
+/* Large centered festival preview: the selected date's matching animation fills the hero. */
+#pdkThailandFestivalModal.pdk-fc-modal{
+ position:fixed!important;inset:0!important;z-index:2147483000!important;
+ display:none;align-items:center!important;justify-content:center!important;
+ padding:clamp(10px,2.2vw,26px)!important;background:rgba(1,7,18,.88)!important;
+ backdrop-filter:blur(12px)!important;overflow-y:auto!important;
+}
+#pdkThailandFestivalModal.pdk-fc-modal.open{display:flex!important}
+#pdkThailandFestivalModal .pdk-fc-dialog{
+ width:min(1040px,100%)!important;height:min(92dvh,900px)!important;max-height:92dvh!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;
+ border:1px solid rgba(255,220,145,.82)!important;border-radius:24px!important;
+ box-shadow:0 28px 100px rgba(0,0,0,.72),0 0 34px rgba(255,202,105,.13)!important;
+}
+#pdkThailandFestivalModal .pdk-fc-hero{
+ flex:0 0 clamp(300px,53dvh,510px)!important;height:auto!important;min-height:0!important;
+ position:relative!important;isolation:isolate!important;overflow:hidden!important;padding:clamp(18px,3vw,30px)!important;
+}
+#pdkThailandFestivalModal .pdk-fc-hero:before{z-index:1!important;pointer-events:none!important}
+#pdkThailandFestivalModal .pdk-fc-hero-copy{z-index:5!important;max-width:min(78%,760px)}
+#pdkThailandFestivalModal .pdk-fc-hero-copy h2{font-size:clamp(25px,4vw,42px)!important;line-height:1.12!important}
+#pdkThailandFestivalModal .pdk-fc-hero-copy small{font-size:clamp(10px,1.3vw,13px)!important}
+#pdkThailandFestivalModal .pdk-fc-hero-icon{font-size:clamp(58px,9vw,112px)!important;right:clamp(20px,4vw,48px)!important;top:clamp(20px,4vw,42px)!important}
+#pdkThailandFestivalModal .pdk-fc-hero-video{z-index:0!important}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-video.is-playing{z-index:2!important;opacity:1!important}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="loy"] .pdk-fc-loy-scene{z-index:1!important;opacity:1!important;transition:opacity .4s ease}
+#pdkThailandFestivalModal .pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-video.is-playing + .pdk-fc-loy-scene{opacity:0!important}
+#pdkThailandFestivalModal .pdk-fc-hero .pdk-auto-festival-canvas{z-index:2!important;opacity:.96!important;mix-blend-mode:screen!important}
+#pdkThailandFestivalModal .pdk-fc-close{z-index:8!important;width:46px!important;height:46px!important;font-size:27px!important}
+#pdkThailandFestivalModal .pdk-fc-modal-body{
+ flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;
+ padding:clamp(16px,2.5vw,26px)!important;overscroll-behavior:contain!important;
+}
+#pdkThailandFestivalModal .pdk-fc-date-line{font-size:clamp(14px,1.8vw,18px)!important}
+#pdkThailandFestivalModal .pdk-fc-event{padding:clamp(13px,2vw,20px)!important;margin:12px 0!important}
+#pdkThailandFestivalModal .pdk-fc-event h3{font-size:clamp(17px,2vw,21px)!important}
+#pdkThailandFestivalModal .pdk-fc-event p{font-size:clamp(13px,1.5vw,16px)!important;line-height:1.7!important}
+@media(max-width:600px){
+ #pdkThailandFestivalModal.pdk-fc-modal{padding:8px!important}
+ #pdkThailandFestivalModal .pdk-fc-dialog{width:100%!important;height:94dvh!important;max-height:94dvh!important;border-radius:19px!important}
+ #pdkThailandFestivalModal .pdk-fc-hero{flex-basis:48dvh!important;min-height:270px!important;padding:17px!important}
+ #pdkThailandFestivalModal .pdk-fc-hero-copy{max-width:84%}
+ #pdkThailandFestivalModal .pdk-fc-hero-copy h2{font-size:clamp(23px,6vw,32px)!important}
+ #pdkThailandFestivalModal .pdk-fc-hero-icon{font-size:62px!important;right:14px!important;top:58px!important}
+ #pdkThailandFestivalModal .pdk-fc-close{width:40px!important;height:40px!important;right:9px!important;top:9px!important}
+ #pdkThailandFestivalModal .pdk-fc-modal-body{padding:14px!important}
+}
+@media(prefers-reduced-motion:reduce){#pdkThailandFestivalModal .pdk-auto-festival-canvas{opacity:.55!important}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -7814,7 +7864,9 @@ function openThailandFestivalDate(date){
  dialog.id='pdkThailandFestivalModal';dialog.className='pdk-fc-modal open';dialog.setAttribute('role','presentation');
  dialog.innerHTML='<section class="pdk-fc-dialog" role="dialog" aria-modal="true" aria-labelledby="pdkFcTitle"><div class="pdk-fc-hero" data-theme="'+theme+'">'+heroMedia+'<button type="button" class="pdk-fc-close" aria-label="Close">×</button><div class="pdk-fc-hero-icon">'+icon+'</div><div class="pdk-fc-hero-copy"><small>PATTAYA DINOSAUR KINGDOM · THAILAND 2027</small><h2 id="pdkFcTitle">'+(selected.length?escHtml(title):'Thailand Festival Calendar')+'</h2></div></div><div class="pdk-fc-modal-body"><div class="pdk-fc-date-line">📅 '+dateText+'</div>'+(selected.length?selected.map(e=>'<article class="pdk-fc-event"><span class="pdk-fc-tag '+(e.status==='official'?'official':e.status==='expected'?'expected':'')+'">'+(e.status==='official'?labels.official:e.status==='expected'?labels.expected:labels.cultural)+'</span><h3>'+e.icon+' '+escHtml(e.title)+'</h3><p>'+escHtml(e.desc)+'</p></article>').join(''):'<div class="pdk-fc-empty-note">'+labels.no+'<p style="margin:7px 0 0;font-size:12px">'+(lang==='my'?'ဒေသဆိုင်ရာပွဲများ ကြေညာလာပါက ထပ်မံထည့်သွင်းနိုင်ပါသည်။':lang==='th'?'สามารถเพิ่มกิจกรรมท้องถิ่นได้เมื่อมีประกาศเพิ่มเติม':'Local events can be added when organisers announce their programmes.')+'</p></div>')+'<div style="display:flex;justify-content:flex-end;margin-top:12px"><button type="button" class="gold" data-fc-close>'+labels.close+'</button></div></div></section>';
  document.body.appendChild(dialog);
- const close=()=>dialog.remove();
+ const previousBodyOverflow=document.body.style.overflow;
+ document.body.style.overflow='hidden';
+ const close=()=>{if(!dialog.isConnected)return;dialog.remove();document.body.style.overflow=previousBodyOverflow;document.removeEventListener('keydown',escHandler)};
  dialog.querySelectorAll('.pdk-fc-close,[data-fc-close]').forEach(b=>b.addEventListener('click',close));
  const heroVideo=dialog.querySelector('.pdk-fc-hero-video');
  if(heroVideo){
@@ -7833,8 +7885,9 @@ function openThailandFestivalDate(date){
   dialog.addEventListener('pointerdown',()=>{if(heroVideo.paused)startFestivalVideo()},{once:true,passive:true});
  }
  dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
- const escHandler=e=>{if(e.key==='Escape'){close();document.removeEventListener('keydown',escHandler)}};
+ const escHandler=e=>{if(e.key==='Escape')close()};
  document.addEventListener('keydown',escHandler);
+ dialog.querySelector('.pdk-fc-close')?.focus();
 }
 (function(){
  const events=[
