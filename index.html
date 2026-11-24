@@ -7781,7 +7781,7 @@ function openThailandFestivalDate(date){
  const selected=fallback;
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
- const heroMedia=theme==='loy'?'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>':'';
+ const heroMedia=theme==='loy'?'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-3" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>':'';
  const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const labels=lang==='my'?{no:'ဒီနေ့အတွက် ပွဲတော် သို့မဟုတ် အားလပ်ရက် မရှိသေးပါ။',kind:'အမျိုးအစား',official:'တရားဝင်ရုံးပိတ်ရက်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',cultural:'ရိုးရာ / ဘာသာရေးနေ့',close:'ပိတ်ရန်'}:lang==='th'?{no:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',kind:'ประเภท',official:'วันหยุดทางการ',expected:'วันที่คาดการณ์ · รอยืนยัน',cultural:'เทศกาล / วันสำคัญ',close:'ปิด'}:{no:'No major festival or public holiday is listed for this date.',kind:'Category',official:'Official public holiday',expected:'Expected date · awaiting confirmation',cultural:'Cultural / religious day',close:'Close'};
  const dialog=document.createElement('div');
@@ -7791,7 +7791,21 @@ function openThailandFestivalDate(date){
  const close=()=>dialog.remove();
  dialog.querySelectorAll('.pdk-fc-close,[data-fc-close]').forEach(b=>b.addEventListener('click',close));
  const heroVideo=dialog.querySelector('.pdk-fc-hero-video');
- if(heroVideo){heroVideo.muted=true;heroVideo.playsInline=true;heroVideo.addEventListener('error',()=>heroVideo.classList.add('is-blocked'),{once:true});const startFestivalVideo=()=>{const playAttempt=heroVideo.play();if(playAttempt&&typeof playAttempt.catch==='function')playAttempt.catch(()=>heroVideo.classList.add('is-blocked'))};if(heroVideo.readyState>=2)startFestivalVideo();else heroVideo.addEventListener('loadeddata',startFestivalVideo,{once:true});}
+ if(heroVideo){
+  /* Start muted playback immediately inside the date-button tap gesture (important on Android). */
+  heroVideo.muted=true;heroVideo.defaultMuted=true;heroVideo.volume=0;heroVideo.loop=true;heroVideo.playsInline=true;heroVideo.preload='auto';
+  ['muted','autoplay','loop','playsinline','webkit-playsinline'].forEach(a=>heroVideo.setAttribute(a,''));
+  const markPlaying=()=>{heroVideo.classList.add('is-playing');heroVideo.classList.remove('is-blocked')};
+  const markBlocked=()=>{heroVideo.classList.remove('is-playing');heroVideo.classList.add('is-blocked')};
+  heroVideo.addEventListener('playing',markPlaying);
+  heroVideo.addEventListener('error',markBlocked);
+  const startFestivalVideo=()=>{try{const playAttempt=heroVideo.play();if(playAttempt&&typeof playAttempt.then==='function')playAttempt.then(markPlaying).catch(markBlocked)}catch(e){markBlocked()}};
+  startFestivalVideo();
+  heroVideo.addEventListener('loadeddata',startFestivalVideo,{once:true});
+  heroVideo.addEventListener('canplay',startFestivalVideo,{once:true});
+  /* If autoplay is restricted, a tap anywhere on the popup retries the silent clip. */
+  dialog.addEventListener('pointerdown',()=>{if(heroVideo.paused)startFestivalVideo()},{once:true,passive:true});
+ }
  dialog.addEventListener('click',e=>{if(e.target===dialog)close()});
  const escHandler=e=>{if(e.key==='Escape'){close();document.removeEventListener('keydown',escHandler)}};
  document.addEventListener('keydown',escHandler);
@@ -7843,6 +7857,17 @@ function openThailandFestivalDate(date){
 })();
 </script>
 
+
+<style id="pdk-loy-popup-video-reliability-v3">
+/* Popup video: reveal only after a real decoded frame; keep animated scene visible as fallback. */
+.pdk-fc-hero[data-theme="loy"]{position:relative;isolation:isolate;overflow:hidden;background-color:#06172d}
+.pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-video{z-index:0;opacity:0;visibility:visible;transition:opacity .45s ease;object-fit:cover;object-position:center 52%;background:transparent}
+.pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-video.is-playing{opacity:1}
+.pdk-fc-hero[data-theme="loy"] .pdk-fc-loy-scene{z-index:1;opacity:1;pointer-events:none}
+.pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-copy,.pdk-fc-hero[data-theme="loy"] .pdk-fc-close{z-index:4}
+.pdk-fc-hero[data-theme="loy"] .pdk-fc-hero-icon{z-index:4}
+@media(prefers-reduced-motion:reduce){.pdk-fc-hero[data-theme="loy"] .pdk-fc-lantern,.pdk-fc-hero[data-theme="loy"] .pdk-fc-krathong,.pdk-fc-hero[data-theme="loy"] .pdk-fc-loy-scene:before{animation:none!important}}
+</style>
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
