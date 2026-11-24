@@ -3750,6 +3750,19 @@ body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
 }
 @media(prefers-reduced-motion:reduce){#pdkThailandFestivalModal .pdk-auto-festival-canvas{opacity:.55!important}}
 </style>
+<style id="pdk-festival-real-footage-v1">
+/* Festival preview uses real stock footage instead of illustrated canvas effects. */
+#pdkThailandFestivalModal .pdk-fc-hero:not([data-theme="loy"]) .pdk-fc-hero-video{z-index:1!important;opacity:0!important;visibility:visible!important;transition:opacity .45s ease!important;filter:saturate(1.12) contrast(1.05) brightness(.88)!important}
+#pdkThailandFestivalModal .pdk-fc-hero:not([data-theme="loy"]) .pdk-fc-hero-video.is-playing{opacity:1!important}
+#pdkThailandFestivalModal .pdk-fc-hero .pdk-fc-hero-copy,
+#pdkThailandFestivalModal .pdk-fc-hero .pdk-fc-hero-icon{z-index:5!important;position:relative}
+#pdkThailandFestivalModal .pdk-fc-hero .pdk-fc-close{z-index:8!important}
+#pdkThailandFestivalModal .pdk-fc-hero .pdk-auto-festival-canvas{display:none!important}
+#pdkThailandFestivalModal .pdk-fc-hero:not([data-theme="loy"])::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(2,8,20,.72),rgba(2,8,20,.14) 78%),linear-gradient(0deg,rgba(2,8,20,.45),transparent 60%)}
+#pdkThailandFestivalModal .pdk-fc-hero:not([data-theme="loy"]) .pdk-fc-hero-copy,
+#pdkThailandFestivalModal .pdk-fc-hero:not([data-theme="loy"]) .pdk-fc-hero-icon,
+#pdkThailandFestivalModal .pdk-fc-hero:not([data-theme="loy"]) .pdk-fc-close{z-index:5!important}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -7857,7 +7870,18 @@ function openThailandFestivalDate(date){
  const selected=fallback;
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
- const heroMedia=theme==='loy'?'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-3" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>':'';
+ const festivalFootage={
+  'New Year’s Day':{url:'https://www.pexels.com/download/video/6995497/',credit:'Bangkok New Year fireworks · Pexels'},
+  'Thailand National Children’s Day':{url:'https://www.pexels.com/download/video/8935531/',credit:'Children at school · Pexels'},
+  'Thailand Teachers’ Day':{url:'https://www.pexels.com/download/video/8363822/',credit:'Teacher and students in class · Pexels'},
+  'Chinese New Year':{url:'https://www.pexels.com/download/video/38873392/',credit:'Chinese New Year lion dance · Pexels'},
+  'Makha Bucha Day':{url:'https://www.pexels.com/download/video/40881912/',credit:'Thai Buddhist night ceremony · Pexels'},
+  'Substitution for Makha Bucha Day':{url:'https://www.pexels.com/download/video/40881912/',credit:'Thai Buddhist night ceremony · Pexels'},
+  'Chakri Memorial Day':{url:'https://www.pexels.com/download/video/34499360/',credit:'Grand Palace, Bangkok · Pexels'}
+ };
+ const footage=festivalFootage[title];
+ const loyMedia='<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-3" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>';
+ const heroMedia=theme==='loy'?loyMedia:footage?'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" data-footage-credit="'+footage.credit+'"><source src="'+footage.url+'" type="video/mp4"></video>':'';
  const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const labels=lang==='my'?{no:'ဒီနေ့အတွက် ပွဲတော် သို့မဟုတ် အားလပ်ရက် မရှိသေးပါ။',kind:'အမျိုးအစား',official:'တရားဝင်ရုံးပိတ်ရက်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',cultural:'ရိုးရာ / ဘာသာရေးနေ့',close:'ပိတ်ရန်'}:lang==='th'?{no:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',kind:'ประเภท',official:'วันหยุดทางการ',expected:'วันที่คาดการณ์ · รอยืนยัน',cultural:'เทศกาล / วันสำคัญ',close:'ปิด'}:{no:'No major festival or public holiday is listed for this date.',kind:'Category',official:'Official public holiday',expected:'Expected date · awaiting confirmation',cultural:'Cultural / religious day',close:'Close'};
  const dialog=document.createElement('div');
@@ -8369,6 +8393,8 @@ function openThailandFestivalDate(date){
   if(!host)return;
   const theme=themeFor(host);
   if(!theme){unmount(host);return;}
+  // Calendar hero videos are real footage; never layer generated canvas particles over them.
+  if(host.classList.contains('pdk-fc-hero')&&host.querySelector('.pdk-fc-hero-video')){unmount(host);return;}
   // Existing Loy Krathong MP4 + SVG fallback is the only animation layer for this theme.
   if(theme==='loy'){unmount(host);return;}
   if(host.classList.contains('pdk-festival-art'))host.querySelectorAll('.pdk-festival-video,.pdk-festival-scene').forEach(el=>el.style.display='none');
