@@ -7084,7 +7084,17 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
   const now=new Date(),key=keyFmt.format(now),weekday=dayFmt.format(now),day=new Date(key+'T00:00:00Z').getUTCDay(),weekend=day===0||day===6,holiday=official[key],observance=special[key];
   dateEl.textContent=dateFmt.format(now).replace(/\//g,'.');dayEl.textContent=weekday;
   dayEl.classList.toggle('is-holiday',weekend||!!holiday);dayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);
-  if(holidayEl){const label=holiday||observance||(weekend?'Weekend':'');holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);}
+  if(holidayEl){const label=holiday||observance||(weekend?'Weekend':'');holidayEl.textContent=label;holidayEl.hidden=!label;holidayEl.classList.toggle('is-holiday',weekend||!!holiday);holidayEl.classList.toggle('is-special',!weekend&&!holiday&&!!observance);
+  const card=document.getElementById('appDateTime'),lower=String(label||'').toLowerCase(),monthDay=key.slice(5);
+  let theme='';
+  if(lower.includes('loy krathong'))theme='loy-krathong';
+  else if(lower.includes('songkran'))theme='songkran';
+  else if(lower.includes('christmas')||monthDay==='12-25')theme='christmas';
+  else if(lower.includes('new year')||monthDay==='01-01'||monthDay==='12-31')theme='new-year';
+  else if(monthDay==='02-14')theme='valentines';
+  else if(holiday||observance)theme='thai-holiday';
+  if(card){card.dataset.festivalTheme=theme;card.classList.toggle('has-festival-theme',!!theme);}
+ }
   const thailandClock=new Date(now.getTime()+7*60*60*1000),clockHour=thailandClock.getUTCHours(),clockMinute=String(thailandClock.getUTCMinutes()).padStart(2,'0'),clockSecond=String(thailandClock.getUTCSeconds()).padStart(2,'0'),clockPeriod=clockHour>=12?'PM':'AM',clockHour12=clockHour%12||12;timeEl.textContent=String(clockHour12)+':'+clockMinute+':'+clockSecond+' '+clockPeriod;
  }
  updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
@@ -7526,4 +7536,44 @@ body.theme-light #pageContent .mk-progress-track{background:#dce6ee!important;bo
  z-index:19!important;
  pointer-events:none!important;
 }
+
+/* Reusable Thai festival atmosphere — presentation only; existing clock/date logic remains authoritative. */
+#appDateTime.app-datetime{position:relative;isolation:isolate;overflow:hidden;min-height:104px;transition:background .5s ease,border-color .5s ease,box-shadow .5s ease}
+#appDateTime.app-datetime::before,#appDateTime.app-datetime::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity .5s ease}
+#appDateTime.app-datetime.has-festival-theme::before,#appDateTime.app-datetime.has-festival-theme::after{opacity:1}
+#appDateTime.app-datetime>.app-datetime-date,#appDateTime.app-datetime>.app-datetime-clock{position:relative;z-index:2}
+#appDateTime.app-datetime.has-festival-theme{border-color:rgba(255,218,139,.88);box-shadow:0 8px 28px rgba(3,13,32,.38),0 0 22px rgba(242,194,98,.2)}
+#appDateTime[data-festival-theme="loy-krathong"]{background:linear-gradient(180deg,#071a39 0%,#102f53 48%,#0b4055 72%,#061e32 100%)}
+#appDateTime[data-festival-theme="loy-krathong"]::before{inset:-18%;background:
+ radial-gradient(circle at 13% 22%,rgba(255,239,190,.95) 0 1.5px,transparent 3px),
+ radial-gradient(circle at 22% 63%,#ffdb83 0 2px,transparent 4px),
+ radial-gradient(circle at 47% 18%,rgba(255,244,208,.9) 0 1px,transparent 3px),
+ radial-gradient(circle at 69% 30%,#ffd98a 0 2px,transparent 4px),
+ radial-gradient(circle at 88% 16%,rgba(255,237,190,.95) 0 1.5px,transparent 3px),
+ radial-gradient(ellipse at 18% 18%,rgba(255,211,119,.25),transparent 22%),
+ radial-gradient(ellipse at 80% 35%,rgba(56,159,197,.22),transparent 32%),
+ linear-gradient(180deg,transparent 52%,rgba(3,20,35,.2) 53%,rgba(13,73,91,.48) 74%,rgba(2,20,34,.55) 100%);
+ background-size:100% 100%;animation:pdkLoySkyDrift 14s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="loy-krathong"]::after{inset:48% -15% -15%;background:
+ radial-gradient(ellipse at 16% 34%,rgba(255,207,111,.72) 0 2px,transparent 5px),
+ radial-gradient(ellipse at 42% 56%,rgba(255,232,174,.8) 0 2px,transparent 6px),
+ radial-gradient(ellipse at 76% 26%,rgba(255,199,99,.72) 0 2px,transparent 5px),
+ repeating-linear-gradient(174deg,transparent 0 12px,rgba(112,211,221,.13) 13px,transparent 16px,transparent 25px);
+ filter:blur(.2px);animation:pdkLoyWater 5s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="songkran"]{background:linear-gradient(120deg,#06385a,#087f9c 55%,#123e76)}
+#appDateTime[data-festival-theme="songkran"]::before{background:radial-gradient(circle at 15% 20%,#b8f5ff 0 2px,transparent 5px),radial-gradient(circle at 80% 30%,#8ceaff 0 3px,transparent 7px),radial-gradient(ellipse at 50% 100%,rgba(61,205,231,.48),transparent 55%);animation:pdkFestivalGlow 4s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="christmas"]{background:linear-gradient(120deg,#082d35,#12604f 52%,#15385a)}
+#appDateTime[data-festival-theme="christmas"]::before{background:radial-gradient(circle at 15% 20%,#fff 0 1px,transparent 3px),radial-gradient(circle at 76% 28%,#f4d58a 0 2px,transparent 4px),radial-gradient(ellipse at 80% 100%,rgba(220,53,68,.3),transparent 45%);animation:pdkFestivalGlow 5s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="new-year"]{background:linear-gradient(120deg,#091a3b,#26315e 55%,#472b52)}
+#appDateTime[data-festival-theme="new-year"]::before{background:radial-gradient(circle at 20% 25%,#ffdc86 0 2px,transparent 5px),radial-gradient(circle at 75% 22%,#f8a9c2 0 2px,transparent 5px),radial-gradient(ellipse at 50% 0%,rgba(104,136,255,.35),transparent 55%);animation:pdkFestivalGlow 3.5s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="valentines"]{background:linear-gradient(120deg,#401a3b,#71335c 55%,#26365b)}
+#appDateTime[data-festival-theme="valentines"]::before{background:radial-gradient(circle at 18% 25%,rgba(255,193,208,.8) 0 2px,transparent 5px),radial-gradient(circle at 82% 32%,rgba(255,218,180,.75) 0 2px,transparent 5px);animation:pdkFestivalGlow 4s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="thai-holiday"]{background:linear-gradient(120deg,#102747,#173c5b 55%,#493b37)}
+#appDateTime[data-festival-theme="thai-holiday"]::before{background:radial-gradient(circle at 14% 22%,rgba(255,222,148,.9) 0 2px,transparent 5px),radial-gradient(circle at 85% 28%,rgba(255,235,190,.8) 0 2px,transparent 5px);animation:pdkFestivalGlow 5s ease-in-out infinite alternate}
+@keyframes pdkLoySkyDrift{from{transform:translate3d(-1%,0,0) scale(1)}to{transform:translate3d(1.5%,1%,0) scale(1.04)}}
+@keyframes pdkLoyWater{from{transform:translateX(-2%) translateY(0);opacity:.62}to{transform:translateX(2%) translateY(-3px);opacity:1}}
+@keyframes pdkFestivalGlow{from{transform:scale(1);filter:brightness(.92)}to{transform:scale(1.04);filter:brightness(1.18)}}
+@media(prefers-reduced-motion:reduce){#appDateTime.app-datetime::before,#appDateTime.app-datetime::after{animation:none!important;transition:none!important}}
+@media(max-width:520px){#appDateTime.app-datetime{min-height:98px}#appDateTime.app-datetime.has-festival-theme{box-shadow:0 5px 18px rgba(3,13,32,.32),0 0 14px rgba(242,194,98,.16)}}
+
 </style>
