@@ -7880,7 +7880,7 @@ function openThailandFestivalDate(date){
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
  const festivalFootage={
-  'New Year’s Day':{url:'https://www.pexels.com/download/video/6995497/',credit:'Bangkok New Year fireworks · Pexels'},
+  'New Year’s Day':{url:'/New%20Year%E2%80%99s%20.gif',type:'gif',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
   'Thailand National Children’s Day':{url:'https://www.pexels.com/download/video/8935531/',credit:'Children at school · Pexels'},
   'Thailand Teachers’ Day':{url:'https://www.pexels.com/download/video/8363822/',credit:'Teacher and students in class · Pexels'},
   'Chinese New Year':{url:'https://www.pexels.com/download/video/38873392/',credit:'Chinese New Year lion dance · Pexels'},
@@ -7890,7 +7890,7 @@ function openThailandFestivalDate(date){
  };
  const footage=festivalFootage[title];
  const loyMedia='<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-3" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>';
- const heroMedia=theme==='loy'?loyMedia:footage?'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" data-footage-credit="'+footage.credit+'"><source src="'+footage.url+'" type="video/mp4"></video>':'';
+ const heroMedia=theme==='loy'?loyMedia:footage?(footage.type==='gif'?'<img class="pdk-fc-hero-video" aria-hidden="true" alt="New Year fireworks" src="'+footage.url+'" data-footage-credit="'+footage.credit+'">':'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" data-footage-credit="'+footage.credit+'"><source src="'+footage.url+'" type="video/mp4"></video>'):'';
  const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const labels=lang==='my'?{no:'ဒီနေ့အတွက် ပွဲတော် သို့မဟုတ် အားလပ်ရက် မရှိသေးပါ။',kind:'အမျိုးအစား',official:'တရားဝင်ရုံးပိတ်ရက်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',cultural:'ရိုးရာ / ဘာသာရေးနေ့',close:'ပိတ်ရန်'}:lang==='th'?{no:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',kind:'ประเภท',official:'วันหยุดทางการ',expected:'วันที่คาดการณ์ · รอยืนยัน',cultural:'เทศกาล / วันสำคัญ',close:'ปิด'}:{no:'No major festival or public holiday is listed for this date.',kind:'Category',official:'Official public holiday',expected:'Expected date · awaiting confirmation',cultural:'Cultural / religious day',close:'Close'};
  const dialog=document.createElement('div');
@@ -7901,7 +7901,9 @@ function openThailandFestivalDate(date){
  document.body.style.overflow='hidden';
  const close=()=>{if(!dialog.isConnected)return;dialog.remove();document.body.style.overflow=previousBodyOverflow;document.removeEventListener('keydown',escHandler)};
  dialog.querySelectorAll('.pdk-fc-close,[data-fc-close]').forEach(b=>b.addEventListener('click',close));
- const heroVideo=dialog.querySelector('.pdk-fc-hero-video');
+ const heroVideo=dialog.querySelector('video.pdk-fc-hero-video');
+ const heroGif=dialog.querySelector('img.pdk-fc-hero-video');
+ if(heroGif){heroGif.style.cursor='pointer';heroGif.setAttribute('role','button');heroGif.setAttribute('tabindex','0');heroGif.setAttribute('aria-label','Open New Year fireworks GIF');const openGif=()=>{const viewer=document.createElement('div');viewer.id='pdkFestivalVideoViewer';viewer.setAttribute('role','presentation');const panel=document.createElement('section');panel.className='pdk-fvv-panel';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','New Year fireworks');const closeButton=document.createElement('button');closeButton.className='pdk-fvv-close';closeButton.type='button';closeButton.setAttribute('aria-label','Close');closeButton.textContent='×';const image=heroGif.cloneNode();image.removeAttribute('aria-hidden');image.style.width='100%';image.style.height='100%';image.style.objectFit='contain';panel.append(image,closeButton);viewer.append(panel);document.body.append(viewer);const prior=document.body.style.overflow;document.body.style.overflow='hidden';const closeGif=()=>{viewer.remove();document.body.style.overflow=prior;document.removeEventListener('keydown',onKey)};const onKey=e=>{if(e.key==='Escape')closeGif()};closeButton.addEventListener('click',closeGif);viewer.addEventListener('click',e=>{if(e.target===viewer)closeGif()});document.addEventListener('keydown',onKey);closeButton.focus()};heroGif.addEventListener('click',openGif);heroGif.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openGif()}});}
  if(heroVideo){
   /* Open a clean, centered, video-only player when the preview footage itself is tapped. */
   heroVideo.setAttribute('role','button');heroVideo.setAttribute('tabindex','0');
