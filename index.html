@@ -8042,6 +8042,31 @@ function openThailandFestivalDate(date){
 @keyframes pdkFestivalPreviewGlow{from{opacity:.45;transform:translateY(0)}to{opacity:1;transform:translateY(-7px)}}
 @media(prefers-reduced-motion:reduce){#pdkThailandFestivalModal .pdk-fc-theme-scene:before,#pdkThailandFestivalModal .pdk-fc-scene-item{animation-duration:12s!important;animation-iteration-count:infinite!important}}
 </style>
+<style id="pdk-calendar-date-time-preview-v1">
+/* Calendar Preview appears in the live Date & Time card; date and clock stay readable. */
+#appDateTime .pdk-calendar-preview-art{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+#appDateTime .pdk-calendar-preview-symbol{position:absolute;font-size:clamp(20px,4vw,38px);line-height:1;filter:drop-shadow(0 3px 8px rgba(0,0,0,.45));will-change:transform,opacity}
+#appDateTime .pdk-calendar-preview-symbol.p1{left:8%;bottom:12%;animation:pdkCalendarPreviewFloatA 5s ease-in-out infinite}
+#appDateTime .pdk-calendar-preview-symbol.p2{left:34%;top:12%;animation:pdkCalendarPreviewFloatB 6s ease-in-out infinite .4s}
+#appDateTime .pdk-calendar-preview-symbol.p3{right:28%;bottom:12%;animation:pdkCalendarPreviewFloatA 7s ease-in-out infinite 1s}
+#appDateTime .pdk-calendar-preview-symbol.p4{right:8%;top:15%;animation:pdkCalendarPreviewTwinkle 3s ease-in-out infinite}
+#appDateTime[data-festival-theme="buddhist"]{background:linear-gradient(120deg,#291d42,#865b39 55%,#d39a45)}
+#appDateTime[data-festival-theme="buddhist"]::before{background:radial-gradient(ellipse at 50% 100%,rgba(255,198,94,.58),transparent 58%),radial-gradient(circle at 18% 20%,#ffe6a4 0 2px,transparent 5px);animation:pdkFestivalGlow 4s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="chinese"]{background:linear-gradient(120deg,#4b0716,#a51e20 55%,#e47b28)}
+#appDateTime[data-festival-theme="chinese"]::before{background:radial-gradient(circle at 18% 22%,#ffe5a0 0 2px,transparent 5px),radial-gradient(circle at 80% 26%,#ffcb72 0 3px,transparent 7px);animation:pdkFestivalGlow 3s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="royal"]{background:linear-gradient(120deg,#171b43,#3f3477 55%,#9b793b)}
+#appDateTime[data-festival-theme="royal"]::before{background:radial-gradient(ellipse at 50% 100%,rgba(255,216,126,.42),transparent 62%),radial-gradient(circle at 20% 20%,#ffe7a0 0 2px,transparent 5px);animation:pdkFestivalGlow 4.5s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="vegetarian"]{background:linear-gradient(120deg,#103b2d,#26724c 55%,#b47b32)}
+#appDateTime[data-festival-theme="vegetarian"]::before{background:radial-gradient(ellipse at 50% 100%,rgba(143,232,151,.38),transparent 60%),radial-gradient(circle at 18% 22%,#e5ffd0 0 2px,transparent 5px);animation:pdkFestivalGlow 4s ease-in-out infinite alternate}
+#appDateTime[data-festival-theme="national"],#appDateTime[data-festival-theme="children"]{background:linear-gradient(120deg,#101d4b,#3a3977 55%,#8c3c66)}
+#appDateTime[data-festival-theme="national"]::before,#appDateTime[data-festival-theme="children"]::before{background:radial-gradient(circle at 18% 22%,#ffe4a0 0 2px,transparent 5px),radial-gradient(circle at 78% 25%,#ffb5d2 0 3px,transparent 7px),radial-gradient(ellipse at 50% 100%,rgba(112,153,255,.34),transparent 60%);animation:pdkFestivalGlow 3.2s ease-in-out infinite alternate}
+#appDateTime.is-calendar-preview .app-holiday-label{color:#ffe6a4!important;text-shadow:0 1px 8px rgba(0,0,0,.7)}
+@keyframes pdkCalendarPreviewFloatA{0%,100%{transform:translate3d(0,0,0) rotate(-8deg);opacity:.78}50%{transform:translate3d(8px,-17px,0) rotate(8deg);opacity:1}}
+@keyframes pdkCalendarPreviewFloatB{0%,100%{transform:translate3d(0,0,0) rotate(7deg);opacity:.72}50%{transform:translate3d(-8px,15px,0) rotate(-7deg);opacity:1}}
+@keyframes pdkCalendarPreviewTwinkle{0%,100%{transform:scale(.82);opacity:.62}50%{transform:scale(1.15);opacity:1}}
+@media(prefers-reduced-motion:reduce){#appDateTime .pdk-calendar-preview-symbol{animation:none!important}}
+</style>
+
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
