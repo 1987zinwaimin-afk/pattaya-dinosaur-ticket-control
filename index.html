@@ -6647,20 +6647,7 @@ function printCustomerVisitQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style><style id="pdk-shared-festival-scene-v9">
-/* Keep Owner and Staff festival cards visually identical. Use the animated native scene; never load the corrupted raster fallback. */
-#appDateTime.app-datetime{background:#06172d!important;border-color:#f0cf7d!important;box-shadow:0 7px 26px rgba(0,0,0,.34),0 0 0 1px rgba(255,230,167,.28),inset 0 0 0 2px rgba(255,235,183,.16)!important}
-#appDateTime .pdk-festival-art{background:radial-gradient(ellipse at 50% 12%,rgba(65,105,157,.22),transparent 46%),linear-gradient(180deg,#06142d 0%,#0b2850 47%,#09264a 68%,#061a35 100%)!important;background-image:radial-gradient(ellipse at 50% 12%,rgba(65,105,157,.22),transparent 46%),linear-gradient(180deg,#06142d 0%,#0b2850 47%,#09264a 68%,#061a35 100%)!important;overflow:hidden!important}
-#appDateTime .pdk-festival-scene{display:block!important;visibility:visible!important;opacity:1!important;filter:saturate(1.2) contrast(1.06)!important}
-#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{z-index:5!important}
-#appDateTime .app-datetime-caption{color:#ffe3a1!important;text-shadow:0 2px 7px rgba(0,0,0,.95)!important}
-#appDateTime .app-datetime-date strong,#appDateTime .app-datetime-clock strong{color:#fff!important;text-shadow:0 2px 10px rgba(0,0,0,.95),0 0 2px #06172d!important}
-#appDateTime #appWeekdayValue,#appDateTime .app-datetime-zone{background:rgba(3,17,39,.82)!important;border-color:rgba(255,222,151,.92)!important;box-shadow:0 3px 12px rgba(0,0,0,.42),inset 0 0 10px rgba(255,220,140,.1)!important}
-#appDateTime .app-holiday-label{color:#ffe69b!important;text-shadow:0 2px 8px rgba(0,0,0,.98)!important}
-@media(max-width:700px){#appDateTime .pdk-festival-scene{opacity:1!important;filter:saturate(1.22) contrast(1.07)!important}#appDateTime .pdk-festival-art:before{background:linear-gradient(90deg,rgba(2,10,27,.38),rgba(2,10,27,.06) 42%,rgba(2,10,27,.06) 58%,rgba(2,10,27,.38))!important}}
-@media(prefers-reduced-motion:reduce){#appDateTime .pdk-festival-art *{animation:none!important}}
-</style>
-</head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass"></body></html>');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#customerVisitQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
