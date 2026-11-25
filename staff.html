@@ -3715,6 +3715,7 @@ let lastCloudRows=new Map();
 let trainRows=[],trainLoading=false;
 const localToday=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const fmtTime=v=>v?String(v).slice(0,5):'—';
+function pdkNotificationText(en,th,my){return lang==='th'?th:lang==='my'?my:en}
 const reportText=(en,th)=>lang==='th'?th:lang==='my'?uiTranslate(en):en;const formatReportDate=v=>{if(!v)return '—';const raw=String(v);const d=v instanceof Date?v:(raw.length===10&&raw[4]==='-'?new Date(Number(raw.slice(0,4)),Number(raw.slice(5,7))-1,Number(raw.slice(8,10))):new Date(v));if(Number.isNaN(d.getTime()))return '—';return lang==='th'?d.getDate()+'.'+(d.getMonth()+1)+'.'+(d.getFullYear()+543):d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()};const formatReportMonth=v=>{if(!v)return '—';const a=String(v).split('-');const y=Number(a[0]),m=Number(a[1]);return lang==='th'?m+'.'+(y+543):m+'.'+y};const fmtDate=v=>formatReportDate(v);
 function durationMins(a,b){if(!a||!b)return null;let [ah,am]=String(a).slice(0,5).split(':').map(Number),[bh,bm]=String(b).slice(0,5).split(':').map(Number);let n=bh*60+bm-(ah*60+am);if(n<0)n+=1440;return n}
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -6395,16 +6396,16 @@ window.renderStaffAlarmSetupBanner=function(){
    headerButton.hidden=!currentUser;
    headerButton.setAttribute('aria-label','Send Alarm to Owner and all Normal Staff');
    headerButton.onclick=async()=>{
-    if(!currentUser){await window.showEmergencyAlarmDialog({mode:'error',title:'Staff login required',message:'Please sign in to your Normal Staff account first.'});return}
-    const approved=await window.showEmergencyAlarmDialog({mode:'confirm',title:'Send Emergency Alarm?',message:'Send an ALARM to Owner and all Normal Staff devices that have enabled notifications?',details:'Only devices with notifications enabled can receive this alarm.'});
+    if(!currentUser){await window.showEmergencyAlarmDialog({mode:'error',title:pdkNotificationText('Staff login required','กรุณาเข้าสู่ระบบพนักงาน','ဝန်ထမ်းအကောင့်ဖြင့် အရင်ဝင်ရောက်ပါ'),message:pdkNotificationText('Please sign in to your Normal Staff account first.','กรุณาเข้าสู่ระบบบัญชีพนักงานก่อน','Normal Staff အကောင့်ဖြင့် အရင်ဝင်ရောက်ပါ။')});return}
+    const approved=await window.showEmergencyAlarmDialog({mode:'confirm',title:pdkNotificationText('Send Emergency Alarm?','ส่งสัญญาณฉุกเฉินหรือไม่?','အရေးပေါ် Alarm ပို့မလား?'),message:pdkNotificationText('Send an emergency alarm to the Owner and all Normal Staff devices with notifications enabled?','ส่งสัญญาณฉุกเฉินไปยัง Owner และอุปกรณ์พนักงานที่เปิดการแจ้งเตือน','Notification ဖွင့်ထားသော Owner နှင့် Normal Staff စက်များအားလုံးသို့ အရေးပေါ် Alarm ပို့မည်လား။'),details:pdkNotificationText('Only devices with notifications enabled can receive this alarm.','เฉพาะอุปกรณ์ที่เปิดการแจ้งเตือนเท่านั้นที่จะได้รับสัญญาณนี้','Notification ဖွင့်ထားသော စက်များသာ ဤ Alarm ကို လက်ခံရရှိနိုင်ပါသည်။')});
     if(!approved)return;
     headerButton.disabled=true;headerButton.textContent='…';
     try{
      const {data,error}=await sb.functions.invoke('notify-staff-login',{body:{action:'emergency_alarm',message:'The boss has entered the park.\nเฮียเข้าไปในสวนแล้ว'}});
      if(error)throw error;
      if(!data||!data.ok)throw new Error(data?.message||'No subscribed web-push device accepted the alarm.');
-     await window.showEmergencyAlarmDialog({mode:'success',title:'Alarm sent successfully',message:'Your emergency alarm has been sent.',details:'Web notifications: '+data.sent+' / '+data.subscriptions+'\nOwner: '+data.sentOwner+' · Staff: '+data.sentStaff+'\nFailed: '+data.failed});
-    }catch(error){await window.showEmergencyAlarmDialog({mode:'error',title:'Alarm could not be sent',message:error?.message||String(error)})}
+     await window.showEmergencyAlarmDialog({mode:'success',title:pdkNotificationText('Alarm sent successfully','ส่งสัญญาณฉุกเฉินสำเร็จแล้ว','အရေးပေါ် Alarm ပို့ပြီးပါပြီ'),message:pdkNotificationText('Your emergency alarm has been sent.','ส่งสัญญาณฉุกเฉินของคุณแล้ว','သင့်အရေးပေါ် Alarm ကို ပို့ပြီးပါပြီ။'),details:pdkNotificationText('Web notifications: ','การแจ้งเตือนเว็บ: ','Web Notification: ')+data.sent+' / '+data.subscriptions+'\n'+pdkNotificationText('Owner: ','เจ้าของ: ','Owner: ')+data.sentOwner+' · '+pdkNotificationText('Staff: ','พนักงาน: ','Staff: ')+data.sentStaff+'\n'+pdkNotificationText('Failed: ','ไม่สำเร็จ: ','မအောင်မြင်: ')+data.failed});
+    }catch(error){await window.showEmergencyAlarmDialog({mode:'error',title:pdkNotificationText('Alarm could not be sent','ไม่สามารถส่งสัญญาณฉุกเฉินได้','အရေးပေါ် Alarm ပို့မရပါ'),message:error?.message||String(error)})}
     finally{headerButton.disabled=false;headerButton.innerHTML='🚨<span class="staff-alarm-dot"></span>'}
    };
   }
@@ -6425,7 +6426,7 @@ window.renderStaffAlarmSetupBanner=function(){
     await window.unlockStaffAlarmAudio?.();
     window.playStaffAlarmTone?.();
     const reg=await navigator.serviceWorker.ready;
-    await reg.showNotification('🚨 PDK Alarm Test',{body:'This is a test on this phone only. No other staff or Owner will be notified.',icon:'/notification-logo.svg',badge:'/notification-badge.svg',tag:'pdk-local-alarm-test-'+Date.now(),renotify:true,requireInteraction:true,silent:false,vibrate:[1200,300,1200,300,1600],timestamp:Date.now()});
+    await reg.showNotification(pdkNotificationText('🚨 PDK Alarm Test','🚨 ทดสอบสัญญาณ PDK','🚨 PDK Alarm စမ်းသပ်မှု'),{body:pdkNotificationText('This is a test on this phone only. No other staff or Owner will be notified.','นี่เป็นการทดสอบบนโทรศัพท์เครื่องนี้เท่านั้น จะไม่มีการแจ้งเตือนพนักงานหรือ Owner คนอื่น','ဤဖုန်းတစ်လုံးတည်းတွင်သာ စမ်းသပ်ခြင်းဖြစ်သည်။ အခြား Staff သို့မဟုတ် Owner များထံ အသိပေးမည်မဟုတ်ပါ။'),icon:'/notification-logo.svg',badge:'/notification-badge.svg',tag:'pdk-local-alarm-test-'+Date.now(),renotify:true,requireInteraction:true,silent:false,vibrate:[1200,300,1200,300,1600],timestamp:Date.now()});
    }catch(error){alert('Alarm test failed: '+(error?.message||error))}
   };
   const permitted=('Notification'in window)&&Notification.permission==='granted';
