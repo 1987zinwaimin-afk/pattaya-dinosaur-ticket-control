@@ -3883,6 +3883,30 @@ button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allo
  #pageContent[data-ui-page="payroll"] .payroll-summary-panel{border-radius:15px}
 }
 </style>
+
+<style id="pdk-full-app-modernization-v4">
+/* Phase 4 — Ticket Management presentation only. Preserve ticket data and workflows. */
+#ticketCards{align-items:stretch;gap:12px!important;min-width:0}
+#ticketCards>.ticket{display:flex;flex-direction:column;min-width:0;border:1px solid rgba(91,190,225,.34);border-radius:18px;background:linear-gradient(155deg,rgba(21,57,83,.98),rgba(7,25,43,.99));box-shadow:0 8px 22px rgba(0,0,0,.18);overflow:hidden}
+#ticketCards>.ticket>div:first-child{position:relative;min-width:0;overflow:hidden;background:linear-gradient(135deg,#183f5d,#0b2036)}
+#ticketCards>.ticket>div:first-child img.ticket-preview-image{display:block;width:100%;height:clamp(112px,17vw,178px);object-fit:cover;object-position:center}
+#ticketCards>.ticket>div:first-child.placeholder{min-height:104px;display:grid;place-items:center;font-size:34px}
+#ticketCards>.ticket .ticket-body{display:flex;flex:1;flex-direction:column;gap:7px;min-width:0;padding:12px}
+#ticketCards>.ticket .ticket-body h3{min-height:2.35em;margin:0;font-size:clamp(13px,3.2vw,16px);line-height:1.22;overflow-wrap:anywhere}
+#ticketCards>.ticket .price{align-self:flex-start;margin:0;max-width:100%;font-size:13px}
+#ticketCards>.ticket .soldrow{margin:2px 0 0}
+#ticketCards>.ticket .qty{min-height:46px;margin:0;border:1px solid rgba(244,202,112,.72);border-radius:12px;background:rgba(3,17,31,.72);color:var(--text);font-size:16px;font-weight:750}
+#ticketCards>.ticket .qty:focus{border-color:#ffd978;box-shadow:0 0 0 3px rgba(255,217,120,.18);outline:none}
+#ticketCards>.ticket .ticket-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:2px 0 0}
+#ticketCards>.ticket .ticket-actions button{min-width:0;min-height:43px;padding:8px 7px;border-radius:11px;font-size:12px;line-height:1.2;white-space:normal}
+#ticketCards>.ticket .morebox{gap:7px;margin-top:2px;padding-top:9px}
+#ticketCards>.ticket .morebox button{min-height:42px}
+.actions.ticket-toolbar{align-items:center;gap:8px}
+#pageContent input.search{box-sizing:border-box;width:100%;min-height:44px;margin:8px 0 12px;padding:10px 13px;border-radius:12px}
+@media(max-width:420px){#ticketCards{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}#ticketCards>.ticket>div:first-child img.ticket-preview-image{height:clamp(145px,48vw,205px)}#ticketCards>.ticket .ticket-body{padding:13px}#ticketCards>.ticket .ticket-body h3{font-size:15px;min-height:0}}
+@media(min-width:421px) and (max-width:760px){#ticketCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(prefers-reduced-motion:no-preference){#ticketCards>.ticket{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}#ticketCards>.ticket:hover{transform:translateY(-2px);border-color:rgba(255,213,123,.62);box-shadow:0 12px 28px rgba(0,0,0,.25)}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
