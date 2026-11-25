@@ -537,3 +537,16 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
+/* v4 visibility fix: keep the selected MP4 visible for every festival theme.
+   The legacy Loy-Krathong-only CSS used !important and hid other festival videos. */
+(function(){
+  if(document.getElementById('pdk-festival-video-visibility-fix-v4')) return;
+  const style=document.createElement('style');
+  style.id='pdk-festival-video-visibility-fix-v4';
+  style.textContent=
+    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-fallback) video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:5!important}'+
+    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-fallback) .pdk-festival-scene{display:none!important}'+
+    'html body #appDateTime.has-owner-festival-video.pdk-video-fallback video.pdk-festival-video{display:none!important}'+
+    'html body #appDateTime.has-owner-festival-video.pdk-video-fallback .pdk-festival-scene{display:block!important;visibility:visible!important;opacity:1!important}';
+  (document.head||document.documentElement).appendChild(style);
+})();
