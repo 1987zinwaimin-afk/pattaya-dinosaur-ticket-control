@@ -2933,6 +2933,68 @@ button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allo
 #ticketCards.cards>.ticket .morebox button{min-height:34px!important;font-size:10px!important}
 @media(max-width:360px){#ticketCards.cards{gap:6px!important}#ticketCards.cards>.ticket .ticket-body{padding:6px!important}#ticketCards.cards>.ticket .ticket-actions button{font-size:9px!important}}
 </style>
+<style id="pdk-full-app-modernization-v7-settings">
+/* Phase 7 — Settings workspace polish. Presentation only: no auth, roles, storage, or data handlers changed. */
+#pageContent[data-ui-page="settings"]{min-width:0;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+#pageContent[data-ui-page="settings"] .panel{
+ min-width:0;border:1px solid rgba(215,185,116,.22)!important;
+ border-radius:17px!important;
+ background:linear-gradient(155deg,rgba(18,48,72,.96),rgba(7,25,43,.98))!important;
+ box-shadow:0 7px 20px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.035)!important
+}
+#pageContent[data-ui-page="settings"] .section-title{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+ color:#ffe2a0;line-height:1.3
+}
+#pageContent[data-ui-page="settings"] .panel h2,
+#pageContent[data-ui-page="settings"] .panel h3{
+ color:#ffe2a0;line-height:1.3;overflow-wrap:anywhere
+}
+#pageContent[data-ui-page="settings"] label{
+ display:block;min-width:0;color:#dce7f0;font-weight:650;line-height:1.4
+}
+#pageContent[data-ui-page="settings"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#pageContent[data-ui-page="settings"] select,
+#pageContent[data-ui-page="settings"] textarea{
+ box-sizing:border-box;max-width:100%;min-width:0;
+ border:1px solid rgba(157,190,214,.28)!important;border-radius:11px!important;
+ background:#071b2d!important;color:#f7fafc!important;
+}
+#pageContent[data-ui-page="settings"] input:focus-visible,
+#pageContent[data-ui-page="settings"] select:focus-visible,
+#pageContent[data-ui-page="settings"] textarea:focus-visible{
+ outline:3px solid rgba(255,218,143,.78)!important;outline-offset:2px
+}
+#pageContent[data-ui-page="settings"] .actions{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0
+}
+#pageContent[data-ui-page="settings"] .actions button,
+#pageContent[data-ui-page="settings"] .panel button{
+ max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere
+}
+#pageContent[data-ui-page="settings"] table{min-width:560px}
+#pageContent[data-ui-page="settings"] .table-wrap,
+#pageContent[data-ui-page="settings"] .table-responsive{
+ max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;
+ -webkit-overflow-scrolling:touch
+}
+#pageContent[data-ui-page="settings"] details{
+ min-width:0;border:1px solid rgba(157,190,214,.2);border-radius:13px;
+ background:rgba(5,20,35,.32);padding:10px 12px
+}
+#pageContent[data-ui-page="settings"] details>summary{
+ color:#ffe2a0;font-weight:750;cursor:pointer;line-height:1.4
+}
+@media(max-width:520px){
+ #pageContent[data-ui-page="settings"]{padding-left:9px;padding-right:9px}
+ #pageContent[data-ui-page="settings"] .panel{padding:12px!important;border-radius:15px!important}
+ #pageContent[data-ui-page="settings"] .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #pageContent[data-ui-page="settings"] .actions button{width:100%;min-height:44px;padding:9px 7px}
+ #pageContent[data-ui-page="settings"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+ #pageContent[data-ui-page="settings"] select,
+ #pageContent[data-ui-page="settings"] textarea{font-size:16px!important}
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
