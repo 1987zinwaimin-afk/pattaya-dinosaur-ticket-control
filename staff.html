@@ -3190,6 +3190,125 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 #pageContent #ticketCards .ticket .soldrow{font-variant-numeric:tabular-nums}
 @media(max-width:420px){#pageContent #ticketCards>.panel[role="status"]{font-size:.8rem;padding:11px!important}}
 </style>
+
+<style id="pdk-phase9-customer-visits-archive-ui">
+/* Phase 9 — Customer Visits and Archived Tickets visual refinement.
+   CSS only: keep existing forms, event handlers, role checks, storage and database calls unchanged. */
+#pageContent[data-ui-page="customervisits"]>section.panel{
+  border:1px solid rgba(91,190,225,.38)!important;
+  border-radius:20px!important;
+  background:linear-gradient(155deg,rgba(15,47,73,.98),rgba(5,21,38,.99))!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.2)!important;
+}
+#pageContent[data-ui-page="customervisits"] .section-title h2,
+#pageContent[data-ui-page="customervisits"] #visitSingleForm>b{letter-spacing:.01em}
+#pageContent[data-ui-page="customervisits"] #visitTotal,
+#pageContent[data-ui-page="customervisits"] #visitThai,
+#pageContent[data-ui-page="customervisits"] #visitForeign,
+#pageContent[data-ui-page="customervisits"] #visitReview{
+  display:block!important;font-variant-numeric:tabular-nums;
+}
+#pageContent[data-ui-page="customervisits"] #visitSingleForm,
+#pageContent[data-ui-page="customervisits"] #visitHistory{
+  border:1px solid rgba(100,159,196,.28)!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,rgba(17,48,73,.92),rgba(7,27,46,.96))!important;
+}
+#pageContent[data-ui-page="customervisits"] input,
+#pageContent[data-ui-page="customervisits"] select,
+#pageContent[data-ui-page="customer-visits"] input,
+#pageContent[data-ui-page="customer-visits"] select{
+  min-height:43px;border-radius:11px;
+}
+#pageContent[data-ui-page="customervisits"] button,
+#pageContent[data-ui-page="customer-visits"] button{min-height:42px}
+#pageContent[data-ui-page="customer-visits"]>section.panel{
+  border:1px solid rgba(91,190,225,.38)!important;
+  border-radius:20px!important;
+  background:linear-gradient(155deg,rgba(15,47,73,.98),rgba(5,21,38,.99))!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.2)!important;
+}
+#pageContent[data-ui-page="customer-visits"] .staff-cv-header{
+  padding:4px 2px 10px;border-bottom:1px solid rgba(100,159,196,.22);
+}
+#pageContent[data-ui-page="customer-visits"] .staff-cv-heading-row{
+  display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;
+}
+#pageContent[data-ui-page="customer-visits"] .staff-cv-header-actions{display:flex;gap:7px}
+#pageContent[data-ui-page="customer-visits"] .staff-cv-header-actions button{min-width:44px}
+#pageContent[data-ui-page="customer-visits"] #staffCvForm,
+#pageContent[data-ui-page="customer-visits"] #staffCvHistory{
+  border:1px solid rgba(100,159,196,.28)!important;
+  border-radius:16px!important;
+  background:linear-gradient(145deg,rgba(17,48,73,.92),rgba(7,27,46,.96))!important;
+}
+#pageContent[data-ui-page="customer-visits"] #staffCvTotal,
+#pageContent[data-ui-page="customer-visits"] #staffCvThai,
+#pageContent[data-ui-page="customer-visits"] #staffCvForeign,
+#pageContent[data-ui-page="customer-visits"] #staffCvReview,
+#pageContent[data-ui-page="customer-visits"] #staffCvNext{
+  display:block;font-size:1.15rem;font-weight:850;color:var(--gold);font-variant-numeric:tabular-nums;
+}
+#pageContent .archive-page{
+  border:1px solid rgba(91,190,225,.38)!important;border-radius:20px!important;
+  background:linear-gradient(155deg,rgba(15,47,73,.98),rgba(5,21,38,.99))!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.2)!important;
+}
+#pageContent .archive-page .archive-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+}
+#pageContent .archive-page .archive-head h2{margin:0;color:var(--gold)}
+#pageContent .archive-page .archive-head p{margin:5px 0 0;color:var(--muted)}
+#pageContent .archive-page .archive-tools{
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,.55fr) auto;
+  align-items:center;gap:9px;margin:14px 0;padding:11px;
+  border:1px solid rgba(100,159,196,.25);border-radius:15px;background:rgba(3,18,32,.42);
+}
+#pageContent .archive-page .archive-count{
+  color:var(--gold);font-size:12px;font-weight:800;white-space:nowrap;
+}
+#pageContent .archive-page .archive-list{display:grid;gap:9px}
+#pageContent .archive-page .archive-item{
+  display:grid;grid-template-columns:76px minmax(0,1fr) auto;align-items:center;gap:12px;
+  padding:10px;border:1px solid rgba(100,159,196,.25);border-radius:15px;
+  background:linear-gradient(145deg,rgba(19,53,79,.92),rgba(7,26,44,.96));
+}
+#pageContent .archive-page .archive-thumb{
+  width:76px;height:66px;display:grid;place-items:center;overflow:hidden;
+  border-radius:11px;background:linear-gradient(135deg,#1b4a6b,#0b233b);
+  color:var(--gold);font-size:25px;
+}
+#pageContent .archive-page .archive-thumb img{width:100%;height:100%;object-fit:cover}
+#pageContent .archive-page .archive-info{min-width:0}
+#pageContent .archive-page .archive-info h3{margin:0 0 4px;font-size:15px;overflow-wrap:anywhere}
+#pageContent .archive-page .archive-meta{display:flex;gap:5px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+#pageContent .archive-page .archive-info small{display:block;margin-top:5px;color:var(--muted);font-size:11px}
+#pageContent .archive-page .archive-restore{min-height:42px;padding:8px 11px;white-space:nowrap}
+@media(max-width:560px){
+ #pageContent[data-ui-page="customervisits"]>section.panel,
+ #pageContent[data-ui-page="customer-visits"]>section.panel{padding:10px!important;border-radius:16px!important}
+ #pageContent[data-ui-page="customervisits"] .cards,
+ #pageContent[data-ui-page="customer-visits"] .cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #pageContent[data-ui-page="customervisits"] #visitSingleForm>div[style*="grid-template-columns"],
+ #pageContent[data-ui-page="customer-visits"] .staff-cv-grid{gap:7px!important}
+ #pageContent .archive-page{padding:12px!important}
+ #pageContent .archive-page .archive-tools{grid-template-columns:1fr 1fr;gap:7px;padding:8px}
+ #pageContent .archive-page .archive-tools input{grid-column:1/-1}
+ #pageContent .archive-page .archive-count{grid-column:1/-1}
+ #pageContent .archive-page .archive-item{grid-template-columns:56px minmax(0,1fr);gap:9px;padding:8px}
+ #pageContent .archive-page .archive-thumb{width:56px;height:56px}
+ #pageContent .archive-page .archive-restore{grid-column:1/-1;width:100%;min-height:40px}
+}
+@media(max-width:360px){
+ #pageContent[data-ui-page="customervisits"] .section-title{align-items:flex-start!important}
+ #pageContent[data-ui-page="customervisits"] .section-title>div{width:100%}
+ #pageContent[data-ui-page="customer-visits"] .staff-cv-grid{grid-template-columns:1fr!important}
+ #pageContent .archive-page .archive-tools{grid-template-columns:1fr}
+ #pageContent .archive-page .archive-tools input,
+ #pageContent .archive-page .archive-count{grid-column:auto}
+}
+</style>
+
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
