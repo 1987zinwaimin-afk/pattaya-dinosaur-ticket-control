@@ -9040,6 +9040,33 @@ function openThailandFestivalDate(date){
 .pdk-fc-hero[data-theme="national"]{background:linear-gradient(130deg,#0b3a61,#176c91 55%,#c18b3c)!important}
 .pdk-fc-hero[data-theme="national"],.pdk-fc-hero[data-theme="royal"],.pdk-fc-hero[data-theme="vegetarian"],.pdk-fc-hero[data-theme="chinese"],.pdk-fc-hero[data-theme="buddhist"],.pdk-fc-hero[data-theme="songkran"]{isolation:isolate}
 @media(prefers-reduced-motion:reduce){#appDateTime .pdk-auto-festival-canvas,.pdk-fc-hero .pdk-auto-festival-canvas{opacity:.5}}
+
+/* PDK UI refresh — final cascade layer, visual-only */
+#ticketCards{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr))!important;align-items:stretch!important;gap:16px!important}
+#ticketCards>.ticket{display:flex!important;flex-direction:column!important;min-width:0!important;height:100%!important;overflow:hidden!important;border:1px solid rgba(244,202,112,.38)!important;border-radius:18px!important;background:linear-gradient(155deg,#153b5b 0%,#0a2037 100%)!important;box-shadow:0 10px 26px rgba(0,0,0,.24)!important;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important}
+#ticketCards>.ticket:hover{transform:translateY(-3px);border-color:rgba(244,202,112,.8)!important;box-shadow:0 14px 30px rgba(0,0,0,.32)!important}
+#ticketCards>.ticket>img{width:100%!important;height:clamp(112px,15vw,158px)!important;object-fit:cover!important}
+#ticketCards>.ticket .ticket-body{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:9px!important;padding:13px!important;min-width:0!important}
+#ticketCards>.ticket h3{font-size:clamp(15px,1.4vw,18px)!important;line-height:1.35!important;font-weight:850!important}
+#ticketCards>.ticket .price{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:40px!important;padding:8px 13px!important;border:1px solid rgba(255,232,173,.7)!important;border-radius:12px!important;background:linear-gradient(135deg,#ffe7a6,#e4ad3e)!important;color:#102039!important;font-weight:950!important;font-variant-numeric:tabular-nums!important}
+#ticketCards>.ticket .ticket-quantity-highlight{align-self:flex-start!important;min-height:40px!important;padding:7px 11px!important;border-radius:11px!important}
+#ticketCards>.ticket .qty{width:100%!important;min-height:48px!important;padding:11px 12px!important;border:1px solid #587894!important;border-radius:12px!important;background:#06182b!important;color:#f4f7fb!important;font-size:16px!important;font-weight:800!important;text-align:center!important}
+#ticketCards>.ticket .qty:focus{border-color:#f4ca70!important;outline:3px solid rgba(244,202,112,.2)!important;outline-offset:1px!important}
+#ticketCards>.ticket .ticket-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:auto!important;padding-top:5px!important}
+#ticketCards>.ticket .ticket-actions button{width:100%!important;min-width:0!important;min-height:44px!important;border-radius:11px!important;font-size:13px!important;font-weight:850!important}
+#ticketCards button:focus-visible,.ticket-more-dialog button:focus-visible{outline:3px solid #f4ca70!important;outline-offset:2px!important}
+@media(min-width:900px){#ticketCards{grid-template-columns:repeat(auto-fill,minmax(245px,1fr))!important;gap:18px!important}}
+@media(max-width:520px){
+ #ticketCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ #ticketCards>.ticket{border-radius:14px!important}
+ #ticketCards>.ticket>img{height:clamp(82px,26vw,118px)!important}
+ #ticketCards>.ticket .ticket-body{padding:9px!important;gap:7px!important}
+ #ticketCards>.ticket h3{font-size:13px!important}
+ #ticketCards>.ticket .ticket-actions{grid-template-columns:1fr!important;gap:6px!important}
+ #ticketCards>.ticket .ticket-actions button{min-height:40px!important;font-size:12px!important;padding:8px 5px!important}
+ #ticketCards>.ticket .qty{min-height:44px!important}
+}
+@media(prefers-reduced-motion:reduce){#ticketCards>.ticket{transition:none!important}#ticketCards>.ticket:hover{transform:none!important}}
 </style>
 <script id="pdk-auto-festival-video-scenes-v1">
 (function(){
