@@ -12,7 +12,7 @@ This is a separate Capacitor project. It intentionally does not replace or modif
 
 ## Build locally
 
-Requirements: Node.js 22+, Android Studio/Android SDK for Android, and macOS with Xcode + CocoaPods for iOS.
+Requirements: Node.js 24+, Android Studio/Android SDK for Android, and macOS with Xcode + CocoaPods for iOS.
 
 ```sh
 cd native-app
