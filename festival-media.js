@@ -53,6 +53,25 @@
     const firstSaturday = 1 + ((6 - jan1.getUTCDay() + 7) % 7);
     const childrenDay = firstSaturday + 7;
     events.push(makeEvent(year+'-01-'+String(childrenDay).padStart(2,'0'),"Thailand National Children's Day",'Observed on the second Saturday of January.','cultural','children','🦖','cultural'));
+    // Movable lunar observances are estimates for future years, not official confirmations.
+    // The 2027 list above uses the published 2027 dates; later years are marked expected.
+    const lunarShift = Math.round((year - 2027) * 354.367);
+    const shifted = base => {
+      const d = new Date(base+'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate()+lunarShift);
+      return d.toISOString().slice(0,10);
+    };
+    [
+      [shifted('2027-02-21'),'Makha Bucha Day','Buddhist holy day · expected lunar date','religious','buddhist','🪷'],
+      [shifted('2027-05-20'),'Visakha Bucha Day','Buddhist holy day · expected lunar date','religious','buddhist','🪷'],
+      [shifted('2027-07-18'),'Asarnha Bucha Day','Buddhist holy day · expected lunar date','religious','buddhist','🪷'],
+      [shifted('2027-07-19'),'Khao Phansa · Buddhist Lent begins','Buddhist Lent begins · expected lunar date','festival','buddhist','🕯️'],
+      [shifted('2027-10-15'),'Ok Phansa','End of Buddhist Lent · expected lunar date','festival','buddhist','🪷'],
+      [shifted('2027-11-13'),'Loy Krathong Festival','Festival of lights and floating krathongs · expected lunar date','festival','loy','🪷'],
+      [shifted('2027-10-15'),'Thadingyut Festival','Myanmar lighting festival · expected lunar date','festival','buddhist','🪔'],
+      [shifted('2027-11-12'),'Tazaungdaing Festival','Myanmar Festival of Lights · expected lunar date','festival','buddhist','🏮'],
+      [shifted('2027-02-06'),'Chinese New Year','Lunar New Year · expected date','cultural','chinese','🧧']
+    ].forEach(([date,title,desc,kind,theme,icon]) => events.push(makeEvent(date,title,desc,kind,theme,icon,'expected')));
     return events;
   }
 
