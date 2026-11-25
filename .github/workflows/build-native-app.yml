@@ -1,0 +1,108 @@
+name: Build Native App Preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Website environment embedded in the native app
+        required: true
+        type: choice
+        options:
+          - preview
+          - production
+        default: preview
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'native-app/**'
+      - '.github/workflows/build-native-app.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android debug APK
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: native-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: native-app/package.json
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK
+        uses: android-actions/setup-android@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Configure website target
+        run: node scripts/configure-target.mjs "${{ github.event.inputs.target || 'preview' }}"
+      - name: Add Android platform
+        run: npx cap add android
+      - name: Sync Capacitor
+        run: npx cap sync android
+      - name: Build debug APK
+        run: cd android && ./gradlew --no-daemon assembleDebug
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDK-Android-${{ github.event.inputs.target || 'preview' }}-debug
+          path: native-app/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-simulator:
+    name: iOS Simulator build (unsigned)
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: native-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: native-app/package.json
+      - name: Install dependencies
+        run: npm install
+      - name: Configure website target
+        run: node scripts/configure-target.mjs "${{ github.event.inputs.target || 'preview' }}"
+      - name: Add iOS platform
+        run: npx cap add ios
+      - name: Sync Capacitor
+        run: npx cap sync ios
+      - name: Build iOS Simulator app
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/ios-derived \
+            CODE_SIGNING_ALLOWED=NO build
+      - name: Package iOS Simulator app
+        run: |
+          cd build/ios-derived/Build/Products
+          /usr/bin/zip -r "$GITHUB_WORKSPACE/PDK-iOS-Simulator.zip" Debug-iphonesimulator/App.app
+      - name: Upload iOS Simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDK-iOS-Simulator-${{ github.event.inputs.target || 'preview' }}
+          path: PDK-iOS-Simulator.zip
+          if-no-files-found: error
+          retention-days: 14
