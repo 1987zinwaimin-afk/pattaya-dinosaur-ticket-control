@@ -1,6 +1,6 @@
-const CACHE_NAME='dino-staff-shell-v31';
+const CACHE_NAME='dino-staff-shell-v32';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
-// v31.1: refreshes the closed-app push handler while retaining system-managed audible notifications.
+// v32: activates the refreshed production app shell and clears the previous shell cache.
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',event=>{
