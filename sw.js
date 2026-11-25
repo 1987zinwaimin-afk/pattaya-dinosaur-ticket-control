@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-staff-shell-v34';
+const CACHE_NAME='dino-staff-shell-v35';
 const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
 // v34: activates the latest production app shell and clears older shell caches.
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
