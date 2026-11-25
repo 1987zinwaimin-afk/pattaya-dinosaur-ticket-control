@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="/file_000000006da082119bbf212e4f6fad52.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Dinosaur Tickets"><title>Pattaya Dinosaur Kingdom — Ticket Control</title>
+<meta name="apple-mobile-web-app-title" content="Dinosaur Tickets"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="format-detection" content="telephone=no"><title>Pattaya Dinosaur Kingdom — Ticket Control</title>
 <style>
 :root{color-scheme:dark;--bg:#07172b;--panel:#102943;--panel2:#153653;--line:#294764;--gold:#f4ca70;--gold2:#dca53b;--text:#f4f7fb;--muted:#a8bad0;--blue:#087fb5;--red:#b82d55;--shadow:0 5px 0 #030b15,0 10px 22px #0004}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 15%,#143657 0,transparent 48%),var(--bg);font:16px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;color:var(--text)}button,input,select{font:inherit}.report-icon-btn{width:62px;min-width:62px;height:58px;display:inline-flex;align-items:center;justify-content:center;padding:12px;border-radius:16px;box-shadow:0 4px 0 rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.18)}.report-icon-btn svg{width:30px;height:30px;display:block}.report-icon-btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
@@ -4568,7 +4568,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 <g class="pdk-svg-krathong pdk-svg-krathong-small" transform="translate(310 370) scale(.46)"><ellipse cy="12" rx="96" ry="22" fill="#154c31" stroke="#d8a64e" stroke-width="4"/><path d="M-90 8Q-50-60-22 0Q0-70 26 0Q60-52 90 8" fill="#277344" stroke="#a9bf62" stroke-width="4"/><g fill="url(#pdkPetal)"><path d="M-32 0Q-30-70 0-42Q0-12-32 0Z"/><path d="M0 0Q20-70 45-38Q32-10 0 0Z"/></g><path d="M0-30q-8-28 0-40q8 13 0 40" fill="#fff1b0"/></g>
 <g class="pdk-svg-krathong pdk-svg-krathong-small" transform="translate(1190 374) scale(.4)"><ellipse cy="12" rx="96" ry="22" fill="#154c31" stroke="#d8a64e" stroke-width="4"/><path d="M-90 8Q-50-60-22 0Q0-70 26 0Q60-52 90 8" fill="#277344" stroke="#a9bf62" stroke-width="4"/><g fill="url(#pdkPetal)"><path d="M-32 0Q-30-70 0-42Q0-12-32 0Z"/><path d="M0 0Q20-70 45-38Q32-10 0 0Z"/></g><path d="M0-30q-8-28 0-40q8 13 0 40" fill="#fff1b0"/></g>
 </svg><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i><i class="pdk-petal pdk-petal-one"></i><i class="pdk-petal pdk-petal-two"></i><i class="pdk-petal pdk-petal-three"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
-<div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><div class="menu-language-wrap"><label class="menu-language-label" for="language">Language / ภาษา</label><select class="menu-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="ownerLogout" class="red" style="width:100%">↪ Logout</button></div></aside>
+<div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><div class="menu-language-wrap"><label class="menu-language-label" for="language">Language / ภาษา</label><select class="menu-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div><nav class="nav" id="nav"></nav><button type="button" id="ownerInstallBtn" class="staff-menu-install" style="width:100%;margin-top:14px">📲 Install Owner App</button><div style="margin-top:20px"><button id="ownerLogout" class="red" style="width:100%">↪ Logout</button></div></aside>
 <main class="wrap">
 <section id="stats" class="stats"></section>
 <section id="pageContent"></section>
@@ -9448,5 +9448,55 @@ function openThailandFestivalDate(date){
 })();
 </script>
 
-
-
+<script id="pdk-owner-pwa-install-v1">
+(()=> {
+ let deferredInstallPrompt=null;
+ const button=document.getElementById('ownerInstallBtn');
+ const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+ const isAppleMobile=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+ function showInstallHelp(){
+  let overlay=document.getElementById('ownerInstallHelp');
+  if(!overlay){
+   overlay=document.createElement('div');overlay.id='ownerInstallHelp';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');
+   overlay.style.cssText='position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,7,16,.82);backdrop-filter:blur(8px)';
+   const panel=document.createElement('section');panel.style.cssText='width:min(100%,420px);padding:22px;border:1px solid #d8ad58;border-radius:20px;background:linear-gradient(145deg,#123653,#06172a);color:#f5f8fc;box-shadow:0 18px 55px #0009';
+   const heading=document.createElement('h2');heading.textContent='Install Owner App';heading.style.cssText='margin:0 0 12px;color:#ffd778';
+   const copy=document.createElement('div');copy.id='ownerInstallHelpCopy';copy.style.cssText='font-size:14px;line-height:1.65;color:#e3edf6';
+   const close=document.createElement('button');close.type='button';close.textContent='Close';close.style.cssText='width:100%;margin-top:16px;background:linear-gradient(135deg,#ffe8a7,#e8ad43);color:#11243a;border:0;border-radius:12px;padding:12px;font-weight:800';
+   close.addEventListener('click',()=>overlay.remove());panel.append(heading,copy,close);overlay.append(panel);overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove()});document.body.append(overlay);
+  }
+  const copy=document.getElementById('ownerInstallHelpCopy');
+  if(isAppleMobile()){
+   copy.innerHTML='<p><b>Install on iPhone / iPad</b></p><ol><li>Open this Owner website in <b>Safari</b>.</li><li>Tap <b>Share</b> → <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>, then open the new <b>Dinosaur Tickets</b> icon from your Home Screen.</li></ol><p>For iPhone background Web Push, use the installed Home Screen app and iOS/iPadOS 16.4 or later.</p>';
+  }else{
+   copy.innerHTML='<p><b>Install on Android</b></p><ol><li>Open this Owner website in <b>Chrome</b>.</li><li>Tap the browser menu <b>⋮</b>.</li><li>Choose <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Confirm the installation, then open <b>Dinosaur Tickets</b> from your Home Screen.</li></ol>';
+  }
+ }
+ if(button){
+  if(isStandalone())button.hidden=true;
+  button.addEventListener('click',async()=>{
+   if(isStandalone()){button.hidden=true;return;}
+   if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    try{await deferredInstallPrompt.userChoice}catch(_){}
+    deferredInstallPrompt=null;
+   }else showInstallHelp();
+  });
+ }
+ window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();deferredInstallPrompt=event;
+  if(button)button.textContent='⬇ Install Owner App';
+ });
+ window.addEventListener('appinstalled',()=>{
+  if(button)button.hidden=true;
+  deferredInstallPrompt=null;
+ });
+ if('serviceWorker' in navigator){
+  const register=()=>navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'})
+   .then(reg=>reg.update())
+   .catch(error=>console.warn('Owner app service worker registration failed:',error));
+  if(document.readyState==='complete')register();
+  else window.addEventListener('load',register,{once:true});
+ }
+})();
+</script>
