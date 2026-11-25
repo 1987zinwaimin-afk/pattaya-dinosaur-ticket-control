@@ -9,6 +9,8 @@
   const TZ = 'Asia/Bangkok';
   const signedUrlCache = new Map();
   let mediaRows = [];
+  let seed2027 = [];
+  let lastCalendarYear = null;
   let lastMediaFetch = 0;
   let busy = false;
 
@@ -76,8 +78,8 @@
   }
 
   function eventsForYear(year) {
-    if (year === 2027 && Array.isArray(window.__pdkThailandFestivalEvents)) {
-      const list = window.__pdkThailandFestivalEvents.map(e => ({...e}));
+    if (year === 2027 && seed2027.length) {
+      const list = seed2027.map(e => ({...e}));
       if (!list.some(e => e.date === '2027-12-25')) {
         list.push(makeEvent('2027-12-25','Christmas Day','Christmas celebration.','festival','christmas','🎄','cultural'));
       }
@@ -372,6 +374,9 @@
     try {
       const {error:removeError} = await sb.storage.from(BUCKET).remove([row.blob_path]);
       if (removeError) throw removeError;
+      const activeCard=document.getElementById('appDateTime');
+      const activeVideo=activeCard?.querySelector('.pdk-festival-video');
+      if(activeVideo?.dataset.festivalMediaId===id){activeVideo.pause();const original=activeVideo.dataset.originalFestivalSource||'';const source=activeVideo.querySelector('source');if(source&&original)source.setAttribute('src',original);else if(source)source.removeAttribute('src');else if(original)activeVideo.setAttribute('src',original);else activeVideo.removeAttribute('src');activeVideo.load();delete activeVideo.dataset.festivalManaged;delete activeVideo.dataset.festivalMediaId;activeCard.classList.remove('has-owner-festival-video');const scene=activeCard.querySelector('.pdk-festival-scene');if(scene)scene.style.display='';}
       const {error:dbError} = await sb.from('festival_media').delete().eq('id',id);
       if (dbError) {
         alert(t('The file was removed from Storage, but its database record could not be deleted. Retry Delete to finish cleanup: ','Storage မှ ဖိုင်ဖျက်ပြီးပါပြီ။ Database မှတ်တမ်း မဖျက်နိုင်သေးပါ။ Delete ကို ထပ်လုပ်ပါ: ')+dbError.message);
@@ -448,6 +453,8 @@
 
   function boot() {
     installStyles();
+    seed2027 = Array.isArray(window.__pdkThailandFestivalEvents) ? window.__pdkThailandFestivalEvents.map(e=>({...e})) : [];
+    lastCalendarYear = today().year;
     if (typeof window.renderThailandFestivalCalendar === 'function') {
       window.renderThailandFestivalCalendar = renderCalendar;
     }
@@ -457,7 +464,12 @@
         setTimeout(()=>{if(document.getElementById('appDateTime'))syncDateTimeVideo(true);},500);
       });
     }
-    setInterval(()=>syncDateTimeVideo(false),15000);
+    setInterval(()=>{
+      syncDateTimeVideo(false);
+      const yearNow=today().year;
+      const root=document.getElementById('pageContent');
+      if(yearNow!==lastCalendarYear){lastCalendarYear=yearNow;if(root&&root.dataset.uiPage==='festivals')renderCalendar();}
+    },15000);
     window.addEventListener('focus',()=>syncDateTimeVideo(true));
     document.addEventListener('click',event=>{
       if(event.target.closest('[data-fc-datetime-preview]')) setTimeout(()=>syncDateTimeVideo(true),120);
