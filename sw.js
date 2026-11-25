@@ -1,5 +1,5 @@
-const CACHE_NAME='dino-app-shell-v34';
-const APP_SHELL=['/manifest.json','/staff-manifest.json','/file_000000006da082119bbf212e4f6fad52.png'];
+const CACHE_NAME='dino-app-shell-v35';
+const APP_SHELL=['/manifest.json','/staff-manifest.json','/file_000000006da082119bbf212e4f6fad52.png','/festival-media.js'];
 // Shared Owner + Staff PWA shell. Push delivery behavior below remains unchanged.
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(error=>console.warn('PWA shell precache skipped:',error)));
