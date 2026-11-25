@@ -151,8 +151,26 @@
     const preview = window.__pdkFestivalDateTimePreview;
     if (preview && preview.date) return {date:preview.date,title:preview.title || ''};
     const p = today();
+    if (!window.__pdkThailandFestivalLookup) setGlobalEvents(eventsForYear(p.year));
     const dayEvents = (window.__pdkThailandFestivalLookup || {})[p.key] || [];
     return {date:p.key,title:dayEvents[0]?.title || ''};
+  }
+
+  function builtInVideoForEvent(event) {
+    const title = String(event?.title || '').toLowerCase();
+    if (title.includes('children')) return '/Thailand%20National%20Children%E2%80%99s%20Day.mp4';
+    if (title.includes('new year')) return '/Happy%20NewYear%E2%80%99s.mp4';
+    if (title.includes('loy krathong')) return '/Loy%20Krathong%20Festival.mp4';
+    // PDK.mp4 was removed from the current main branch. Reuse the verified
+    // immutable production artifact from the last deployment that contained it.
+    return 'https://pattaya-dinosaur-ticket-control-k7k221ptq-khant-min-htet2.vercel.app/PDK.mp4';
+  }
+
+  function bindVideoPlayback(card, video) {
+    if (video.dataset.festivalPlaybackBound) return;
+    video.addEventListener('playing',()=>card.classList.add('pdk-video-ready'));
+    video.addEventListener('error',()=>card.classList.add('pdk-video-fallback'));
+    video.dataset.festivalPlaybackBound='1';
   }
 
   async function syncDateTimeVideo(force) {
@@ -167,29 +185,56 @@
       if (!row) row = rows.find(x => x.festival_date === selected.date);
       const video = card.querySelector('.pdk-festival-video');
       if (!video) return;
+      const source = video.querySelector('source');
+      if (!video.dataset.pdkOriginalSrc) {
+        video.dataset.pdkOriginalSrc = source?.getAttribute('src') || video.getAttribute('src') || '';
+      }
       const scene = card.querySelector('.pdk-festival-scene');
+      const current = source?.getAttribute('src') || video.getAttribute('src') || '';
+      const holidayLabel = document.getElementById('appHolidayValue');
+
       if (!row) {
-        if (video.dataset.festivalManaged === '1') {
+        const events = (window.__pdkThailandFestivalLookup || {})[selected.date] || [];
+        const event = selected.title
+          ? events.find(e=>e.title===selected.title) || events[0]
+          : events[0];
+        const url = builtInVideoForEvent(event);
+        if (current !== url) {
+          card.classList.remove('pdk-video-ready','pdk-video-fallback');
+          bindVideoPlayback(card,video);
           video.pause();
-          video.removeAttribute('src');
-          video.querySelectorAll('source').forEach(source => source.removeAttribute('src'));
-          video.load();
+          if (source) source.src = url; else video.src = url;
           delete video.dataset.festivalManaged;
-          card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
-          if (scene) scene.style.display = '';
+          delete video.dataset.festivalMediaId;
+          video.dataset.festivalBuiltin = '1';
+          video.setAttribute('preload','auto');
+          video.setAttribute('muted','');
+          video.muted = true;
+          video.loop = true;
+          video.playsInline = true;
+          video.load();
+          const play = video.play();
+          if (play && play.catch) play.catch(() => {});
         }
+        if (event && holidayLabel) {
+          holidayLabel.textContent=event.title;
+          holidayLabel.hidden=false;
+          holidayLabel.classList.add('is-special');
+          holidayLabel.classList.remove('is-holiday');
+        }
+        if (scene) scene.style.display = 'none';
+        card.classList.add('has-owner-festival-video');
         return;
       }
+
       const url = await signedUrl(row.blob_path);
-      const holidayLabel=document.getElementById('appHolidayValue');
       if(holidayLabel){holidayLabel.textContent=row.festival_name;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}
-      const source = video.querySelector('source');
-      const current = source?.getAttribute('src') || video.getAttribute('src') || '';
       if (current !== url) {
         card.classList.remove('pdk-video-ready','pdk-video-fallback');
-        if(!video.dataset.festivalPlaybackBound){video.addEventListener('playing',()=>card.classList.add('pdk-video-ready'));video.addEventListener('error',()=>card.classList.add('pdk-video-fallback'));video.dataset.festivalPlaybackBound='1';}
+        bindVideoPlayback(card,video);
         video.pause();
         if (source) source.src = url; else video.src = url;
+        delete video.dataset.festivalBuiltin;
         video.dataset.festivalManaged = '1';
         video.dataset.festivalMediaId = row.id;
         video.setAttribute('preload','auto');
@@ -461,6 +506,9 @@
     installStyles();
     seed2027 = Array.isArray(window.__pdkThailandFestivalEvents) ? window.__pdkThailandFestivalEvents.map(e=>({...e})) : [];
     lastCalendarYear = today().year;
+    // Staff and Event Staff pages do not include the Owner calendar script.
+    // Seed their date lookup here so the same festival footage works on every role.
+    setGlobalEvents(eventsForYear(lastCalendarYear));
     if (typeof window.renderThailandFestivalCalendar === 'function') {
       window.renderThailandFestivalCalendar = renderCalendar;
     }
