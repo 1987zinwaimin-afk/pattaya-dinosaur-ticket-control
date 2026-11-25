@@ -3145,6 +3145,33 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 /* Compact archive list and ticket action chooser */
 .archive-page{padding:12px!important}.archive-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.archive-head h2{margin:0;color:var(--gold);font-size:clamp(18px,4vw,23px)}.archive-head p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.4}.archive-head>button{padding:8px 12px;white-space:nowrap}.archive-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(115px,.7fr) auto;gap:7px;align-items:center;margin:10px 0}.archive-tools input,.archive-tools select{min-width:0;padding:9px 10px;font-size:13px}.archive-count{font-size:11px;color:var(--gold);white-space:nowrap}.archive-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.archive-item{min-width:0;display:flex;align-items:center;gap:9px;padding:8px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#15344f,#0b2035)}.archive-thumb{width:76px;height:62px;flex:0 0 76px;border-radius:9px;overflow:hidden;background:#07182a;display:grid;place-items:center}.archive-thumb img{width:100%;height:100%;object-fit:cover}.archive-info{min-width:0;flex:1}.archive-info h3{font-size:13px;line-height:1.25;margin:0 0 4px;color:var(--gold);overflow-wrap:anywhere}.archive-meta{display:flex;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--text)}.archive-info small{display:block;color:var(--muted);font-size:10px;line-height:1.25;margin-top:4px}.archive-restore{padding:7px 9px!important;font-size:11px!important;white-space:nowrap;flex:0 0 auto}.ticket-more-overlay{position:fixed;inset:0;z-index:10050;background:#020b16c9;display:grid;place-items:center;padding:18px;backdrop-filter:blur(7px)}.ticket-more-dialog{width:min(100%,390px);padding:17px;border:1px solid #54718c;border-radius:20px;background:linear-gradient(150deg,#183b59,#081a2c);box-shadow:0 20px 65px #0009}.ticket-more-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}.ticket-more-head h3{margin:0;color:var(--gold);font-size:19px}.ticket-more-head p{margin:4px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere}.ticket-more-close{padding:4px 11px;font-size:23px}.ticket-more-option{width:100%;display:flex;align-items:center;gap:12px;text-align:left;margin:8px 0;padding:13px;border-radius:14px}.ticket-more-option span{display:flex;flex-direction:column;gap:3px}.ticket-more-option small{font-weight:400;font-size:11px;opacity:.85}.ticket-more-option.archive-option{border-color:#b58a43}.ticket-more-option.delete-option{background:linear-gradient(140deg,#a3334c,#691b32);border-color:#bd5268}.ticket-more-cancel{width:100%;margin-top:5px;background:#102940}
 @media(max-width:600px){.archive-tools{grid-template-columns:1fr 1fr}.archive-tools input{grid-column:1/-1}.archive-count{grid-column:1/-1}.archive-list{grid-template-columns:1fr}.archive-item{padding:7px}.archive-thumb{width:68px;height:56px;flex-basis:68px}.archive-restore{padding:7px!important;font-size:10px!important}.archive-info h3{font-size:12px}}
+
+/* Department workflow polish · visual-only layer · 2026-11-25 */
+:root{--pdk-control-h:48px}
+#ticketCards{grid-template-columns:repeat(auto-fill,minmax(min(100%,218px),1fr));align-items:stretch;gap:14px!important}
+#ticketCards>.ticket{height:100%;min-width:0;display:flex;flex-direction:column;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+#ticketCards>.ticket:focus-within{border-color:var(--gold)!important;box-shadow:0 0 0 2px rgba(244,202,112,.16),0 12px 28px #0005}
+#ticketCards>.ticket .ticket-body{display:flex;flex:1;flex-direction:column;gap:7px}
+#ticketCards>.ticket .ticket-actions{margin-top:auto;padding-top:5px}
+#ticketCards>.ticket .qty{min-height:var(--pdk-control-h);font-size:16px;font-weight:750;text-align:center;border:1px solid #54718d;background:#06182b;color:#f4f7fb}
+#ticketCards>.ticket .qty:focus{border-color:var(--gold);outline:3px solid rgba(244,202,112,.22);outline-offset:1px}
+#ticketCards>.ticket .price{font-variant-numeric:tabular-nums;font-weight:900}
+#ticketCards>.ticket button{min-height:42px;font-weight:800}
+#ticketCards>.ticket button:focus-visible,.ticket-more-dialog button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.ticket-more-dialog{width:min(100%,460px);max-height:min(86dvh,720px);overflow:auto;overscroll-behavior:contain}
+.ticket-more-option{min-height:60px}
+.ticket-image-lightbox{padding:max(16px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom))}
+@media(min-width:900px){#ticketCards{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px!important}}
+@media(max-width:480px){
+ #ticketCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px!important}
+ #ticketCards>.ticket{border-radius:14px!important}
+ #ticketCards>.ticket img,#ticketCards>.ticket .placeholder{height:clamp(76px,25vw,112px)!important}
+ #ticketCards>.ticket .ticket-body{padding:8px!important;gap:6px}
+ #ticketCards>.ticket .ticket-actions{grid-template-columns:1fr!important;gap:6px}
+ #ticketCards>.ticket .ticket-actions button{min-height:42px;font-size:12px;padding:9px 7px}
+ #ticketCards>.ticket .qty{min-height:46px;padding:9px 8px}
+}
+@media(prefers-reduced-motion:reduce){#ticketCards>.ticket{transition:none}}
 </style>
 
 <style id="staff-database-compact-v1">
@@ -3771,6 +3798,420 @@ body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
 #pdkThailandFestivalModal .pdk-fc-hero-video{cursor:zoom-in!important}
 #pdkThailandFestivalModal .pdk-fc-hero-video:focus-visible{outline:3px solid #f4cf83;outline-offset:-5px}
 @media(max-width:600px){#pdkFestivalVideoViewer{padding:8px}#pdkFestivalVideoViewer .pdk-fvv-panel{width:100%;height:min(68dvh,560px);border-radius:13px}#pdkFestivalVideoViewer video{max-height:68dvh}}
+</style>
+
+<style id="pdk-full-app-modernization-v1">
+/* Full Application Modernization — shared, non-functional visual/accessibility layer.
+   Intentionally leaves authentication, database, permissions, local storage and sync untouched. */
+:root{--pdk-focus-ring:rgba(247,213,138,.92);--pdk-surface-edge:rgba(164,196,220,.22)}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{-webkit-tap-highlight-color:transparent;min-height:100svh}
+.top{padding-top:max(12px,env(safe-area-inset-top))}
+.wrap{padding-bottom:max(30px,env(safe-area-inset-bottom))}
+#pageContent,.panel,.stat,.ticket,.modalbox,.auth-card{min-width:0}
+#pageContent img{max-width:100%}
+input,select,textarea{max-width:100%;min-width:0;accent-color:#d9a84f}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[role="button"]:focus-visible{outline:3px solid var(--pdk-focus-ring)!important;outline-offset:3px!important}
+button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allowed!important;opacity:.58!important;filter:saturate(.65)!important}
+.panel,.stat,.ticket,.modalbox{transition:border-color .18s ease,box-shadow .18s ease}
+.app-datetime:not(.has-festival-theme){position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(226,190,117,.62);background:radial-gradient(ellipse at 18% 0%,rgba(42,105,151,.34),transparent 52%),linear-gradient(125deg,#071b31 0%,#102f4c 58%,#091b30 100%);box-shadow:0 10px 28px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.08)}
+.app-datetime:not(.has-festival-theme)::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.035) 48%,transparent 100%)}
+@media(max-width:520px){html{scroll-padding-top:64px}.wrap{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}.app-datetime{max-width:calc(100% - 16px)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+<style id="pdk-full-app-modernization-v2">
+/* Phase 2 — dashboard summary and workspace card polish; presentation only. */
+#stats>.stat{
+ position:relative;isolation:isolate;overflow:hidden;
+ border-color:rgba(183,153,94,.38);
+ box-shadow:0 8px 22px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.075);
+}
+#stats>.stat::before{
+ content:"";position:absolute;inset:0 12px auto;height:2px;border-radius:0 0 3px 3px;
+ background:linear-gradient(90deg,transparent,rgba(247,211,132,.82),rgba(103,183,224,.52),transparent);
+ opacity:.78;pointer-events:none;
+}
+#stats>.stat span{letter-spacing:.025em;font-weight:650}
+#stats>.stat strong{font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+#pageContent .panel{
+ border-color:rgba(132,174,205,.27);
+ box-shadow:0 8px 22px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.045);
+}
+#pageContent .panel>h2:first-child,#pageContent .panel>h3:first-child{letter-spacing:-.015em}
+#pageContent .ticket{
+ border-color:rgba(132,174,205,.34);
+ box-shadow:0 9px 24px rgba(0,0,0,.19),inset 0 1px rgba(255,255,255,.04);
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ #stats>.stat,#pageContent .panel,#pageContent .ticket{transition:border-color .18s ease,box-shadow .18s ease}
+ #stats>.stat:hover,#pageContent .panel:hover,#pageContent .ticket:hover{
+  border-color:rgba(226,190,117,.58);
+  box-shadow:0 12px 28px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.07);
+ }
+}
+@media(max-width:520px){
+ #stats>.stat::before{inset-inline:8px}
+ #pageContent .panel{overflow-wrap:anywhere}
+}
+</style>
+<style id="pdk-full-app-modernization-v3">
+/* Phase 3 — Reports and Payroll visual refinement; no report calculations or data flows changed. */
+#pageContent[data-ui-page="monthly"] .report-kpi,
+#pageContent[data-ui-page="monthly"] .report-dept{
+ border:1px solid rgba(133,177,208,.28);
+ box-shadow:0 7px 19px rgba(0,0,0,.15),inset 0 1px rgba(255,255,255,.045);
+}
+#pageContent[data-ui-page="monthly"] .report-kpi{
+ background:linear-gradient(145deg,rgba(20,58,87,.96),rgba(7,29,50,.98));
+}
+#pageContent[data-ui-page="monthly"] .report-dept{
+ border-radius:17px;
+ background:linear-gradient(155deg,rgba(15,43,67,.9),rgba(6,24,42,.96));
+}
+#pageContent[data-ui-page="monthly"] .report-dept-stats>div{
+ min-width:0;border:1px solid rgba(145,184,211,.16);border-radius:11px;
+ background:rgba(255,255,255,.035);
+}
+#pageContent[data-ui-page="monthly"] .report-filters{
+ gap:9px;
+}
+#pageContent[data-ui-page="monthly"] .report-filters label{
+ min-width:0;line-height:1.3;
+}
+#pageContent[data-ui-page="monthly"] .report-actions button{
+ min-height:42px;border-radius:12px;
+}
+#pageContent[data-ui-page="payroll"] .report-heading{
+ padding-bottom:9px;border-bottom:1px solid rgba(145,184,211,.18);
+}
+#pageContent[data-ui-page="payroll"] .payroll-calendar-panel,
+#pageContent[data-ui-page="payroll"] .payroll-summary-panel{
+ border:1px solid rgba(133,177,208,.28);
+ box-shadow:0 8px 22px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.045);
+}
+#pageContent[data-ui-page="payroll"] .payroll-day-card{
+ border:1px solid rgba(145,184,211,.2);
+ background:linear-gradient(145deg,rgba(20,55,82,.86),rgba(7,27,47,.94));
+}
+#pageContent[data-ui-page="payroll"] .summary-row{
+ border-bottom:1px solid rgba(145,184,211,.13);
+}
+#pageContent[data-ui-page="payroll"] .summary-row:last-child{border-bottom:0}
+#pageContent[data-ui-page="payroll"] #payrollAutoSaveStatus{
+ display:inline-flex;align-items:center;gap:6px;padding:5px 9px;
+ border:1px solid rgba(145,184,211,.2);border-radius:999px;
+ background:rgba(255,255,255,.035);
+}
+@media(max-width:520px){
+ #pageContent[data-ui-page="monthly"] .report-kpi{border-radius:13px}
+ #pageContent[data-ui-page="monthly"] .report-dept{border-radius:14px}
+ #pageContent[data-ui-page="monthly"] .report-actions{gap:7px}
+ #pageContent[data-ui-page="payroll"] .payroll-calendar-panel,
+ #pageContent[data-ui-page="payroll"] .payroll-summary-panel{border-radius:15px}
+}
+</style>
+
+<style id="pdk-full-app-modernization-v4">
+/* Phase 4 — Ticket Management presentation only. Preserve ticket data and workflows. */
+#ticketCards{align-items:stretch;gap:12px!important;min-width:0}
+#ticketCards>.ticket{display:flex;flex-direction:column;min-width:0;border:1px solid rgba(91,190,225,.34);border-radius:18px;background:linear-gradient(155deg,rgba(21,57,83,.98),rgba(7,25,43,.99));box-shadow:0 8px 22px rgba(0,0,0,.18);overflow:hidden}
+#ticketCards>.ticket>div:first-child{position:relative;min-width:0;overflow:hidden;background:linear-gradient(135deg,#183f5d,#0b2036)}
+#ticketCards>.ticket>div:first-child img.ticket-preview-image{display:block;width:100%;height:clamp(112px,17vw,178px);object-fit:cover;object-position:center}
+#ticketCards>.ticket>div:first-child.placeholder{min-height:104px;display:grid;place-items:center;font-size:34px}
+#ticketCards>.ticket .ticket-body{display:flex;flex:1;flex-direction:column;gap:7px;min-width:0;padding:12px}
+#ticketCards>.ticket .ticket-body h3{min-height:2.35em;margin:0;font-size:clamp(13px,3.2vw,16px);line-height:1.22;overflow-wrap:anywhere}
+#ticketCards>.ticket .price{align-self:flex-start;margin:0;max-width:100%;font-size:13px}
+#ticketCards>.ticket .soldrow{margin:2px 0 0}
+#ticketCards>.ticket .qty{min-height:46px;margin:0;border:1px solid rgba(244,202,112,.72);border-radius:12px;background:rgba(3,17,31,.72);color:var(--text);font-size:16px;font-weight:750}
+#ticketCards>.ticket .qty:focus{border-color:#ffd978;box-shadow:0 0 0 3px rgba(255,217,120,.18);outline:none}
+#ticketCards>.ticket .ticket-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:2px 0 0}
+#ticketCards>.ticket .ticket-actions button{min-width:0;min-height:43px;padding:8px 7px;border-radius:11px;font-size:12px;line-height:1.2;white-space:normal}
+#ticketCards>.ticket .morebox{gap:7px;margin-top:2px;padding-top:9px}
+#ticketCards>.ticket .morebox button{min-height:42px}
+.actions.ticket-toolbar{align-items:center;gap:8px}
+#pageContent input.search{box-sizing:border-box;width:100%;min-height:44px;margin:8px 0 12px;padding:10px 13px;border-radius:12px}
+@media(max-width:420px){#ticketCards{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}#ticketCards>.ticket>div:first-child img.ticket-preview-image{height:clamp(145px,48vw,205px)}#ticketCards>.ticket .ticket-body{padding:13px}#ticketCards>.ticket .ticket-body h3{font-size:15px;min-height:0}}
+@media(min-width:421px) and (max-width:760px){#ticketCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(prefers-reduced-motion:no-preference){#ticketCards>.ticket{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}#ticketCards>.ticket:hover{transform:translateY(-2px);border-color:rgba(255,213,123,.62);box-shadow:0 12px 28px rgba(0,0,0,.25)}}
+</style>
+
+<style id="pdk-full-app-modernization-v5">
+/* Phase 5 — Garden Train workspace presentation and mobile table usability only. */
+#pageContent[data-ui-page="train"] .train-depart-card{border:1px solid rgba(91,190,225,.42);background:linear-gradient(145deg,rgba(20,56,82,.98),rgba(8,27,46,.99));box-shadow:0 9px 24px rgba(0,0,0,.18)}
+#pageContent[data-ui-page="train"] #trainDepartForm input,#pageContent[data-ui-page="train"] #trainDepartForm select{min-height:44px;border-radius:11px}
+#pageContent[data-ui-page="train"] #trainDepartForm button{min-height:46px;border-radius:12px;font-weight:800}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions input{min-height:42px;box-sizing:border-box;border-radius:11px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions button{min-height:40px;border-radius:11px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory)>div:has(>table),#pageContent[data-ui-page="train"] .train-history-table-wrap{display:block!important;width:100%;max-width:100%;overflow-x:auto!important;overflow-y:visible!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;border:1px solid rgba(91,190,225,.2);border-radius:12px}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory)>div:has(>table)>table,#pageContent[data-ui-page="train"] .train-history-table-wrap>table{min-width:570px!important;width:100%!important;max-width:none!important;table-layout:auto!important;border-collapse:separate;border-spacing:0}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) th,#pageContent[data-ui-page="train"] .panel:has(#trainHistory) td{padding:9px 8px!important;vertical-align:middle}
+#pageContent[data-ui-page="train"] .panel:has(#trainHistory) thead th{position:sticky;top:0;z-index:1;background:#123451;color:#f4d58d;white-space:nowrap}
+#pageContent[data-ui-page="train"] #trainHistory td button{min-height:36px;white-space:normal}
+#pageContent[data-ui-page="train"] #trainSearch,#pageContent[data-ui-page="train"] #trainFilterDate{min-height:42px;box-sizing:border-box;border-radius:10px}
+@media(max-width:520px){#pageContent[data-ui-page="train"] .train-depart-card{padding:11px!important}#pageContent[data-ui-page="train"] .panel:has(#trainHistory){padding:10px!important}#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}#pageContent[data-ui-page="train"] .panel:has(#trainHistory) .actions input{grid-column:1/-1}}
+</style>
+
+<style id="pdk-full-app-modernization-v6-ticket-two-column">
+/* Ticket cards: restore compact two-column layout on phones and desktop. */
+#ticketCards.cards{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important;align-items:stretch}
+#ticketCards.cards>.ticket{min-width:0!important;border-radius:13px!important}
+#ticketCards.cards>.ticket>div:first-child img.ticket-preview-image{height:clamp(76px,20vw,112px)!important;min-height:0!important;object-fit:cover!important}
+#ticketCards.cards>.ticket>div:first-child.placeholder{min-height:76px!important}
+#ticketCards.cards>.ticket .ticket-body{gap:5px!important;padding:8px!important}
+#ticketCards.cards>.ticket .ticket-body h3{font-size:clamp(11px,2.8vw,14px)!important;line-height:1.2!important;min-height:2.35em!important}
+#ticketCards.cards>.ticket .price{font-size:12px!important}
+#ticketCards.cards>.ticket .qty{min-height:38px!important;font-size:14px!important}
+#ticketCards.cards>.ticket .ticket-actions{gap:5px!important}
+#ticketCards.cards>.ticket .ticket-actions button{min-height:36px!important;padding:6px 4px!important;font-size:10px!important}
+#ticketCards.cards>.ticket .morebox{padding-top:6px!important;gap:5px!important}
+#ticketCards.cards>.ticket .morebox button{min-height:34px!important;font-size:10px!important}
+@media(max-width:360px){#ticketCards.cards{gap:6px!important}#ticketCards.cards>.ticket .ticket-body{padding:6px!important}#ticketCards.cards>.ticket .ticket-actions button{font-size:9px!important}}
+</style>
+<style id="pdk-full-app-modernization-v7-settings">
+/* Phase 7 — Settings workspace polish. Presentation only: no auth, roles, storage, or data handlers changed. */
+#pageContent[data-ui-page="settings"]{min-width:0;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+#pageContent[data-ui-page="settings"] .panel{
+ min-width:0;border:1px solid rgba(215,185,116,.22)!important;
+ border-radius:17px!important;
+ background:linear-gradient(155deg,rgba(18,48,72,.96),rgba(7,25,43,.98))!important;
+ box-shadow:0 7px 20px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.035)!important
+}
+#pageContent[data-ui-page="settings"] .section-title{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+ color:#ffe2a0;line-height:1.3
+}
+#pageContent[data-ui-page="settings"] .panel h2,
+#pageContent[data-ui-page="settings"] .panel h3{
+ color:#ffe2a0;line-height:1.3;overflow-wrap:anywhere
+}
+#pageContent[data-ui-page="settings"] label{
+ display:block;min-width:0;color:#dce7f0;font-weight:650;line-height:1.4
+}
+#pageContent[data-ui-page="settings"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#pageContent[data-ui-page="settings"] select,
+#pageContent[data-ui-page="settings"] textarea{
+ box-sizing:border-box;max-width:100%;min-width:0;
+ border:1px solid rgba(157,190,214,.28)!important;border-radius:11px!important;
+ background:#071b2d!important;color:#f7fafc!important;
+}
+#pageContent[data-ui-page="settings"] input:focus-visible,
+#pageContent[data-ui-page="settings"] select:focus-visible,
+#pageContent[data-ui-page="settings"] textarea:focus-visible{
+ outline:3px solid rgba(255,218,143,.78)!important;outline-offset:2px
+}
+#pageContent[data-ui-page="settings"] .actions{
+ display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0
+}
+#pageContent[data-ui-page="settings"] .actions button,
+#pageContent[data-ui-page="settings"] .panel button{
+ max-width:100%;min-width:0;white-space:normal;overflow-wrap:anywhere
+}
+#pageContent[data-ui-page="settings"] table{min-width:560px}
+#pageContent[data-ui-page="settings"] .table-wrap,
+#pageContent[data-ui-page="settings"] .table-responsive{
+ max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;
+ -webkit-overflow-scrolling:touch
+}
+#pageContent[data-ui-page="settings"] details{
+ min-width:0;border:1px solid rgba(157,190,214,.2);border-radius:13px;
+ background:rgba(5,20,35,.32);padding:10px 12px
+}
+#pageContent[data-ui-page="settings"] details>summary{
+ color:#ffe2a0;font-weight:750;cursor:pointer;line-height:1.4
+}
+@media(max-width:520px){
+ #pageContent[data-ui-page="settings"]{padding-left:9px;padding-right:9px}
+ #pageContent[data-ui-page="settings"] .panel{padding:12px!important;border-radius:15px!important}
+ #pageContent[data-ui-page="settings"] .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ #pageContent[data-ui-page="settings"] .actions button{width:100%;min-height:44px;padding:9px 7px}
+ #pageContent[data-ui-page="settings"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+ #pageContent[data-ui-page="settings"] select,
+ #pageContent[data-ui-page="settings"] textarea{font-size:16px!important}
+}
+</style>
+<style id="pdk-full-app-modernization-v8-database-menu">
+/* Clear, compact navigation groups. Page IDs and existing navigation handlers remain unchanged. */
+#side .nav:before,#nav:before{display:none!important;content:none!important}
+#side .nav{display:flex!important;flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+#nav .pdk-nav-group{display:grid!important;grid-auto-rows:min-content!important;gap:6px!important;min-width:0;margin:0!important;padding:9px!important;border:1px solid rgba(150,184,211,.17);border-radius:15px;background:rgba(7,25,43,.38)}
+#nav .pdk-nav-group-title{display:flex;align-items:center;gap:8px;min-width:0;padding:2px 7px 5px;color:#9db6ca;font-size:10px;font-weight:900;letter-spacing:.13em;line-height:1.3}
+#nav .pdk-nav-group-title:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(232,185,79,.36),transparent)}
+#nav .pdk-nav-group-owner-database{border-color:rgba(232,185,79,.3);background:linear-gradient(145deg,rgba(65,49,24,.22),rgba(7,25,43,.48))}
+#nav .pdk-nav-group-owner-database .pdk-nav-group-title{color:#f0cc83}
+#nav .pdk-nav-group-staff-database{border-color:rgba(103,177,211,.28);background:linear-gradient(145deg,rgba(16,58,83,.3),rgba(7,25,43,.48))}
+#nav .pdk-nav-group-staff-database .pdk-nav-group-title{color:#9ed8ed}
+#nav .pdk-nav-group button{width:100%!important;min-width:0!important;margin:0!important}
+@media(max-width:520px){
+ #side .nav{gap:8px!important;padding:2px 3px 10px!important}
+ #nav .pdk-nav-group{gap:5px!important;padding:8px!important;border-radius:13px}
+ #nav .pdk-nav-group button{min-height:43px!important;padding:8px 10px!important;font-size:13px!important}
+ #nav .pdk-nav-group-title{font-size:9px;padding:1px 6px 4px}
+}
+</style>
+
+<style id="pdk-ui-foundation-refresh-2026">
+/* Phase 1 UI/UX foundation — visual-only overrides; preserve existing application behavior. */
+:root{
+ --bg:#081a2d;--panel:#102b45;--panel2:#153954;--line:#2c4b66;
+ --gold:#f2c66d;--gold2:#dba644;--text:#f5f8fc;--muted:#aebfd1;
+ --blue:#1689bd;--red:#b93655;
+ --shadow:0 8px 24px rgba(0,0,0,.22);
+ --pdk-radius-sm:12px;--pdk-radius-md:16px;--pdk-radius-lg:22px;
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--pdk-header-height,64px) + 18px)}
+body{
+ background:
+  radial-gradient(ellipse at 12% 0%,rgba(24,92,126,.22),transparent 34%),
+  radial-gradient(ellipse at 88% 12%,rgba(179,131,53,.10),transparent 30%),
+  var(--bg);
+ letter-spacing:.005em;
+}
+button,input,select,textarea{font-family:inherit}
+button{
+ border-radius:var(--pdk-radius-sm);
+ box-shadow:0 3px 10px rgba(0,0,0,.16);
+ transition:transform .16s ease,box-shadow .16s ease,filter .16s ease,border-color .16s ease;
+}
+button:hover{filter:brightness(1.07)}
+button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+ outline:3px solid rgba(242,198,109,.72);outline-offset:2px;
+}
+input,select,textarea{
+ border-radius:var(--pdk-radius-sm);
+ border-color:rgba(133,164,190,.34);
+ min-height:44px;
+}
+input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
+.top.brand-header{
+ box-shadow:0 8px 26px rgba(0,0,0,.18);
+ border-bottom:1px solid rgba(153,184,209,.18);
+}
+.wrap{max-width:1320px;padding:clamp(14px,2.2vw,26px) clamp(12px,2vw,22px) 52px}
+.stat,.panel{
+ border-radius:var(--pdk-radius-lg);
+ border-color:rgba(133,164,190,.22);
+ box-shadow:0 8px 24px rgba(0,0,0,.16);
+}
+.stat{padding:clamp(13px,1.5vw,18px)}
+.stat strong{letter-spacing:-.025em}
+.section-title{margin-bottom:12px}
+.section-title h2{letter-spacing:-.02em}
+.nav{gap:7px}
+.nav button{
+ min-height:46px;border-radius:13px;padding:12px 14px;
+ background:rgba(24,57,83,.72);border-color:rgba(133,164,190,.18);
+ box-shadow:none;
+}
+.nav button.active{
+ box-shadow:0 5px 16px rgba(219,166,68,.18);
+}
+.modalbox{
+ border-radius:22px;border-color:rgba(153,184,209,.28);
+ box-shadow:0 24px 70px rgba(0,0,0,.48);
+}
+.empty{border-radius:var(--pdk-radius-lg)}
+.ticket{border-radius:18px}
+.ticket img{background:#102b45}
+@media(hover:hover){
+ .panel,.stat,.ticket{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+ .ticket:hover{border-color:rgba(242,198,109,.34);box-shadow:0 12px 28px rgba(0,0,0,.2)}
+}
+@media(max-width:600px){
+ .wrap{padding:12px 12px 36px}
+ .stats{gap:8px}
+ .stat{border-radius:16px;padding:11px}
+ .panel{border-radius:18px;padding:13px}
+ .modal{padding:10px}
+ .modalbox{border-radius:18px;padding:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+::selection{background:rgba(242,198,109,.28);color:var(--text)}
+</style>
+
+<style id="pdk-department-workspace-refresh-2026">
+/* Department workspace refresh — presentation only; ticket logic and permissions remain unchanged */
+#pageContent .ticket-toolbar{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;margin:12px 0 16px!important;padding:10px!important;border:1px solid #315573!important;border-radius:18px!important;background:linear-gradient(145deg,#0b2945,#06182b)!important;box-shadow:0 8px 22px #0003!important}
+#pageContent .ticket-toolbar button{width:100%!important;min-width:0!important;min-height:48px!important;height:auto!important;padding:9px 6px!important;border-radius:13px!important;font-size:clamp(11px,2.8vw,13px)!important;line-height:1.2!important;white-space:normal!important;overflow-wrap:anywhere!important;display:flex;align-items:center;justify-content:center;gap:5px}
+#pageContent .ticket-toolbar .report-icon-btn{min-width:0!important;width:100%!important;height:48px!important;padding:8px!important}
+#pageContent .ticket-toolbar .report-icon-btn svg{width:23px;height:23px}
+#pageContent .actions:not(.ticket-toolbar){display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px!important;margin:12px 0 16px!important;padding:9px!important;border:1px solid #315573;border-radius:17px;background:linear-gradient(145deg,#0b2945,#06182b);box-shadow:0 8px 22px #0003}
+#pageContent .actions:not(.ticket-toolbar) button{min-width:0!important;min-height:48px;padding:9px 6px!important;border-radius:13px!important;font-size:clamp(11px,2.8vw,13px);line-height:1.2;white-space:normal;overflow-wrap:anywhere}
+#pageContent .search{display:block;width:100%;min-height:48px;margin:10px 0 14px;padding:12px 15px;border-radius:14px;background:#04172b;border:1px solid #42617e;color:#f6f8fc;box-shadow:inset 0 1px 4px #0004}
+#pageContent .search::placeholder{color:#9eb4ca}
+#pageContent #ticketCards{align-items:stretch;gap:13px}
+#pageContent #ticketCards .ticket{height:100%;min-width:0;border-radius:18px;border:1px solid #315675;background:linear-gradient(160deg,#0d2b48,#06182b 88%);box-shadow:0 7px 20px #0003;overflow:hidden}
+#pageContent #ticketCards .ticket>div:first-child{overflow:hidden;background:#071a2d}
+#pageContent #ticketCards .ticket img{width:100%;aspect-ratio:16/9;height:auto;max-height:176px;object-fit:contain;background:#041321}
+#pageContent #ticketCards .ticket .placeholder{min-height:112px;display:grid;place-items:center;font-size:34px;background:radial-gradient(circle at 50% 20%,#1a4a70,#09233d 72%);color:#ffdc82}
+#pageContent #ticketCards .ticket-body{display:flex;flex-direction:column;gap:7px;padding:12px}
+#pageContent #ticketCards .ticket h3{min-height:2.6em;margin:0;color:#f7f9fd;font-size:1rem;line-height:1.3;overflow-wrap:anywhere}
+#pageContent #ticketCards .ticket .price{align-self:flex-start;margin:0 0 2px;padding:6px 10px;border-radius:10px;font-size:.95rem}
+#pageContent #ticketCards .ticket .soldrow{margin:2px 0;padding:9px 10px;border:1px solid #315573;border-radius:12px;background:linear-gradient(110deg,#0c3554,#09233c)}
+#pageContent #ticketCards .ticket .ticket-quantity-highlight{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;margin:0;color:#c2d2e2;font-size:.82rem}
+#pageContent #ticketCards .ticket .ticket-quantity-highlight strong{color:#ffdc82;font-size:1.2rem;font-variant-numeric:tabular-nums}
+#pageContent #ticketCards .ticket .ticket-quantity-highlight small{color:#a9bfd3;font-size:.72rem}
+#pageContent #ticketCards .ticket .qty{width:100%;min-height:48px;margin:0;border:1px solid #52718d;border-radius:12px;background:#03172a;color:#fff;font-size:1rem;font-weight:700;text-align:center}
+#pageContent #ticketCards .ticket .qty:focus{border-color:#ffd778;box-shadow:0 0 0 3px #ffd77830}
+#pageContent #ticketCards .ticket-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:0}
+#pageContent #ticketCards .ticket-actions button{min-width:0;min-height:42px;padding:8px 5px;border-radius:11px;font-size:.8rem;line-height:1.2;white-space:normal}
+#pageContent #ticketCards .morebox{gap:7px;margin-top:2px}
+#pageContent #ticketCards .morebox button{min-height:42px;padding:8px;border-radius:11px}
+#pageContent .empty{grid-column:1/-1;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;background:linear-gradient(145deg,#0c2944,#06182b);border:1px dashed #52718d;border-radius:18px;color:#c4d4e3}
+#pageContent .empty p{margin:0;color:#91a9bf;font-size:.9rem}
+#pageContent .panel:has(#staffNewEventLocation){border-radius:18px!important;background:linear-gradient(145deg,#103553,#071a2e)!important;box-shadow:0 8px 22px #0003}
+#pageContent video{border:1px solid #315573;box-shadow:0 5px 16px #0004}
+@media(min-width:760px){#pageContent .ticket-toolbar{grid-template-columns:repeat(5,minmax(0,1fr))!important;padding:12px!important}#pageContent .actions:not(.ticket-toolbar){grid-template-columns:repeat(5,minmax(0,1fr))}#pageContent #ticketCards .ticket img{max-height:190px}#pageContent #ticketCards .ticket-body{padding:14px}}
+@media(max-width:420px){#pageContent .ticket-toolbar{gap:7px!important;padding:8px!important}#pageContent .ticket-toolbar button{min-height:46px!important;padding:8px 4px!important;font-size:11px!important}#pageContent .actions:not(.ticket-toolbar){grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important;padding:8px}#pageContent .actions:not(.ticket-toolbar) button{min-height:46px;font-size:12px}#pageContent #ticketCards{gap:9px}#pageContent #ticketCards .ticket-body{padding:9px}#pageContent #ticketCards .ticket h3{font-size:.92rem;min-height:2.5em}#pageContent #ticketCards .ticket .qty{min-height:45px;font-size:.95rem}#pageContent #ticketCards .ticket-actions button{font-size:.74rem;padding:7px 3px}}
+@media(prefers-reduced-motion:reduce){#pageContent #ticketCards .ticket,#pageContent .ticket-toolbar button{transition:none!important}}
+</style>
+
+<style id="pdk-ticket-form-refresh-2026">
+/* Add/Edit Ticket dialog — visual-only refinement */
+#ticketModal{backdrop-filter:blur(9px);background:rgba(0,8,18,.78);padding:14px}
+#ticketModal .modalbox{width:min(540px,100%);max-height:min(90dvh,820px);padding:22px;border:1px solid #426786;border-radius:23px;background:linear-gradient(155deg,#102f4d,#06182b 88%);box-shadow:0 24px 70px #000a,inset 0 1px #ffffff12}
+#ticketModal #modalTitle{display:flex;align-items:center;gap:9px;margin:0 0 18px;padding:0 0 13px;border-bottom:1px solid #315573;color:#ffdc82;font-size:1.35rem;line-height:1.25}
+#ticketModal #ticketForm{display:flex;flex-direction:column;gap:7px}
+#ticketModal #ticketForm label{margin:7px 0 0;color:#d2dfeb;font-size:.88rem;font-weight:700;letter-spacing:.01em}
+#ticketModal #ticketForm input:not([type=hidden]),#ticketModal #ticketForm select{width:100%;min-height:49px;margin:0;padding:12px 13px;border:1px solid #426481;border-radius:13px;background:#04182c;color:#f7f9fc;font-size:1rem;box-shadow:inset 0 1px 4px #0004}
+#ticketModal #ticketForm input:focus,#ticketModal #ticketForm select:focus{outline:none;border-color:#ffd778;box-shadow:0 0 0 3px #ffd7782e}
+#ticketModal #ticketForm input[type=file]{min-height:54px;padding:9px;background:linear-gradient(120deg,#0a2944,#061a2e);font-size:.84rem}
+#ticketModal #ticketForm input[type=file]::file-selector-button{margin-right:10px;padding:8px 11px;border:1px solid #52718d;border-radius:9px;background:#174568;color:#fff;font-weight:700}
+#ticketModal #imageHint{margin:-2px 0 4px;padding:9px 11px;border:1px solid #315573;border-radius:11px;background:#0a2943;color:#b8cadd;font-size:.78rem;line-height:1.4}
+#ticketModal .modal-actions{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;margin-top:15px;padding-top:13px;border-top:1px solid #315573}
+#ticketModal .modal-actions button{min-height:48px;margin:0;border-radius:13px;font-size:.95rem}
+#ticketModal #saveTicket{background:linear-gradient(135deg,#ffe8a7,#e8ad43);color:#14283e;border:1px solid #fff0bd}
+#ticketModal #ticketDepartmentLabel:not(.hidden),#ticketModal #eventLocationLabel:not(.hidden){display:block}
+@media(max-width:520px){#ticketModal{padding:10px}#ticketModal .modalbox{max-height:92dvh;padding:17px;border-radius:20px}#ticketModal #modalTitle{font-size:1.2rem;margin-bottom:13px}#ticketModal .modal-actions{position:sticky;bottom:-17px;padding:12px 0 2px;background:linear-gradient(180deg,rgba(6,24,43,.92),#06182b 35%)}#ticketModal .modal-actions button{min-height:46px;font-size:.9rem}}
+@media(prefers-reduced-motion:reduce){#ticketModal .modalbox{animation:none!important}}
+</style>
+
+<style id="pdk-entry-counter-polish-2026">
+#pageContent .actions.ticket-toolbar.entry-counter-toolbar{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+#pageContent .actions.ticket-toolbar.entry-counter-toolbar .entry-counter-open{width:100%!important;min-width:0!important;height:48px!important;min-height:48px!important;font-size:12px!important}
+#pageContent .actions.ticket-toolbar.entry-counter-toolbar .entry-counter-open::first-letter{font-size:inherit!important}
+#entryCounterModal{padding:calc(16px + env(safe-area-inset-top)) 12px calc(104px + env(safe-area-inset-bottom));background:radial-gradient(ellipse at 50% -10%,#1a527b 0,#0a2945 40%,#06182b 78%)}
+#entryCounterModal .entry-counter-head{position:sticky;top:0;z-index:2;padding:10px 2px 13px;background:linear-gradient(180deg,#0b2945 80%,#0b294500);backdrop-filter:blur(8px)}
+#entryCounterModal .entry-counter-head button{min-height:42px;padding:8px 13px;border-radius:12px}
+#entryCounterModal .entry-counter-grid{gap:12px}
+#entryCounterModal .entry-counter-card{border:1px solid #52718d;border-radius:17px;box-shadow:0 8px 22px #0004;transition:border-color .16s,transform .16s}
+#entryCounterModal .entry-counter-card:focus-within{border-color:#ffdc82;box-shadow:0 0 0 2px #ffdc8233,0 8px 22px #0004}
+#entryCounterModal .entry-counter-card img{object-fit:contain;background:#041321}
+#entryCounterModal .entry-counter-meta{padding:11px}
+#entryCounterModal .entry-counter-name{font-size:.95rem;min-height:2.6em;overflow-wrap:anywhere}
+#entryCounterModal .entry-counter-controls{gap:10px;margin-top:12px}
+#entryCounterModal .entry-counter-controls button{min-width:54px;height:50px;border-radius:13px;font-size:26px;touch-action:manipulation}
+#entryCounterModal .entry-counter-live{font-size:24px;min-width:42px}
+#entryCounterModal .entry-counter-badge{box-shadow:0 3px 12px #0006}
+#entryCounterDock{padding:11px 14px calc(11px + env(safe-area-inset-bottom));box-shadow:0 -8px 26px #0005}
+#entryCounterTotal{color:#fff;font-size:clamp(17px,4vw,21px);font-variant-numeric:tabular-nums}
+#entryCounterTotal small{margin-top:3px;color:#b7cadd}
+#entryCounterClear{min-height:44px;padding:9px 13px;border-radius:12px}
+@media(max-width:380px){#entryCounterModal .entry-counter-grid{gap:8px}#entryCounterModal .entry-counter-meta{padding:8px}#entryCounterModal .entry-counter-controls{gap:5px}#entryCounterModal .entry-counter-controls button{min-width:42px;height:44px}#entryCounterModal .entry-counter-live{font-size:20px;min-width:30px}}
+@media(min-width:760px){#entryCounterModal .entry-counter-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}}
+@media(prefers-reduced-motion:reduce){#entryCounterModal .entry-counter-card{transition:none}}
 </style>
 </head>
 <body>
@@ -4769,7 +5210,21 @@ function eventTicketMatchesLocation(ticket,id){
 }
 function departmentTickets(){return tickets.filter(t=>!t.isArchived&&t.department===page&&(page!=='event'||eventTicketMatchesLocation(t,activeEventLocationNo)))}
 function canViewOwnerStaffActivity(){return !!(currentUser&&currentRole==='owner')}
-function navRender(){const nav=document.getElementById('nav');if(!nav)return;const allowedPages=PAGES.filter(p=>(p.id!=='staff'||canViewOwnerStaffActivity())&&(p.id!=='festivals'||canViewOwnerStaffActivity()));nav.innerHTML=allowedPages.map(p=>'<button type="button" class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('');if(!nav.dataset.clickBound){nav.addEventListener('click',function(e){const b=e.target.closest('button[data-page]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();go(b.dataset.page)},true);nav.dataset.clickBound='1'}}
+function navRender(){
+ const nav=document.getElementById('nav');if(!nav)return;
+ const allowedPages=PAGES.filter(p=>(p.id!=='staff'||canViewOwnerStaffActivity())&&(p.id!=='festivals'||canViewOwnerStaffActivity()));
+ const groups=[
+  {id:'workspace',label:{en:'WORKSPACE',th:'พื้นที่ทำงาน',my:'အလုပ်နေရာ'},ids:['chat','dashboard',...DEPTS.map(d=>d.id),'train']},
+  {id:'owner-database',label:{en:'OWNER DATABASE',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်'},ids:['owner','festivals','eventhistory','archive','settings']},
+  {id:'staff-database',label:{en:'STAFF DATABASE',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်'},ids:['staff','payroll','monthly','customervisits']}
+ ];
+ nav.innerHTML=groups.map(group=>{
+  const items=allowedPages.filter(p=>group.ids.includes(p.id));
+  if(!items.length)return '';
+  return '<section class="pdk-nav-group pdk-nav-group-'+group.id+'"><div class="pdk-nav-group-title">'+(group.label[lang]||group.label.en)+'</div>'+items.map(p=>'<button type="button" class="'+(page===p.id?'active':'')+'" data-page="'+p.id+'">'+p.icon+' '+(p[lang]||p.en)+'</button>').join('')+'</section>';
+ }).join('');
+ if(!nav.dataset.clickBound){nav.addEventListener('click',function(e){const b=e.target.closest('button[data-page]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();go(b.dataset.page)},true);nav.dataset.clickBound='1'}
+}
 function go(p){if(p==='festivals'&&!canViewOwnerStaffActivity()){alert('Thailand Festival Calendar ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p==='staff'&&!canViewOwnerStaffActivity()){alert('Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p!=='event')activeEventLocationNo='';page=p;try{if(currentRole==='owner'&&currentUser){if(p==='festivals')localStorage.setItem('tctl-owner-last-page-v1','festivals');else if(localStorage.getItem('tctl-owner-last-page-v1')==='festivals')localStorage.removeItem('tctl-owner-last-page-v1')}}catch(storageError){console.warn('Owner page preference could not be saved:',storageError)}const pageRoot=document.getElementById('pageContent');if(pageRoot)delete pageRoot.dataset.uiPage;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render(true)}
 async function archiveTicket(id){
  const t=tickets.find(x=>String(x.id)===String(id));if(!t||t.isArchived)return;
@@ -5917,7 +6372,7 @@ function renderDashboard(){
  '<div class="mk-dashboard">'+
  '<div class="mk-dashboard-head"><div><h2>Welcome to Ticket Control</h2><p>Owner workspace · Pattaya Dinosaur Kingdom</p></div><span class="subtle">Premium Management</span></div>'+
  '<div class="mk-dashboard-kpis">'+
- '<div class="mk-kpi"><div class="mk-kpi-label">🎟️ Ticket Types</div><strong class="mk-kpi-value">'+fmt(tickets.length)+'</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">🎟️ Ticket Types</div><strong class="mk-kpi-value">'+fmt(activeTickets.length)+'</strong></div>'+
  '<div class="mk-kpi"><div class="mk-kpi-label">👥 Recorded Quantity</div><strong class="mk-kpi-value">'+fmt(all)+'</strong></div>'+
  '<div class="mk-kpi"><div class="mk-kpi-label">฿ Inventory Value</div><strong class="mk-kpi-value">'+money(val)+'</strong></div>'+
  '</div>'+
@@ -6089,7 +6544,19 @@ function renderEventLocationChooserHtml(){
 function renderSelectedEventLocationHtml(){
  return '<div class="event-location-current"><span id="selectedEventLocationName">📍 '+esc(eventLocationLabel(activeEventLocationNo))+'</span><button type="button" class="event-location-change" id="backEventLocations">Change</button></div>';
 }
-function renderDept(list){let d=dep();const eventContextHtml=page==='event'?(activeEventLocationNo?renderSelectedEventLocationHtml():renderEventLocationChooserHtml()):'';document.getElementById('pageContent').innerHTML=eventContextHtml+'<div class="actions ticket-toolbar '+page+'-toolbar '+(page==='entry'?'entry-counter-toolbar':'')+'" style="display:grid!important;gap:7px!important;align-items:stretch!important;flex-wrap:nowrap!important;width:100%;max-width:100%;box-sizing:border-box;overflow:visible"><button type="button" class="gold" id="addBtn" style="width:100%;min-width:0;height:52px;min-height:52px;padding:4px 2px;font-size:13px;white-space:nowrap;box-sizing:border-box">＋ Add</button><button type="button" class="blue" id="ticketArchiveOpen" title="Archived tickets" aria-label="Archived tickets" style="width:100%;min-width:0;height:52px;padding:4px 2px;font-size:12px">🗂 Archive</button><button type="button" class="blue" id="backdateDateOpen" style="display:flex;align-items:center;justify-content:center;width:100%;min-width:0;max-width:100%;height:52px;min-height:52px;padding:4px 2px;font-size:12px;line-height:1;white-space:nowrap;box-sizing:border-box;overflow:hidden" aria-label="Add missed tickets" title="Add missed tickets">↶</button><button class="gold entry-counter-open" id="entryCounterOpen" type="button" style="display:none;width:100%;min-width:0;height:52px;min-height:52px;padding:4px 2px;box-sizing:border-box" aria-label="Open quantity counter" title="Open quantity counter">🎫</button><button class="blue toolbar-calc-btn" type="button" id="ticketRangeCalcBtn" style="display:none;align-items:center;justify-content:center;width:100%;min-width:0;height:52px;min-height:52px;padding:4px 1px;font-size:11px;white-space:nowrap;box-sizing:border-box" aria-label="Calculator" title="Calculator">🧮</button><button id="saveBtn" class="report-icon-btn save-image-btn" style="width:100%;min-width:0;height:52px;min-height:52px;flex:initial;padding:7px;box-sizing:border-box" aria-label="Save report as image" title="Save report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><path d="M4 17l5-5 3.5 3 2.5-2.5L20 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="blue report-icon-btn share-image-btn" id="shareBtn" style="width:100%;min-width:0;height:52px;min-height:52px;flex:initial;padding:7px;box-sizing:border-box" aria-label="Share report as image" title="Share report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+'</div>'+'<div class="modal" id="calcModal"><div class="modalbox" style="width:min(560px,100%);padding:16px"><div class="section-title"><h2 style="margin:0">🧮 Calculator</h2><button type="button" id="calcCloseBtn" aria-label="Close calculator" style="padding:8px 12px">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0"><button type="button" id="simpleTab" class="gold">▦ Simple</button><button type="button" id="ticketTab" class="blue">🎟 Ticket Number</button></div><section id="simpleCalcPane"><div style="background:#03172b;border:1px solid #315573;border-radius:14px;padding:14px;text-align:right;margin-bottom:10px"><div id="simpleCalcExpression" style="color:var(--muted);min-height:22px;overflow-wrap:anywhere"></div><div id="simpleCalcDisplay" style="font-size:2rem;font-weight:800;color:var(--gold);overflow-wrap:anywhere">0</div><div style="font-size:.78rem;color:var(--muted)">Memory: <b id="simpleCalcMemory">0</b></div></div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:8px"><button type="button" data-memory="clear">MC</button><button type="button" data-memory="recall">MR</button><button type="button" data-memory="add">M+</button><button type="button" data-memory="subtract">M−</button></div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px"><button type="button" data-calc-key="C">C</button><button type="button" data-calc-key="sign">±</button><button type="button" data-calc-key="%">%</button><button type="button" data-calc-key="/">÷</button><button type="button" data-calc-key="7">7</button><button type="button" data-calc-key="8">8</button><button type="button" data-calc-key="9">9</button><button type="button" data-calc-key="*">×</button><button type="button" data-calc-key="4">4</button><button type="button" data-calc-key="5">5</button><button type="button" data-calc-key="6">6</button><button type="button" data-calc-key="-">−</button><button type="button" data-calc-key="1">1</button><button type="button" data-calc-key="2">2</button><button type="button" data-calc-key="3">3</button><button type="button" data-calc-key="+">+</button><button type="button" data-calc-key="0" style="grid-column:span 2">0</button><button type="button" data-calc-key=".">.</button><button type="button" class="gold" data-calc-key="=">=</button></div></section><section id="ticketCalcPane" hidden><h3 style="margin:8px 0 14px">🎟️ Ticket Number Calculator</h3><label>Start ticket number<input id="ticketRangeStart" type="text" inputmode="numeric" autocomplete="off" placeholder="" style="width:100%;margin-top:5px"></label><label>End ticket number<input id="ticketRangeEnd" type="text" inputmode="numeric" autocomplete="off" placeholder="" style="width:100%;margin-top:5px"></label><button class="gold" type="button" id="ticketRangeCountBtn" style="margin-top:12px;width:100%">Calculate tickets</button><p id="ticketRangeResult" role="status" style="margin:10px 0 0;font-weight:700;color:var(--gold);font-size:1.05rem"></p><p class="subtle" style="margin-bottom:0">Count includes both start and end numbers.</p></section></div></div>'+(page==='sale'?'':'<input class="search" id="search" placeholder="'+tr('search')+'">')+'<div class="cards" id="ticketCards"></div>';if(page==='event'){document.querySelectorAll('[data-event-location]').forEach(b=>b.onclick=()=>{activeEventLocationNo=String(b.dataset.eventLocation||'');render()});const backEventLocations=document.getElementById('backEventLocations');if(backEventLocations)backEventLocations.onclick=()=>{activeEventLocationNo='';render()};const eventLocationBackButton=document.getElementById('eventLocationBackButton');if(eventLocationBackButton)eventLocationBackButton.onclick=()=>go('dashboard');if(!activeEventLocationNo)refreshEventLocations(false)}const archiveOpen=document.getElementById('ticketArchiveOpen');if(archiveOpen)archiveOpen.onclick=()=>go('archive');document.getElementById('addBtn').onclick=e=>{e.preventDefault();e.stopPropagation();if(page==='event'&&!activeEventLocationNo){alert('Please choose an Event Location first.');return}try{openTicket()}catch(error){console.error('Add Ticket form error:',error);alert('Unable to open Add Ticket form: '+(error&&error.message?error.message:'Unknown error'))}};const backdateOpenBtn=document.getElementById('backdateDateOpen');if(backdateOpenBtn){backdateOpenBtn.textContent='Add Missed';backdateOpenBtn.onclick=()=>openBackdateDatePicker(list);}const entryCounterBtn=document.getElementById('entryCounterOpen');if(entryCounterBtn){entryCounterBtn.style.display=page==='entry'?'flex':'none';entryCounterBtn.onclick=()=>openEntryCounter(list);}const toolbarCalcBtn=document.getElementById('ticketRangeCalcBtn');if(toolbarCalcBtn){toolbarCalcBtn.style.display=page==='sale'?'flex':'none';}document.getElementById('saveBtn').onclick=saveReport;document.getElementById('shareBtn').onclick=shareReport;const search=document.getElementById('search');if(search)search.oninput=e=>cards(list.filter(t=>t.name.toLowerCase().includes(e.target.value.toLowerCase())));const calcBtn=document.getElementById('ticketRangeCalcBtn'),calcModal=document.getElementById('calcModal'),simplePane=document.getElementById('simpleCalcPane'),ticketPane=document.getElementById('ticketCalcPane'),simpleTab=document.getElementById('simpleTab'),ticketTab=document.getElementById('ticketTab');let calcValue='0',calcStored=null,calcOperator=null,calcFresh=false,calcMemory=0,calcExpression='';const calcDisplay=document.getElementById('simpleCalcDisplay'),calcExpr=document.getElementById('simpleCalcExpression'),calcMem=document.getElementById('simpleCalcMemory');function paintCalc(){if(calcDisplay)calcDisplay.textContent=calcValue;if(calcExpr)calcExpr.textContent=calcExpression;if(calcMem)calcMem.textContent=String(calcMemory)}function chooseCalcTab(which){const simple=which==='simple';simplePane.hidden=!simple;ticketPane.hidden=simple;simpleTab.classList.toggle('gold',simple);simpleTab.classList.toggle('blue',!simple);ticketTab.classList.toggle('gold',!simple);ticketTab.classList.toggle('blue',simple);if(!simple)document.getElementById('ticketRangeStart').focus()}if(calcBtn)calcBtn.onclick=()=>{calcModal.classList.add('open');chooseCalcTab('ticket');paintCalc()};const calcClose=document.getElementById('calcCloseBtn');if(calcClose)calcClose.onclick=()=>calcModal.classList.remove('open');if(calcModal)calcModal.addEventListener('click',e=>{if(e.target===calcModal)calcModal.classList.remove('open')});if(simpleTab)simpleTab.onclick=()=>chooseCalcTab('simple');if(ticketTab)ticketTab.onclick=()=>chooseCalcTab('ticket');document.querySelectorAll('[data-calc-key]').forEach(btn=>btn.onclick=()=>{const k=btn.dataset.calcKey;if(k.length===1&&k>='0'&&k<='9'){calcValue=calcFresh||calcValue==='0'?k:calcValue+k;calcFresh=false}else if(k==='.'){if(calcFresh){calcValue='0.';calcFresh=false}else if(!calcValue.includes('.'))calcValue+='.'}else if(k==='C'){calcValue='0';calcStored=null;calcOperator=null;calcExpression='';calcFresh=false}else if(k==='sign'){calcValue=String(-Number(calcValue))}else if(k==='%'){calcValue=String(Number(calcValue)/100)}else if(k==='='){if(calcOperator!==null&&calcStored!==null){const a=calcStored,b=Number(calcValue);let out=calcOperator==='+'?a+b:calcOperator==='-'?a-b:calcOperator==='*'?a*b:b===0?NaN:a/b;calcExpression=String(a)+' '+calcOperator+' '+String(b)+' =';calcValue=Number.isFinite(out)?String(Number(out.toPrecision(12))):'Error';calcStored=null;calcOperator=null;calcFresh=true}}else{calcStored=Number(calcValue);calcOperator=k;calcExpression=calcValue+' '+(k==='*'?'×':k==='/'?'÷':k);calcFresh=true}paintCalc()});document.querySelectorAll('[data-memory]').forEach(btn=>btn.onclick=()=>{const m=btn.dataset.memory;if(m==='clear')calcMemory=0;else if(m==='recall'){calcValue=String(calcMemory);calcFresh=true}else if(m==='add')calcMemory+=Number(calcValue)||0;else if(m==='subtract')calcMemory-=Number(calcValue)||0;paintCalc()});['ticketRangeStart','ticketRangeEnd'].forEach(id=>{const input=document.getElementById(id);if(input)input.addEventListener('input',()=>{const result=document.getElementById('ticketRangeResult');if(result)result.textContent='';});});const countBtn=document.getElementById('ticketRangeCountBtn');if(countBtn)countBtn.onclick=()=>{const startText=document.getElementById('ticketRangeStart').value.trim(),endText=document.getElementById('ticketRangeEnd').value.trim(),result=document.getElementById('ticketRangeResult');if(!/^\d+$/.test(startText)||!/^\d+$/.test(endText)){result.textContent='Enter valid ticket numbers using digits only.';return}const start=Number(startText),end=Number(endText);if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||end<start){result.textContent='End ticket number must be equal to or greater than the start number.';return}result.textContent='Total tickets: '+(end-start+1).toLocaleString()+' (inclusive)';};cards(list)}
+
+function renderDepartmentMediaPanel(){
+ const isEvent=page==='event';
+ const cards=[
+  {title:'New Year · Fireworks',file:'/Happy%20NewYear%E2%80%99s.mp4',tag:'FESTIVAL'},
+  {title:'New Year · Alternate Fireworks',file:'/new-years-fireworks.mp4',tag:'FESTIVAL'},
+  {title:'Loy Krathong Festival',file:'/Loy%20Krathong%20Festival.mp4',poster:'/pdk-loy-krathong-photoreal.webp',tag:'FESTIVAL'},
+  {title:'Thailand National Children’s Day',file:'/Thailand%20National%20Children%E2%80%99s%20Day.mp4',tag:'FESTIVAL'},
+  {title:'Pattaya Dinosaur Kingdom · Daily Scene',file:'/PDK.mp4',tag:'EVERYDAY'}
+ ];
+ return '<section class="panel" style="margin:0 0 12px;padding:13px;border:1px solid rgba(232,185,79,.38);background:linear-gradient(145deg,rgba(19,52,82,.94),rgba(5,22,40,.98))"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b style="color:var(--gold)">🎬 '+(isEvent?'Event Department · Festival Media':'Playing Department · Daily Media')+'</b><p class="subtle" style="margin:4px 0 0;font-size:11px">'+(isEvent?'Festival video previews assigned to the Event Department':'Normal-day PDK video for the Playing Department')+'</p></div><span class="subtle" style="font-size:10px">VIEW ONLY</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px;margin-top:11px">'+cards.map(c=>'<article style="min-width:0;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(4,16,30,.55)"><div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px"><b style="font-size:12px">'+c.title+'</b><small style="color:var(--gold);font-size:9px">'+c.tag+'</small></div><video controls playsinline preload="metadata" '+(c.poster?'poster="'+c.poster+'"':'')+' style="display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#020812;border-radius:8px;filter:saturate(1.14) contrast(1.04)"><source src="'+c.file+'" type="video/mp4">Your browser does not support video.</video></article>').join('')+'</div></section>';
+}
+function renderDept(list){let d=dep();const eventContextHtml=page==='event'?(activeEventLocationNo?renderSelectedEventLocationHtml():renderEventLocationChooserHtml()):'';document.getElementById('pageContent').innerHTML=eventContextHtml+((page==='event'||page==='playing')?renderDepartmentMediaPanel():'')+'<div class="actions ticket-toolbar '+page+'-toolbar '+(page==='entry'?'entry-counter-toolbar':'')+'" style="display:grid!important;gap:7px!important;align-items:stretch!important;flex-wrap:nowrap!important;width:100%;max-width:100%;box-sizing:border-box;overflow:visible"><button type="button" class="gold" id="addBtn" style="width:100%;min-width:0;height:52px;min-height:52px;padding:4px 2px;font-size:13px;white-space:nowrap;box-sizing:border-box">＋ Add</button><button type="button" class="blue" id="ticketArchiveOpen" title="Archived tickets" aria-label="Archived tickets" style="width:100%;min-width:0;height:52px;padding:4px 2px;font-size:12px">🗂 Archive</button><button type="button" class="blue" id="backdateDateOpen" style="display:flex;align-items:center;justify-content:center;width:100%;min-width:0;max-width:100%;height:52px;min-height:52px;padding:4px 2px;font-size:12px;line-height:1;white-space:nowrap;box-sizing:border-box;overflow:hidden" aria-label="Add missed tickets" title="Add missed tickets">↶</button><button class="gold entry-counter-open" id="entryCounterOpen" type="button" style="display:none;width:100%;min-width:0;height:52px;min-height:52px;padding:4px 2px;box-sizing:border-box" aria-label="Open quantity counter" title="Open quantity counter">🎫</button><button class="blue toolbar-calc-btn" type="button" id="ticketRangeCalcBtn" style="display:none;align-items:center;justify-content:center;width:100%;min-width:0;height:52px;min-height:52px;padding:4px 1px;font-size:11px;white-space:nowrap;box-sizing:border-box" aria-label="Calculator" title="Calculator">🧮</button><button id="saveBtn" class="report-icon-btn save-image-btn" style="width:100%;min-width:0;height:52px;min-height:52px;flex:initial;padding:7px;box-sizing:border-box" aria-label="Save report as image" title="Save report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="8.5" r="1.6" fill="currentColor"/><path d="M4 17l5-5 3.5 3 2.5-2.5L20 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button class="blue report-icon-btn share-image-btn" id="shareBtn" style="width:100%;min-width:0;height:52px;min-height:52px;flex:initial;padding:7px;box-sizing:border-box" aria-label="Share report as image" title="Share report as image"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'+'</div>'+'<div class="modal" id="calcModal"><div class="modalbox" style="width:min(560px,100%);padding:16px"><div class="section-title"><h2 style="margin:0">🧮 Calculator</h2><button type="button" id="calcCloseBtn" aria-label="Close calculator" style="padding:8px 12px">✕</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0"><button type="button" id="simpleTab" class="gold">▦ Simple</button><button type="button" id="ticketTab" class="blue">🎟 Ticket Number</button></div><section id="simpleCalcPane"><div style="background:#03172b;border:1px solid #315573;border-radius:14px;padding:14px;text-align:right;margin-bottom:10px"><div id="simpleCalcExpression" style="color:var(--muted);min-height:22px;overflow-wrap:anywhere"></div><div id="simpleCalcDisplay" style="font-size:2rem;font-weight:800;color:var(--gold);overflow-wrap:anywhere">0</div><div style="font-size:.78rem;color:var(--muted)">Memory: <b id="simpleCalcMemory">0</b></div></div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:8px"><button type="button" data-memory="clear">MC</button><button type="button" data-memory="recall">MR</button><button type="button" data-memory="add">M+</button><button type="button" data-memory="subtract">M−</button></div><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px"><button type="button" data-calc-key="C">C</button><button type="button" data-calc-key="sign">±</button><button type="button" data-calc-key="%">%</button><button type="button" data-calc-key="/">÷</button><button type="button" data-calc-key="7">7</button><button type="button" data-calc-key="8">8</button><button type="button" data-calc-key="9">9</button><button type="button" data-calc-key="*">×</button><button type="button" data-calc-key="4">4</button><button type="button" data-calc-key="5">5</button><button type="button" data-calc-key="6">6</button><button type="button" data-calc-key="-">−</button><button type="button" data-calc-key="1">1</button><button type="button" data-calc-key="2">2</button><button type="button" data-calc-key="3">3</button><button type="button" data-calc-key="+">+</button><button type="button" data-calc-key="0" style="grid-column:span 2">0</button><button type="button" data-calc-key=".">.</button><button type="button" class="gold" data-calc-key="=">=</button></div></section><section id="ticketCalcPane" hidden><h3 style="margin:8px 0 14px">🎟️ Ticket Number Calculator</h3><label>Start ticket number<input id="ticketRangeStart" type="text" inputmode="numeric" autocomplete="off" placeholder="" style="width:100%;margin-top:5px"></label><label>End ticket number<input id="ticketRangeEnd" type="text" inputmode="numeric" autocomplete="off" placeholder="" style="width:100%;margin-top:5px"></label><button class="gold" type="button" id="ticketRangeCountBtn" style="margin-top:12px;width:100%">Calculate tickets</button><p id="ticketRangeResult" role="status" style="margin:10px 0 0;font-weight:700;color:var(--gold);font-size:1.05rem"></p><p class="subtle" style="margin-bottom:0">Count includes both start and end numbers.</p></section></div></div>'+(page==='sale'?'':'<input class="search" id="search" placeholder="'+tr('search')+'">')+'<div class="cards" id="ticketCards"></div>';if(page==='event'){document.querySelectorAll('[data-event-location]').forEach(b=>b.onclick=()=>{activeEventLocationNo=String(b.dataset.eventLocation||'');render()});const backEventLocations=document.getElementById('backEventLocations');if(backEventLocations)backEventLocations.onclick=()=>{activeEventLocationNo='';render()};const eventLocationBackButton=document.getElementById('eventLocationBackButton');if(eventLocationBackButton)eventLocationBackButton.onclick=()=>go('dashboard');if(!activeEventLocationNo)refreshEventLocations(false)}const archiveOpen=document.getElementById('ticketArchiveOpen');if(archiveOpen)archiveOpen.onclick=()=>go('archive');document.getElementById('addBtn').onclick=e=>{e.preventDefault();e.stopPropagation();if(page==='event'&&!activeEventLocationNo){alert('Please choose an Event Location first.');return}try{openTicket()}catch(error){console.error('Add Ticket form error:',error);alert('Unable to open Add Ticket form: '+(error&&error.message?error.message:'Unknown error'))}};const backdateOpenBtn=document.getElementById('backdateDateOpen');if(backdateOpenBtn){backdateOpenBtn.textContent='Add Missed';backdateOpenBtn.onclick=()=>openBackdateDatePicker(list);}const entryCounterBtn=document.getElementById('entryCounterOpen');if(entryCounterBtn){entryCounterBtn.style.display=page==='entry'?'flex':'none';entryCounterBtn.onclick=()=>openEntryCounter(list);}const toolbarCalcBtn=document.getElementById('ticketRangeCalcBtn');if(toolbarCalcBtn){toolbarCalcBtn.style.display=page==='sale'?'flex':'none';}document.getElementById('saveBtn').onclick=saveReport;document.getElementById('shareBtn').onclick=shareReport;const search=document.getElementById('search');if(search)search.oninput=e=>cards(list.filter(t=>t.name.toLowerCase().includes(e.target.value.toLowerCase())));const calcBtn=document.getElementById('ticketRangeCalcBtn'),calcModal=document.getElementById('calcModal'),simplePane=document.getElementById('simpleCalcPane'),ticketPane=document.getElementById('ticketCalcPane'),simpleTab=document.getElementById('simpleTab'),ticketTab=document.getElementById('ticketTab');let calcValue='0',calcStored=null,calcOperator=null,calcFresh=false,calcMemory=0,calcExpression='';const calcDisplay=document.getElementById('simpleCalcDisplay'),calcExpr=document.getElementById('simpleCalcExpression'),calcMem=document.getElementById('simpleCalcMemory');function paintCalc(){if(calcDisplay)calcDisplay.textContent=calcValue;if(calcExpr)calcExpr.textContent=calcExpression;if(calcMem)calcMem.textContent=String(calcMemory)}function chooseCalcTab(which){const simple=which==='simple';simplePane.hidden=!simple;ticketPane.hidden=simple;simpleTab.classList.toggle('gold',simple);simpleTab.classList.toggle('blue',!simple);ticketTab.classList.toggle('gold',!simple);ticketTab.classList.toggle('blue',simple);if(!simple)document.getElementById('ticketRangeStart').focus()}if(calcBtn)calcBtn.onclick=()=>{calcModal.classList.add('open');chooseCalcTab('ticket');paintCalc()};const calcClose=document.getElementById('calcCloseBtn');if(calcClose)calcClose.onclick=()=>calcModal.classList.remove('open');if(calcModal)calcModal.addEventListener('click',e=>{if(e.target===calcModal)calcModal.classList.remove('open')});if(simpleTab)simpleTab.onclick=()=>chooseCalcTab('simple');if(ticketTab)ticketTab.onclick=()=>chooseCalcTab('ticket');document.querySelectorAll('[data-calc-key]').forEach(btn=>btn.onclick=()=>{const k=btn.dataset.calcKey;if(k.length===1&&k>='0'&&k<='9'){calcValue=calcFresh||calcValue==='0'?k:calcValue+k;calcFresh=false}else if(k==='.'){if(calcFresh){calcValue='0.';calcFresh=false}else if(!calcValue.includes('.'))calcValue+='.'}else if(k==='C'){calcValue='0';calcStored=null;calcOperator=null;calcExpression='';calcFresh=false}else if(k==='sign'){calcValue=String(-Number(calcValue))}else if(k==='%'){calcValue=String(Number(calcValue)/100)}else if(k==='='){if(calcOperator!==null&&calcStored!==null){const a=calcStored,b=Number(calcValue);let out=calcOperator==='+'?a+b:calcOperator==='-'?a-b:calcOperator==='*'?a*b:b===0?NaN:a/b;calcExpression=String(a)+' '+calcOperator+' '+String(b)+' =';calcValue=Number.isFinite(out)?String(Number(out.toPrecision(12))):'Error';calcStored=null;calcOperator=null;calcFresh=true}}else{calcStored=Number(calcValue);calcOperator=k;calcExpression=calcValue+' '+(k==='*'?'×':k==='/'?'÷':k);calcFresh=true}paintCalc()});document.querySelectorAll('[data-memory]').forEach(btn=>btn.onclick=()=>{const m=btn.dataset.memory;if(m==='clear')calcMemory=0;else if(m==='recall'){calcValue=String(calcMemory);calcFresh=true}else if(m==='add')calcMemory+=Number(calcValue)||0;else if(m==='subtract')calcMemory-=Number(calcValue)||0;paintCalc()});['ticketRangeStart','ticketRangeEnd'].forEach(id=>{const input=document.getElementById(id);if(input)input.addEventListener('input',()=>{const result=document.getElementById('ticketRangeResult');if(result)result.textContent='';});});const countBtn=document.getElementById('ticketRangeCountBtn');if(countBtn)countBtn.onclick=()=>{const startText=document.getElementById('ticketRangeStart').value.trim(),endText=document.getElementById('ticketRangeEnd').value.trim(),result=document.getElementById('ticketRangeResult');if(!/^\d+$/.test(startText)||!/^\d+$/.test(endText)){result.textContent='Enter valid ticket numbers using digits only.';return}const start=Number(startText),end=Number(endText);if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||end<start){result.textContent='End ticket number must be equal to or greater than the start number.';return}result.textContent='Total tickets: '+(end-start+1).toLocaleString()+' (inclusive)';};cards(list)}
 let entryCounterItems=[],entryCounterPending=new Map(),entryCounterTimers=new Map();
 function openEntryCounter(items){
  entryCounterItems=items.filter(t=>t.department==='entry');
@@ -6124,7 +6591,7 @@ function commitEntryCounter(id){
  }
 }
 function paintEntryCounterTotal(){
- const total=entryCounterItems.reduce((n,t)=>n+Number(t.quantity||0),0);
+ const total=entryCounterItems.reduce((n,t)=>n+Math.max(0,Number(t.quantity||0)+(entryCounterPending.get(t.id)||0)),0);
  const el=document.getElementById('entryCounterTotal');if(el)el.innerHTML=total.toLocaleString()+' tickets<small>Auto-saved to Entry Ticket</small>';
 }
 function closeEntryCounter(){
@@ -6977,7 +7444,7 @@ async function createEventStaffAccount(e){
  }catch(ex){err.textContent=ex.message||'Could not create Event Staff account.'}
  finally{btn.disabled=false}
 }
-function renderDatabase(){if(page==='staff'&&!canViewOwnerStaffActivity()){const root=document.getElementById('pageContent');if(root)root.innerHTML='<section class="panel" role="alert"><h2>Owner access required</h2><p class="subtle">Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။</p></section>';return}const pageRoot=document.getElementById('pageContent');const staleProfileModal=document.getElementById('staffProfileModal');if(staleProfileModal&&pageRoot&&!pageRoot.contains(staleProfileModal))staleProfileModal.remove();const staffLink='https://pattaya-dinosaur-ticket-control.vercel.app/staff.html';const eventStaffLink='https://pattaya-dinosaur-ticket-control-eight.vercel.app/event-staff.html';document.getElementById('pageContent').dataset.uiPage=page;document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+(page==='owner'?'Owner Database':'Staff Database')+'</h2><p>'+(page==='owner'?'Owner account and sign-in information.':'Staff Database is available. Select a section below to view staff activity, payroll, and website links.')+'</p>'+(page==='owner'?'<div class="panel" style="margin:14px 0;padding:14px;border:1px solid var(--gold);border-radius:16px"><h3 style="margin:0 0 6px">Staff Payroll</h3><p class="subtle">Open staff and Owner payroll, daily wage settings and attendance records.</p><button type="button" class="gold" id="openOwnerPayroll">฿ Open Staff Payroll</button></div><div id="ownerLoginHistory" class="panel" style="margin-top:14px;padding:16px">Loading Owner login history…</div>':'')+(page==='staff'?'<div class="panel" style="margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:14px"><h3 style="margin:0 0 8px">Staff Website Link</h3><p class="subtle" style="overflow-wrap:anywhere;margin:0 0 12px">'+staffLink+'</p><div class="actions"><button class="blue" id="openStaffWebsite">↗ Open Staff Website</button><button id="copyStaffWebsite">▢ Copy Staff Link</button></div></div>':'')+(page==='staff'?'<div class="panel" style="margin:14px 0;padding:14px;border:1px solid var(--gold);border-radius:16px"><h3 style="margin:0 0 8px">🎪 Event Staff Website Link</h3><p class="subtle" style="overflow-wrap:anywhere;margin:0 0 12px">Dedicated Event Ticket Department login. This is separate from the Normal Staff Website and Owner account.</p><p style="overflow-wrap:anywhere;margin:0 0 12px;color:var(--gold)">'+eventStaffLink+'</p><div class="actions"><button type="button" class="gold" id="openEventStaffWebsite">↗ Open Event Staff Website</button><button type="button" id="copyEventStaffWebsite">▢ Copy Event Staff Link</button></div><p id="eventStaffLinkStatus" class="subtle" aria-live="polite" style="margin:10px 0 0"></p></div>':'')+(page==='staff'?'<div class="notice">Edit each staff member name and profile photo here. The staff member does not need to upload a photo.</div><div class="panel" style="margin:14px 0;padding:14px;border:1px solid var(--gold);border-radius:16px"><h3 style="margin:0 0 6px">Staff Payroll</h3><p class="subtle">Set daily wages, salary periods and review each staff member’s work days and days off.</p><button type="button" class="gold" id="openStaffPayroll">฿ Open Staff Payroll</button></div><div id="staffActivityTabs" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 10px"><button type="button" id="showNormalStaffTab" class="gold" aria-pressed="true">👥 Normal Staff</button><button type="button" id="showEventStaffTab" aria-pressed="false">🎪 Event Staff</button></div><div id="staffActivityToolbar" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px"><div id="normalStaffActivityActions" class="actions" style="margin:0"><button id="enableStaffNotifications" class="gold">🔔 Enable notifications</button><button id="refreshStaffActivity">↻ Refresh</button></div><div id="eventStaffActivityActions" class="actions" style="display:none;margin:0"><button type="button" id="refreshEventStaffActivity">↻ Refresh Event Staff</button></div></div><div id="normalStaffActivitySection"><div class="section-title" style="margin-top:8px"><div><h3>Staff Login Activity</h3><span class="subtle">Owner only · Same staff name is grouped into one row. Active status updates automatically.</span></div></div><div id="staffActivityList" class="panel" style="padding:10px">Loading staff activity…</div></div><div id="eventStaffActivitySection" style="display:none"><div class="section-title" style="margin-top:8px"><div><h3>🎪 Event Staff Login Activity</h3><span class="subtle">Event Staff login records are shown separately from Normal Staff.</span></div></div><div id="eventStaffAccountsList" class="panel" style="padding:10px">Loading Event Staff activity…</div></div><div id="staffProfileModal" class="modal"><div class="modalbox"><h2>Edit Staff Profile</h2><p class="subtle">Change the display name and optional profile photo. Existing ticket data will not be changed.</p><form id="staffProfileForm"><input type="hidden" id="staffProfileUserId"><input type="hidden" id="staffProfileOldName"><label for="staffProfileName">Staff name</label><input id="staffProfileName" maxlength="80" required><label for="staffProfileId" style="margin-top:10px">Permanent Staff ID (Owner assigned)</label><input id="staffProfileId" maxlength="32" placeholder="Example: STF-001" autocomplete="off"><small class="subtle">Unique ID. Changing the staff name will not change this ID.</small><label for="staffProfileBirthday" style="margin-top:10px">🎂 Birthday (optional)</label><input id="staffProfileBirthday" type="date" max="9999-12-31"><small class="subtle">Used only to show this Staff member a birthday greeting each year.</small><label for="staffProfilePhoto" style="margin-top:10px">Profile photo (optional)</label><input id="staffProfilePhoto" type="file" accept="image/*"><div id="staffProfilePreview" style="margin:12px 0"></div><div id="staffAvatarCropPanel" style="display:none;margin:12px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#071a2c"><strong style="display:block;margin-bottom:8px">Adjust profile photo</strong><div style="display:flex;justify-content:center"><canvas id="staffAvatarCropCanvas" width="280" height="280" style="width:min(280px,75vw);height:min(280px,75vw);border-radius:50%;border:3px solid var(--gold);touch-action:none;background:#06182b"></canvas></div><p class="subtle" style="font-size:13px;line-height:1.6;margin:10px 0">Use <strong>two fingers</strong> to pinch in or out. Use <strong>one finger</strong> to move the photo and position it precisely. You can repeat these gestures until the crop looks right.</p><div class="actions" style="margin-top:8px"><button type="button" id="staffAvatarCropReset">↺ Reset position</button></div></div><div class="actions"><button class="gold" type="submit" id="staffProfileSave">Save Profile</button><button type="button" id="staffProfileRemovePhoto">Remove Photo</button><button type="button" id="staffProfileCancel">Cancel</button></div><div id="staffProfileError" class="auth-error"></div></form></div></div>':'<div class="notice">Edit each staff member name and profile photo here. The staff member does not need to upload a photo.</div>')+'</div>';
+function renderDatabase(){if(page==='staff'&&!canViewOwnerStaffActivity()){const root=document.getElementById('pageContent');if(root)root.innerHTML='<section class="panel" role="alert"><h2>Owner access required</h2><p class="subtle">Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။</p></section>';return}const pageRoot=document.getElementById('pageContent');const staleProfileModal=document.getElementById('staffProfileModal');if(staleProfileModal&&pageRoot&&!pageRoot.contains(staleProfileModal))staleProfileModal.remove();const staffLink='https://pattaya-dinosaur-ticket-control.vercel.app/staff.html';const eventStaffLink='https://pattaya-dinosaur-ticket-control-eight.vercel.app/event-staff.html';document.getElementById('pageContent').dataset.uiPage=page;document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+(page==='owner'?'Owner Database':'Staff Database')+'</h2><p>'+(page==='owner'?'Owner account and sign-in information.':'Staff Database is available. Select a section below to view staff activity, payroll, and website links.')+'</p>'+(page==='owner'?'<div id="ownerLoginHistory" class="panel" style="margin-top:14px;padding:16px">Loading Owner login history…</div>':'')+(page==='staff'?'<div class="panel" style="margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:14px"><h3 style="margin:0 0 8px">Staff Website Link</h3><p class="subtle" style="overflow-wrap:anywhere;margin:0 0 12px">'+staffLink+'</p><div class="actions"><button class="blue" id="openStaffWebsite">↗ Open Staff Website</button><button id="copyStaffWebsite">▢ Copy Staff Link</button></div></div>':'')+(page==='staff'?'<div class="panel" style="margin:14px 0;padding:14px;border:1px solid var(--gold);border-radius:16px"><h3 style="margin:0 0 8px">🎪 Event Staff Website Link</h3><p class="subtle" style="overflow-wrap:anywhere;margin:0 0 12px">Dedicated Event Ticket Department login. This is separate from the Normal Staff Website and Owner account.</p><p style="overflow-wrap:anywhere;margin:0 0 12px;color:var(--gold)">'+eventStaffLink+'</p><div class="actions"><button type="button" class="gold" id="openEventStaffWebsite">↗ Open Event Staff Website</button><button type="button" id="copyEventStaffWebsite">▢ Copy Event Staff Link</button></div><p id="eventStaffLinkStatus" class="subtle" aria-live="polite" style="margin:10px 0 0"></p></div>':'')+(page==='staff'?'<div class="notice">Edit each staff member name and profile photo here. The staff member does not need to upload a photo.</div><div class="panel" style="margin:14px 0;padding:14px;border:1px solid var(--gold);border-radius:16px"><h3 style="margin:0 0 6px">Staff Payroll</h3><p class="subtle">Set daily wages, salary periods and review each staff member’s work days and days off.</p><button type="button" class="gold" id="openStaffPayroll">฿ Open Staff Payroll</button></div><div id="staffActivityTabs" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 10px"><button type="button" id="showNormalStaffTab" class="gold" aria-pressed="true">👥 Normal Staff</button><button type="button" id="showEventStaffTab" aria-pressed="false">🎪 Event Staff</button></div><div id="staffActivityToolbar" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 12px"><div id="normalStaffActivityActions" class="actions" style="margin:0"><button id="enableStaffNotifications" class="gold">🔔 Enable notifications</button><button id="refreshStaffActivity">↻ Refresh</button></div><div id="eventStaffActivityActions" class="actions" style="display:none;margin:0"><button type="button" id="refreshEventStaffActivity">↻ Refresh Event Staff</button></div></div><div id="normalStaffActivitySection"><div class="section-title" style="margin-top:8px"><div><h3>Staff Login Activity</h3><span class="subtle">Owner only · Same staff name is grouped into one row. Active status updates automatically.</span></div></div><div id="staffActivityList" class="panel" style="padding:10px">Loading staff activity…</div></div><div id="eventStaffActivitySection" style="display:none"><div class="section-title" style="margin-top:8px"><div><h3>🎪 Event Staff Login Activity</h3><span class="subtle">Event Staff login records are shown separately from Normal Staff.</span></div></div><div id="eventStaffAccountsList" class="panel" style="padding:10px">Loading Event Staff activity…</div></div><div id="staffProfileModal" class="modal"><div class="modalbox"><h2>Edit Staff Profile</h2><p class="subtle">Change the display name and optional profile photo. Existing ticket data will not be changed.</p><form id="staffProfileForm"><input type="hidden" id="staffProfileUserId"><input type="hidden" id="staffProfileOldName"><label for="staffProfileName">Staff name</label><input id="staffProfileName" maxlength="80" required><label for="staffProfileId" style="margin-top:10px">Permanent Staff ID (Owner assigned)</label><input id="staffProfileId" maxlength="32" placeholder="Example: STF-001" autocomplete="off"><small class="subtle">Unique ID. Changing the staff name will not change this ID.</small><label for="staffProfileBirthday" style="margin-top:10px">🎂 Birthday (optional)</label><input id="staffProfileBirthday" type="date" max="9999-12-31"><small class="subtle">Used only to show this Staff member a birthday greeting each year.</small><label for="staffProfilePhoto" style="margin-top:10px">Profile photo (optional)</label><input id="staffProfilePhoto" type="file" accept="image/*"><div id="staffProfilePreview" style="margin:12px 0"></div><div id="staffAvatarCropPanel" style="display:none;margin:12px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#071a2c"><strong style="display:block;margin-bottom:8px">Adjust profile photo</strong><div style="display:flex;justify-content:center"><canvas id="staffAvatarCropCanvas" width="280" height="280" style="width:min(280px,75vw);height:min(280px,75vw);border-radius:50%;border:3px solid var(--gold);touch-action:none;background:#06182b"></canvas></div><p class="subtle" style="font-size:13px;line-height:1.6;margin:10px 0">Use <strong>two fingers</strong> to pinch in or out. Use <strong>one finger</strong> to move the photo and position it precisely. You can repeat these gestures until the crop looks right.</p><div class="actions" style="margin-top:8px"><button type="button" id="staffAvatarCropReset">↺ Reset position</button></div></div><div class="actions"><button class="gold" type="submit" id="staffProfileSave">Save Profile</button><button type="button" id="staffProfileRemovePhoto">Remove Photo</button><button type="button" id="staffProfileCancel">Cancel</button></div><div id="staffProfileError" class="auth-error"></div></form></div></div>':'<div class="notice">Edit each staff member name and profile photo here. The staff member does not need to upload a photo.</div>')+'</div>';
 if(page==='staff'){
  const shell=document.getElementById('pageContent').firstElementChild;
  const nav=document.createElement('div');nav.id='staffDatabaseSections';nav.style.cssText='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0';
@@ -8573,6 +9040,33 @@ function openThailandFestivalDate(date){
 .pdk-fc-hero[data-theme="national"]{background:linear-gradient(130deg,#0b3a61,#176c91 55%,#c18b3c)!important}
 .pdk-fc-hero[data-theme="national"],.pdk-fc-hero[data-theme="royal"],.pdk-fc-hero[data-theme="vegetarian"],.pdk-fc-hero[data-theme="chinese"],.pdk-fc-hero[data-theme="buddhist"],.pdk-fc-hero[data-theme="songkran"]{isolation:isolate}
 @media(prefers-reduced-motion:reduce){#appDateTime .pdk-auto-festival-canvas,.pdk-fc-hero .pdk-auto-festival-canvas{opacity:.5}}
+
+/* PDK UI refresh — final cascade layer, visual-only */
+#ticketCards{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr))!important;align-items:stretch!important;gap:16px!important}
+#ticketCards>.ticket{display:flex!important;flex-direction:column!important;min-width:0!important;height:100%!important;overflow:hidden!important;border:1px solid rgba(244,202,112,.38)!important;border-radius:18px!important;background:linear-gradient(155deg,#153b5b 0%,#0a2037 100%)!important;box-shadow:0 10px 26px rgba(0,0,0,.24)!important;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease!important}
+#ticketCards>.ticket:hover{transform:translateY(-3px);border-color:rgba(244,202,112,.8)!important;box-shadow:0 14px 30px rgba(0,0,0,.32)!important}
+#ticketCards>.ticket>img{width:100%!important;height:clamp(112px,15vw,158px)!important;object-fit:cover!important}
+#ticketCards>.ticket .ticket-body{display:flex!important;flex:1 1 auto!important;flex-direction:column!important;gap:9px!important;padding:13px!important;min-width:0!important}
+#ticketCards>.ticket h3{font-size:clamp(15px,1.4vw,18px)!important;line-height:1.35!important;font-weight:850!important}
+#ticketCards>.ticket .price{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:40px!important;padding:8px 13px!important;border:1px solid rgba(255,232,173,.7)!important;border-radius:12px!important;background:linear-gradient(135deg,#ffe7a6,#e4ad3e)!important;color:#102039!important;font-weight:950!important;font-variant-numeric:tabular-nums!important}
+#ticketCards>.ticket .ticket-quantity-highlight{align-self:flex-start!important;min-height:40px!important;padding:7px 11px!important;border-radius:11px!important}
+#ticketCards>.ticket .qty{width:100%!important;min-height:48px!important;padding:11px 12px!important;border:1px solid #587894!important;border-radius:12px!important;background:#06182b!important;color:#f4f7fb!important;font-size:16px!important;font-weight:800!important;text-align:center!important}
+#ticketCards>.ticket .qty:focus{border-color:#f4ca70!important;outline:3px solid rgba(244,202,112,.2)!important;outline-offset:1px!important}
+#ticketCards>.ticket .ticket-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;margin-top:auto!important;padding-top:5px!important}
+#ticketCards>.ticket .ticket-actions button{width:100%!important;min-width:0!important;min-height:44px!important;border-radius:11px!important;font-size:13px!important;font-weight:850!important}
+#ticketCards button:focus-visible,.ticket-more-dialog button:focus-visible{outline:3px solid #f4ca70!important;outline-offset:2px!important}
+@media(min-width:900px){#ticketCards{grid-template-columns:repeat(auto-fill,minmax(245px,1fr))!important;gap:18px!important}}
+@media(max-width:520px){
+ #ticketCards{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+ #ticketCards>.ticket{border-radius:14px!important}
+ #ticketCards>.ticket>img{height:clamp(82px,26vw,118px)!important}
+ #ticketCards>.ticket .ticket-body{padding:9px!important;gap:7px!important}
+ #ticketCards>.ticket h3{font-size:13px!important}
+ #ticketCards>.ticket .ticket-actions{grid-template-columns:1fr!important;gap:6px!important}
+ #ticketCards>.ticket .ticket-actions button{min-height:40px!important;font-size:12px!important;padding:8px 5px!important}
+ #ticketCards>.ticket .qty{min-height:44px!important}
+}
+@media(prefers-reduced-motion:reduce){#ticketCards>.ticket{transition:none!important}#ticketCards>.ticket:hover{transform:none!important}}
 </style>
 <script id="pdk-auto-festival-video-scenes-v1">
 (function(){
