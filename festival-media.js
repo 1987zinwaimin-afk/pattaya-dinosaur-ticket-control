@@ -398,7 +398,7 @@
     if (typeof window.renderThailandFestivalCalendar === 'function') {
       window.renderThailandFestivalCalendar = renderCalendar;
     }
-    if (window.sb && sb.auth) {
+    if (sb && sb.auth) {
       sb.auth.onAuthStateChange(() => {
         mediaRows=[];lastMediaFetch=0;
         setTimeout(()=>{if(document.getElementById('appDateTime'))syncDateTimeVideo(true);},500);
