@@ -5121,45 +5121,78 @@ function renderStaffDashboard(visible){
  const value=scoped.reduce((sum,t)=>sum+Number(t.quantity||0)*Number(t.price||0),0);
  const departmentList=selectedStaffDepartment==='all'?DEPTS.filter(d=>['sale','entry','playing'].includes(d.id)):DEPTS.filter(d=>d.id===selectedStaffDepartment);
  const label=(en,th,my)=>lang==='my'?my:lang==='th'?th:en;
- const deptCards=departmentList.map(d=>{const rows=scoped.filter(t=>t.department===d.id);const count=rows.reduce((sum,t)=>sum+Number(t.quantity||0),0);const amount=rows.reduce((sum,t)=>sum+Number(t.quantity||0)*Number(t.price||0),0);return '<button type="button" class="panel staff-dash-dept-card" data-staff-dash-page="'+d.id+'"><span class="staff-dash-dept-icon">'+d.icon+'</span><b>'+(d[lang]||d.en)+'</b><span class="subtle">'+rows.length+' '+label('ticket types','ประเภทตั๋ว','လက်မှတ်အမျိုးအစား')+'</span><strong>'+count.toLocaleString()+' · '+money(amount)+'</strong></button>'}).join('');
+ const fmt=n=>Number(n||0).toLocaleString();
+ const deptCards=departmentList.map(d=>{
+  const rows=scoped.filter(t=>t.department===d.id);
+  const count=rows.reduce((sum,t)=>sum+Number(t.quantity||0),0);
+  const amount=rows.reduce((sum,t)=>sum+Number(t.quantity||0)*Number(t.price||0),0);
+  return '<button type="button" class="staff-dash-dept-card" data-staff-dash-page="'+d.id+'"><span class="staff-dash-dept-icon">'+d.icon+'</span><span class="staff-dash-dept-copy"><b>'+(d[lang]||d.en)+'</b><small>'+rows.length+' '+label('ticket types','ประเภทตั๋ว','လက်မှတ်အမျိုးအစား')+'</small><strong>'+fmt(count)+' · '+money(amount)+'</strong></span><span class="staff-dash-arrow" aria-hidden="true">›</span></button>';
+ }).join('');
  const assignedName=selectedStaffDepartment==='all'?label('All Departments','ทุกแผนก','ဌာနအားလုံး'):(DEPTS.find(d=>d.id===selectedStaffDepartment)?.[lang]||DEPTS.find(d=>d.id===selectedStaffDepartment)?.en||'Staff');
- root.innerHTML=`<style>
-#pageContent[data-ui-page="staff-dashboard"]{padding:0 0 14px}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px;padding:2px 0;flex-wrap:nowrap}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head>div{min-width:0;flex:1}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head h2{margin:0;color:#ffe2a0;font-size:1.02rem;line-height:1.25}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head .subtle{font-size:.76rem;line-height:1.35}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head>span{white-space:nowrap;text-align:right;font-size:.74rem}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-section{margin:12px 0 7px;color:#ffe2a0;font-size:.94rem;line-height:1.25}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-items:stretch}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts>.staff-dash-dept-card{width:100%;max-width:none;box-sizing:border-box;margin:0}
-/* Robust dashboard selector: page routing may render the page marker on a wrapper */
-#pageContent .staff-dash-depts{display:grid!important;width:100%;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important}
-#pageContent .staff-dash-depts>.staff-dash-dept-card{display:flex!important;width:100%!important;min-width:0!important;max-width:none!important;grid-column:auto!important;box-sizing:border-box!important;margin:0!important}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:3px;min-width:0;min-height:0;padding:10px;border:1px solid #d8b65f44;border-radius:13px;background:linear-gradient(145deg,#123651,#081b30);color:#f7f9fc;box-shadow:0 4px 12px #0002}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-icon{font-size:17px;line-height:1.15}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card b{font-size:.84rem;line-height:1.25;color:#ffe2a0}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card .subtle{font-size:.73rem;line-height:1.25}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card strong{color:#ffe08a;font-size:.84rem;line-height:1.25}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick{margin-top:10px;padding:10px}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:7px 0 0}
-#pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick .actions button{min-width:0;min-height:38px;padding:7px 6px;font-size:.78rem;white-space:normal}
-#stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:8px 0 12px}
-#stats .stat{min-width:0;padding:9px 9px;border-radius:13px}
-#stats .stat span{font-size:.7rem;line-height:1.2}
-#stats .stat strong{font-size:1rem;line-height:1.2;margin-top:3px}
-@media(max-width:380px){#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{gap:6px}#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{padding:8px}#stats{gap:5px}#stats .stat{padding:8px 7px}}
-</style>`+
- '<div class="staff-dash-head"><div><h2>'+label('Staff Dashboard','แดชบอร์ดพนักงาน','Staff Dashboard')+'</h2><span class="subtle">'+label('Your assigned workspace','พื้นที่ทำงานของคุณ','သတ်မှတ်ထားသော လုပ်ငန်းခွင်')+' · '+assignedName+'</span></div><span class="subtle">'+new Date().toLocaleDateString()+'</span></div>'+
- '<h3 class="staff-dash-section">'+label('Department overview','ภาพรวมแผนก','ဌာနအလိုက် အနှစ်ချုပ်')+'</h3><div class="staff-dash-depts">'+deptCards+'</div>'+
- '<div class="panel staff-dash-quick"><h3 style="margin:0;color:#ffe2a0">'+label('Quick access','ทางลัด','အမြန်ဝင်ရောက်ရန်')+'</h3><div class="actions">'+
- '<button type="button" class="gold" id="staffDashDepartment">🎟️ '+label('Open my department','เปิดแผนกของฉัน','မိမိဌာနကိုဖွင့်ရန်')+'</button>'+
- '<button type="button" id="staffDashSettings">⚙ '+label('Settings','ตั้งค่า','ဆက်တင်များ')+'</button>'+
- (selectedStaffDepartment==='entry'||selectedStaffDepartment==='all'?'<button type="button" id="staffDashVisits">👥 '+label('Customer Visits','ผู้เข้าชม','ဧည့်သည်မှတ်တမ်း')+'</button>':'')+
- (selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'?'<button type="button" id="staffDashTrain">🚆 '+label('Garden Train','Garden Train','Garden Train')+'</button>':'')+
- '<button type="button" id="staffDashPayroll">฿ '+label('My Payroll','เงินเดือนของฉัน','ကျွန်ုပ်၏လစာ')+'</button></div><p class="subtle" style="margin:8px 0 0">'+label('Figures shown are the current ticket records available to your account, not a separate cash-register settlement.','ตัวเลขเป็นข้อมูลตั๋วที่บัญชีของคุณเข้าถึงได้ ไม่ใช่ยอดปิดเครื่องคิดเงิน','ပြသထားသော ကိန်းဂဏန်းများသည် Account တွင်ရှိသော Ticket မှတ်တမ်းများဖြစ်ပြီး Cash Register စာရင်းပိတ်ยอดမဟုတ်ပါ။')+'</p></div>';
+ const today=new Intl.DateTimeFormat(lang==='my'?'my-MM':lang==='th'?'th-TH':'en-GB',{day:'2-digit',month:'short',year:'numeric'}).format(new Date());
  root.dataset.uiPage='staff-dashboard';
+ root.innerHTML=`<style>
+#pageContent[data-ui-page="staff-dashboard"]{display:grid;gap:14px;padding:0 0 16px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:4px 2px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head h2{margin:0;color:var(--text);font-size:clamp(1.35rem,3vw,1.8rem);letter-spacing:-.025em}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-head p{margin:5px 0 0;color:var(--muted);font-size:.9rem}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-date{flex:0 0 auto;padding:7px 11px;border:1px solid var(--line);border-radius:99px;background:rgba(18,54,80,.55);color:var(--muted);font-size:.78rem}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpi{min-width:0;padding:13px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(145deg,rgba(23,64,94,.88),rgba(8,29,49,.96));box-shadow:0 7px 20px rgba(0,0,0,.13)}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpi span{display:block;color:var(--muted);font-size:.76rem;line-height:1.3}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpi strong{display:block;margin-top:6px;color:var(--gold);font-size:clamp(1.05rem,2.8vw,1.5rem);line-height:1.15;overflow-wrap:anywhere}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-section{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-section h3{margin:0;color:var(--text);font-size:1.05rem}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-section span{color:var(--muted);font-size:.78rem}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{display:flex;align-items:center;gap:11px;min-width:0;min-height:94px;padding:13px;text-align:left;border:1px solid rgba(133,164,190,.25);border-radius:17px;background:linear-gradient(145deg,#153b59,#0b243b);color:var(--text);box-shadow:0 6px 18px rgba(0,0,0,.13)}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card:hover{border-color:rgba(242,198,109,.55)}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-icon{width:42px;height:42px;flex:0 0 42px;display:grid;place-items:center;border-radius:13px;background:rgba(242,198,109,.12);font-size:22px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-copy{display:block;min-width:0;flex:1}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-copy b{display:block;font-size:.9rem;line-height:1.3;overflow-wrap:anywhere}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-copy small{display:block;margin-top:4px;color:var(--muted);font-size:.74rem}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-copy strong{display:block;margin-top:5px;color:var(--gold);font-size:.88rem;line-height:1.25;overflow-wrap:anywhere}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-arrow{color:var(--gold);font-size:1.45rem}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick{padding:16px;border-radius:19px}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick h3{margin:0;color:var(--text);font-size:1.02rem}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0 0}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick .actions button{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-width:0;min-height:46px;padding:10px 12px;text-align:left;font-size:.84rem;white-space:normal;box-shadow:none}
+#pageContent[data-ui-page="staff-dashboard"] .staff-dash-note{margin:11px 0 0;padding-top:10px;border-top:1px solid var(--line);color:var(--muted);font-size:.76rem;line-height:1.45}
+@media(max-width:560px){
+ #pageContent[data-ui-page="staff-dashboard"]{gap:11px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpis{gap:7px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpi{padding:10px 9px;border-radius:14px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpi span{font-size:.68rem}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-kpi strong{font-size:1rem}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{gap:8px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{gap:8px;min-height:88px;padding:10px;border-radius:15px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-icon{width:35px;height:35px;flex-basis:35px;font-size:19px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-copy b{font-size:.8rem}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-copy strong{font-size:.78rem}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-arrow{font-size:1.1rem}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick{padding:13px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick .actions{gap:7px}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-quick .actions button{min-height:43px;padding:9px;font-size:.78rem}
+}
+@media(max-width:360px){
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-depts{grid-template-columns:1fr}
+ #pageContent[data-ui-page="staff-dashboard"] .staff-dash-dept-card{min-height:76px}
+}
+</style>
+<div class="staff-dash-head"><div><h2>${label('Welcome back','ยินดีต้อนรับกลับ','ပြန်လည်ကြိုဆိုပါတယ်')}</h2><p>${label('Your assigned workspace','พื้นที่ทำงานของคุณ','သတ်မှတ်ထားသော လုပ်ငန်းခွင်')} · ${assignedName}</p></div><span class="staff-dash-date">${today}</span></div>
+<div class="staff-dash-kpis">
+ <div class="staff-dash-kpi"><span>🎟️ ${label('Ticket types','ประเภทตั๋ว','လက်မှတ်အမျိုးအစား')}</span><strong>${fmt(scoped.length)}</strong></div>
+ <div class="staff-dash-kpi"><span>📦 ${label('Recorded quantity','จำนวนคงเหลือ','မှတ်တမ်းရှိ အရေအတွက်')}</span><strong>${fmt(quantity)}</strong></div>
+ <div class="staff-dash-kpi"><span>฿ ${label('Inventory value','มูลค่ารวม','စုစုပေါင်းတန်ဖိုး')}</span><strong>${money(value)}</strong></div>
+</div>
+<section><div class="staff-dash-section"><h3>${label('Department overview','ภาพรวมแผนก','ဌာနအလိုက် အနှစ်ချုပ်')}</h3><span>${departmentList.length} ${label('available','departments','ဌာန')}</span></div><div class="staff-dash-depts">${deptCards}</div></section>
+<section class="panel staff-dash-quick"><h3>${label('Quick access','ทางลัด','အမြန်ဝင်ရောက်ရန်')}</h3><div class="actions">
+ <button type="button" class="gold" id="staffDashDepartment">🎟️ ${label('Open my department','เปิดแผนกของฉัน','မိမိဌာနကိုဖွင့်ရန်')}</button>
+ <button type="button" id="staffDashSettings">⚙ ${label('Settings','ตั้งค่า','ဆက်တင်များ')}</button>
+ ${(selectedStaffDepartment==='entry'||selectedStaffDepartment==='all'?'<button type="button" id="staffDashVisits">👥 '+label('Customer Visits','ผู้เข้าชม','ဧည့်သည်မှတ်တမ်း')+'</button>':'')}
+ ${(selectedStaffDepartment==='playing'||selectedStaffDepartment==='all'?'<button type="button" id="staffDashTrain">🚆 '+label('Garden Train','Garden Train','Garden Train')+'</button>':'')}
+ <button type="button" id="staffDashPayroll">฿ ${label('My Payroll','เงินเดือนของฉัน','ကျွန်ုပ်၏လစာ')}</button>
+</div><p class="staff-dash-note">${label('Figures reflect ticket records available to your account. Inventory value is not a cash-register settlement.','ตัวเลขแสดงข้อมูลตั๋วที่บัญชีของคุณเข้าถึงได้ มูลค่าคงเหลือไม่ใช่ยอดปิดเครื่องคิดเงิน','ဤကိန်းဂဏန်းများသည် သင့် Account မှကြည့်ရှုနိုင်သော Ticket မှတ်တမ်းများဖြစ်ပြီး ငွေစာရင်းပိတ်ยอด မဟုတ်ပါ။')}</p></section>`;
  root.querySelectorAll('[data-staff-dash-page]').forEach(button=>button.addEventListener('click',()=>go(button.dataset.staffDashPage)));
  const assignedButton=document.getElementById('staffDashDepartment');if(assignedButton)assignedButton.onclick=()=>go(selectedStaffDepartment==='all'?'sale':selectedStaffDepartment);
  const settingsButton=document.getElementById('staffDashSettings');if(settingsButton)settingsButton.onclick=()=>go('settings');
