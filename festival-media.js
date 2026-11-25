@@ -175,8 +175,8 @@
           video.querySelectorAll('source').forEach(source => source.removeAttribute('src'));
           video.load();
           delete video.dataset.festivalManaged;
+          card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
           if (scene) scene.style.display = '';
-          card.classList.remove('has-owner-festival-video');
         }
         return;
       }
@@ -186,6 +186,8 @@
       const source = video.querySelector('source');
       const current = source?.getAttribute('src') || video.getAttribute('src') || '';
       if (current !== url) {
+        card.classList.remove('pdk-video-ready','pdk-video-fallback');
+        if(!video.dataset.festivalPlaybackBound){video.addEventListener('playing',()=>card.classList.add('pdk-video-ready'));video.addEventListener('error',()=>card.classList.add('pdk-video-fallback'));video.dataset.festivalPlaybackBound='1';}
         video.pause();
         if (source) source.src = url; else video.src = url;
         video.dataset.festivalManaged = '1';
@@ -393,7 +395,7 @@
         video.pause(); video.removeAttribute('src');
         video.querySelectorAll('source').forEach(source=>source.removeAttribute('src'));
         video.load(); delete video.dataset.festivalManaged; delete video.dataset.festivalMediaId;
-        card.classList.remove('has-owner-festival-video');
+        card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
         const scene=card.querySelector('.pdk-festival-scene'); if(scene) scene.style.display='';
       }
       alert(t('Video and database record deleted. You can upload a new video for this festival.','Video နှင့် Database မှတ်တမ်းကို ဖျက်ပြီးပါပြီ။ Video အသစ်ပြန်တင်နိုင်ပါပြီ။'));
@@ -446,8 +448,10 @@
       #pdkFestivalManagedPreview video{width:100%;max-height:76dvh;object-fit:contain}
       #pdkFestivalManagedPreview button{position:absolute;right:18px;top:18px;z-index:2;width:44px;height:44px;border-radius:50%;font-size:25px}
       #pdkFestivalManagedPreview p{color:#fff;text-align:center}
-      #appDateTime.has-owner-festival-video .pdk-festival-video{z-index:2;object-fit:cover}
+      #appDateTime.has-owner-festival-video .pdk-festival-video{display:block!important;opacity:1!important;visibility:visible!important;z-index:2;object-fit:cover}
       #appDateTime.has-owner-festival-video .pdk-festival-scene{display:none!important}
+      #appDateTime.has-owner-festival-video.pdk-video-fallback .pdk-festival-video{display:none!important}
+      #appDateTime.has-owner-festival-video.pdk-video-fallback .pdk-festival-scene{display:block!important;opacity:1!important;visibility:visible!important}
       @media(max-width:560px){.pdk-fvm-item{align-items:flex-start;flex-direction:column}.pdk-fvm-actions{width:100%}.pdk-fvm-actions button{flex:1}}
     `;
     document.head.appendChild(style);
