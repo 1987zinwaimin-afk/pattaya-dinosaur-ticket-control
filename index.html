@@ -4472,6 +4472,30 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 }
 @media(prefers-reduced-motion:reduce){.header-activity-toast,#pdkTeamChatToast{scroll-behavior:auto;transition:none!important;animation:none!important}}
 </style>
+
+<style id="phase11-notification-system-surfaces-v2">
+/* Extend the same notification language to dialogs, alarm controls and inline status copy. */
+.emergency-alarm-overlay{padding:clamp(12px,3vw,24px)!important;backdrop-filter:blur(12px) saturate(1.15);-webkit-backdrop-filter:blur(12px) saturate(1.15)}
+.emergency-alarm-card{box-sizing:border-box;width:min(460px,100%);padding:clamp(20px,4vw,30px)!important;border:1px solid rgba(230,194,119,.46)!important;border-radius:24px!important;background:linear-gradient(150deg,#102f49 0%,#071a2d 72%,#091525 100%)!important;box-shadow:0 24px 72px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.08)!important;color:#f4f7fb;overflow-wrap:anywhere}
+.emergency-alarm-symbol{width:64px;height:64px;display:grid;place-items:center;margin:0 auto 13px;border-radius:20px;background:rgba(236,180,78,.13);border:1px solid rgba(236,180,78,.32);font-size:34px}
+.emergency-alarm-symbol.is-success{background:rgba(62,205,139,.13);border-color:rgba(62,205,139,.42)}
+.emergency-alarm-symbol.is-error{background:rgba(242,103,103,.13);border-color:rgba(242,103,103,.42)}
+.emergency-alarm-kicker{font-size:10px;letter-spacing:1.5px;font-weight:850;color:#e9c77e;text-align:center}
+.emergency-alarm-card h2{font-size:clamp(20px,4vw,25px);line-height:1.25;text-align:center;margin:9px 0}
+.emergency-alarm-card>p{font-size:14px;line-height:1.6;text-align:center;color:#e2edf6;overflow-wrap:anywhere}
+.emergency-alarm-details{margin-top:13px;padding:12px 13px;border:1px solid rgba(185,210,231,.2);border-radius:13px;background:rgba(2,14,27,.48);font-size:12px;line-height:1.6;white-space:pre-line;overflow-wrap:anywhere;color:#cfdeeb}
+.emergency-alarm-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}
+.emergency-alarm-actions button{flex:1 1 125px;min-height:44px;border-radius:12px;font-weight:800}
+.staff-alarm-popover,#staffAlarmSettingsHost .staff-alarm-popover{border:1px solid rgba(230,194,119,.4);border-radius:18px;background:linear-gradient(150deg,#12334f,#07192b);box-shadow:0 18px 46px rgba(0,0,0,.34)}
+.staff-alarm-popover-head strong{font-size:13px;line-height:1.35}
+.staff-alarm-popover-status,#staffAlarmSettingsHost p{font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.staff-alarm-popover button,#staffAlarmSettingsHost button{min-height:44px;border-radius:12px}
+.staff-settings-status,.owner-settings-status,[id$="Status"][role="status"],[aria-live="polite"].subtle{display:block;min-width:0;line-height:1.55!important;overflow-wrap:anywhere;word-break:normal}
+.staff-settings-status:empty,.owner-settings-status:empty{display:none}
+#staffEmergencyPushStatus,#staffThaiEmergencyVoiceStatus,#staffVoiceStatus,#ownerNotifySaved,#ownerStaffAccessStatus,#ownerStaffSubscriptionStatus,#ownerChangePasswordStatus,#staffThemeSavedStatus,#staffCloudSyncStatus{padding:8px 10px;border:1px solid rgba(174,203,225,.17);border-radius:11px;background:rgba(4,20,35,.38)}
+.chat-message-status{font-size:10px;letter-spacing:.1px}
+@media(max-width:520px){.emergency-alarm-card{border-radius:19px!important;padding:19px 16px!important}.emergency-alarm-symbol{width:56px;height:56px;font-size:29px}.emergency-alarm-card>p{font-size:13px}.emergency-alarm-details{font-size:11px;padding:10px}.emergency-alarm-actions{gap:7px}.emergency-alarm-actions button{flex-basis:100%;min-height:46px}.staff-alarm-popover{max-width:calc(100vw - 16px)}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
