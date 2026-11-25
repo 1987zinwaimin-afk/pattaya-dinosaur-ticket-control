@@ -181,6 +181,8 @@
         return;
       }
       const url = await signedUrl(row.blob_path);
+      const holidayLabel=document.getElementById('appHolidayValue');
+      if(holidayLabel){holidayLabel.textContent=row.festival_name;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}
       const source = video.querySelector('source');
       const current = source?.getAttribute('src') || video.getAttribute('src') || '';
       if (current !== url) {
@@ -329,7 +331,7 @@
           storeFingerprintForResuming:false,
           chunkSize:6*1024*1024,
           metadata:{bucketName:BUCKET,objectName:path,contentType:file.type,cacheControl:'0'},
-          onError:error=>{try{tusUpload.abort(true)}catch(_){};reject(error)},
+          onError:error=>{try{tusUpload.abort(true).catch(()=>{})}catch(_){};reject(error)},
           onProgress:(uploaded,total)=>{
             const percent=Math.min(100,Math.round(uploaded/total*100));
             if(button)button.textContent=t('Uploading… ','တင်နေသည်… ')+percent+'%';
@@ -458,6 +460,8 @@
     if (typeof window.renderThailandFestivalCalendar === 'function') {
       window.renderThailandFestivalCalendar = renderCalendar;
     }
+    const holidayLabel=document.getElementById('appHolidayValue');
+    if(holidayLabel){new MutationObserver(()=>{const selected=activeDateAndTitle();const row=mediaRows.find(x=>x.festival_date===selected.date&&(selected.title?x.festival_name===selected.title:true))||mediaRows.find(x=>x.festival_date===selected.date);if(row&&(holidayLabel.textContent!==row.festival_name||holidayLabel.hidden)){holidayLabel.textContent=row.festival_name;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}}).observe(holidayLabel,{childList:true,characterData:true,subtree:true});}
     if (sb && sb.auth) {
       sb.auth.onAuthStateChange(() => {
         mediaRows=[];lastMediaFetch=0;
