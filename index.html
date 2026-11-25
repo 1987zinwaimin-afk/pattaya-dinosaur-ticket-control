@@ -8709,8 +8709,52 @@ function openThailandFestivalDate(date){
  const labels=lang==='my'?{no:'ဒီနေ့အတွက် ပွဲတော် သို့မဟုတ် အားလပ်ရက် မရှိသေးပါ။',kind:'အမျိုးအစား',official:'တရားဝင်ရုံးပိတ်ရက်',expected:'ခန့်မှန်းရက်စွဲ · အတည်ပြုရန်လို',cultural:'ရိုးရာ / ဘာသာရေးနေ့',close:'ပိတ်ရန်'}:lang==='th'?{no:'ยังไม่มีเทศกาลหรือวันหยุดที่บันทึกไว้ในวันนี้',kind:'ประเภท',official:'วันหยุดทางการ',expected:'วันที่คาดการณ์ · รอยืนยัน',cultural:'เทศกาล / วันสำคัญ',close:'ปิด'}:{no:'No major festival or public holiday is listed for this date.',kind:'Category',official:'Official public holiday',expected:'Expected date · awaiting confirmation',cultural:'Cultural / religious day',close:'Close'};
  const dialog=document.createElement('div');
  dialog.id='pdkThailandFestivalModal';dialog.className='pdk-fc-modal open';dialog.setAttribute('role','presentation');
- dialog.innerHTML='<section class="pdk-fc-dialog" role="dialog" aria-modal="true" aria-labelledby="pdkFcTitle"><div class="pdk-fc-hero" data-theme="'+theme+'">'+heroMedia+themeScene+'<button type="button" class="pdk-fc-close" aria-label="Close">×</button><div class="pdk-fc-hero-icon">'+icon+'</div><div class="pdk-fc-hero-copy"><small>PATTAYA DINOSAUR KINGDOM · THAILAND 2027</small><h2 id="pdkFcTitle">'+(selected.length?escHtml(title):'Thailand Festival Calendar')+'</h2></div></div><div class="pdk-fc-modal-body"><div class="pdk-fc-date-line">📅 '+dateText+'</div>'+(selected.length?selected.map(e=>'<article class="pdk-fc-event"><span class="pdk-fc-tag '+(e.status==='official'?'official':e.status==='expected'?'expected':'')+'">'+(e.status==='official'?labels.official:e.status==='expected'?labels.expected:labels.cultural)+'</span><h3>'+e.icon+' '+escHtml(e.title)+'</h3><p>'+escHtml(e.desc)+'</p></article>').join(''):'<div class="pdk-fc-empty-note">'+labels.no+'<p style="margin:7px 0 0;font-size:12px">'+(lang==='my'?'ဒေသဆိုင်ရာပွဲများ ကြေညာလာပါက ထပ်မံထည့်သွင်းနိုင်ပါသည်။':lang==='th'?'สามารถเพิ่มกิจกรรมท้องถิ่นได้เมื่อมีประกาศเพิ่มเติม':'Local events can be added when organisers announce their programmes.')+'</p></div>')+'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" class="gold" data-fc-datetime-preview>▶ Preview in Date &amp; Time</button><button type="button" data-fc-close>'+labels.close+'</button></div></div></section>';
+ dialog.innerHTML='<section class="pdk-fc-dialog" role="dialog" aria-modal="true" aria-labelledby="pdkFcTitle"><div class="pdk-fc-hero" data-theme="'+theme+'">'+heroMedia+themeScene+'<button type="button" class="pdk-fc-close" aria-label="Close">×</button><div class="pdk-fc-hero-icon">'+icon+'</div><div class="pdk-fc-hero-copy"><small>PATTAYA DINOSAUR KINGDOM · THAILAND '+date.slice(0,4)+'</small><h2 id="pdkFcTitle">'+(selected.length?escHtml(title):'Thailand Festival Calendar')+'</h2></div></div><div class="pdk-fc-modal-body"><div class="pdk-fc-date-line">📅 '+dateText+'</div>'+(selected.length?selected.map(e=>'<article class="pdk-fc-event"><span class="pdk-fc-tag '+(e.status==='official'?'official':e.status==='expected'?'expected':'')+'">'+(e.status==='official'?labels.official:e.status==='expected'?labels.expected:labels.cultural)+'</span><h3>'+e.icon+' '+escHtml(e.title)+'</h3><p>'+escHtml(e.desc)+'</p></article>').join(''):'<div class="pdk-fc-empty-note">'+labels.no+'<p style="margin:7px 0 0;font-size:12px">'+(lang==='my'?'ဒေသဆိုင်ရာပွဲများ ကြေညာလာပါက ထပ်မံထည့်သွင်းနိုင်ပါသည်။':lang==='th'?'สามารถเพิ่มกิจกรรมท้องถิ่นได้เมื่อมีประกาศเพิ่มเติม':'Local events can be added when organisers announce their programmes.')+'</p></div>')+'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" class="gold" data-fc-datetime-preview>▶ Preview in Date &amp; Time</button><button type="button" data-fc-close>'+labels.close+'</button></div></div></section>';
  document.body.appendChild(dialog);
+
+ if(typeof currentRole!=='undefined'&&currentRole==='owner'){
+  const mediaBox=document.createElement('section');
+  mediaBox.className='pdk-fc-video-manager';
+  mediaBox.style.cssText='margin-top:14px;padding:13px;border:1px solid rgba(232,185,79,.38);border-radius:14px;background:linear-gradient(145deg,rgba(8,29,49,.96),rgba(3,15,28,.98))';
+  mediaBox.innerHTML='<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-size:21px">🎬</span><div><b style="color:#ffe08a">Festival Video Scheduler</b><div class="subtle" style="font-size:11px">Upload a video for this date · Thailand time</div></div></div><label for="pdkFestivalMediaName">Festival / Event name</label><input id="pdkFestivalMediaName" maxlength="160" value="'+escHtml(selected[0]?.title||'')+'" placeholder="Enter festival name"><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px"><div><label for="pdkFestivalMediaDate">Festival date</label><input id="pdkFestivalMediaDate" type="date" value="'+date+'" readonly></div><div><label for="pdkFestivalMediaTime">Show from (Thailand time)</label><input id="pdkFestivalMediaTime" type="time" value="00:00"></div></div><label for="pdkFestivalMediaFile">Video file (MP4 / WebM / MOV · max 500 MB)</label><input id="pdkFestivalMediaFile" type="file" accept="video/mp4,video/webm,video/quicktime"><div id="pdkFestivalMediaProgress" style="height:5px;background:rgba(255,255,255,.1);border-radius:8px;overflow:hidden;margin-top:8px"><i id="pdkFestivalMediaProgressBar" style="display:block;width:0;height:100%;background:linear-gradient(90deg,#b88632,#ffe08a)"></i></div><p id="pdkFestivalMediaStatus" class="subtle" style="font-size:11px;margin:7px 0 9px">Video will appear automatically in Date &amp; Time on its scheduled date and time</p><button type="button" class="gold" id="pdkFestivalMediaUpload" style="width:100%;min-height:44px">⬆ Upload Video for This Date</button><div style="margin-top:13px;border-top:1px solid rgba(255,255,255,.12);padding-top:11px"><b style="font-size:12px;color:#ffe08a">Videos saved for this date</b><div id="pdkFestivalMediaSaved" style="display:grid;gap:9px;margin-top:9px"><span class="subtle" style="font-size:11px">Loading saved videos…</span></div></div>';
+  dialog.querySelector('.pdk-fc-modal-body')?.appendChild(mediaBox);
+  const nameInput=mediaBox.querySelector('#pdkFestivalMediaName');
+  const timeInput=mediaBox.querySelector('#pdkFestivalMediaTime');
+  const fileInput=mediaBox.querySelector('#pdkFestivalMediaFile');
+  const status=mediaBox.querySelector('#pdkFestivalMediaStatus');
+  const progressBar=mediaBox.querySelector('#pdkFestivalMediaProgressBar');
+  const savedList=mediaBox.querySelector('#pdkFestivalMediaSaved');
+  const renderSaved=()=>{
+   const rows=(window.__pdkFestivalMediaByDate&&window.__pdkFestivalMediaByDate[date])||[];
+   if(!rows.length){savedList.innerHTML='<span class="subtle" style="font-size:11px">No video uploaded for this date yet.</span>';return}
+   savedList.innerHTML=rows.map(m=>'<article style="border:1px solid rgba(255,255,255,.12);border-radius:11px;padding:9px;background:rgba(0,0,0,.18)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b style="font-size:12px">'+escHtml(m.festival_name)+'</b><small style="color:#ffe08a;white-space:nowrap">'+escHtml(String(m.display_time||'00:00').slice(0,5))+'</small></div><video controls playsinline preload="metadata" src="'+escHtml(m.blob_url)+'" style="width:100%;aspect-ratio:16/9;object-fit:contain;background:#020812;border-radius:8px;margin-top:7px"></video><div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px"><button type="button" class="blue" data-pdk-media-preview="'+escHtml(m.id)+'" style="min-height:40px">▶ Preview in Date &amp; Time</button><button type="button" class="red" data-pdk-media-delete="'+escHtml(m.id)+'" style="min-height:40px">Delete Permanently</button></div></article>').join('');
+   savedList.querySelectorAll('[data-pdk-media-preview]').forEach(button=>button.addEventListener('click',()=>{
+    const item=rows.find(x=>x.id===button.dataset.pdkMediaPreview);if(!item)return;
+    window.pdkSetFestivalDateTimePreview?.(date,item.festival_name,item.festival_theme,item.id);close();
+   }));
+   savedList.querySelectorAll('[data-pdk-media-delete]').forEach(button=>button.addEventListener('click',async()=>{
+    const item=rows.find(x=>x.id===button.dataset.pdkMediaDelete);if(!item)return;
+    if(!confirm('Delete "'+item.festival_name+'" permanently from cloud storage and database? This cannot be undone.'))return;
+    button.disabled=true;status.textContent='Deleting cloud video and database record…';
+    try{await window.pdkDeleteFestivalVideo(item.id);status.textContent='Video permanently deleted from cloud storage and database.';renderSaved()}
+    catch(error){status.textContent='Delete failed: '+(error.message||error);button.disabled=false}
+   }));
+  };
+  const loadSaved=async()=>{try{await window.pdkLoadFestivalMedia?.();renderSaved()}catch(error){savedList.textContent='Could not load saved videos: '+(error.message||error)}};
+  loadSaved();
+  mediaBox.querySelector('#pdkFestivalMediaUpload').addEventListener('click',async()=>{
+   const file=fileInput.files?.[0],name=(nameInput.value||'').trim();
+   if(!name){status.textContent='Enter the festival name first.';nameInput.focus();return}
+   if(!file){status.textContent='Choose a video file first.';fileInput.focus();return}
+   const chosen=selected.find(e=>e.title===name)||selected[0]||{};
+   const button=mediaBox.querySelector('#pdkFestivalMediaUpload');button.disabled=true;button.textContent='Uploading…';progressBar.style.width='0%';status.textContent='Uploading video securely to cloud storage…';
+   try{
+    await window.pdkUploadFestivalVideo({date,name,kind:chosen.kind||'festival',theme:chosen.theme||theme,time:timeInput.value||'00:00',file,onProgress:p=>{progressBar.style.width=Math.max(0,Math.min(100,p.percentage||0))+'%';status.textContent='Uploading video… '+Math.round(p.percentage||0)+'%'}});
+    fileInput.value='';progressBar.style.width='100%';status.textContent='Video saved. It will appear automatically at the selected date and time.';await loadSaved();
+   }catch(error){status.textContent='Upload failed: '+(error.message||error)}
+   finally{button.disabled=false;button.textContent='⬆ Upload Video for This Date'}
+  });
+ }
  dialog.querySelector('[data-fc-datetime-preview]')?.addEventListener('click',()=>{
   const card=document.getElementById('appDateTime');if(!card)return;
   const dateTheme=theme==='loy'?'loy-krathong':theme==='national'&&/new year/i.test(title.toLowerCase())?'new-year':theme;
@@ -8731,6 +8775,7 @@ function openThailandFestivalDate(date){
     art.appendChild(layer);
    }
   }}
+  window.pdkApplyFestivalMediaToDateTime?.();
   close();
  });
  const previousBodyOverflow=document.body.style.overflow;
