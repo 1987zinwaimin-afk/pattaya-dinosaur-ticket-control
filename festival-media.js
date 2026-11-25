@@ -141,9 +141,9 @@
   async function signedUrl(path) {
     const cached = signedUrlCache.get(path);
     if (cached && cached.expires > Date.now()) return cached.url;
-    const {data,error} = await sb.storage.from(BUCKET).createSignedUrl(path,60);
+    const {data,error} = await sb.storage.from(BUCKET).createSignedUrl(path,3600);
     if (error) throw error;
-    signedUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+45000});
+    signedUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+3300000});
     return data.signedUrl;
   }
 
