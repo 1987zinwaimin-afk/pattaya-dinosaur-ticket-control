@@ -1,0 +1,21 @@
+{
+  "name": "pattaya-dinosaur-kingdom-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Capacitor Android and iOS wrapper for Pattaya Dinosaur Kingdom Owner and Staff apps",
+  "scripts": {
+    "configure:preview": "node scripts/configure-target.mjs preview",
+    "configure:production": "node scripts/configure-target.mjs production",
+    "cap:add:android": "cap add android",
+    "cap:add:ios": "cap add ios",
+    "cap:sync": "cap sync"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.6.2"
+  },
+  "devDependencies": {
+    "@capacitor/android": "8.6.2",
+    "@capacitor/cli": "8.6.2",
+    "@capacitor/ios": "8.6.2"
+  }
+}
