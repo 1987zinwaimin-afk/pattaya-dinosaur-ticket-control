@@ -3145,6 +3145,33 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 /* Compact archive list and ticket action chooser */
 .archive-page{padding:12px!important}.archive-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.archive-head h2{margin:0;color:var(--gold);font-size:clamp(18px,4vw,23px)}.archive-head p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.4}.archive-head>button{padding:8px 12px;white-space:nowrap}.archive-tools{display:grid;grid-template-columns:minmax(0,1fr) minmax(115px,.7fr) auto;gap:7px;align-items:center;margin:10px 0}.archive-tools input,.archive-tools select{min-width:0;padding:9px 10px;font-size:13px}.archive-count{font-size:11px;color:var(--gold);white-space:nowrap}.archive-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.archive-item{min-width:0;display:flex;align-items:center;gap:9px;padding:8px;border:1px solid var(--line);border-radius:14px;background:linear-gradient(145deg,#15344f,#0b2035)}.archive-thumb{width:76px;height:62px;flex:0 0 76px;border-radius:9px;overflow:hidden;background:#07182a;display:grid;place-items:center}.archive-thumb img{width:100%;height:100%;object-fit:cover}.archive-info{min-width:0;flex:1}.archive-info h3{font-size:13px;line-height:1.25;margin:0 0 4px;color:var(--gold);overflow-wrap:anywhere}.archive-meta{display:flex;gap:4px;flex-wrap:wrap;font-size:11px;color:var(--text)}.archive-info small{display:block;color:var(--muted);font-size:10px;line-height:1.25;margin-top:4px}.archive-restore{padding:7px 9px!important;font-size:11px!important;white-space:nowrap;flex:0 0 auto}.ticket-more-overlay{position:fixed;inset:0;z-index:10050;background:#020b16c9;display:grid;place-items:center;padding:18px;backdrop-filter:blur(7px)}.ticket-more-dialog{width:min(100%,390px);padding:17px;border:1px solid #54718c;border-radius:20px;background:linear-gradient(150deg,#183b59,#081a2c);box-shadow:0 20px 65px #0009}.ticket-more-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px}.ticket-more-head h3{margin:0;color:var(--gold);font-size:19px}.ticket-more-head p{margin:4px 0 0;color:var(--muted);font-size:13px;overflow-wrap:anywhere}.ticket-more-close{padding:4px 11px;font-size:23px}.ticket-more-option{width:100%;display:flex;align-items:center;gap:12px;text-align:left;margin:8px 0;padding:13px;border-radius:14px}.ticket-more-option span{display:flex;flex-direction:column;gap:3px}.ticket-more-option small{font-weight:400;font-size:11px;opacity:.85}.ticket-more-option.archive-option{border-color:#b58a43}.ticket-more-option.delete-option{background:linear-gradient(140deg,#a3334c,#691b32);border-color:#bd5268}.ticket-more-cancel{width:100%;margin-top:5px;background:#102940}
 @media(max-width:600px){.archive-tools{grid-template-columns:1fr 1fr}.archive-tools input{grid-column:1/-1}.archive-count{grid-column:1/-1}.archive-list{grid-template-columns:1fr}.archive-item{padding:7px}.archive-thumb{width:68px;height:56px;flex-basis:68px}.archive-restore{padding:7px!important;font-size:10px!important}.archive-info h3{font-size:12px}}
+
+/* Department workflow polish · visual-only layer · 2026-11-25 */
+:root{--pdk-control-h:48px}
+#ticketCards{grid-template-columns:repeat(auto-fill,minmax(min(100%,218px),1fr));align-items:stretch;gap:14px!important}
+#ticketCards>.ticket{height:100%;min-width:0;display:flex;flex-direction:column;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+#ticketCards>.ticket:focus-within{border-color:var(--gold)!important;box-shadow:0 0 0 2px rgba(244,202,112,.16),0 12px 28px #0005}
+#ticketCards>.ticket .ticket-body{display:flex;flex:1;flex-direction:column;gap:7px}
+#ticketCards>.ticket .ticket-actions{margin-top:auto;padding-top:5px}
+#ticketCards>.ticket .qty{min-height:var(--pdk-control-h);font-size:16px;font-weight:750;text-align:center;border:1px solid #54718d;background:#06182b;color:#f4f7fb}
+#ticketCards>.ticket .qty:focus{border-color:var(--gold);outline:3px solid rgba(244,202,112,.22);outline-offset:1px}
+#ticketCards>.ticket .price{font-variant-numeric:tabular-nums;font-weight:900}
+#ticketCards>.ticket button{min-height:42px;font-weight:800}
+#ticketCards>.ticket button:focus-visible,.ticket-more-dialog button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.ticket-more-dialog{width:min(100%,460px);max-height:min(86dvh,720px);overflow:auto;overscroll-behavior:contain}
+.ticket-more-option{min-height:60px}
+.ticket-image-lightbox{padding:max(16px,env(safe-area-inset-top)) 14px max(16px,env(safe-area-inset-bottom))}
+@media(min-width:900px){#ticketCards{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px!important}}
+@media(max-width:480px){
+ #ticketCards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px!important}
+ #ticketCards>.ticket{border-radius:14px!important}
+ #ticketCards>.ticket img,#ticketCards>.ticket .placeholder{height:clamp(76px,25vw,112px)!important}
+ #ticketCards>.ticket .ticket-body{padding:8px!important;gap:6px}
+ #ticketCards>.ticket .ticket-actions{grid-template-columns:1fr!important;gap:6px}
+ #ticketCards>.ticket .ticket-actions button{min-height:42px;font-size:12px;padding:9px 7px}
+ #ticketCards>.ticket .qty{min-height:46px;padding:9px 8px}
+}
+@media(prefers-reduced-motion:reduce){#ticketCards>.ticket{transition:none}}
 </style>
 
 <style id="staff-database-compact-v1">
