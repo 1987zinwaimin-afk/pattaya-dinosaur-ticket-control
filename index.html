@@ -8927,6 +8927,11 @@ function openThailandFestivalDate(date){
 }
 </style>
 <script src="/festival-media.js?v=20261125-4"></script>
+
+<style id="pdk-auth-menu-layer-fix-v1">
+/* Keep the login gate above the fixed Owner header. When the session expires, the header menu must not remain clickable behind the auth screen. */
+.auth-screen{z-index:100001!important}
+</style>
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
@@ -9448,3 +9453,12 @@ function openThailandFestivalDate(date){
 
 
 
+
+
+<style id="id="pdk-owner-menu-layer-fix-v2"">
+/* Owner menu must sit above the fixed 100000-z-index header while open.
+   Keep the sign-in gate above both so logged-out users cannot interact behind it. */
+#shade{z-index:100001!important}
+#side{z-index:100002!important}
+.auth-screen{z-index:100003!important}
+</style>
