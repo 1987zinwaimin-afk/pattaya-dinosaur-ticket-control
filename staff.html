@@ -7622,6 +7622,67 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
 })();
 </script>
 
+<style id="pdk-daily-video-v1">
+/* Everyday Date/Time card: use the park's own PDK1 footage only when no festival theme is active. */
+#appDateTime[data-festival-theme=""]:not(.has-festival-theme) .pdk-festival-art{opacity:1!important}
+#appDateTime[data-festival-theme=""]:not(.has-festival-theme) .pdk-festival-video{display:block!important;opacity:0;z-index:1!important;filter:saturate(1.55) contrast(1.12) brightness(1.12)!important}
+#appDateTime.pdk-daily-video-ready .pdk-festival-video{display:block!important;opacity:1!important;visibility:visible!important;filter:saturate(1.55) contrast(1.12) brightness(1.12)!important}
+#appDateTime.pdk-daily-video-ready .pdk-festival-scene,
+#appDateTime.pdk-daily-video-ready .pdk-sky-lantern,
+#appDateTime.pdk-daily-video-ready .pdk-water-light,
+#appDateTime.pdk-daily-video-ready .pdk-krathong,
+#appDateTime.pdk-daily-video-ready .pdk-petal{display:none!important;opacity:0!important}
+#appDateTime.pdk-daily-video-ready{border-color:rgba(113,211,244,.82)!important;box-shadow:0 10px 28px rgba(0,0,0,.25),0 0 22px rgba(53,180,229,.22)!important}
+#appDateTime.pdk-daily-video-ready:after{background:linear-gradient(90deg,rgba(2,10,27,.26),rgba(2,10,27,.04) 40%,rgba(2,10,27,.04) 60%,rgba(2,10,27,.26)),linear-gradient(180deg,rgba(2,10,27,.02),transparent 48%,rgba(2,10,27,.16))!important}
+@media(max-width:700px){#appDateTime.pdk-daily-video-ready .pdk-festival-video{filter:saturate(1.48) contrast(1.10) brightness(1.10)!important}}
+</style>
+<script id="pdk-daily-video-controller-v1">
+(function(){
+ const card=document.getElementById('appDateTime');
+ const video=card&&card.querySelector('.pdk-festival-video');
+ const source=video&&video.querySelector('source');
+ if(!card||!video||!source||video.dataset.dailyControllerBound==='yes')return;
+ video.dataset.dailyControllerBound='yes';
+ const festivalSrc=source.getAttribute('src')||'/Loy%20Krathong%20Festival.mp4';
+ const dailySrc='/PDK1.mp4?v=20261125-1';
+ const isDaily=()=>!String(card.dataset.festivalTheme||'').trim();
+ const setSource=src=>{
+  if(source.getAttribute('src')!==src){source.setAttribute('src',src);video.load();}
+ };
+ const prepare=()=>{
+  video.muted=true;video.defaultMuted=true;video.volume=0;
+  video.setAttribute('muted','');video.setAttribute('autoplay','');video.setAttribute('loop','');
+  video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
+  video.playsInline=true;video.loop=true;video.preload='auto';
+ };
+ const sync=async()=>{
+  if(!isDaily()){
+   card.classList.remove('pdk-daily-video-ready','pdk-daily-video-fallback');
+   setSource(festivalSrc);
+   return;
+  }
+  setSource(dailySrc);prepare();
+  if(document.hidden){video.pause();card.classList.remove('pdk-daily-video-ready');return;}
+  if(!video.paused){card.classList.add('pdk-daily-video-ready');card.classList.remove('pdk-daily-video-fallback');return;}
+  try{
+   await video.play();
+   if(isDaily()&&!video.paused){card.classList.add('pdk-daily-video-ready');card.classList.remove('pdk-daily-video-fallback');}
+  }catch(error){
+   card.classList.remove('pdk-daily-video-ready');card.classList.add('pdk-daily-video-fallback');
+   video.dataset.dailyPlaybackBlocked='yes';
+  }
+ };
+ video.addEventListener('playing',()=>{if(isDaily())card.classList.add('pdk-daily-video-ready')});
+ video.addEventListener('error',()=>{if(isDaily()){card.classList.remove('pdk-daily-video-ready');card.classList.add('pdk-daily-video-fallback');video.dataset.dailyPlaybackError=String(video.error&&video.error.code||'unknown')}});
+ const observer=new MutationObserver(sync);
+ observer.observe(card,{attributes:true,attributeFilter:['data-festival-theme']});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else sync()});
+ window.addEventListener('pageshow',sync);
+ window.addEventListener('online',sync);
+ document.addEventListener('pointerdown',()=>{if(isDaily()&&video.paused)sync()},{passive:true});
+ sync();
+})();
+</script>
 
 <style id="pdk-loy-krathong-vivid-color-v1">
 /* Visual-only color and clarity pass for the shared Owner/Staff festival card. */
