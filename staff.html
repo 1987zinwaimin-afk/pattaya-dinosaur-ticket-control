@@ -6085,8 +6085,8 @@ function renderStaffSettings(){
  setupStaffThaiEmergencyVoice();
  const emergencyAlarmButton=document.getElementById('staffEmergencyAlarmSettingsButton');
  if(emergencyAlarmButton)emergencyAlarmButton.onclick=async()=>{
-  if(!currentUser||currentRole!=='staff'){await window.showEmergencyAlarmDialog({mode:'error',title:'Staff login required',message:'Normal Staff account ဖြင့် Login ဝင်ပါ။'});return}
-  if(!await window.showEmergencyAlarmDialog({mode:'confirm',title:'Send Emergency Alarm?',message:'Owner နှင့် Normal Staff အားလုံးထံ Alarm ပို့မလား?'}))return;
+  if(!currentUser||currentRole!=='staff'){await window.showEmergencyAlarmDialog({mode:'error',title:pdkNotificationText('Staff login required','กรุณาเข้าสู่ระบบพนักงาน','ဝန်ထမ်းအကောင့်ဖြင့် အရင်ဝင်ရောက်ပါ'),message:pdkNotificationText('Please sign in to your Staff account first.','กรุณาเข้าสู่ระบบบัญชีพนักงานก่อน','Normal Staff အကောင့်ဖြင့် Login ဝင်ပါ။')});return}
+  if(!await window.showEmergencyAlarmDialog({mode:'confirm',title:pdkNotificationText('Send Emergency Alarm?','ส่งสัญญาณฉุกเฉินหรือไม่?','အရေးပေါ် Alarm ပို့မလား?'),message:pdkNotificationText('Send an alarm to the Owner and all Normal Staff?','ส่งสัญญาณไปยัง Owner และพนักงานทั้งหมดหรือไม่?','Owner နှင့် Normal Staff အားလုံးထံ Alarm ပို့မလား?')}))return;
   emergencyAlarmButton.disabled=true;
   const oldText=emergencyAlarmButton.innerHTML;
   emergencyAlarmButton.textContent='Sending…';
@@ -6356,7 +6356,7 @@ window.showEmergencyAlarmDialog=function(options){
   const root=document.createElement('div');root.id='emergencyAlarmDialog';root.className='emergency-alarm-overlay';
   root.innerHTML='<section class="emergency-alarm-card" role="dialog" aria-modal="true" aria-labelledby="emergencyAlarmTitle"><div class="emergency-alarm-glow"></div><div class="emergency-alarm-symbol" id="emergencyAlarmSymbol">🚨</div><div class="emergency-alarm-kicker">PATTAYA DINOSAUR KINGDOM</div><h2 id="emergencyAlarmTitle"></h2><p id="emergencyAlarmMessage"></p><div class="emergency-alarm-details" id="emergencyAlarmDetails" hidden></div><div class="emergency-alarm-actions" id="emergencyAlarmActions"></div></section>';
   const title=root.querySelector('#emergencyAlarmTitle'),message=root.querySelector('#emergencyAlarmMessage'),symbol=root.querySelector('#emergencyAlarmSymbol'),details=root.querySelector('#emergencyAlarmDetails'),actions=root.querySelector('#emergencyAlarmActions');
-  title.textContent=options?.title||(mode==='confirm'?'Send Emergency Alarm?':mode==='success'?'Alarm sent successfully':'Alarm could not be sent');
+  title.textContent=options?.title||(mode==='confirm'?pdkNotificationText('Send Emergency Alarm?','ส่งสัญญาณฉุกเฉินหรือไม่?','အရေးပေါ် Alarm ပို့မလား?'):mode==='success'?pdkNotificationText('Alarm sent successfully','ส่งสัญญาณฉุกเฉินสำเร็จแล้ว','အရေးပေါ် Alarm ပို့ပြီးပါပြီ'):pdkNotificationText('Alarm could not be sent','ไม่สามารถส่งสัญญาณฉุกเฉินได้','အရေးပေါ် Alarm ပို့မရပါ'));
   message.textContent=options?.message||'';
   if(options?.details){details.textContent=options.details;details.hidden=false}
   if(mode==='success'){symbol.textContent='✓';symbol.classList.add('is-success');root.classList.add('is-success')}
@@ -6427,7 +6427,7 @@ window.renderStaffAlarmSetupBanner=function(){
     window.playStaffAlarmTone?.();
     const reg=await navigator.serviceWorker.ready;
     await reg.showNotification(pdkNotificationText('🚨 PDK Alarm Test','🚨 ทดสอบสัญญาณ PDK','🚨 PDK Alarm စမ်းသပ်မှု'),{body:pdkNotificationText('This is a test on this phone only. No other staff or Owner will be notified.','นี่เป็นการทดสอบบนโทรศัพท์เครื่องนี้เท่านั้น จะไม่มีการแจ้งเตือนพนักงานหรือ Owner คนอื่น','ဤဖုန်းတစ်လုံးတည်းတွင်သာ စမ်းသပ်ခြင်းဖြစ်သည်။ အခြား Staff သို့မဟုတ် Owner များထံ အသိပေးမည်မဟုတ်ပါ။'),icon:'/notification-logo.svg',badge:'/notification-badge.svg',tag:'pdk-local-alarm-test-'+Date.now(),renotify:true,requireInteraction:true,silent:false,vibrate:[1200,300,1200,300,1600],timestamp:Date.now()});
-   }catch(error){alert('Alarm test failed: '+(error?.message||error))}
+   }catch(error){alert(pdkNotificationText('Alarm test failed: ','ทดสอบสัญญาณเตือนไม่สำเร็จ: ','Alarm စမ်းသပ်မှု မအောင်မြင်ပါ: ')+(error?.message||error))}
   };
   const permitted=('Notification'in window)&&Notification.permission==='granted';
   const setStatus=(message,label,color)=>{if(status)status.textContent=message;if(badge){badge.textContent=label;badge.style.color=color}};
@@ -6983,7 +6983,7 @@ main.wrap:has(#pageContent[data-ui-page="settings"]) #stats{
    document.body.appendChild(toast);
    toast.querySelector('button').onclick=()=>{toast.style.display='none';clearTimeout(hideTimer)};
   }
-  toast.querySelector('.pdk-chat-toast-sender').textContent=(String(sender||'Team member').trim()||'Team member')+' · Team Chat';
+  toast.querySelector('.pdk-chat-toast-sender').textContent=(String(sender||pdkNotificationText('Team member','สมาชิกทีม','အဖွဲ့ဝင်')).trim()||pdkNotificationText('Team member','สมาชิกทีม','အဖွဲ့ဝင်'))+' · '+pdkNotificationText('Team Chat','แชททีม','အဖွဲ့ Chat');
   toast.querySelector('.pdk-chat-toast-body').textContent=String(body||'New message').trim()||'New message';
   toast.style.display='flex';
   clearTimeout(hideTimer);hideTimer=setTimeout(()=>{toast.style.display='none'},8000);
