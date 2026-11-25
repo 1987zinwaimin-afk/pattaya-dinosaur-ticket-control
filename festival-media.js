@@ -73,7 +73,7 @@
     if (year === 2026) {
       return [
         makeEvent('2026-11-24','Loy Krathong Festival','The full-moon festival of lights and floating krathongs.','festival','loy','🪷','cultural'),
-        makeEvent('2026-11-24,'+'','Tazaungdaing Festival','Myanmar Festival of Lights; local observance date should be confirmed.','festival','buddhist','🏮','expected'),
+        makeEvent('2026-11-24','Tazaungdaing Festival','Myanmar Festival of Lights; local observance date should be confirmed.','festival','buddhist','🏮','expected'),
         makeEvent('2026-12-05',"King Bhumibol's Birthday · National Day · Father's Day",'Thailand national day.','holiday','royal','💛','official'),
         makeEvent('2026-12-07','Substitution for 5 December Holiday','Substitute holiday.','holiday','royal','💛','official'),
         makeEvent('2026-12-10','Constitution Day','Thailand national public holiday.','holiday','national','📜','official'),
