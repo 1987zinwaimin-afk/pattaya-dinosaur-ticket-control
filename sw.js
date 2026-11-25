@@ -1,4 +1,4 @@
-const CACHE_NAME='dino-app-shell-v33';
+const CACHE_NAME='dino-app-shell-v34';
 const APP_SHELL=['/manifest.json','/staff-manifest.json','/file_000000006da082119bbf212e4f6fad52.png'];
 // Shared Owner + Staff PWA shell. Push delivery behavior below remains unchanged.
 self.addEventListener('install',event=>{
