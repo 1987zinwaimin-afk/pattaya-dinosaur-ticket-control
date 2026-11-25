@@ -425,6 +425,10 @@
     }
     setInterval(()=>syncDateTimeVideo(false),15000);
     window.addEventListener('focus',()=>syncDateTimeVideo(true));
+    document.addEventListener('click',event=>{
+      if(event.target.closest('[data-fc-datetime-preview]')) setTimeout(()=>syncDateTimeVideo(true),120);
+      if(event.target.closest('[data-fc-close],.pdk-fc-close')) setTimeout(()=>syncDateTimeVideo(true),180);
+    });
     setTimeout(()=>syncDateTimeVideo(true),1500);
   }
 
