@@ -2765,6 +2765,26 @@ header.brand-header,.top.brand-header{position:-webkit-sticky!important;position
 .chat-message-status.is-sent{color:#314b62}
 </style>
 
+
+<style id="pdk-full-app-modernization-v1">
+/* Full Application Modernization — shared, non-functional visual/accessibility layer.
+   Intentionally leaves authentication, database, permissions, local storage and sync untouched. */
+:root{--pdk-focus-ring:rgba(247,213,138,.92);--pdk-surface-edge:rgba(164,196,220,.22)}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{-webkit-tap-highlight-color:transparent;min-height:100svh}
+.top{padding-top:max(12px,env(safe-area-inset-top))}
+.wrap{padding-bottom:max(30px,env(safe-area-inset-bottom))}
+#pageContent,.panel,.stat,.ticket,.modalbox,.auth-card{min-width:0}
+#pageContent img{max-width:100%}
+input,select,textarea{max-width:100%;min-width:0;accent-color:#d9a84f}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[role="button"]:focus-visible{outline:3px solid var(--pdk-focus-ring)!important;outline-offset:3px!important}
+button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allowed!important;opacity:.58!important;filter:saturate(.65)!important}
+.panel,.stat,.ticket,.modalbox{transition:border-color .18s ease,box-shadow .18s ease}
+.app-datetime:not(.has-festival-theme){position:relative;isolation:isolate;overflow:hidden;border:1px solid rgba(226,190,117,.62);background:radial-gradient(ellipse at 18% 0%,rgba(42,105,151,.34),transparent 52%),linear-gradient(125deg,#071b31 0%,#102f4c 58%,#091b30 100%);box-shadow:0 10px 28px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.08)}
+.app-datetime:not(.has-festival-theme)::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.035) 48%,transparent 100%)}
+@media(max-width:520px){html{scroll-padding-top:64px}.wrap{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}.app-datetime{max-width:calc(100% - 16px)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
