@@ -5,7 +5,7 @@
   'use strict';
 
   const BUCKET = 'festival-videos';
-  const MAX_BYTES = 500 * 1024 * 1024;
+  const MAX_BYTES = 50 * 1024 * 1024;
   const TZ = 'Asia/Bangkok';
   const signedUrlCache = new Map();
   let mediaRows = [];
@@ -139,9 +139,9 @@
   async function signedUrl(path) {
     const cached = signedUrlCache.get(path);
     if (cached && cached.expires > Date.now()) return cached.url;
-    const {data,error} = await sb.storage.from(BUCKET).createSignedUrl(path,300);
+    const {data,error} = await sb.storage.from(BUCKET).createSignedUrl(path,60);
     if (error) throw error;
-    signedUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+240000});
+    signedUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+45000});
     return data.signedUrl;
   }
 
@@ -255,7 +255,7 @@
       const events = currentEvents();
       const options = events.map(e => '<option value="'+escapeHtml(e.date+'|'+e.title)+'">'+escapeHtml(dateLabel(e.date)+' — '+e.title)+'</option>').join('');
       const existing = rows.filter(r => r.festival_date.slice(0,4) === String(today().year));
-      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice">'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · max 500 MB)','Video ဖိုင် (MP4, WebM, MOV · အများဆုံး 500 MB)')+'</label><input id="pdkFestivalFile" type="file" accept="video/mp4,video/webm,video/quicktime"><button type="button" id="pdkFestivalUploadBtn" class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
+      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice">'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · max 50 MB)','Video ဖိုင် (MP4, WebM, MOV · အများဆုံး 50 MB)')+'</label><input id="pdkFestivalFile" type="file" accept="video/mp4,video/webm,video/quicktime"><button type="button" id="pdkFestivalUploadBtn" class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
       const select = host.querySelector('#pdkFestivalChoice');
       if (select) {
         const current = select.value;
@@ -278,6 +278,20 @@
     }
   }
 
+  function loadTusClient() {
+    if (window.tus && window.tus.Upload) return Promise.resolve(window.tus);
+    return new Promise((resolve,reject)=>{
+      const existing=document.querySelector('script[data-pdk-tus-client]');
+      if(existing){existing.addEventListener('load',()=>resolve(window.tus),{once:true});existing.addEventListener('error',()=>reject(new Error('Could not load resumable upload library.')),{once:true});return;}
+      const script=document.createElement('script');
+      script.src='https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js';
+      script.async=true;script.dataset.pdkTusClient='1';
+      script.onload=()=>window.tus&&window.tus.Upload?resolve(window.tus):reject(new Error('Resumable upload library did not initialize.'));
+      script.onerror=()=>reject(new Error('Could not load resumable upload library.'));
+      document.head.appendChild(script);
+    });
+  }
+
   async function uploadVideo() {
     if (busy) return;
     if (!currentUser || currentRole !== 'owner') { alert(t('Owner access required.','Owner ခွင့်ပြုချက်လိုအပ်ပါသည်။')); return; }
@@ -286,7 +300,7 @@
     const file = host?.querySelector('#pdkFestivalFile')?.files?.[0];
     if (!choice || !file) { alert(t('Choose a festival and a video file.','ပွဲတော်နှင့် Video ဖိုင်ကို ရွေးပါ။')); return; }
     if (!/^video\/(mp4|webm|quicktime)$/.test(file.type) || file.size > MAX_BYTES) {
-      alert(t('Use MP4, WebM or MOV video up to 500 MB.','MP4, WebM သို့မဟုတ် MOV Video 500 MB အောက်ကိုသာ အသုံးပြုပါ။')); return;
+      alert(t('Use MP4, WebM or MOV video up to 50 MB.','MP4, WebM သို့မဟုတ် MOV Video 50 MB အောက်ကိုသာ အသုံးပြုပါ။')); return;
     }
     const [date,name] = choice.split('|');
     if (mediaRows.some(r=>r.festival_date===date && r.festival_name===name)) {
@@ -298,10 +312,30 @@
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-90) || 'festival-video.mp4';
     const path = date+'/'+crypto.randomUUID()+'-'+safeName;
     try {
-      const {error:uploadError} = await sb.storage.from(BUCKET).upload(path,file,{
-        cacheControl:'0',contentType:file.type,upsert:false
+      const {data:{session},error:sessionError} = await sb.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session?.access_token) throw new Error('Your login session expired. Sign in again and retry.');
+      const tus = await loadTusClient();
+      await new Promise((resolve,reject)=>{
+        let tusUpload;
+        tusUpload = new tus.Upload(file,{
+          endpoint:'https://tlefnqzpilajeuyysujb.storage.supabase.co/storage/v1/upload/resumable',
+          headers:{authorization:'Bearer '+session.access_token,apikey:SUPABASE_KEY},
+          retryDelays:[0,3000,5000,10000,20000],
+          uploadDataDuringCreation:true,
+          removeFingerprintOnSuccess:true,
+          storeFingerprintForResuming:false,
+          chunkSize:6*1024*1024,
+          metadata:{bucketName:BUCKET,objectName:path,contentType:file.type,cacheControl:'0'},
+          onError:error=>{try{tusUpload.abort(true)}catch(_){};reject(error)},
+          onProgress:(uploaded,total)=>{
+            const percent=Math.min(100,Math.round(uploaded/total*100));
+            if(button)button.textContent=t('Uploading… ','တင်နေသည်… ')+percent+'%';
+          },
+          onSuccess:resolve
+        });
+        tusUpload.start();
       });
-      if (uploadError) throw uploadError;
       const selectedEvent = currentEvents().find(e=>e.date===date && e.title===name) || {};
       const {data,error:insertError} = await sb.from('festival_media').insert({
         festival_date:date,festival_name:name,
