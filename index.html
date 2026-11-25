@@ -8648,30 +8648,36 @@ function renderThailandFestivalCalendar(){
  add('2027-12-10','Constitution Day','A national public holiday commemorating the promulgation of Thailand’s first permanent constitution.','holiday','national','📜','official');
  add('2027-12-25','Christmas Day','Christmas celebrations with festive lights, decorations and family activities. This is a cultural celebration, not a nationwide Thai public holiday.','cultural','christmas','🎄','cultural');
  add('2027-12-31','New Year’s Eve','The final day of the year. Countdown celebrations and fireworks may be organised in major cities and tourist destinations.','holiday','national','🎆','official');
- const dateKey=d=>'2027-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
+ const dateKey=d=>calendarYear+'-'+String(d.getUTCMonth()+1).padStart(2,'0')+'-'+String(d.getUTCDate()).padStart(2,'0');
  const todayParts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
  const part=t=>todayParts.find(x=>x.type===t)?.value||'';
  const today=part('year')+'-'+part('month')+'-'+part('day');
- const uniqueDates=new Set(events.map(e=>e.date));
+ const currentMonth=Number(part('month'));
+ (window.__pdkFestivalMediaItems||[]).forEach(item=>{if(!events.some(e=>e.date===item.festival_date&&e.title===item.festival_name))add(item.festival_date,item.festival_name,'Festival video uploaded by the Owner.',item.festival_kind||'festival',item.festival_theme||'national','🎬','cultural')});
+ const currentYearEvents=events.filter(e=>Number(e.date.slice(0,4))===calendarYear);
+ const uniqueDates=new Set(currentYearEvents.map(e=>e.date));
+ window.__pdkThailandFestivalEvents=events;
+ window.__pdkThailandFestivalLookup=events.reduce((map,e)=>{(map[e.date]||(map[e.date]=[])).push(e);return map},{});
  const eventMap=new Map();
  events.forEach(e=>{if(!eventMap.has(e.date))eventMap.set(e.date,[]);eventMap.get(e.date).push(e)});
  const monthHtml=monthNames.map((name,m)=>{
-  const first=new Date(Date.UTC(2027,m,1)).getUTCDay(),offset=(first+6)%7,days=new Date(Date.UTC(2027,m+1,0)).getUTCDate();
+  if(m<currentMonth-1)return '';
+  const first=new Date(Date.UTC(calendarYear,m,1)).getUTCDay(),offset=(first+6)%7,days=new Date(Date.UTC(calendarYear,m+1,0)).getUTCDate();
   let cells='';
   for(let i=0;i<offset;i++)cells+='<span class="pdk-fc-empty"></span>';
   for(let d=1;d<=days;d++){
-   const date='2027-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+   const date=calendarYear+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
    const dayEvents=eventMap.get(date)||[];
-   const weekend=new Date(Date.UTC(2027,m,d)).getUTCDay()%6===0;
+   const weekend=new Date(Date.UTC(calendarYear,m,d)).getUTCDay()%6===0;
    const classes=['pdk-fc-day',weekend?'is-weekend':'',dayEvents.length?'has-event':'',dayEvents.some(e=>e.status==='official')?'is-official':'',dayEvents.some(e=>e.status==='expected')&&!dayEvents.some(e=>e.status==='official')?'is-expected':'',date===today?'is-today':''].filter(Boolean).join(' ');
    cells+='<button type="button" class="'+classes+'" data-pdk-fc-date="'+date+'" aria-label="'+date+(dayEvents.length?' · '+dayEvents.map(e=>e.title).join(', '):'')+'">'+d+(dayEvents.length?'<i class="pdk-fc-mark"></i>':'')+'</button>';
   }
-  const marked=events.filter(e=>Number(e.date.slice(5,7))===m+1).length;
+  const marked=currentYearEvents.filter(e=>Number(e.date.slice(5,7))===m+1).length;
   return '<section class="pdk-fc-month"><h3>'+name+' <small>'+marked+' '+(lang==='my'?'နေ့':lang==='th'?'วัน':'dates')+'</small></h3><div class="pdk-fc-week">'+(lang==='my'?['တန','အင်္ဂါ','ဗုဒ္ဓ','ကြာ','သော','စနေ','တနင်္ဂ']:lang==='th'?['จ','อ','พ','พฤ','ศ','ส','อา']:['M','T','W','T','F','S','S']).map(x=>'<span>'+x+'</span>').join('')+'</div><div class="pdk-fc-days">'+cells+'</div></section>';
  }).join('');
- const upcoming=[...events.filter(e=>e.date>=today)].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,7);
+ const upcoming=[...currentYearEvents.filter(e=>e.date>=today)].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,7);
  const dateLabel=date=>new Intl.DateTimeFormat(localeMonth,{timeZone:'UTC',day:'numeric',month:'short',year:'numeric'}).format(new Date(date+'T00:00:00Z'));
- root.innerHTML='<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 '+labels.title+'</h2><p>'+labels.sub+'</p></div><span class="pdk-fc-year">2027 · B.E. 2570</span></div><div class="pdk-fc-summary" style="margin-top:13px"><div><b>12</b><span>'+labels.months+'</span></div><div><b>'+uniqueDates.size+'</b><span>'+labels.count+'</span></div><div><b>'+events.length+'</b><span>'+labels.eventCount+'</span></div></div><div class="pdk-fc-legend" style="margin-top:12px"><span><i class="pdk-fc-dot" style="background:#ffe08a"></i>'+labels.official+'</span><span><i class="pdk-fc-dot" style="background:#73e7ff"></i>'+labels.cultural+'</span><span><i class="pdk-fc-dot" style="background:#d6b8ff"></i>'+labels.expected+'</span></div></section><section class="panel"><h3 style="margin:0 0 10px;color:#ffe08a">✨ '+labels.upcoming+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<div class="pdk-fc-upcoming-item"><div class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</div><div><strong>'+e.icon+' '+e.title+'</strong><small>'+e.kind+' · '+(e.status==='official'?labels.holiday:e.status==='expected'?labels.expected:labels.observance)+'</small></div></div>').join('')+'</div></section><div class="pdk-fc-months">'+monthHtml+'</div><p class="pdk-fc-source">'+labels.source+'<br>2027 holiday references: <a href="https://www.set.or.th/en/about/event-calendar/holiday?year=2027" target="_blank" rel="noopener">Stock Exchange of Thailand</a> · <a href="https://www.bangkokbank.com/en/about-us/bank-holidays" target="_blank" rel="noopener">Bangkok Bank / Bank of Thailand holiday list</a>. Dates marked expected are not official public-holiday confirmations.</p></div>';
+ root.innerHTML='<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 '+labels.title+'</h2><p>'+labels.sub+'</p></div><span class="pdk-fc-year">'+calendarYear+' · B.E. '+(calendarYear+543)+'</span></div><div class="pdk-fc-summary" style="margin-top:13px"><div><b>12</b><span>'+labels.months+'</span></div><div><b>'+uniqueDates.size+'</b><span>'+labels.count+'</span></div><div><b>'+currentYearEvents.length+'</b><span>'+labels.eventCount+'</span></div></div><div class="pdk-fc-legend" style="margin-top:12px"><span><i class="pdk-fc-dot" style="background:#ffe08a"></i>'+labels.official+'</span><span><i class="pdk-fc-dot" style="background:#73e7ff"></i>'+labels.cultural+'</span><span><i class="pdk-fc-dot" style="background:#d6b8ff"></i>'+labels.expected+'</span></div></section><section class="panel"><h3 style="margin:0 0 10px;color:#ffe08a">✨ '+labels.upcoming+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<div class="pdk-fc-upcoming-item"><div class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</div><div><strong>'+e.icon+' '+e.title+'</strong><small>'+e.kind+' · '+(e.status==='official'?labels.holiday:e.status==='expected'?labels.expected:labels.observance)+'</small></div></div>').join('')+'</div></section><div class="pdk-fc-months">'+monthHtml+'</div><p class="pdk-fc-source">'+labels.source+'<br>'+calendarYear+' holiday references: <a href="https://www.set.or.th/en/about/event-calendar/holiday?year=2027" target="_blank" rel="noopener">Stock Exchange of Thailand</a> · <a href="https://www.bangkokbank.com/en/about-us/bank-holidays" target="_blank" rel="noopener">Bangkok Bank / Bank of Thailand holiday list</a>. Dates marked expected are not official public-holiday confirmations.</p></div>';
  root.querySelectorAll('[data-pdk-fc-date]').forEach(btn=>btn.addEventListener('click',()=>openThailandFestivalDate(btn.dataset.pdkFcDate)));
 }
 function openThailandFestivalDate(date){
