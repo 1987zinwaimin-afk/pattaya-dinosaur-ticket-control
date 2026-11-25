@@ -7593,10 +7593,12 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  if(!card||!video||video.dataset.controllerBound==='yes')return;
  video.dataset.controllerBound='yes';
  const isFestival=()=>card.dataset.festivalTheme==='loy-krathong';
+ const isDaily=()=>!String(card.dataset.festivalTheme||'').trim()&&!card.classList.contains('has-festival-theme');
  const reveal=()=>{if(isFestival()&&!video.paused){card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')}};
  const pause=()=>{video.pause();card.classList.remove('pdk-video-ready','pdk-video-fallback')};
  const start=async()=>{
-  if(!isFestival()){pause();return}
+  /* On ordinary days, leave the shared video element to the PDK1 daily controller. */
+  if(!isFestival()){if(!isDaily())pause();return}
   /* Set every silent/inline flag before requesting playback (Android Chrome requirement). */
   video.muted=true;video.defaultMuted=true;video.volume=0;
   video.setAttribute('muted','');video.setAttribute('autoplay','');video.setAttribute('loop','');
@@ -7644,7 +7646,7 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  if(!card||!video||!source||video.dataset.dailyControllerBound==='yes')return;
  video.dataset.dailyControllerBound='yes';
  const festivalSrc=source.getAttribute('src')||'/Loy%20Krathong%20Festival.mp4';
- const dailySrc='/PDK1.mp4?v=20261125-1';
+ const dailySrc='/PDK1.mp4?v=20261125-2';
  const isDaily=()=>!String(card.dataset.festivalTheme||'').trim();
  const setSource=src=>{
   if(source.getAttribute('src')!==src){source.setAttribute('src',src);video.load();}
