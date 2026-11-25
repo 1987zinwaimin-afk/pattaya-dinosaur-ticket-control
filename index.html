@@ -3792,6 +3792,41 @@ button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allo
 @media(max-width:520px){html{scroll-padding-top:64px}.wrap{padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}.app-datetime{max-width:calc(100% - 16px)}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
+<style id="pdk-full-app-modernization-v2">
+/* Phase 2 — dashboard summary and workspace card polish; presentation only. */
+#stats>.stat{
+ position:relative;isolation:isolate;overflow:hidden;
+ border-color:rgba(183,153,94,.38);
+ box-shadow:0 8px 22px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.075);
+}
+#stats>.stat::before{
+ content:"";position:absolute;inset:0 12px auto;height:2px;border-radius:0 0 3px 3px;
+ background:linear-gradient(90deg,transparent,rgba(247,211,132,.82),rgba(103,183,224,.52),transparent);
+ opacity:.78;pointer-events:none;
+}
+#stats>.stat span{letter-spacing:.025em;font-weight:650}
+#stats>.stat strong{font-variant-numeric:tabular-nums;letter-spacing:-.025em}
+#pageContent .panel{
+ border-color:rgba(132,174,205,.27);
+ box-shadow:0 8px 22px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.045);
+}
+#pageContent .panel>h2:first-child,#pageContent .panel>h3:first-child{letter-spacing:-.015em}
+#pageContent .ticket{
+ border-color:rgba(132,174,205,.34);
+ box-shadow:0 9px 24px rgba(0,0,0,.19),inset 0 1px rgba(255,255,255,.04);
+}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+ #stats>.stat,#pageContent .panel,#pageContent .ticket{transition:border-color .18s ease,box-shadow .18s ease}
+ #stats>.stat:hover,#pageContent .panel:hover,#pageContent .ticket:hover{
+  border-color:rgba(226,190,117,.58);
+  box-shadow:0 12px 28px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.07);
+ }
+}
+@media(max-width:520px){
+ #stats>.stat::before{inset-inline:8px}
+ #pageContent .panel{overflow-wrap:anywhere}
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
