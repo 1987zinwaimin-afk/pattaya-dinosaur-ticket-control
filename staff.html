@@ -7592,12 +7592,11 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  const video=card&&card.querySelector('.pdk-festival-video');
  if(!card||!video||video.dataset.controllerBound==='yes')return;
  video.dataset.controllerBound='yes';
- const isFestival=()=>card.dataset.festivalTheme==='loy-krathong';
- const reveal=()=>{if(isFestival()&&!video.paused){card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')}};
- const pause=()=>{video.pause();card.classList.remove('pdk-video-ready','pdk-video-fallback')};
+ const selected=()=>card.classList.contains('has-owner-festival-video');
+ const fallback=()=>card.classList.contains('pdk-video-fallback');
+ const reveal=()=>{if(selected()&&!video.paused){card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')}};
  const start=async()=>{
-  if(!isFestival()){pause();return}
-  /* Set every silent/inline flag before requesting playback (Android Chrome requirement). */
+  if(!selected()||fallback())return;
   video.muted=true;video.defaultMuted=true;video.volume=0;
   video.setAttribute('muted','');video.setAttribute('autoplay','');video.setAttribute('loop','');
   video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
@@ -7607,17 +7606,16 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
   try{await video.play();reveal()}
   catch(error){card.classList.remove('pdk-video-ready');card.classList.add('pdk-video-fallback');video.dataset.playbackBlocked='yes'}
  };
- video.addEventListener('loadeddata',()=>{if(isFestival()&&video.paused)start()});
- video.addEventListener('canplay',()=>{if(isFestival()&&video.paused)start()});
+ video.addEventListener('loadeddata',()=>{if(selected()&&!fallback()&&video.paused)start()});
+ video.addEventListener('canplay',()=>{if(selected()&&!fallback()&&video.paused)start()});
  video.addEventListener('playing',reveal);
- video.addEventListener('error',()=>{card.classList.remove('pdk-video-ready');if(isFestival())card.classList.add('pdk-video-fallback');video.dataset.playbackError=String(video.error&&video.error.code||'unknown')});
- const observer=new MutationObserver(start);
- observer.observe(card,{attributes:true,attributeFilter:['data-festival-theme']});
+ video.addEventListener('error',()=>{card.classList.remove('pdk-video-ready');if(selected())card.classList.add('pdk-video-fallback');video.dataset.playbackError=String(video.error&&video.error.code||'unknown')});
+ const observer=new MutationObserver(()=>{if(selected()&&!fallback())start()});
+ observer.observe(card,{attributes:true,attributeFilter:['class']});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else start()});
  window.addEventListener('pageshow',start);
  window.addEventListener('online',start);
- /* If the browser blocks autoplay, the first normal touch/click retries muted playback. */
- document.addEventListener('pointerdown',()=>{if(isFestival()&&video.paused)start()},{passive:true});
+ document.addEventListener('pointerdown',()=>{if(selected()&&fallback()){card.classList.remove('pdk-video-fallback');start()}},{passive:true});
  start();
 })();
 </script>
