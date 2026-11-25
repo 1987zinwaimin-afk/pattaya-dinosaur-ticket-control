@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#041326">
+  <meta name="color-scheme" content="dark">
+  <title>Pattaya Dinosaur Kingdom</title>
+  <style>
+    :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#041326;color:#f5f8fc}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100svh;background:radial-gradient(ellipse at 50% -15%,#1b4569 0,transparent 52%),linear-gradient(160deg,#071b30,#03101f 68%);padding:env(safe-area-inset-top) 20px env(safe-area-inset-bottom);display:grid;place-items:center}
+    main{width:min(100%,440px);padding:28px 0 34px;text-align:center}
+    .brand{width:112px;height:112px;margin:0 auto 22px;border:1px solid #d6ad60;border-radius:30px;background:linear-gradient(145deg,#153958,#061426);display:grid;place-items:center;box-shadow:0 14px 45px #0007}
+    .brand svg{width:82px;height:82px}
+    .eyebrow{color:#e6c77e;font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase}
+    h1{font-size:clamp(25px,7vw,34px);line-height:1.12;margin:10px 0 9px;letter-spacing:-.035em}
+    .subtitle{margin:0 auto 30px;max-width:320px;color:#a9bfd2;font-size:14px;line-height:1.65}
+    .choices{display:grid;gap:14px;text-align:left}
+    .choice{display:flex;align-items:center;gap:15px;width:100%;padding:18px;border:1px solid #45627a;border-radius:18px;background:linear-gradient(140deg,#173a58,#0a2035);color:#fff;text-decoration:none;box-shadow:0 10px 30px #0003;transition:transform .15s,border-color .15s}
+    .choice:active{transform:scale(.985);border-color:#f0cf83}
+    .symbol{width:48px;height:48px;flex:0 0 48px;border-radius:14px;background:#d8b66d18;border:1px solid #d8b66d55;display:grid;place-items:center;font-size:24px}
+    .copy{min-width:0;flex:1}
+    .copy strong{display:block;font-size:16px;letter-spacing:.01em}
+    .copy small{display:block;margin-top:5px;color:#afc2d2;font-size:12px;line-height:1.4}
+    .arrow{color:#e8ca87;font-size:24px}
+    .note{margin:25px 8px 0;color:#829caf;font-size:11px;line-height:1.6}
+    .environment{display:inline-block;margin-top:18px;border:1px solid #d5b66c55;border-radius:99px;padding:6px 11px;color:#e6c77e;font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+    .offline{display:none;margin:18px 0 0;color:#ffd58b;font-size:12px}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand" aria-hidden="true">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6df9a"/><stop offset="1" stop-color="#c79b45"/></linearGradient></defs>
+        <path d="M126 330c-14-20-19-47-12-75 9-37 39-65 76-73l21-46 52 10 25-34 42 32 53 4 18 34 43 21-14 42-36 11-15 41-40 8-28 38-65 3-35-20-34 14-29-10-22 0z" fill="url(#gold)"/>
+        <circle cx="329" cy="208" r="9" fill="#10243b"/>
+        <path d="M180 331l-5 64m61-57 6 57m71-58 18 55" stroke="#d6ad60" stroke-width="18" stroke-linecap="round"/>
+        <path d="M112 420h288" stroke="#d6ad60" stroke-width="9" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="eyebrow">Pattaya Dinosaur Kingdom</div>
+    <h1>Ticket Control</h1>
+    <p class="subtitle">Choose your secure workspace to continue.</p>
+    <section class="choices" aria-label="Choose application">
+      <a class="choice" id="ownerLink" href="#" rel="noopener">
+        <span class="symbol" aria-hidden="true">👑</span>
+        <span class="copy"><strong>Owner Application</strong><small>Management, reports and staff control</small></span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </a>
+      <a class="choice" id="staffLink" href="#" rel="noopener">
+        <span class="symbol" aria-hidden="true">🎟️</span>
+        <span class="copy"><strong>Staff Application</strong><small>Ticket sales and daily operations</small></span>
+        <span class="arrow" aria-hidden="true">›</span>
+      </a>
+    </section>
+    <p class="note">Your existing sign-in, roles and ticket records continue to use the current Pattaya Dinosaur Kingdom system.</p>
+    <p class="offline" id="offlineMessage">Internet connection is required to sign in and sync the latest ticket data.</p>
+    <span class="environment" id="environmentLabel">Preview Build</span>
+  </main>
+  <script src="./app-config.js"></script>
+  <script>
+    (() => {
+      const config = window.PDK_NATIVE_APP_CONFIG;
+      if (!config || !config.ownerUrl || !config.staffUrl) {
+        document.getElementById('offlineMessage').style.display = 'block';
+        return;
+      }
+      document.getElementById('ownerLink').href = config.ownerUrl;
+      document.getElementById('staffLink').href = config.staffUrl;
+      document.getElementById('environmentLabel').textContent =
+        config.environment === 'production' ? 'Production Release' : 'Preview Build';
+      if (!navigator.onLine) document.getElementById('offlineMessage').style.display = 'block';
+      window.addEventListener('offline', () => document.getElementById('offlineMessage').style.display = 'block');
+      window.addEventListener('online', () => document.getElementById('offlineMessage').style.display = 'none');
+    })();
+  </script>
+</body>
+</html>
