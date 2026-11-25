@@ -7912,7 +7912,7 @@ function showCreatedOwnerCredentials(email,password){
  overlay.querySelector('#closeCreatedOwnerCredentials').onclick=()=>{passwordInput.value='';overlay.remove()};
 }
 function applyTheme(){['dark','light','emerald','midnight','luxury'].forEach(name=>document.body.classList.toggle('theme-'+name,theme===name));document.body.dataset.theme=theme}
-document.getElementById('language').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render();applyUILanguage()};document.getElementById('openMenu').onclick=()=>{document.getElementById('side').classList.add('open');document.getElementById('shade').classList.add('open')};document.getElementById('ownerLogout').onclick=async()=>{
+document.getElementById('language').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render();applyUILanguage()};document.getElementById('ownerLogout').onclick=async()=>{
  const button=document.getElementById('ownerLogout');
  if(button.disabled)return;
  if(!currentUser){document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');return}
