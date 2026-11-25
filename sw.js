@@ -1,17 +1,36 @@
-const CACHE_NAME='dino-staff-shell-v31';
-const APP_SHELL=['/staff-manifest.json','/notification-logo.svg'];
-// v31.1: refreshes the closed-app push handler while retaining system-managed audible notifications.
-self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});
-self.addEventListener('activate',event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('dino-staff-shell-')&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
+const CACHE_NAME='dino-app-shell-v32';
+const APP_SHELL=['/manifest.json','/staff-manifest.json','/file_000000006da082119bbf212e4f6fad52.png'];
+// Shared Owner + Staff PWA shell. Push delivery behavior below remains unchanged.
+self.addEventListener('install',event=>{
+ event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).catch(error=>console.warn('PWA shell precache skipped:',error)));
+ self.skipWaiting();
+});
+self.addEventListener('activate',event=>{
+ event.waitUntil(caches.keys()
+  .then(keys=>Promise.all(keys.filter(key=>(key.startsWith('dino-staff-shell-')||key.startsWith('dino-app-shell-'))&&key!==CACHE_NAME).map(key=>caches.delete(key))))
+  .then(()=>self.clients.claim()));
+});
 self.addEventListener('fetch',event=>{
- const req=event.request;if(req.method!=='GET')return;
- const url=new URL(req.url);if(url.origin!==self.location.origin)return;
- if(url.pathname==='/staff.html'&&req.mode==='navigate'){
-  event.respondWith(fetch(new Request(req,{cache:'no-store'})));
+ const req=event.request;
+ if(req.method!=='GET')return;
+ const url=new URL(req.url);
+ if(url.origin!==self.location.origin)return;
+ if(req.mode==='navigate'){
+  const cacheKey=new Request(url.origin+(url.pathname||'/'));
+  event.respondWith(fetch(new Request(req,{cache:'no-store'})).then(response=>{
+   if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(cacheKey,copy));}
+   return response;
+  }).catch(()=>caches.match(cacheKey).then(hit=>hit||new Response(
+   '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#041326"><title>Pattaya Dinosaur Kingdom</title><body style="margin:0;padding:32px;background:#041326;color:#f6f8fc;font:16px system-ui"><h2 style="color:#ffd778">Pattaya Dinosaur Kingdom</h2><p>You are offline. Reconnect to the internet to sign in and sync the latest ticket data.</p></body></html>',
+   {headers:{'Content-Type':'text/html; charset=utf-8'}}
+  ))));
   return;
  }
- if(req.mode==='navigate'||url.pathname==='/staff-manifest.json'){
-  event.respondWith(fetch(new Request(req,{cache:'no-store'})).then(response=>{if(response.ok&&url.pathname!=='/staff.html'){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(req,copy))}return response}).catch(()=>caches.match(req).then(hit=>hit||caches.match('/staff-manifest.json'))));
+ if(url.pathname==='/manifest.json'||url.pathname==='/staff-manifest.json'){
+  event.respondWith(fetch(new Request(req,{cache:'no-store'})).then(response=>{
+   if(response.ok){const copy=response.clone();caches.open(CACHE_NAME).then(cache=>cache.put(req,copy));}
+   return response;
+  }).catch(()=>caches.match(req)));
  }
 });
 self.addEventListener('push',event=>{
