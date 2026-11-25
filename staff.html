@@ -3014,6 +3014,88 @@ button:disabled,input:disabled,select:disabled,textarea:disabled{cursor:not-allo
  #nav .pdk-nav-group-title{font-size:9px;padding:1px 6px 4px}
 }
 </style>
+
+<style id="pdk-ui-foundation-refresh-2026">
+/* Phase 1 UI/UX foundation — visual-only overrides; preserve existing application behavior. */
+:root{
+ --bg:#081a2d;--panel:#102b45;--panel2:#153954;--line:#2c4b66;
+ --gold:#f2c66d;--gold2:#dba644;--text:#f5f8fc;--muted:#aebfd1;
+ --blue:#1689bd;--red:#b93655;
+ --shadow:0 8px 24px rgba(0,0,0,.22);
+ --pdk-radius-sm:12px;--pdk-radius-md:16px;--pdk-radius-lg:22px;
+}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--pdk-header-height,64px) + 18px)}
+body{
+ background:
+  radial-gradient(ellipse at 12% 0%,rgba(24,92,126,.22),transparent 34%),
+  radial-gradient(ellipse at 88% 12%,rgba(179,131,53,.10),transparent 30%),
+  var(--bg);
+ letter-spacing:.005em;
+}
+button,input,select,textarea{font-family:inherit}
+button{
+ border-radius:var(--pdk-radius-sm);
+ box-shadow:0 3px 10px rgba(0,0,0,.16);
+ transition:transform .16s ease,box-shadow .16s ease,filter .16s ease,border-color .16s ease;
+}
+button:hover{filter:brightness(1.07)}
+button:active{transform:translateY(1px)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{
+ outline:3px solid rgba(242,198,109,.72);outline-offset:2px;
+}
+input,select,textarea{
+ border-radius:var(--pdk-radius-sm);
+ border-color:rgba(133,164,190,.34);
+ min-height:44px;
+}
+input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
+.top.brand-header{
+ box-shadow:0 8px 26px rgba(0,0,0,.18);
+ border-bottom:1px solid rgba(153,184,209,.18);
+}
+.wrap{max-width:1320px;padding:clamp(14px,2.2vw,26px) clamp(12px,2vw,22px) 52px}
+.stat,.panel{
+ border-radius:var(--pdk-radius-lg);
+ border-color:rgba(133,164,190,.22);
+ box-shadow:0 8px 24px rgba(0,0,0,.16);
+}
+.stat{padding:clamp(13px,1.5vw,18px)}
+.stat strong{letter-spacing:-.025em}
+.section-title{margin-bottom:12px}
+.section-title h2{letter-spacing:-.02em}
+.nav{gap:7px}
+.nav button{
+ min-height:46px;border-radius:13px;padding:12px 14px;
+ background:rgba(24,57,83,.72);border-color:rgba(133,164,190,.18);
+ box-shadow:none;
+}
+.nav button.active{
+ box-shadow:0 5px 16px rgba(219,166,68,.18);
+}
+.modalbox{
+ border-radius:22px;border-color:rgba(153,184,209,.28);
+ box-shadow:0 24px 70px rgba(0,0,0,.48);
+}
+.empty{border-radius:var(--pdk-radius-lg)}
+.ticket{border-radius:18px}
+.ticket img{background:#102b45}
+@media(hover:hover){
+ .panel,.stat,.ticket{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease}
+ .ticket:hover{border-color:rgba(242,198,109,.34);box-shadow:0 12px 28px rgba(0,0,0,.2)}
+}
+@media(max-width:600px){
+ .wrap{padding:12px 12px 36px}
+ .stats{gap:8px}
+ .stat{border-radius:16px;padding:11px}
+ .panel{border-radius:18px;padding:13px}
+ .modal{padding:10px}
+ .modalbox{border-radius:18px;padding:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+::selection{background:rgba(242,198,109,.28);color:var(--text)}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
