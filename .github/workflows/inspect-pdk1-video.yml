@@ -1,0 +1,35 @@
+name: Inspect PDK1 video
+on:
+  push:
+    branches:
+      - feature/pwa-app-shell
+    paths:
+      - 'PDK1.mp4'
+      - '.github/workflows/inspect-pdk1-video.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect source video codec and decode frames
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffprobe -v error -show_entries format=duration,format_name,size:stream=index,codec_name,profile,pix_fmt,width,height,r_frame_rate,avg_frame_rate,color_range,color_space,color_transfer,color_primaries -of json PDK1.mp4 | tee pdk1-probe.json
+          ffmpeg -hide_banner -v warning -i PDK1.mp4 -frames:v 5 -f null - 2>&1 | tee pdk1-decode.log
+          mkdir -p pdk1-frames
+          ffmpeg -hide_banner -v error -ss 1 -i PDK1.mp4 -frames:v 1 pdk1-frames/frame-1.png
+          ffmpeg -hide_banner -v error -ss 3 -i PDK1.mp4 -frames:v 1 pdk1-frames/frame-3.png
+          ffmpeg -hide_banner -v error -ss 5 -i PDK1.mp4 -frames:v 1 pdk1-frames/frame-5.png
+      - name: Upload diagnostic report and frames
+        uses: actions/upload-artifact@v4
+        with:
+          name: PDK1-video-diagnostics
+          path: |
+            pdk1-probe.json
+            pdk1-decode.log
+            pdk1-frames/
+          retention-days: 3
