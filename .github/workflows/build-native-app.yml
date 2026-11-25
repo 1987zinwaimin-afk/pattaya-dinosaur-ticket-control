@@ -17,6 +17,12 @@ on:
     paths:
       - 'native-app/**'
       - '.github/workflows/build-native-app.yml'
+  push:
+    branches:
+      - feature/pwa-app-shell
+    paths:
+      - 'native-app/**'
+      - '.github/workflows/build-native-app.yml'
 
 permissions:
   contents: read
