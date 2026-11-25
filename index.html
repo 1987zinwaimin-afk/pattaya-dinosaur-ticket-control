@@ -4629,6 +4629,7 @@ let lastCloudRows=new Map();
 let trainRows=[],trainLoading=false;
 const localToday=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const fmtTime=v=>v?String(v).slice(0,5):'—';
+function pdkNotificationText(en,th,my){return lang==='th'?th:lang==='my'?my:en}
 const reportText=(en,my)=>lang==='th'?uiTranslate(en):lang==='my'?(my||uiTranslate(en)):en;const formatReportDate=v=>{if(!v)return '—';const raw=String(v);const d=v instanceof Date?v:(raw.length===10&&raw[4]==='-'?new Date(Number(raw.slice(0,4)),Number(raw.slice(5,7))-1,Number(raw.slice(8,10))):new Date(v));if(Number.isNaN(d.getTime()))return '—';return lang==='th'?d.getDate()+'.'+(d.getMonth()+1)+'.'+(d.getFullYear()+543):d.getDate()+'.'+(d.getMonth()+1)+'.'+d.getFullYear()};const formatReportMonth=v=>{if(!v)return '—';const a=String(v).split('-');const y=Number(a[0]),m=Number(a[1]);return lang==='th'?m+'.'+(y+543):m+'.'+y};const fmtDate=v=>formatReportDate(v);
 function durationMins(a,b){if(!a||!b)return null;let [ah,am]=String(a).slice(0,5).split(':').map(Number),[bh,bm]=String(b).slice(0,5).split(':').map(Number);let n=bh*60+bm-(ah*60+am);if(n<0)n+=1440;return n}
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -5120,7 +5121,7 @@ if('serviceWorker'in navigator){navigator.serviceWorker.addEventListener('messag
 })}
 const OWNER_PUSH_VAPID_PUBLIC_KEY="BG7Wgg_lU3wCIXWCpwyE2eutlW-w2S5uqaNr5YbGjg6hruRfq-1BWRv7SH6y0tdQJG031COafQISiQgwy-u_zNU";
 function urlBase64ToUint8Array(value){const padding='='.repeat((4-value.length%4)%4);const raw=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
-async function enableStaffLoginNotifications(){try{if(!currentUser||currentRole!=='owner')throw new Error('Please sign in to the Owner website first.');if(!('serviceWorker'in navigator)||!('PushManager'in window))throw new Error('This browser does not support background push notifications. Use Chrome and add the website to your Home screen if possible.');if(!('Notification'in window))throw new Error('Browser notifications are not supported.');const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Notifications are blocked. Allow notifications for this website in Chrome settings, then try again.');const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});await navigator.serviceWorker.ready;let subscription=await registration.pushManager.getSubscription();if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(OWNER_PUSH_VAPID_PUBLIC_KEY)});const json=subscription.toJSON();if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('The browser did not return a complete push subscription.');const {error}=await sb.from('owner_push_subscriptions').upsert({owner_user_id:currentUser.id,endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth,user_agent:navigator.userAgent,updated_at:new Date().toISOString()},{onConflict:'endpoint'});if(error)throw error;playStaffLoginTone();localStorage.setItem('tctl-staff-notify-sound','1');alert('Background notifications enabled on this device. Staff logins can now notify you even when the website is closed, as long as this phone allows Chrome notifications and background activity.')}catch(e){alert('Could not enable background notifications: '+(e.message||e))}}
+async function enableStaffLoginNotifications(){try{if(!currentUser||currentRole!=='owner')throw new Error('Please sign in to the Owner website first.');if(!('serviceWorker'in navigator)||!('PushManager'in window))throw new Error('This browser does not support background push notifications. Use Chrome and add the website to your Home screen if possible.');if(!('Notification'in window))throw new Error('Browser notifications are not supported.');const permission=await Notification.requestPermission();if(permission!=='granted')throw new Error('Notifications are blocked. Allow notifications for this website in Chrome settings, then try again.');const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});await navigator.serviceWorker.ready;let subscription=await registration.pushManager.getSubscription();if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(OWNER_PUSH_VAPID_PUBLIC_KEY)});const json=subscription.toJSON();if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth)throw new Error('The browser did not return a complete push subscription.');const {error}=await sb.from('owner_push_subscriptions').upsert({owner_user_id:currentUser.id,endpoint:json.endpoint,p256dh:json.keys.p256dh,auth_key:json.keys.auth,user_agent:navigator.userAgent,updated_at:new Date().toISOString()},{onConflict:'endpoint'});if(error)throw error;playStaffLoginTone();localStorage.setItem('tctl-staff-notify-sound','1');alert(pdkNotificationText('Background notifications are enabled on this device. Staff logins can now alert you while the website is closed, provided Chrome notifications and background activity are allowed.','เปิดการแจ้งเตือนเบื้องหลังบนอุปกรณ์นี้แล้ว คุณจะได้รับแจ้งเมื่อพนักงานเข้าสู่ระบบ แม้ปิดเว็บไซต์อยู่ หากอนุญาตการแจ้งเตือน Chrome และการทำงานเบื้องหลัง','ဤစက်တွင် နောက်ခံအသိပေးချက်များ ဖွင့်ပြီးပါပြီ။ Chrome Notification နှင့် နောက်ခံလုပ်ဆောင်မှုကို ခွင့်ပြုထားပါက Website ပိတ်ထားချိန်တွင်လည်း Staff Login ဝင်သည့်အခါ အသိပေးပါမည်။'))}catch(e){alert(pdkNotificationText('Could not enable background notifications: ','ไม่สามารถเปิดการแจ้งเตือนเบื้องหลังได้: ','နောက်ခံအသိပေးချက်များ ဖွင့်မရပါ: ')+(e.message||e))}}
 async function refreshOwnerPushSubscription(){
  if(!currentUser||currentRole!=='owner'||!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window)||Notification.permission!=='granted')return;
  const registration=await navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'});
@@ -5157,18 +5158,20 @@ function showStaffLoginNotice(row){
  let toast=document.getElementById('staffLoginToast');
  if(!toast){
   toast=document.createElement('div');toast.id='staffLoginToast';
-  toast.innerHTML='<span class="notify-bell" aria-hidden="true">🔔</span><span class="notify-copy"><strong class="notify-title">Staff Login</strong><span class="notify-details"></span></span><span class="notify-status"><i></i>Online</span>';
+  toast.innerHTML='<span class="notify-bell" aria-hidden="true">🔔</span><span class="notify-copy"><strong class="notify-title"></strong><span class="notify-details"></span></span><span class="notify-status"><i></i></span>';
   header.appendChild(toast);
  }
  toast.className='header-activity-toast staff-login-toast';
- toast.querySelector('.notify-details').textContent=name+'  ·  ID '+id+'  ·  '+dept;
+ toast.querySelector('.notify-title').textContent=pdkNotificationText('Staff Login','พนักงานเข้าสู่ระบบ','ဝန်ထမ်း Login ဝင်ရောက်မှု');
+  toast.querySelector('.notify-status').lastChild.textContent=pdkNotificationText('Online','ออนไลน์','အွန်လိုင်း');
+  toast.querySelector('.notify-details').textContent=name+'  ·  ID '+id+'  ·  '+dept;
  toast.title=fullMsg;
  positionOwnerLoginToast(toast);
  toast.style.display='flex';
  clearTimeout(window.staffLoginToastTimer);
  window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},7000);
  if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||p.background==='both')){
-  try{new Notification('Staff Login',{body:fullMsg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}
+  try{new Notification(pdkNotificationText('Staff Login','พนักงานเข้าสู่ระบบ','ဝန်ထမ်း Login ဝင်ရောက်မှု'),{body:fullMsg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}
  }
 }
 async function pollStaffLoginNotifications(){
