@@ -201,7 +201,7 @@
     if(!card||!currentUser)return;
     const selected=activeDateAndTitle();
     const events=(window.__pdkThailandFestivalLookup||{})[selected.date]||[];
-    const event=selected.title?(events.find(e=>e.title===selected.title)||events[0]):events[0];
+    const event=selected.title?(events.find(e=>e.title===selected.title)||null):(events[0]||null);
     const video=card.querySelector('.pdk-festival-video');
     if(!video)return;
     const source=video.querySelector('source');
