@@ -407,12 +407,22 @@
         }
         dayMessageBusy = true;
         if(save){save.disabled=true;save.textContent=t('Saving…','သိမ်းနေသည်…');}
+        const editingId = host.dataset.editingDayMessage || '';
+        const overlaps = active && dayMessageRows.some(row => {
+          if (row.id === editingId || row.message_date !== date || !row.is_active) return false;
+          const existingFrom = String(row.display_from).slice(0,5);
+          const existingUntil = String(row.display_until).slice(0,5);
+          return from < existingUntil && until > existingFrom;
+        });
+        if (overlaps) {
+          setStatus(t('This time overlaps another active message on the same date.','ဤအချိန်သည် တူညီသောရက်စွဲရှိ အသိပေးစာတစ်ခုနှင့် အချိန်ထပ်နေပါသည်။'));
+          return;
+        }
         const payload = {
           message_date:date,title,message,
           display_from:from+':00',display_until:until+':00',
           is_active:active,updated_at:new Date().toISOString()
         };
-        const editingId = host.dataset.editingDayMessage || '';
         try {
           const result = editingId
             ? await sb.from('calendar_day_messages').update(payload).eq('id',editingId)
