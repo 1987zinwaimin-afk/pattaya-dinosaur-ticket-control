@@ -659,7 +659,6 @@
     '#appDateTime .pdk-festival-video{display:block!important;visibility:visible!important;opacity:0!important;z-index:1!important}'+
     '#appDateTime.pdk-video-ready .pdk-festival-video{opacity:1!important}'+
     '#appDateTime .pdk-festival-scene{display:none!important}'+
-    '#appDateTime.pdk-video-fallback[data-festival-theme="loy-krathong"] .pdk-festival-scene{display:block!important;opacity:1!important;visibility:visible!important}'+
     '#appDateTime.pdk-video-ready .pdk-festival-scene{display:none!important}'+
     '#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{position:relative!important;z-index:4!important}';
   (document.head||document.documentElement).appendChild(style);
