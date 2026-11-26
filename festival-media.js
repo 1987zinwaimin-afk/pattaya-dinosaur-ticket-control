@@ -603,21 +603,24 @@
     setTimeout(()=>syncDateTimeVideo(true),0);
   }
 
+  // Expose the single authoritative player so Calendar Preview never creates a second video layer.
+  window.__pdkSyncFestivalDateTime = syncDateTimeVideo;
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
-/* v4 visibility fix: keep the selected MP4 visible for every festival theme.
-   The legacy Loy-Krathong-only CSS used !important and hid other festival videos. */
+/* v5: one authoritative Date & Time media layer; no stacked video/canvas renderers. */
 (function(){
-  if(document.getElementById('pdk-festival-video-visibility-fix-v4')) return;
+  if(document.getElementById('pdk-festival-video-visibility-fix-v5')) return;
   const style=document.createElement('style');
-  style.id='pdk-festival-video-visibility-fix-v4';
+  style.id='pdk-festival-video-visibility-fix-v5';
   style.textContent=
-    'html body #appDateTime.has-owner-festival-video.pdk-video-ready:not(.pdk-video-fallback) video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:5!important}'+
-    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-ready):not(.pdk-video-fallback) video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:0!important;z-index:5!important}'+
-    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-ready):not(.pdk-video-fallback) .pdk-festival-scene{display:block!important;visibility:visible!important;opacity:1!important}'+
-    'html body #appDateTime.has-owner-festival-video.pdk-video-ready .pdk-festival-scene{display:none!important}'+
-    'html body #appDateTime.has-owner-festival-video.pdk-video-fallback video.pdk-festival-video{display:none!important}'+
-    'html body #appDateTime.has-owner-festival-video.pdk-video-fallback .pdk-festival-scene{display:block!important;visibility:visible!important;opacity:1!important}';
+    '#appDateTime .pdk-auto-festival-canvas,#appDateTime .pdk-calendar-preview-video,#appDateTime .pdk-calendar-preview-gif,#appDateTime .pdk-calendar-preview-art{display:none!important}'+
+    '#appDateTime .pdk-festival-video{display:block!important;visibility:visible!important;opacity:0!important;z-index:1!important}'+
+    '#appDateTime.pdk-video-ready .pdk-festival-video{opacity:1!important}'+
+    '#appDateTime .pdk-festival-scene{display:none!important}'+
+    '#appDateTime.pdk-video-fallback[data-festival-theme="loy-krathong"] .pdk-festival-scene{display:block!important;opacity:1!important;visibility:visible!important}'+
+    '#appDateTime.pdk-video-ready .pdk-festival-scene{display:none!important}'+
+    '#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{position:relative!important;z-index:4!important}';
   (document.head||document.documentElement).appendChild(style);
 })();
