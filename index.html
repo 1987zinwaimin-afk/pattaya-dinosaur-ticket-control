@@ -4495,6 +4495,60 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 .chat-message-status{font-size:10px;letter-spacing:.1px}
 @media(max-width:520px){.emergency-alarm-card{border-radius:19px!important;padding:19px 16px!important}.emergency-alarm-symbol{width:56px;height:56px;font-size:29px}.emergency-alarm-card>p{font-size:13px}.emergency-alarm-details{font-size:11px;padding:10px}.emergency-alarm-actions{gap:7px}.emergency-alarm-actions button{flex-basis:100%;min-height:46px}.staff-alarm-popover{max-width:calc(100vw - 16px)}}
 </style>
+
+<style id="pdk-owner-menu-mobile-touch-layer-v2">
+/* Keep Owner navigation above the fixed banner and make the hamburger a reliable mobile touch target. */
+#openMenu{
+  position:absolute!important;z-index:100003!important;pointer-events:auto!important;
+  touch-action:manipulation!important;cursor:pointer!important;
+  width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;
+  left:4px!important;top:4px!important;padding:0!important;margin:0!important;
+  display:grid!important;place-items:center!important;box-sizing:border-box!important;
+  -webkit-tap-highlight-color:rgba(232,189,98,.25)!important;
+}
+#shade,.side-shade#shade{
+  z-index:100001!important;pointer-events:auto!important;
+}
+#side,.side#side{
+  z-index:100002!important;pointer-events:auto!important;isolation:isolate!important;
+  padding-top:calc(var(--pdk-header-height,22vw) + 12px)!important;
+  padding-bottom:max(22px,env(safe-area-inset-bottom))!important;
+  box-sizing:border-box!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+#side .nav,#side .nav button,#side #ownerLogout{
+  pointer-events:auto!important;touch-action:manipulation!important;
+}
+#side .nav button,#side #ownerLogout{
+  min-height:48px!important;position:relative!important;z-index:1!important;
+  cursor:pointer!important;-webkit-tap-highlight-color:rgba(232,189,98,.22)!important;
+}
+.auth-screen#authScreen,.auth-screen{
+  z-index:100004!important;
+}
+/* Team Chat's legacy stacking overrides must not put the fixed header above the drawer. */
+body:has(#pageContent[data-ui-page="team-chat"]) header.brand-header,
+body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{
+  z-index:100000!important;
+}
+body:has(#pageContent[data-ui-page="team-chat"]) #shade{z-index:100001!important}
+body:has(#pageContent[data-ui-page="team-chat"]) #side{z-index:100002!important}
+@media(min-width:980px){
+  #openMenu{display:none!important}
+  #side{padding-top:22px!important}
+}
+</style>
+
+<style id="pdk-owner-mobile-menu-layer-final-v1">
+header.brand-header,.top.brand-header{z-index:100004!important}
+#openMenu{z-index:100005!important;width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;left:4px!important;top:4px!important;pointer-events:auto!important;touch-action:manipulation!important}
+#shade,.side-shade#shade{z-index:100001!important;pointer-events:auto!important}
+#side,.side#side{z-index:100002!important;pointer-events:auto!important;isolation:isolate!important;padding-top:calc(var(--pdk-header-height,22vw) + 12px)!important;padding-bottom:max(22px,env(safe-area-inset-bottom))!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}
+#side .nav button,#side #ownerLogout{min-height:48px!important;touch-action:manipulation!important;pointer-events:auto!important}
+body:has(#pageContent[data-ui-page="team-chat"]) header.brand-header,body:has(#pageContent[data-ui-page="team-chat"]) .top.brand-header{z-index:100004!important}
+@media(min-width:980px){#openMenu{display:none!important}#side{padding-top:22px!important}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -5301,7 +5355,7 @@ async function startCloudSession(session){
   // Customer Visits is independent of ticket loading. Reveal its Owner page as soon as
   // the authenticated profile role is confirmed, rather than waiting for loadCloud().
   if(currentRole==='owner'&&page==='customervisits')renderCustomerVisits();
-  try{const {data:themeRow,error:themeError}=await sb.from('theme_preferences').select('theme').eq('preference_key','owner:'+requestedUserId).maybeSingle();if(themeError)throw themeError;if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme-owner',theme);applyTheme()}}catch(themeLoadError){console.warn('Owner theme could not be loaded:',themeLoadError)}
+  try{const {data:themeRow,error:themeError}=await withAuthTimeout(sb.from('theme_preferences').select('theme').eq('preference_key','owner:'+requestedUserId).maybeSingle(),'Owner theme preference lookup',8000);if(themeError)throw themeError;if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme-owner',theme);applyTheme()}}catch(themeLoadError){console.warn('Owner theme could not be loaded; continuing with the current theme:',themeLoadError?.message||themeLoadError)}
   if(currentRole!=='owner'){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('This account is not marked as Owner. Please use the existing Owner account; do not create another account.')}
    chatPresenceStart().catch(error=>console.warn('Owner Team Chat presence startup failed:',error?.message||error));
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
@@ -9448,3 +9502,54 @@ function openThailandFestivalDate(date){
 
 
 
+
+<script id="pdk-owner-navigation-guard-v1">
+(function(){
+ if(window.__pdkOwnerNavigationGuardV1)return;
+ window.__pdkOwnerNavigationGuardV1=true;
+ function authIsBlocking(){
+  const auth=document.getElementById('authScreen');
+  if(!auth)return false;
+  return getComputedStyle(auth).display!=='none' && auth.getAttribute('aria-hidden')!=='true';
+ }
+ function closeMenu(){
+  document.getElementById('side')?.classList.remove('open');
+  document.getElementById('shade')?.classList.remove('open');
+  document.getElementById('openMenu')?.setAttribute('aria-expanded','false');
+ }
+ function toggleMenu(){
+  const side=document.getElementById('side'),shade=document.getElementById('shade'),button=document.getElementById('openMenu');
+  if(!side||!shade)return;
+  const opening=!side.classList.contains('open');
+  side.classList.toggle('open',opening);
+  shade.classList.toggle('open',opening);
+  button?.setAttribute('aria-expanded',opening?'true':'false');
+ }
+ // One document-level capture handler keeps navigation responsive even if a page
+ // re-render replaces individual buttons or a legacy handler was not attached.
+ document.addEventListener('click',function(event){
+  if(authIsBlocking())return;
+  const target=event.target instanceof Element?event.target:null;
+  if(!target)return;
+  const menu=target.closest('#openMenu');
+  if(menu){
+   event.preventDefault();event.stopImmediatePropagation();toggleMenu();return;
+  }
+  const shade=target.closest('#shade');
+  if(shade){
+   event.preventDefault();event.stopImmediatePropagation();closeMenu();return;
+  }
+  const pageButton=target.closest('#nav button[data-page], #pageContent [data-page]');
+  if(!pageButton)return;
+  const nextPage=pageButton.getAttribute('data-page');
+  if(!nextPage||typeof window.go!=='function')return;
+  event.preventDefault();event.stopImmediatePropagation();
+  try{window.go(nextPage)}catch(error){
+   console.error('Owner navigation failed:',error);
+   const root=document.getElementById('pageContent');
+   if(root)root.innerHTML='<section class="panel" role="alert"><h2>Page could not open</h2><p>Please reload the Owner application. Your saved ticket data has not been changed.</p><button type="button" class="gold" onclick="location.reload()">Reload application</button></section>';
+  }
+ },true);
+ window.addEventListener('pageshow',function(){closeMenu()});
+})();
+</script>
