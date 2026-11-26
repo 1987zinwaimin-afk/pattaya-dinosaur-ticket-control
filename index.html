@@ -5345,7 +5345,7 @@ async function startCloudSession(session){
   // Customer Visits is independent of ticket loading. Reveal its Owner page as soon as
   // the authenticated profile role is confirmed, rather than waiting for loadCloud().
   if(currentRole==='owner'&&page==='customervisits')renderCustomerVisits();
-  try{const {data:themeRow,error:themeError}=await sb.from('theme_preferences').select('theme').eq('preference_key','owner:'+requestedUserId).maybeSingle();if(themeError)throw themeError;if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme-owner',theme);applyTheme()}}catch(themeLoadError){console.warn('Owner theme could not be loaded:',themeLoadError)}
+  try{const {data:themeRow,error:themeError}=await withAuthTimeout(sb.from('theme_preferences').select('theme').eq('preference_key','owner:'+requestedUserId).maybeSingle(),'Owner theme preference lookup',8000);if(themeError)throw themeError;if(themeRow?.theme){theme=themeRow.theme;localStorage.setItem('tctl-theme-owner',theme);applyTheme()}}catch(themeLoadError){console.warn('Owner theme could not be loaded; continuing with the current theme:',themeLoadError?.message||themeLoadError)}
   if(currentRole!=='owner'){currentUser=null;document.getElementById('authScreen').style.display='grid';throw new Error('This account is not marked as Owner. Please use the existing Owner account; do not create another account.')}
    chatPresenceStart().catch(error=>console.warn('Owner Team Chat presence startup failed:',error?.message||error));
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
