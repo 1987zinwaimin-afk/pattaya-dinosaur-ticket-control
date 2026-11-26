@@ -202,33 +202,19 @@
         // No festival on this date: stop and restore the normal dashboard media.
         // Never substitute the legacy PDK.mp4 on ordinary days.
         if (!event) {
-          const wasFestivalVideo = video.dataset.festivalManaged === '1' ||
-            video.dataset.festivalBuiltin === '1' ||
-            !!video.dataset.festivalMediaId ||
-            card.classList.contains('has-owner-festival-video');
-          if (wasFestivalVideo) {
-            video.pause();
-            const originalSrc = video.dataset.pdkOriginalSrc || '';
-            const activeSrc = source ? (source.getAttribute('src') || '') : (video.getAttribute('src') || '');
-            if (source && originalSrc && activeSrc !== originalSrc) {
-              source.setAttribute('src', originalSrc);
-              video.load();
-            } else if (source && !originalSrc && activeSrc) {
-              source.removeAttribute('src');
-              video.load();
-            } else if (!source && originalSrc && activeSrc !== originalSrc) {
-              video.setAttribute('src', originalSrc);
-              video.load();
-            } else if (!source && !originalSrc && activeSrc) {
-              video.removeAttribute('src');
-              video.load();
-            }
-            delete video.dataset.festivalManaged;
-            delete video.dataset.festivalMediaId;
-            delete video.dataset.festivalBuiltin;
-            card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
-            if (scene) scene.style.display = '';
-          }
+          // Ordinary dates use the static dashboard scene, not a festival MP4.
+          // Stop playback and release the media source so it consumes no video bandwidth.
+          video.pause();
+          video.removeAttribute('autoplay');
+          video.setAttribute('preload','none');
+          if (source) source.removeAttribute('src');
+          else video.removeAttribute('src');
+          video.load();
+          delete video.dataset.festivalManaged;
+          delete video.dataset.festivalMediaId;
+          delete video.dataset.festivalBuiltin;
+          card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+          if (scene) scene.style.display = '';
           if (holidayLabel) holidayLabel.hidden = true;
           return;
         }
@@ -248,6 +234,8 @@
           video.loop = true;
           video.playsInline = true;
           video.load();
+        }
+        if (video.paused) {
           const play = video.play();
           if (play && play.catch) play.catch(() => {});
         }
@@ -278,6 +266,8 @@
         video.loop = true;
         video.playsInline = true;
         video.load();
+      }
+      if (video.paused) {
         const play = video.play();
         if (play && play.catch) play.catch(() => {});
       }
