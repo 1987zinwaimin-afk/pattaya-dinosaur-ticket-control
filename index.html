@@ -8585,7 +8585,90 @@ input,select{border-color:rgba(94,179,222,.55)!important;background:#061a30!impo
  #pdkThailandFestivalModal .pdk-fc-hero[data-theme="loy"] .pdk-fc-loy-scene:before{animation-duration:7s!important;animation-iteration-count:infinite!important}
 }
 </style>
-<style id="pdk-childrens-day-festival-v1">\n/* Children’s Day visual layer only; existing MP4 remains the media source. */\n.pdk-fc-hero[data-theme="children"]{background:linear-gradient(130deg,#087db0,#39b8c8 48%,#f3b84f)!important;isolation:isolate;overflow:hidden}\n.pdk-fc-hero[data-theme="children"] .pdk-fc-hero-video{z-index:1!important;filter:saturate(1.18) brightness(.92)!important}\n.pdk-fc-children-scene{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;background:linear-gradient(90deg,rgba(2,22,49,.35),transparent 55%,rgba(2,22,49,.12))}\n.pdk-child-balloon{position:absolute;bottom:-55px;font-size:clamp(34px,6vw,66px);filter:drop-shadow(0 5px 8px #0018);animation:pdkChildBalloonRise 7s ease-in-out infinite}\n.pdk-child-balloon.b1{left:8%;animation-delay:-1s}.pdk-child-balloon.b2{left:72%;font-size:clamp(27px,5vw,54px);animation-delay:-4s}.pdk-child-balloon.b3{left:88%;font-size:clamp(25px,4vw,46px);animation-delay:-2.5s}\n.pdk-child-confetti{position:absolute;inset:5% 0 auto;text-align:center;color:#fff1a8;font-size:clamp(18px,3vw,30px);letter-spacing:8px;text-shadow:0 2px 8px #0038;animation:pdkChildSparkle 2.4s ease-in-out infinite alternate}\n.pdk-child-dino{position:absolute;right:8%;bottom:8%;font-size:clamp(55px,9vw,96px);filter:drop-shadow(0 7px 9px #0019);animation:pdkChildDinoBounce 2.1s ease-in-out infinite}\n.pdk-child-greeting{position:absolute;left:5%;top:38%;max-width:65%;font-weight:1000;letter-spacing:.04em;font-size:clamp(17px,3.1vw,34px);line-height:1.1;color:#fff;text-shadow:0 3px 9px #001b,0 0 15px #004b}\n.pdk-child-greeting small{display:block;margin-top:7px;font-size:.52em;color:#fff2b5;letter-spacing:.08em}\n@keyframes pdkChildBalloonRise{0%{transform:translateY(0) rotate(-8deg);opacity:0}12%{opacity:1}50%{transform:translateY(-145px) rotate(7deg);opacity:1}100%{transform:translateY(-310px) rotate(-5deg);opacity:0}}\n@keyframes pdkChildSparkle{from{opacity:.55;transform:translateY(0)}to{opacity:1;transform:translateY(7px)}}\n@keyframes pdkChildDinoBounce{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(4deg)}}\n@media(max-width:520px){.pdk-child-greeting{top:37%;max-width:70%;font-size:clamp(15px,4vw,22px)}.pdk-child-dino{right:4%;bottom:7%;font-size:58px}.pdk-child-confetti{letter-spacing:3px}}\n@media(prefers-reduced-motion:reduce){.pdk-child-balloon,.pdk-child-confetti,.pdk-child-dino{animation:none!important}}\n</style>\n<script id="pdk-thailand-annual-festival-calendar-script">
+<style id="pdk-childrens-day-festival-v1">\n/* Children’s Day visual layer only; existing MP4 remains the media source. */\n.pdk-fc-hero[data-theme="children"]{background:linear-gradient(130deg,#087db0,#39b8c8 48%,#f3b84f)!important;isolation:isolate;overflow:hidden}\n.pdk-fc-hero[data-theme="children"] .pdk-fc-hero-video{z-index:1!important;filter:saturate(1.18) brightness(.92)!important}\n.pdk-fc-children-scene{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;background:linear-gradient(90deg,rgba(2,22,49,.35),transparent 55%,rgba(2,22,49,.12))}\n.pdk-child-balloon{position:absolute;bottom:-55px;font-size:clamp(34px,6vw,66px);filter:drop-shadow(0 5px 8px #0018);animation:pdkChildBalloonRise 7s ease-in-out infinite}\n.pdk-child-balloon.b1{left:8%;animation-delay:-1s}.pdk-child-balloon.b2{left:72%;font-size:clamp(27px,5vw,54px);animation-delay:-4s}.pdk-child-balloon.b3{left:88%;font-size:clamp(25px,4vw,46px);animation-delay:-2.5s}\n.pdk-child-confetti{position:absolute;inset:5% 0 auto;text-align:center;color:#fff1a8;font-size:clamp(18px,3vw,30px);letter-spacing:8px;text-shadow:0 2px 8px #0038;animation:pdkChildSparkle 2.4s ease-in-out infinite alternate}\n.pdk-child-dino{position:absolute;right:8%;bottom:8%;font-size:clamp(55px,9vw,96px);filter:drop-shadow(0 7px 9px #0019);animation:pdkChildDinoBounce 2.1s ease-in-out infinite}\n.pdk-child-greeting{position:absolute;left:5%;top:38%;max-width:65%;font-weight:1000;letter-spacing:.04em;font-size:clamp(17px,3.1vw,34px);line-height:1.1;color:#fff;text-shadow:0 3px 9px #001b,0 0 15px #004b}\n.pdk-child-greeting small{display:block;margin-top:7px;font-size:.52em;color:#fff2b5;letter-spacing:.08em}\n@keyframes pdkChildBalloonRise{0%{transform:translateY(0) rotate(-8deg);opacity:0}12%{opacity:1}50%{transform:translateY(-145px) rotate(7deg);opacity:1}100%{transform:translateY(-310px) rotate(-5deg);opacity:0}}\n@keyframes pdkChildSparkle{from{opacity:.55;transform:translateY(0)}to{opacity:1;transform:translateY(7px)}}\n@keyframes pdkChildDinoBounce{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(4deg)}}\n@media(max-width:520px){.pdk-child-greeting{top:37%;max-width:70%;font-size:clamp(15px,4vw,22px)}.pdk-child-dino{right:4%;bottom:7%;font-size:58px}.pdk-child-confetti{letter-spacing:3px}}\n@media(prefers-reduced-motion:reduce){.pdk-child-balloon,.pdk-child-confetti,.pdk-child-dino{animation:none!important}}\n</style>\n<style id="pdk-thailand-festival-calendar-polish-v2">
+/* Owner Thailand Festival Calendar visual refinement only.
+   Calendar data, event handlers, authentication and storage remain unchanged. */
+.pdk-festival-calendar{gap:18px!important;max-width:1500px;margin:0 auto}
+.pdk-festival-calendar>.panel:first-child{
+ position:relative;overflow:hidden;padding:clamp(17px,2.5vw,27px)!important;
+ border:1px solid rgba(231,194,112,.42)!important;border-radius:22px!important;
+ background:radial-gradient(ellipse at 88% 0%,rgba(213,166,79,.19),transparent 36%),linear-gradient(132deg,#0b2038 0%,#102f4b 52%,#071a30 100%)!important;
+ box-shadow:0 16px 38px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.08)!important
+}
+.pdk-festival-calendar>.panel:first-child:after{content:"";position:absolute;right:-55px;bottom:-105px;width:260px;height:260px;border:1px solid rgba(241,207,139,.13);border-radius:50%;box-shadow:0 0 0 22px rgba(241,207,139,.025),0 0 0 46px rgba(241,207,139,.02);pointer-events:none}
+.pdk-fc-head{position:relative;z-index:1;align-items:center!important;gap:15px!important}
+.pdk-fc-head h2{font-size:clamp(21px,3vw,29px)!important;line-height:1.2;letter-spacing:-.025em;color:#ffe4a3!important}
+.pdk-fc-head p{max-width:720px;margin-top:7px!important;color:#c4d6e6!important;font-size:13px!important;line-height:1.55}
+.pdk-fc-year{flex:0 0 auto;padding:9px 15px!important;border-radius:12px!important;border:1px solid rgba(255,224,160,.6)!important;background:linear-gradient(135deg,#75501f,#c18a38 52%,#77501e)!important;color:#fff2cb!important;font-size:16px!important;letter-spacing:.03em;box-shadow:0 7px 18px #0003}
+.pdk-fc-summary{position:relative;z-index:1;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important;margin-top:19px!important}
+.pdk-fc-summary>div{padding:13px 15px!important;min-height:76px;border:1px solid rgba(135,183,211,.24)!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(30,73,103,.78),rgba(7,31,53,.88))!important}
+.pdk-fc-summary b{font-size:25px!important;line-height:1.1;color:#ffdf91!important;font-variant-numeric:tabular-nums}
+.pdk-fc-summary span{margin-top:5px;color:#d6e5f1!important;font-size:11px!important;line-height:1.4}
+.pdk-fc-legend{position:relative;z-index:1;margin-top:15px!important;gap:9px 18px!important;color:#dce9f3!important;font-size:11px!important}
+.pdk-fc-legend span{gap:7px!important}
+.pdk-fc-dot{width:8px!important;height:8px!important;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+.pdk-festival-calendar>.panel:nth-child(2){padding:17px!important;border-radius:19px!important;border:1px solid rgba(110,166,199,.25)!important;background:linear-gradient(145deg,#102b45,#081d33)!important}
+.pdk-festival-calendar>.panel:nth-child(2)>h3{display:flex;align-items:center;gap:8px;margin:0 0 13px!important;color:#ffe1a0!important;font-size:16px!important;letter-spacing:.01em}
+.pdk-fc-upcoming{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px!important}
+.pdk-fc-upcoming-item{min-width:0;min-height:62px;padding:10px 12px!important;gap:11px!important;border:1px solid rgba(115,174,207,.2)!important;border-radius:13px!important;background:linear-gradient(120deg,rgba(14,48,73,.9),rgba(5,25,45,.78))!important}
+.pdk-fc-upcoming-date{flex:0 0 66px!important;padding:8px 4px!important;border:1px solid rgba(255,222,157,.28);background:linear-gradient(145deg,#8d622b,#50371d)!important;color:#fff0c5!important;font-size:11px!important}
+.pdk-fc-upcoming-item>div:last-child{min-width:0}
+.pdk-fc-upcoming-item strong{font-size:12px!important;line-height:1.4;overflow-wrap:anywhere}
+.pdk-fc-upcoming-item small{font-size:10px!important;line-height:1.4}
+.pdk-fc-months{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important}
+.pdk-fc-month{padding:12px!important;border:1px solid rgba(117,170,201,.25)!important;border-radius:16px!important;background:linear-gradient(155deg,#12344f 0%,#0a233b 72%,#071b30 100%)!important;box-shadow:0 8px 22px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.035)!important}
+.pdk-fc-month h3{align-items:center;margin:0 0 10px!important;padding:0 1px 8px;border-bottom:1px solid rgba(194,162,104,.22);color:#ffe2a0!important;font-size:14px!important}
+.pdk-fc-month h3 small{color:#a9c5d9!important;font-size:10px!important;white-space:nowrap}
+.pdk-fc-week,.pdk-fc-days{gap:4px!important}
+.pdk-fc-week span{padding:4px 0!important;color:#9db9cd!important;font-size:9px!important}
+.pdk-fc-day{min-height:38px!important;border-radius:9px!important;font-size:11px!important;background:rgba(255,255,255,.035)!important;color:#edf5fb!important}
+.pdk-fc-day.is-weekend{color:#f0b4bc!important}
+.pdk-fc-day.has-event{border-color:rgba(102,213,239,.4)!important;background:linear-gradient(145deg,rgba(21,105,133,.75),rgba(16,54,91,.92))!important}
+.pdk-fc-day.is-official{border-color:rgba(244,204,117,.72)!important;background:linear-gradient(145deg,#89602a,#553a1d)!important}
+.pdk-fc-day.is-expected{border-color:rgba(198,165,255,.68)!important;background:linear-gradient(145deg,#644b83,#382d5d)!important}
+.pdk-fc-day.is-today{outline:2px solid #fff0c4!important;outline-offset:1px;z-index:1}
+.pdk-fc-day:focus-visible{outline:2px solid #fff!important;outline-offset:2px;z-index:2}
+.pdk-fc-day .pdk-fc-mark{width:5px;height:5px;flex:0 0 5px}
+.pdk-fc-source{margin:0;padding:12px 14px;border:1px solid rgba(114,163,192,.18);border-radius:12px;background:rgba(5,23,40,.45);color:#a9c1d4!important;font-size:10px!important;line-height:1.65!important}
+.pdk-fc-source a{color:#a6e4f4!important}
+.pdk-fc-dialog{width:min(650px,100%)!important;border-radius:22px!important}
+.pdk-fc-hero{height:clamp(165px,26vw,220px)!important}
+.pdk-fc-modal-body{padding:18px!important}
+.pdk-fc-event{padding:14px!important;border-color:rgba(128,183,211,.25)!important;background:rgba(3,20,37,.58)!important}
+.pdk-fc-event h3{line-height:1.35}
+.pdk-fc-event p{line-height:1.65}
+.pdk-fc-modal-body button{min-height:44px}
+@media(max-width:1180px){.pdk-fc-months{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:850px){.pdk-fc-months{grid-template-columns:repeat(2,minmax(0,1fr))!important}.pdk-fc-upcoming{grid-template-columns:1fr}}
+@media(max-width:560px){
+ .pdk-festival-calendar{gap:12px!important}
+ .pdk-festival-calendar>.panel:first-child{padding:16px 14px!important;border-radius:18px!important}
+ .pdk-fc-head{align-items:flex-start!important}
+ .pdk-fc-head h2{font-size:21px!important}
+ .pdk-fc-head p{font-size:12px!important}
+ .pdk-fc-year{padding:7px 10px!important;font-size:13px!important}
+ .pdk-fc-summary{gap:6px!important;margin-top:15px!important}
+ .pdk-fc-summary>div{min-height:69px;padding:10px 8px!important;border-radius:12px!important}
+ .pdk-fc-summary b{font-size:21px!important}
+ .pdk-fc-summary span{font-size:9px!important}
+ .pdk-fc-legend{gap:7px 12px!important;font-size:10px!important}
+ .pdk-festival-calendar>.panel:nth-child(2){padding:13px!important}
+ .pdk-fc-upcoming-item{min-height:58px;padding:9px!important}
+ .pdk-fc-months{grid-template-columns:1fr!important;gap:9px!important}
+ .pdk-fc-month{padding:12px!important}
+ .pdk-fc-month h3{font-size:14px!important}
+ .pdk-fc-week,.pdk-fc-days{gap:5px!important}
+ .pdk-fc-week span{font-size:10px!important}
+ .pdk-fc-day{min-height:44px!important;font-size:12px!important;border-radius:10px!important}
+ .pdk-fc-empty{min-height:44px!important}
+ .pdk-fc-month h3 small{font-size:10px!important}
+ .pdk-fc-source{padding:10px 11px!important}
+ .pdk-fc-hero{height:155px!important}
+ .pdk-fc-modal-body{padding:12px!important}
+}
+@media(prefers-reduced-motion:reduce){.pdk-festival-calendar *{scroll-behavior:auto!important;transition:none!important}}
+</style>
+<script id="pdk-thailand-annual-festival-calendar-script">
 function renderThailandFestivalCalendar(){
  const root=document.getElementById('pageContent');
  if(!root)return;
