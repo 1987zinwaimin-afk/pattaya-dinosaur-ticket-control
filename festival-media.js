@@ -13,6 +13,9 @@
   let lastCalendarYear = null;
   let lastMediaFetch = 0;
   let busy = false;
+  let dayMessageRows = [];
+  let lastDayMessageFetch = 0;
+  let dayMessageFetchPromise = null;
 
   const t = (en, my) => (typeof lang !== 'undefined' && lang === 'my' ? my : en);
   const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
@@ -202,6 +205,7 @@
     const selected=activeDateAndTitle();
     const events=(window.__pdkThailandFestivalLookup||{})[selected.date]||[];
     const event=selected.title?(events.find(e=>e.title===selected.title)||null):(events[0]||null);
+    syncNormalDayNotice(false);
     const video=card.querySelector('.pdk-festival-video');
     if(!video)return;
     const source=video.querySelector('source');
@@ -267,6 +271,198 @@
       if(!builtIn)setFestivalVideoNotice(card,'Festival video could not be loaded. Please try again.');
     }
   }
+  async function fetchDayMessages(force) {
+    if (!currentUser || !sb) return [];
+    if (!force && Date.now() - lastDayMessageFetch < 15000) return dayMessageRows;
+    if (dayMessageFetchPromise) return dayMessageFetchPromise;
+    dayMessageFetchPromise = (async () => {
+      const {data,error} = await sb.from('calendar_day_messages')
+        .select('id,message_date,title,message,display_from,display_until,is_active,created_at,updated_at')
+        .order('message_date',{ascending:true})
+        .order('display_from',{ascending:true});
+      if (error) throw error;
+      dayMessageRows = data || [];
+      lastDayMessageFetch = Date.now();
+      return dayMessageRows;
+    })();
+    try { return await dayMessageFetchPromise; }
+    finally { dayMessageFetchPromise = null; }
+  }
+
+  function isOrdinaryDate(key) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(key || '')) return false;
+    const year = Number(key.slice(0,4));
+    return !eventsForYear(year).some(e => e.date === key);
+  }
+
+  function nextOrdinaryDate() {
+    const p = today();
+    const cursor = new Date(Date.UTC(p.year,p.month-1,p.day));
+    for (let i=0;i<45;i++) {
+      const key = cursor.toISOString().slice(0,10);
+      if (isOrdinaryDate(key)) return key;
+      cursor.setUTCDate(cursor.getUTCDate()+1);
+    }
+    return p.key;
+  }
+
+  async function syncNormalDayNotice(force) {
+    const card = document.getElementById('appDateTime');
+    const box = document.getElementById('appDateNoticeValue');
+    if (!card || !box || !currentUser) return;
+    const selected = activeDateAndTitle();
+    const events = (window.__pdkThailandFestivalLookup || {})[selected.date] || [];
+    const hide = () => {
+      box.hidden = true;
+      card.classList.remove('has-normal-day-message');
+    };
+    // Festival dates always keep their own festival label/media; normal-day notices never replace them.
+    if (events.length) { hide(); return; }
+    try {
+      const rows = await fetchDayMessages(!!force);
+      const parts = new Intl.DateTimeFormat('en-GB',{
+        timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+      }).formatToParts(new Date());
+      const hour = Number(parts.find(x=>x.type==='hour')?.value || 0);
+      const minute = Number(parts.find(x=>x.type==='minute')?.value || 0);
+      const nowMinutes = hour*60+minute;
+      const row = rows.filter(x => {
+        if (x.message_date !== selected.date || !x.is_active) return false;
+        const from = String(x.display_from || '00:00').slice(0,5).split(':').map(Number);
+        const until = String(x.display_until || '23:59').slice(0,5).split(':').map(Number);
+        return nowMinutes >= from[0]*60+from[1] && nowMinutes < until[0]*60+until[1];
+      }).sort((a,b)=>String(a.display_from).localeCompare(String(b.display_from)))[0];
+      if (!row) { hide(); return; }
+      const title = document.getElementById('appDateNoticeTitle');
+      const message = document.getElementById('appDateNoticeText');
+      if (title) title.textContent = row.title;
+      if (message) message.textContent = row.message;
+      box.hidden = false;
+      card.classList.add('has-normal-day-message');
+    } catch (error) {
+      console.warn('Normal-day Date & Time message could not be loaded:',error);
+    }
+  }
+
+  async function renderDayMessageManager() {
+    const host = document.getElementById('pdkCalendarDayMessageManager');
+    if (!host || !currentUser || currentRole !== 'owner') return;
+    try {
+      const rows = await fetchDayMessages(true);
+      const defaultDate = nextOrdinaryDate();
+      host.innerHTML =
+        '<form class="pdk-day-message-form" data-pdk-day-message-form>' +
+          '<div class="pdk-day-message-fields">' +
+            '<label>'+t('Date','ရက်စွဲ')+'<input name="message_date" type="date" value="'+defaultDate+'" required></label>' +
+            '<label>'+t('Display from','စတင်ပြသချိန်')+'<input name="display_from" type="time" value="00:00" required></label>' +
+            '<label>'+t('Display until','ပြီးဆုံးချိန်')+'<input name="display_until" type="time" value="23:59" required></label>' +
+            '<label>'+t('Title','ခေါင်းစဉ်')+'<input name="title" type="text" maxlength="120" placeholder="'+t('e.g. Special operating hours','ဥပမာ - အထူးဖွင့်ချိန်')+'" required></label>' +
+            '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time','Date & Time တွင်ပြမည့်စာသား')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'" required></textarea></label>' +
+          '</div>' +
+          '<div class="pdk-day-message-actions"><label class="pdk-day-message-active"><input name="is_active" type="checkbox" checked> '+t('Active','ဖွင့်ထားမည်')+'</label><button type="submit" class="gold" data-day-message-save>'+t('＋ Save message','＋ သိမ်းမည်')+'</button><button type="button" data-day-message-cancel hidden>'+t('Cancel edit','မပြင်တော့ပါ')+'</button><span data-day-message-status role="status" aria-live="polite"></span></div>' +
+        '</form>' +
+        '<div class="pdk-day-message-list" data-day-message-list>' +
+          (rows.length ? rows.slice(0,30).map(row =>
+            '<article class="pdk-day-message-item"><div class="pdk-day-message-copy"><strong>'+escapeHtml(dateLabel(row.message_date))+' · '+escapeHtml(row.title)+'</strong><small>'+escapeHtml(String(row.display_from).slice(0,5)+'–'+String(row.display_until).slice(0,5))+' · '+(row.is_active?t('Active','ဖွင့်ထားသည်'):t('Hidden','ပိတ်ထားသည်'))+'</small><p>'+escapeHtml(row.message)+'</p></div><div class="pdk-day-message-item-actions"><button type="button" data-day-message-edit="'+escapeHtml(row.id)+'">'+t('Edit','ပြင်မည်')+'</button><button type="button" class="danger" data-day-message-delete="'+escapeHtml(row.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>'
+          ).join('') : '<p class="pdk-day-message-empty">'+t('No normal-day messages have been added yet.','ပုံမှန်ရက်အတွက် အသိပေးစာ မထည့်ရသေးပါ။')+'</p>') +
+        '</div>';
+
+      const form = host.querySelector('[data-pdk-day-message-form]');
+      const status = host.querySelector('[data-day-message-status]');
+      const save = host.querySelector('[data-day-message-save]');
+      const cancel = host.querySelector('[data-day-message-cancel]');
+      const setStatus = message => { if(status) status.textContent = message || ''; };
+      const resetEditor = () => {
+        host.dataset.editingDayMessage = '';
+        form.reset();
+        form.elements.namedItem('message_date').value = nextOrdinaryDate();
+        form.elements.namedItem('display_from').value = '00:00';
+        form.elements.namedItem('display_until').value = '23:59';
+        form.elements.namedItem('is_active').checked = true;
+        if(save) save.textContent = t('＋ Save message','＋ သိမ်းမည်');
+        if(cancel) cancel.hidden = true;
+        setStatus('');
+      };
+      cancel?.addEventListener('click',resetEditor);
+      form?.addEventListener('submit',async event => {
+        event.preventDefault();
+        if (!currentUser || currentRole !== 'owner' || dayMessageBusy) return;
+        const date = form.elements.namedItem('message_date').value;
+        const from = form.elements.namedItem('display_from').value;
+        const until = form.elements.namedItem('display_until').value;
+        const title = form.elements.namedItem('title').value.trim();
+        const message = form.elements.namedItem('message').value.trim();
+        const active = form.elements.namedItem('is_active').checked;
+        if (!isOrdinaryDate(date)) {
+          setStatus(t('Choose a normal date without a festival or public holiday.','ပွဲတော်/ရုံးပိတ်ရက် မရှိသော ပုံမှန်ရက်ကို ရွေးပါ။'));
+          return;
+        }
+        if (!from || !until || from >= until) {
+          setStatus(t('End time must be later than start time.','ပြီးဆုံးချိန်သည် စတင်ချိန်ထက် နောက်ကျရပါမည်။'));
+          return;
+        }
+        if (!title || !message) {
+          setStatus(t('Enter both a title and a message.','ခေါင်းစဉ်နှင့် စာသားနှစ်ခုလုံး ဖြည့်ပါ။'));
+          return;
+        }
+        dayMessageBusy = true;
+        if(save){save.disabled=true;save.textContent=t('Saving…','သိမ်းနေသည်…');}
+        const payload = {
+          message_date:date,title,message,
+          display_from:from+':00',display_until:until+':00',
+          is_active:active,updated_at:new Date().toISOString()
+        };
+        const editingId = host.dataset.editingDayMessage || '';
+        try {
+          const result = editingId
+            ? await sb.from('calendar_day_messages').update(payload).eq('id',editingId)
+            : await sb.from('calendar_day_messages').insert({...payload,created_by:currentUser.id});
+          if (result.error) throw result.error;
+          dayMessageRows=[];lastDayMessageFetch=0;
+          await fetchDayMessages(true);
+          await renderDayMessageManager();
+          await syncNormalDayNotice(true);
+        } catch(error) {
+          setStatus(t('Could not save: ','သိမ်းမရပါ: ')+error.message);
+          if(save){save.disabled=false;save.textContent=editingId?t('Update message','ပြင်ဆင်သိမ်းမည်'):t('＋ Save message','＋ သိမ်းမည်');}
+        } finally { dayMessageBusy=false; }
+      });
+      host.querySelectorAll('[data-day-message-edit]').forEach(button=>button.addEventListener('click',()=>{
+        const row=rows.find(x=>x.id===button.dataset.dayMessageEdit);
+        if(!row)return;
+        host.dataset.editingDayMessage=row.id;
+        form.elements.namedItem('message_date').value=row.message_date;
+        form.elements.namedItem('display_from').value=String(row.display_from).slice(0,5);
+        form.elements.namedItem('display_until').value=String(row.display_until).slice(0,5);
+        form.elements.namedItem('title').value=row.title;
+        form.elements.namedItem('message').value=row.message;
+        form.elements.namedItem('is_active').checked=!!row.is_active;
+        if(save)save.textContent=t('Update message','ပြင်ဆင်သိမ်းမည်');
+        if(cancel)cancel.hidden=false;
+        setStatus('');
+        const details=host.closest('details');if(details)details.open=true;
+        form.scrollIntoView({behavior:'smooth',block:'nearest'});
+      }));
+      host.querySelectorAll('[data-day-message-delete]').forEach(button=>button.addEventListener('click',async()=>{
+        if(!currentUser||currentRole!=='owner'||dayMessageBusy)return;
+        if(!window.confirm(t('Delete this normal-day message?','ဤအသိပေးစာကို ဖျက်မလား။')))return;
+        dayMessageBusy=true;
+        button.disabled=true;
+        try{
+          const {error}=await sb.from('calendar_day_messages').delete().eq('id',button.dataset.dayMessageDelete);
+          if(error)throw error;
+          dayMessageRows=[];lastDayMessageFetch=0;
+          await fetchDayMessages(true);
+          await renderDayMessageManager();
+          await syncNormalDayNotice(true);
+        }catch(error){button.disabled=false;setStatus(t('Could not delete: ','ဖျက်မရပါ: ')+error.message);}
+        finally{dayMessageBusy=false;}
+      }));
+    } catch(error) {
+      host.innerHTML='<p class="pdk-day-message-error" role="alert">'+t('Normal-day messages could not be loaded: ','ပုံမှန်ရက်အသိပေးစာများ ဖတ်မရပါ: ')+escapeHtml(error.message)+'</p>';
+    }
+  }
+
   function renderCalendar() {
     const root = document.getElementById('pageContent');
     if (!root) return;
@@ -302,7 +498,7 @@
       return '<section class="pdk-fc-month"><h3>'+escapeHtml(monthLabel(year,month))+' <small>'+count+' '+t('dates','ရက်')+'</small></h3><div class="pdk-fc-week">'+['M','T','W','T','F','S','S'].map(x=>'<span>'+x+'</span>').join('')+'</div><div class="pdk-fc-days">'+cells+'</div></section>';
     }).join('');
     const upcoming = all.filter(e=>e.date>=p.key).slice(0,8);
-    root.innerHTML = '<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 '+t('Thailand Festival Calendar','ထိုင်းနိုင်ငံ၏ နေ့ထူးနေ့မြတ် ပြက္ခဒိန်')+'</h2><p>'+t('From this month to the end of '+year,'ယခုလမှ '+year+' နှစ်ကုန်အထိ')+'</p></div><span class="pdk-fc-year">'+year+'</span></div><div class="pdk-fc-summary"><div><b>'+months.length+'</b><span>'+t('Months','လ')+'</span></div><div><b>'+new Set(all.map(e=>e.date)).size+'</b><span>'+t('Festival dates','ပွဲရက်များ')+'</span></div><div><b>'+all.length+'</b><span>'+t('Events','ပွဲများ')+'</span></div></div></section><section class="panel"><h3>✨ '+t('Upcoming festivals','လာမည့်ပွဲတော်များ')+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<button type="button" class="pdk-fc-upcoming-item" data-pdk-fc-date="'+escapeHtml(e.date)+'" data-pdk-fc-title="'+escapeHtml(e.title)+'"><span class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</span><span><strong>'+escapeHtml(e.icon+' '+e.title)+'</strong><small>'+escapeHtml(e.kind+' · '+e.status)+'</small></span><span class="pdk-fc-upcoming-open" aria-hidden="true">＋</span></button>').join('')+'</div></section><div class="pdk-fc-months">'+monthHtml+'</div><section class="panel" id="pdkFestivalVideoManager"><h3>🎬 '+t('Festival Video Manager','ပွဲတော် Video စီမံခန့်ခွဲမှု')+'</h3><p class="subtle">'+t('Upload one video for each festival. Preview before the date; it will play automatically on the festival date.','ပွဲတစ်ခုချင်းစီအတွက် Video တင်နိုင်ပြီး ပွဲရက်မတိုင်မီ Preview ကြည့်နိုင်ပါသည်။ ပွဲရက်ရောက်လျှင် အလိုအလျောက် ပြသပါမည်။')+'</p><div id="pdkFestivalVideoManagerBody"><p>'+t('Loading festival videos…','Festival Video များ ဖတ်နေသည်…')+'</p></div></section></div>';
+    root.innerHTML = '<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 '+t('Thailand Festival Calendar','ထိုင်းနိုင်ငံ၏ နေ့ထူးနေ့မြတ် ပြက္ခဒိန်')+'</h2><p>'+t('From this month to the end of '+year,'ယခုလမှ '+year+' နှစ်ကုန်အထိ')+'</p></div><span class="pdk-fc-year">'+year+'</span></div><div class="pdk-fc-summary"><div><b>'+months.length+'</b><span>'+t('Months','လ')+'</span></div><div><b>'+new Set(all.map(e=>e.date)).size+'</b><span>'+t('Festival dates','ပွဲရက်များ')+'</span></div><div><b>'+all.length+'</b><span>'+t('Events','ပွဲများ')+'</span></div></div></section><section class="panel"><h3>✨ '+t('Upcoming festivals','လာမည့်ပွဲတော်များ')+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<button type="button" class="pdk-fc-upcoming-item" data-pdk-fc-date="'+escapeHtml(e.date)+'" data-pdk-fc-title="'+escapeHtml(e.title)+'"><span class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</span><span><strong>'+escapeHtml(e.icon+' '+e.title)+'</strong><small>'+escapeHtml(e.kind+' · '+e.status)+'</small></span><span class="pdk-fc-upcoming-open" aria-hidden="true">＋</span></button>').join('')+'</div></section><details class="panel pdk-day-message-panel" id="pdkCalendarDayMessagePanel"><summary><span>📝 '+t('Normal-day Date & Time Messages','ပုံမှန်ရက် Date & Time အသိပေးစာ')+'</span><small>'+t('Owner can schedule a message for any ordinary date and time','ပွဲမရှိသောနေ့တွင် Owner က စာသားနှင့်အချိန် သတ်မှတ်နိုင်သည်')+'</small></summary><div id="pdkCalendarDayMessageManager"><p>'+t('Loading messages…','အသိပေးစာများ ဖတ်နေသည်…')+'</p></div></details><div class="pdk-fc-months">'+monthHtml+'</div><section class="panel" id="pdkFestivalVideoManager"><h3>🎬 '+t('Festival Video Manager','ပွဲတော် Video စီမံခန့်ခွဲမှု')+'</h3><p class="subtle">'+t('Upload one video for each festival. Preview before the date; it will play automatically on the festival date.','ပွဲတစ်ခုချင်းစီအတွက် Video တင်နိုင်ပြီး ပွဲရက်မတိုင်မီ Preview ကြည့်နိုင်ပါသည်။ ပွဲရက်ရောက်လျှင် အလိုအလျောက် ပြသပါမည်။')+'</p><div id="pdkFestivalVideoManagerBody"><p>'+t('Loading festival videos…','Festival Video များ ဖတ်နေသည်…')+'</p></div></section></div>';
     root.querySelectorAll('[data-pdk-fc-date]').forEach(btn=>btn.addEventListener('click',()=>{
       const key=btn.dataset.pdkFcDate;
       const title=btn.dataset.pdkFcTitle||'';
@@ -310,6 +506,7 @@
       openFestivalUploadPopup(key,title);
     }));
     renderManager();
+    renderDayMessageManager();
   }
 
 
@@ -625,22 +822,23 @@
     if(holidayLabel){new MutationObserver(()=>{const selected=activeDateAndTitle();const row=mediaRows.find(x=>x.festival_date===selected.date&&(selected.title?x.festival_name===selected.title:true))||mediaRows.find(x=>x.festival_date===selected.date);if(row&&(holidayLabel.textContent!==row.festival_name||holidayLabel.hidden)){holidayLabel.textContent=row.festival_name;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}}).observe(holidayLabel,{childList:true,characterData:true,subtree:true});}
     if (sb && sb.auth) {
       sb.auth.onAuthStateChange(() => {
-        mediaRows=[];lastMediaFetch=0;
-        setTimeout(()=>{if(document.getElementById('appDateTime'))syncDateTimeVideo(true);},500);
+        mediaRows=[];lastMediaFetch=0;dayMessageRows=[];lastDayMessageFetch=0;
+        setTimeout(()=>{if(document.getElementById('appDateTime')){syncDateTimeVideo(true);syncNormalDayNotice(true);}},500);
       });
     }
     setInterval(()=>{
       syncDateTimeVideo(false);
+      syncNormalDayNotice(false);
       const yearNow=today().year;
       const root=document.getElementById('pageContent');
       if(yearNow!==lastCalendarYear){lastCalendarYear=yearNow;if(root&&root.dataset.uiPage==='festivals')renderCalendar();}
     },15000);
-    window.addEventListener('focus',()=>syncDateTimeVideo(true));
+    window.addEventListener('focus',()=>{syncDateTimeVideo(true);syncNormalDayNotice(true);});
     document.addEventListener('click',event=>{
       if(event.target.closest('[data-fc-datetime-preview]')) setTimeout(()=>syncDateTimeVideo(true),120);
       if(event.target.closest('[data-fc-close],.pdk-fc-close')) setTimeout(()=>syncDateTimeVideo(true),180);
     });
-    setTimeout(()=>syncDateTimeVideo(true),0);
+    setTimeout(()=>{syncDateTimeVideo(true);syncNormalDayNotice(true);},0);
   }
 
   // Expose the single authoritative player so Calendar Preview never creates a second video layer.
