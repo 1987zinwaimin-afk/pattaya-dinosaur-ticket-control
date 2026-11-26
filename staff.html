@@ -3556,7 +3556,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 <script>
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-staff-auth-v1'}});
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-staff-auth-v1'}});window.sb=sb;
 // Ask the browser to preserve this installed app's local session storage where supported.
 try{if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}catch(storageError){console.warn('Persistent storage request unavailable:',storageError)}
 let authMode="signin",currentUser=null,currentRole="staff",currentStaffId=null,cloudReady=false,cloudChannel=null;

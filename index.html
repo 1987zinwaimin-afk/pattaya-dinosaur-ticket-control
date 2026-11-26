@@ -4495,6 +4495,24 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 .chat-message-status{font-size:10px;letter-spacing:.1px}
 @media(max-width:520px){.emergency-alarm-card{border-radius:19px!important;padding:19px 16px!important}.emergency-alarm-symbol{width:56px;height:56px;font-size:29px}.emergency-alarm-card>p{font-size:13px}.emergency-alarm-details{font-size:11px;padding:10px}.emergency-alarm-actions{gap:7px}.emergency-alarm-actions button{flex-basis:100%;min-height:46px}.staff-alarm-popover{max-width:calc(100vw - 16px)}}
 </style>
+<style id="pdk-owner-normal-datetime-state-v1">
+/* Keep the Owner Date & Time panel compact on ordinary dates. */
+#appDateTime.app-datetime:not(.has-festival-theme):not(.is-calendar-preview){
+  aspect-ratio:auto!important;min-height:94px!important;height:auto!important;
+  padding:14px 18px!important;align-items:center!important;
+  background:linear-gradient(112deg,#071a31,#102d49 58%,#0b2942)!important;
+}
+#appDateTime:not(.has-festival-theme):not(.is-calendar-preview) .pdk-festival-art,
+#appDateTime:not(.has-festival-theme):not(.is-calendar-preview) .pdk-festival-video,
+#appDateTime:not(.has-festival-theme):not(.is-calendar-preview) .pdk-festival-scene{
+  display:none!important;opacity:0!important;visibility:hidden!important;
+}
+@media(max-width:520px){
+ #appDateTime.app-datetime:not(.has-festival-theme):not(.is-calendar-preview){
+  min-height:86px!important;padding:12px 12px!important;aspect-ratio:auto!important;
+ }
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -4607,7 +4625,7 @@ window.addEventListener('unhandledrejection',function(e){try{const r=e.reason;wi
 window.__ownerBootDiagnostics.stage="main-script-start";
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
-const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-owner-auth-v1'}});
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-owner-auth-v1'}});window.sb=sb;
 let authMode="signin",currentUser=null,currentRole="staff",cloudReady=false,cloudChannel=null;
 const DEPTS=[{id:'sale',en:'Sale Ticket Department',th:'แผนกจำหน่ายตั๋ว',my:'လက်မှတ်အရောင်းဌာန',icon:'🎟️'},{id:'entry',en:'Entry Ticket Department',th:'แผนกบัตรเข้าชม',my:'ဝင်ခွင့်လက်မှတ်ဌာန',icon:'🎫'},{id:'playing',en:'Playing Ticket Department',th:'แผนกบัตรเครื่องเล่น',my:'ကစားစရာလက်မှတ်ဌာန',icon:'🎮'},{id:'event',en:'Event Ticket Department',th:'แผนกบัตรกิจกรรม',my:'ပွဲလက်မှတ်ဌာန',icon:'🎪'}];
 const PAGES=[{id:'chat',en:'Team Chat',th:'แชททีม',my:'အဖွဲ့လိုက် စကားပြော',icon:'💬'},{id:'dashboard',en:'Dashboard',th:'แดชบอร์ด',my:'ဒက်ရှ်ဘုတ်',icon:'◈'},...DEPTS,{id:'train',en:'Garden Train',th:'Garden Train',my:'Garden Train',icon:'🚆'},{id:'monthly',en:'Monthly Summary',th:'สรุปรายเดือน',my:'လစဉ်အနှစ်ချုပ်',icon:'▥'},{id:'payroll',en:'Staff Payroll',th:'เงินเดือนพนักงาน',my:'ဝန်ထမ်းလစာ',icon:'฿'},{id:'owner',en:'Owner Database',th:'ฐานข้อมูลเจ้าของ',my:'ပိုင်ရှင်ဒေတာဘေ့စ်',icon:'♙'},{id:'staff',en:'Staff Database',th:'ฐานข้อมูลพนักงาน',my:'ဝန်ထမ်းဒေတာဘေ့စ်',icon:'♧'},{id:'archive',en:'Archived Tickets',th:'ตั๋วที่เก็บถาวร',my:'သိမ်းဆည်းထားသော လက်မှတ်များ',icon:'🗂️'},{id:'eventhistory',en:'Event History',th:'ประวัติงานอีเวนต์',my:'ပွဲမှတ်တမ်း',icon:'🗂️'},{id:'festivals',en:'Thailand Festival Calendar',th:'ปฏิทินเทศกาลไทย',my:'ထိုင်းပွဲတော် ပြက္ခဒိန်',icon:'🎉'},{id:'customervisits',en:'Customer Visits',th:'บันทึกผู้เข้าชม',my:'ဧည့်သည်မှတ်တမ်း',icon:'👥'},{id:'settings',en:'Settings',th:'ตั้งค่า',my:'ဆက်တင်များ',icon:'⚙'}];
