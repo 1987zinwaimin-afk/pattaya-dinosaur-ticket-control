@@ -4514,7 +4514,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
  if(image){if(!image.complete)image.addEventListener('load',syncParkHeaderHeight,{once:true});if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(image)}}
 })();
 </script>
-<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-2" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none" poster="/pdk-loy-krathong-photoreal.webp"><source src="/owner-loy-krathong-compat.mp4?v=20261126-1" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
 <defs>
  <linearGradient id="pdkSky" x2="0" y2="1"><stop stop-color="#06132e"/><stop offset=".52" stop-color="#0b2852"/><stop offset="1" stop-color="#123c62"/></linearGradient>
  <linearGradient id="pdkWater" x2="0" y2="1"><stop stop-color="#16466d"/><stop offset=".45" stop-color="#0b315b"/><stop offset="1" stop-color="#061b3b"/></linearGradient>
@@ -8657,9 +8657,10 @@ function openThailandFestivalDate(date){
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
  const festivalFootage={
-  'New Year’s Day':{url:'/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
-  'New Year’s Eve':{url:'/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
+  'New Year’s Day':{url:'/owner-newyear-compat.mp4?v=20261126-1',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
+  'New Year’s Eve':{url:'/owner-newyear-compat.mp4?v=20261126-1',type:'video',credit:'New Year fireworks · Pattaya Dinosaur Kingdom'},
   'Thailand National Children’s Day':{url:'/Thailand%20National%20Children%E2%80%99s%20Day.mp4?v=20261125-1',type:'video',credit:'Thailand National Children’s Day · Pattaya Dinosaur Kingdom'},
+  'Loy Krathong Festival':{url:'/owner-loy-krathong-compat.mp4?v=20261126-1',type:'video',credit:'Loy Krathong Festival · Pattaya Dinosaur Kingdom'},
   'Thailand Teachers’ Day':{url:'https://www.pexels.com/download/video/8363822/',credit:'Teacher and students in class · Pexels'},
   'Chinese New Year':{url:'https://www.pexels.com/download/video/38873392/',credit:'Chinese New Year lion dance · Pexels'},
   'Makha Bucha Day':{url:'https://www.pexels.com/download/video/40881912/',credit:'Thai Buddhist night ceremony · Pexels'},
@@ -8667,7 +8668,7 @@ function openThailandFestivalDate(date){
   'Chakri Memorial Day':{url:'https://www.pexels.com/download/video/34499360/',credit:'Grand Palace, Bangkok · Pexels'}
  };
  const footage=festivalFootage[title];
- const loyMedia='<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-3" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>';
+ const loyMedia='<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/owner-loy-krathong-compat.mp4?v=20261126-1" type="video/mp4"></video><div class="pdk-fc-loy-scene" aria-hidden="true"><span class="pdk-fc-lantern l1"></span><span class="pdk-fc-lantern l2"></span><span class="pdk-fc-lantern l3"></span><span class="pdk-fc-lantern l4"></span><span class="pdk-fc-lantern l5"></span><span class="pdk-fc-krathong k1"></span><span class="pdk-fc-krathong k2"></span></div>';
  const heroMedia=theme==='loy'?loyMedia:footage?(footage.type==='gif'?'<img class="pdk-fc-hero-video" aria-hidden="true" alt="New Year fireworks" src="'+footage.url+'" data-footage-credit="'+footage.credit+'">':'<video class="pdk-fc-hero-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline preload="auto" data-footage-credit="'+footage.credit+'"><source src="'+footage.url+'" type="video/mp4"></video>')+(theme==='children'?'<div class="pdk-fc-children-scene" aria-hidden="true"><span class="pdk-child-balloon b1">🎈</span><span class="pdk-child-balloon b2">🎈</span><span class="pdk-child-balloon b3">🎈</span><span class="pdk-child-confetti">✦　✧　✦　✧　✦</span><span class="pdk-child-dino">🦖</span><span class="pdk-child-greeting">HAPPY CHILDREN’S DAY <small>สุขสันต์วันเด็ก</small></span></div>':'') :'';
  const sceneSets={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇']};
  const sceneItems=sceneSets[theme]||['✨',icon,'🌟','✨'];
@@ -8687,9 +8688,21 @@ function openThailandFestivalDate(date){
   const holidayLabel=document.getElementById('appHolidayValue');
   if(holidayLabel){holidayLabel.textContent=title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');}
   const art=card.querySelector('.pdk-festival-art');
-  if(art){art.querySelector('.pdk-calendar-preview-art')?.remove();art.querySelector('.pdk-calendar-preview-video')?.remove();art.querySelector('.pdk-calendar-preview-gif')?.remove();if(dateTheme!=='loy-krathong'){
-   if(dateTheme==='new-year'||dateTheme==='children'){
-    const video=document.createElement('video');video.className='pdk-calendar-preview-video';video.src=dateTheme==='new-year'?'/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1':'/Thailand%20National%20Children%E2%80%99s%20Day.mp4?v=20261125-1';video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload='auto';video.setAttribute('aria-hidden','true');video.setAttribute('autoplay','');video.setAttribute('muted','');video.setAttribute('loop','');video.setAttribute('playsinline','');video.addEventListener('error',()=>video.classList.add('pdk-calendar-preview-video-failed'),{once:true});art.appendChild(video);const playAttempt=video.play();if(playAttempt&&typeof playAttempt.catch==='function')playAttempt.catch(()=>{});
+  if(art){
+   art.querySelector('.pdk-calendar-preview-art')?.remove();
+   art.querySelector('.pdk-calendar-preview-video')?.remove();
+   art.querySelector('.pdk-calendar-preview-gif')?.remove();
+   art.querySelector(':scope > .pdk-auto-festival-canvas')?.remove();
+   const previewVideoUrl=footage&&footage.type!=='gif'?footage.url:'';
+   if(previewVideoUrl){
+    const video=document.createElement('video');
+    video.className='pdk-calendar-preview-video';
+    video.src=previewVideoUrl;
+    video.autoplay=true;video.muted=true;video.defaultMuted=true;video.loop=true;video.playsInline=true;video.preload='auto';
+    video.setAttribute('aria-hidden','true');video.setAttribute('autoplay','');video.setAttribute('muted','');video.setAttribute('loop','');video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
+    video.addEventListener('error',()=>video.classList.add('pdk-calendar-preview-video-failed'),{once:true});
+    art.appendChild(video);
+    const playAttempt=video.play();if(playAttempt&&typeof playAttempt.catch==='function')playAttempt.catch(()=>{});
    }else{
     const layer=document.createElement('div');layer.className='pdk-calendar-preview-art';layer.setAttribute('aria-hidden','true');
     const map={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇'],children:['🦖','🎈','🎉','⭐']};
@@ -8697,7 +8710,7 @@ function openThailandFestivalDate(date){
     layer.innerHTML=symbols.map((v,i)=>'<span class="pdk-calendar-preview-symbol p'+(i+1)+'">'+v+'</span>').join('');
     art.appendChild(layer);
    }
-  }}
+  }
   close();
  });
  const previousBodyOverflow=document.body.style.overflow;
@@ -9399,6 +9412,7 @@ function openThailandFestivalDate(date){
   if(host.classList.contains('pdk-fc-hero')&&host.querySelector('.pdk-fc-hero-video')){unmount(host);return;}
   // Existing Loy Krathong MP4 + SVG fallback is the only animation layer for this theme.
   if(theme==='loy'){unmount(host);return;}
+  if(host.classList.contains('pdk-festival-art')&&host.querySelector('.pdk-calendar-preview-video')){unmount(host);return;}
   if(host.classList.contains('pdk-festival-art'))host.querySelectorAll('.pdk-festival-video,.pdk-festival-scene').forEach(el=>el.style.display='none');
   if(host.dataset.autoFestivalCanvas==='yes'&&host.dataset.autoFestivalTheme===theme)return;
   if(host.dataset.autoFestivalCanvas==='yes')unmount(host);
@@ -9467,5 +9481,49 @@ function openThailandFestivalDate(date){
 })();
 </script>
 
+<style id="pdk-owner-datetime-video-render-fix-v1">
+/* OWNER index.html only: avoid GPU filter/compositing artifacts in festival preview videos. */
+#pdkThailandFestivalModal video.pdk-fc-hero-video,
+#pdkFestivalVideoViewer video,
+#appDateTime video.pdk-calendar-preview-video,
+#appDateTime video.pdk-festival-video {
+  filter:none!important;
+  -webkit-filter:none!important;
+  mix-blend-mode:normal!important;
+  image-rendering:auto!important;
+  backface-visibility:visible!important;
+  -webkit-backface-visibility:visible!important;
+}
+#pdkThailandFestivalModal .pdk-fc-hero-video,
+#appDateTime .pdk-calendar-preview-video,
+#appDateTime .pdk-festival-video {
+  background:#06172d!important;
+}
+#pdkThailandFestivalModal .pdk-fc-hero .pdk-auto-festival-canvas,
+#appDateTime .pdk-auto-festival-canvas,
+#appDateTime .pdk-festival-art .pdk-auto-festival-canvas {
+  display:none!important;
+}
+</style>
 
 
+<style id="pdk-owner-datetime-single-video-layer-v2">
+/* Owner Date & Time: exactly one moving media layer at a time. */
+#appDateTime .pdk-festival-art{isolation:isolate!important;overflow:hidden!important}
+#appDateTime .pdk-festival-art::before,
+#appDateTime .pdk-festival-art::after{display:none!important;content:none!important}
+#appDateTime .pdk-festival-art>.pdk-auto-festival-canvas,
+#appDateTime .pdk-festival-art>.pdk-festival-scene,
+#appDateTime .pdk-festival-art>.pdk-calendar-preview-art,
+#appDateTime .pdk-festival-art>.pdk-calendar-preview-gif{display:none!important;visibility:hidden!important;opacity:0!important}
+#appDateTime.is-calendar-preview .pdk-festival-art>video:not(.pdk-calendar-preview-video){display:none!important;visibility:hidden!important;opacity:0!important}
+#appDateTime.is-calendar-preview .pdk-festival-art>.pdk-calendar-preview-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:1!important}
+#appDateTime:not(.is-calendar-preview) .pdk-festival-art>.pdk-calendar-preview-video{display:none!important;visibility:hidden!important;opacity:0!important}
+#appDateTime:not(.is-calendar-preview) .pdk-festival-art>video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:1!important}
+#appDateTime .pdk-festival-art>video,
+#appDateTime .pdk-festival-art>.pdk-calendar-preview-video{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ object-fit:cover!important;mix-blend-mode:normal!important;filter:none!important;
+ -webkit-filter:none!important;transform:none!important;backface-visibility:visible!important;
+}
+</style>
