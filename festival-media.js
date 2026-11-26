@@ -202,17 +202,33 @@
         // No festival on this date: stop and restore the normal dashboard media.
         // Never substitute the legacy PDK.mp4 on ordinary days.
         if (!event) {
-          video.pause();
-          if (source && video.dataset.pdkOriginalSrc) source.setAttribute('src', video.dataset.pdkOriginalSrc);
-          else if (source) source.removeAttribute('src');
-          else if (video.dataset.pdkOriginalSrc) video.setAttribute('src', video.dataset.pdkOriginalSrc);
-          else video.removeAttribute('src');
-          video.load();
-          delete video.dataset.festivalManaged;
-          delete video.dataset.festivalMediaId;
-          delete video.dataset.festivalBuiltin;
-          card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
-          if (scene) scene.style.display = '';
+          const wasFestivalVideo = video.dataset.festivalManaged === '1' ||
+            video.dataset.festivalBuiltin === '1' ||
+            !!video.dataset.festivalMediaId ||
+            card.classList.contains('has-owner-festival-video');
+          if (wasFestivalVideo) {
+            video.pause();
+            const originalSrc = video.dataset.pdkOriginalSrc || '';
+            const activeSrc = source ? (source.getAttribute('src') || '') : (video.getAttribute('src') || '');
+            if (source && originalSrc && activeSrc !== originalSrc) {
+              source.setAttribute('src', originalSrc);
+              video.load();
+            } else if (source && !originalSrc && activeSrc) {
+              source.removeAttribute('src');
+              video.load();
+            } else if (!source && originalSrc && activeSrc !== originalSrc) {
+              video.setAttribute('src', originalSrc);
+              video.load();
+            } else if (!source && !originalSrc && activeSrc) {
+              video.removeAttribute('src');
+              video.load();
+            }
+            delete video.dataset.festivalManaged;
+            delete video.dataset.festivalMediaId;
+            delete video.dataset.festivalBuiltin;
+            card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+            if (scene) scene.style.display = '';
+          }
           if (holidayLabel) holidayLabel.hidden = true;
           return;
         }
