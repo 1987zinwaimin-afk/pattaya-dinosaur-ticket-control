@@ -3696,7 +3696,7 @@ async function checkStaffSiteAccess(){
 }
 document.getElementById('staffSiteAccessRetry')?.addEventListener('click',()=>checkStaffSiteAccess());
 checkStaffSiteAccess();
-staffSiteAccessPollTimer=window.setInterval(()=>{if(document.visibilityState==='visible')checkStaffSiteAccess()},2500);
+staffSiteAccessPollTimer=window.setInterval(()=>{if(document.visibilityState==='visible')checkStaffSiteAccess()},30000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkStaffSiteAccess()});
 window.addEventListener('focus',()=>checkStaffSiteAccess());
 window.staffSiteAccessRealtimeChannel=sb.channel('staff-site-access-gate').on('postgres_changes',{event:'UPDATE',schema:'public',table:'staff_site_access_control',filter:'control_key=eq.normal_staff'},()=>checkStaffSiteAccess()).subscribe();
@@ -4548,9 +4548,11 @@ document.getElementById('authForm').onsubmit=async e=>{
 let restoringSavedSession=false;
 async function restoreSavedSession(){
  if(restoringSavedSession||currentUser)return;
- if(!(await checkStaffSiteAccess()))return;
+ // Acquire the restore lock before any asynchronous access check. INITIAL_SESSION,
+ // the explicit startup call, and foreground events can otherwise race here.
  restoringSavedSession=true;
  try{
+  if(!(await checkStaffSiteAccess()))return;
   const {data,error}=await sb.auth.getSession();
   if(error)throw error;
   if(!data.session){const authScreen=document.getElementById('authScreen');if(authScreen){authScreen.style.display='grid';authScreen.setAttribute('aria-hidden','false')}return;}
