@@ -161,15 +161,38 @@
     if (title.includes('children')) return '/Thailand%20National%20Children%E2%80%99s%20Day.mp4';
     if (title.includes('new year')) return '/Happy%20NewYear%E2%80%99s.mp4';
     if (title.includes('loy krathong')) return '/Loy%20Krathong%20Festival.mp4';
-    // PDK.mp4 was removed from the current main branch. Reuse the verified
-    // immutable production artifact from the last deployment that contained it.
-    return 'https://pattaya-dinosaur-ticket-control-k7k221ptq-khant-min-htet2.vercel.app/PDK.mp4';
+    // No generic/default footage: each other festival must have its own Owner upload.
+    return '';
+  }
+
+  function setFestivalVideoNotice(card, message) {
+    let notice=card.querySelector('.pdk-festival-video-notice');
+    if(!notice){
+      notice=document.createElement('div');
+      notice.className='pdk-festival-video-notice';
+      notice.setAttribute('role','status');
+      notice.setAttribute('aria-live','polite');
+      card.appendChild(notice);
+    }
+    notice.textContent=message||'No video has been added for this festival yet.';
+    notice.hidden=false;
+    card.classList.add('pdk-video-no-media');
+  }
+
+  function clearFestivalVideoNotice(card) {
+    const notice=card.querySelector('.pdk-festival-video-notice');
+    if(notice)notice.hidden=true;
+    card.classList.remove('pdk-video-no-media');
   }
 
   function bindVideoPlayback(card, video) {
     if (video.dataset.festivalPlaybackBound) return;
-    video.addEventListener('playing',()=>{card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')});
-    video.addEventListener('error',()=>card.classList.add('pdk-video-fallback'));
+    video.addEventListener('playing',()=>{card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready');clearFestivalVideoNotice(card)});
+    video.addEventListener('error',()=>{
+      card.classList.remove('pdk-video-ready');
+      card.classList.add('pdk-video-fallback');
+      setFestivalVideoNotice(card,'No video is available for this festival.');
+    });
     video.dataset.festivalPlaybackBound='1';
   }
 
@@ -200,6 +223,7 @@
       if(managed){delete video.dataset.festivalBuiltin;video.dataset.festivalManaged='1';video.dataset.festivalMediaId=id||'';}
       else{delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;video.dataset.festivalBuiltin='1';}
       card.classList.add('has-owner-festival-video');
+      clearFestivalVideoNotice(card);
       const art=card.querySelector('.pdk-festival-art');
       art?.querySelectorAll('.pdk-calendar-preview-video,.pdk-calendar-preview-art,.pdk-auto-festival-canvas').forEach(el=>el.remove());
       if(video.paused){const play=video.play();if(play&&play.catch)play.catch(()=>{});}
@@ -208,24 +232,40 @@
       video.pause();video.removeAttribute('autoplay');video.preload='none';
       if(source)source.removeAttribute('src');else video.removeAttribute('src');
       video.load();delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;delete video.dataset.festivalBuiltin;
-      card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+      card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback','pdk-video-no-media');
+      clearFestivalVideoNotice(card);
       if(scene)scene.style.display='';
       if(holidayLabel)holidayLabel.hidden=true;
       try{await fetchMedia(!!force);}catch(error){console.warn('Festival video metadata check failed:',error);}
       return;
     }
     if(holidayLabel){holidayLabel.textContent=event.title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}
-    // Start the built-in footage immediately, then check for an Owner-uploaded replacement.
-    setSource(builtInVideoForEvent(event),false,null);
+    // Only play footage explicitly assigned to this festival; never substitute generic PDK/Loy Krathong media.
+    const builtIn=builtInVideoForEvent(event);
+    if(builtIn)setSource(builtIn,false,null);
+    else{
+      video.pause();video.removeAttribute('autoplay');video.preload='none';
+      if(source)source.removeAttribute('src');else video.removeAttribute('src');
+      video.load();delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;delete video.dataset.festivalBuiltin;
+      card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+    }
     try{
       const rows=await fetchMedia(!!force);
-      const row=rows.find(x=>x.festival_date===selected.date&&x.festival_name===event.title)||null;
-      if(!row)return;
-      const url=await signedUrl(row.blob_path);
       const latest=activeDateAndTitle();
       if(latest.date!==selected.date||(latest.title&&latest.title!==event.title))return;
-      setSource(url,true,row.id);
-    }catch(error){console.warn('Festival video sync failed:',error);}
+      const row=rows.find(x=>x.festival_date===selected.date&&x.festival_name===event.title)||null;
+      if(row){
+        const url=await signedUrl(row.blob_path);
+        const stillLatest=activeDateAndTitle();
+        if(stillLatest.date!==selected.date||(stillLatest.title&&stillLatest.title!==event.title))return;
+        setSource(url,true,row.id);
+      }else if(!builtIn){
+        setFestivalVideoNotice(card,'No video has been added for this festival yet.');
+      }
+    }catch(error){
+      console.warn('Festival video sync failed:',error);
+      if(!builtIn)setFestivalVideoNotice(card,'Festival video could not be loaded. Please try again.');
+    }
   }
   function renderCalendar() {
     const root = document.getElementById('pageContent');
