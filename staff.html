@@ -6286,7 +6286,7 @@ installUILanguageObserver();applyUILanguage();
  window.setTimeout(check,1800);
 })();
 </script>
-<!-- Staff-only safety cleanup: remove accidentally rendered CSS patch text without touching ticket data or Owner UI. -->
+<!-- Staff-only safety cleanup: inspect only initial content and newly added nodes. -->
 <script>
 (function(){
  const markers=[
@@ -6294,23 +6294,27 @@ installUILanguageObserver();applyUILanguage();
   '#side .nav button.active, #side .nav button.gold',
   'HARD FIX: one equal-width row'
  ];
- function removeLeakedStaffCss(){
-  if(!document.body)return;
-  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
-  const nodes=[];
-  while(walker.nextNode()){
-   const node=walker.currentNode;
-   if(node.nodeValue&&markers.some(marker=>node.nodeValue.includes(marker)))nodes.push(node);
-  }
-  nodes.forEach(node=>{
-   const parent=node.parentElement;
-   if(parent&&parent!==document.body&&parent.children.length===0)parent.remove();
-   else node.remove();
-  });
+ function cleanTextNode(node){
+  if(!node||node.nodeType!==Node.TEXT_NODE||!node.nodeValue||!markers.some(marker=>node.nodeValue.includes(marker)))return;
+  const parent=node.parentElement;
+  if(parent&&parent!==document.body&&parent.children.length===0)parent.remove();
+  else node.remove();
  }
- const run=()=>removeLeakedStaffCss();
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
- new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true});
+ function cleanAddedNode(root){
+  if(!root)return;
+  if(root.nodeType===Node.TEXT_NODE){cleanTextNode(root);return;}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root.nodeType!==Node.DOCUMENT_FRAGMENT_NODE)return;
+  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const nodes=[];
+  while(walker.nextNode()){const node=walker.currentNode;if(node.nodeValue&&markers.some(marker=>node.nodeValue.includes(marker)))nodes.push(node);}
+  nodes.forEach(cleanTextNode);
+ }
+ function cleanInitialContent(){if(document.body)cleanAddedNode(document.body)}
+ const observer=new MutationObserver(records=>{
+  for(const record of records)for(const node of record.addedNodes)cleanAddedNode(node);
+ });
+ const start=()=>{cleanInitialContent();observer.observe(document.documentElement,{childList:true,subtree:true})};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
 <script>
