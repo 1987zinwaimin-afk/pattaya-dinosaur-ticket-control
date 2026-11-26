@@ -8886,13 +8886,13 @@ function renderThailandFestivalCalendar(){
  root.innerHTML='<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 '+labels.title+'</h2><p>'+labels.sub+'</p></div><span class="pdk-fc-year">2027 · B.E. 2570</span></div><div class="pdk-fc-summary" style="margin-top:13px"><div><b>12</b><span>'+labels.months+'</span></div><div><b>'+uniqueDates.size+'</b><span>'+labels.count+'</span></div><div><b>'+events.length+'</b><span>'+labels.eventCount+'</span></div></div><div class="pdk-fc-legend" style="margin-top:12px"><span><i class="pdk-fc-dot" style="background:#ffe08a"></i>'+labels.official+'</span><span><i class="pdk-fc-dot" style="background:#73e7ff"></i>'+labels.cultural+'</span><span><i class="pdk-fc-dot" style="background:#d6b8ff"></i>'+labels.expected+'</span></div></section><section class="panel"><h3 style="margin:0 0 10px;color:#ffe08a">✨ '+labels.upcoming+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<div class="pdk-fc-upcoming-item"><div class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</div><div><strong>'+e.icon+' '+e.title+'</strong><small>'+e.kind+' · '+(e.status==='official'?labels.holiday:e.status==='expected'?labels.expected:labels.observance)+'</small></div></div>').join('')+'</div></section><div class="pdk-fc-months">'+monthHtml+'</div><p class="pdk-fc-source">'+labels.source+'<br>2027 holiday references: <a href="https://www.set.or.th/en/about/event-calendar/holiday?year=2027" target="_blank" rel="noopener">Stock Exchange of Thailand</a> · <a href="https://www.bangkokbank.com/en/about-us/bank-holidays" target="_blank" rel="noopener">Bangkok Bank / Bank of Thailand holiday list</a>. Dates marked expected are not official public-holiday confirmations.</p></div>';
  root.querySelectorAll('[data-pdk-fc-date]').forEach(btn=>btn.addEventListener('click',()=>openThailandFestivalDate(btn.dataset.pdkFcDate)));
 }
-function openThailandFestivalDate(date){
+function openThailandFestivalDate(date,requestedTitle){
  const root=document.getElementById('pdkThailandFestivalModal');
  if(root)root.remove();
  const monthNames=new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-US',{month:'long',timeZone:'UTC'}).format(new Date(date+'T00:00:00Z'));
  const dateText=new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-US',{timeZone:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date(date+'T00:00:00Z'));
  const fallback=window.__pdkThailandFestivalLookup?.[date]||[];
- const selected=fallback;
+ const selected=requestedTitle?fallback.filter(e=>e.title===requestedTitle):fallback;
  const theme=selected[0]?.theme||'national',icon=selected[0]?.icon||'📅';
  const title=selected[0]?.title||'Thailand Calendar';
  const festivalFootage={
