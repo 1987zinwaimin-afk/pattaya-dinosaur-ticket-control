@@ -290,7 +290,7 @@
   }
 
   function isOrdinaryDate(key) {
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(key || '')) return false;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key || '')) return false;
     const year = Number(key.slice(0,4));
     return !eventsForYear(year).some(e => e.date === key);
   }
