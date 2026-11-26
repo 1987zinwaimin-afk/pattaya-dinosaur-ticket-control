@@ -6210,7 +6210,7 @@ document.getElementById('language').onchange=e=>{lang=e.target.value;localStorag
  if(doneBtn)doneBtn.addEventListener('click',closeHelp);
  if(help)help.addEventListener('click',event=>{if(event.target===help)closeHelp()});
  if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js?v=20261119-ios-alarm-support-1',{scope:'/',updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Staff app service worker registration failed',err)));
+  window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{scope:'/',updateViaCache:'none'}).then(reg=>reg.update()).catch(err=>console.warn('Staff app service worker registration failed',err)));
  }
 })();
 
