@@ -847,6 +847,21 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
+/* Date & Time notice styling shared by Owner and Staff applications. */
+(function(){
+  if(document.getElementById('pdk-date-time-normal-day-message-style'))return;
+  const style=document.createElement('style');
+  style.id='pdk-date-time-normal-day-message-style';
+  style.textContent=
+    '#appDateTime .app-datetime-date{flex:1 1 auto;min-width:0}'+
+    '#appDateTime .app-date-notice{display:flex;flex-direction:column;gap:2px;max-width:min(440px,100%);margin-top:5px;padding:6px 9px;border:1px solid rgba(239,202,128,.42);border-radius:8px;background:rgba(3,19,35,.68);box-shadow:inset 0 1px rgba(255,255,255,.04)}'+
+    '#appDateTime .app-date-notice[hidden]{display:none!important}'+
+    '#appDateTime .app-date-notice strong{color:#ffe0a0;font-size:11px;line-height:1.3;overflow-wrap:anywhere}'+
+    '#appDateTime .app-date-notice span{color:#e4edf4;font-size:10px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}'+
+    '#appDateTime.has-normal-day-message:not(.has-festival-theme):not(.is-calendar-preview){min-height:118px!important}'+
+    '@media(max-width:520px){#appDateTime .app-date-notice{max-width:100%;padding:5px 7px}#appDateTime .app-date-notice strong{font-size:10px}#appDateTime .app-date-notice span{font-size:9px}#appDateTime.has-normal-day-message:not(.has-festival-theme):not(.is-calendar-preview){min-height:108px!important}}';
+  (document.head||document.documentElement).appendChild(style);
+})();
 /* v5: one authoritative Date & Time media layer; no stacked video/canvas renderers. */
 (function(){
   if(document.getElementById('pdk-festival-video-visibility-fix-v5')) return;
