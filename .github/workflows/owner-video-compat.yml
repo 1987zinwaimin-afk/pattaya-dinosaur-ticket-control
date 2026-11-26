@@ -1,0 +1,49 @@
+name: Owner festival video Android compatibility
+on:
+  push:
+    branches:
+      - fix/owner-datetime-video-preview-rendering
+    paths:
+      - .github/workflows/owner-video-compat.yml
+permissions:
+  contents: write
+jobs:
+  transcode-owner-videos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Owner fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/owner-datetime-video-preview-rendering
+          fetch-depth: 0
+      - name: Prepare ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Re-encode Owner festival videos for Android
+        run: |
+          ffmpeg -y -i "Loy Krathong Festival.mp4" -an -vf "scale=480:270:force_original_aspect_ratio=decrease,pad=480:270:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p" -c:v libx264 -profile:v baseline -level 3.0 -preset medium -crf 33 -maxrate 450k -bufsize 900k -r 15 -g 30 -keyint_min 30 -sc_threshold 0 -movflags +faststart -map_metadata -1 owner-loy-krathong-compat.mp4
+          ffmpeg -y -i "Happy NewYear’s.mp4" -an -vf "scale=480:270:force_original_aspect_ratio=decrease,pad=480:270:(ow-iw)/2:(oh-ih)/2,setsar=1,format=yuv420p" -c:v libx264 -profile:v baseline -level 3.0 -preset medium -crf 33 -maxrate 450k -bufsize 900k -r 15 -g 30 -keyint_min 30 -sc_threshold 0 -movflags +faststart -map_metadata -1 owner-newyear-compat.mp4
+      - name: Point Owner Date and Time banner and previews to compatible files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("index.html")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace("/Loy%20Krathong%20Festival.mp4?v=20261124-2", "/owner-loy-krathong-compat.mp4?v=20261126-1")
+          s = s.replace("/Loy%20Krathong%20Festival.mp4?v=20261124-3", "/owner-loy-krathong-compat.mp4?v=20261126-1")
+          s = s.replace("/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1", "/owner-newyear-compat.mp4?v=20261126-1")
+          p.write_text(s, encoding="utf-8")
+          PY
+      - name: Verify video profiles and references
+        run: |
+          ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,profile,pix_fmt,width,height,avg_frame_rate -of default=noprint_wrappers=1 owner-loy-krathong-compat.mp4
+          ffprobe -v error -select_streams v:0 -show_entries stream=codec_name,profile,pix_fmt,width,height,avg_frame_rate -of default=noprint_wrappers=1 owner-newyear-compat.mp4
+          grep -n "owner-loy-krathong-compat\|owner-newyear-compat" index.html
+      - name: Commit Owner-only media compatibility assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html owner-loy-krathong-compat.mp4 owner-newyear-compat.mp4
+          git commit -m "Add Android-compatible Owner festival videos"
+          git push origin HEAD:fix/owner-datetime-video-preview-rendering
