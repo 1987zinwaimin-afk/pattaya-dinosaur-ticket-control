@@ -9444,7 +9444,7 @@ function openThailandFestivalDate(date){
      if(theme==='buddhist'&&i%8===0)lantern(x,y,Math.max(.35,p.size/14),'#ffd47a');
     }
    });
-   if(!reduced||frame%3===0)raf=requestAnimationFrame(draw);else raf=requestAnimationFrame(draw);
+   if(!reduced&&!document.hidden)raf=requestAnimationFrame(draw);
   }
   resize();if('ResizeObserver'in window)new ResizeObserver(resize).observe(host);else window.addEventListener('resize',resize,{passive:true});
   draw();active.set(host,{canvas,theme});
