@@ -451,6 +451,9 @@
     } finally {
       busy = false;
       renderManager();
+      const popup=document.getElementById('pdkThailandFestivalModal');
+      const popupHost=popup?.querySelector('.pdk-fvm-popup-host');
+      if(popupHost) renderPopupEditor(popup,popupHost.dataset.popupDate,popupHost.dataset.popupTitle);
     }
   }
 
@@ -496,6 +499,9 @@
     } finally {
       busy = false;
       renderManager();
+      const popup=document.getElementById('pdkThailandFestivalModal');
+      const popupHost=popup?.querySelector('.pdk-fvm-popup-host');
+      if(popupHost) renderPopupEditor(popup,popupHost.dataset.popupDate,popupHost.dataset.popupTitle);
     }
   }
 
