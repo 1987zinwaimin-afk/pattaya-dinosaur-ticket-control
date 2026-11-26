@@ -9467,5 +9467,26 @@ function openThailandFestivalDate(date){
 })();
 </script>
 
-
-
+<style id="pdk-owner-datetime-video-render-fix-v1">
+/* OWNER index.html only: avoid GPU filter/compositing artifacts in festival preview videos. */
+#pdkThailandFestivalModal video.pdk-fc-hero-video,
+#pdkFestivalVideoViewer video,
+#appDateTime video.pdk-calendar-preview-video,
+#appDateTime video.pdk-festival-video {
+  filter:none!important;
+  -webkit-filter:none!important;
+  mix-blend-mode:normal!important;
+  image-rendering:auto!important;
+  backface-visibility:visible!important;
+  -webkit-backface-visibility:visible!important;
+}
+#pdkThailandFestivalModal .pdk-fc-hero-video,
+#appDateTime .pdk-calendar-preview-video,
+#appDateTime .pdk-festival-video {
+  background:#06172d!important;
+}
+#pdkThailandFestivalModal .pdk-fc-hero .pdk-auto-festival-canvas,
+#appDateTime .pdk-festival-art>.pdk-auto-festival-canvas {
+  display:none!important;
+}
+</style>
