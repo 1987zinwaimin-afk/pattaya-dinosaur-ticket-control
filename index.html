@@ -9627,6 +9627,8 @@ function openThailandFestivalDate(date){
   if(!host)return;
   const theme=themeFor(host);
   if(!theme){unmount(host);return;}
+  // Date & Time uses the single real video/SVG fallback player; never allocate a particle canvas here.
+  if(host.classList.contains('pdk-festival-art')){unmount(host);return;}
   // Calendar hero videos are real footage; never layer generated canvas particles over them.
   if(host.classList.contains('pdk-fc-hero')&&host.querySelector('.pdk-fc-hero-video')){unmount(host);return;}
   // Existing Loy Krathong MP4 + SVG fallback is the only animation layer for this theme.
