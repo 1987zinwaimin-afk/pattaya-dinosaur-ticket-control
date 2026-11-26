@@ -9505,3 +9505,25 @@ function openThailandFestivalDate(date){
   display:none!important;
 }
 </style>
+
+
+<style id="pdk-owner-datetime-single-video-layer-v2">
+/* Owner Date & Time: exactly one moving media layer at a time. */
+#appDateTime .pdk-festival-art{isolation:isolate!important;overflow:hidden!important}
+#appDateTime .pdk-festival-art::before,
+#appDateTime .pdk-festival-art::after{display:none!important;content:none!important}
+#appDateTime .pdk-festival-art>.pdk-auto-festival-canvas,
+#appDateTime .pdk-festival-art>.pdk-festival-scene,
+#appDateTime .pdk-festival-art>.pdk-calendar-preview-art,
+#appDateTime .pdk-festival-art>.pdk-calendar-preview-gif{display:none!important;visibility:hidden!important;opacity:0!important}
+#appDateTime.is-calendar-preview .pdk-festival-art>video:not(.pdk-calendar-preview-video){display:none!important;visibility:hidden!important;opacity:0!important}
+#appDateTime.is-calendar-preview .pdk-festival-art>.pdk-calendar-preview-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:1!important}
+#appDateTime:not(.is-calendar-preview) .pdk-festival-art>.pdk-calendar-preview-video{display:none!important;visibility:hidden!important;opacity:0!important}
+#appDateTime:not(.is-calendar-preview) .pdk-festival-art>video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:1!important}
+#appDateTime .pdk-festival-art>video,
+#appDateTime .pdk-festival-art>.pdk-calendar-preview-video{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ object-fit:cover!important;mix-blend-mode:normal!important;filter:none!important;
+ -webkit-filter:none!important;transform:none!important;backface-visibility:visible!important;
+}
+</style>
