@@ -168,7 +168,7 @@
 
   function bindVideoPlayback(card, video) {
     if (video.dataset.festivalPlaybackBound) return;
-    video.addEventListener('playing',()=>card.classList.add('pdk-video-ready'));
+    video.addEventListener('playing',()=>{card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')});
     video.addEventListener('error',()=>card.classList.add('pdk-video-fallback'));
     video.dataset.festivalPlaybackBound='1';
   }
@@ -607,8 +607,10 @@
   const style=document.createElement('style');
   style.id='pdk-festival-video-visibility-fix-v4';
   style.textContent=
-    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-fallback) video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:5!important}'+
-    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-fallback) .pdk-festival-scene{display:none!important}'+
+    'html body #appDateTime.has-owner-festival-video.pdk-video-ready:not(.pdk-video-fallback) video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:1!important;z-index:5!important}'+
+    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-ready):not(.pdk-video-fallback) video.pdk-festival-video{display:block!important;visibility:visible!important;opacity:0!important;z-index:5!important}'+
+    'html body #appDateTime.has-owner-festival-video:not(.pdk-video-ready):not(.pdk-video-fallback) .pdk-festival-scene{display:block!important;visibility:visible!important;opacity:1!important}'+
+    'html body #appDateTime.has-owner-festival-video.pdk-video-ready .pdk-festival-scene{display:none!important}'+
     'html body #appDateTime.has-owner-festival-video.pdk-video-fallback video.pdk-festival-video{display:none!important}'+
     'html body #appDateTime.has-owner-festival-video.pdk-video-fallback .pdk-festival-scene{display:block!important;visibility:visible!important;opacity:1!important}';
   (document.head||document.documentElement).appendChild(style);
