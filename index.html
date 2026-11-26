@@ -8668,6 +8668,144 @@ input,select{border-color:rgba(94,179,222,.55)!important;background:#061a30!impo
 }
 @media(prefers-reduced-motion:reduce){.pdk-festival-calendar *{scroll-behavior:auto!important;transition:none!important}}
 </style>
+
+<style id="pdk-thailand-festival-calendar-polish-v3">
+/* Final calendar-only presentation layer. No application state, auth, data or media logic. */
+#pageContent[data-ui-page="festivals"]{min-width:0}
+#pageContent[data-ui-page="festivals"] .pdk-festival-calendar{
+ display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:18px!important;
+ width:min(100%,1480px)!important;margin:0 auto!important;padding:2px 0 22px!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-festival-calendar>.panel{
+ min-width:0!important;margin:0!important;border-radius:20px!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-festival-calendar>.panel:first-child{
+ padding:clamp(19px,2.4vw,30px)!important;
+ border:1px solid rgba(239,202,126,.42)!important;
+ background:
+  radial-gradient(ellipse at 92% 0%,rgba(244,202,112,.17),transparent 34%),
+  linear-gradient(135deg,#102d49 0%,#0b2138 58%,#07182b 100%)!important;
+ box-shadow:0 16px 38px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.07)!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-head{display:flex!important;justify-content:space-between!important;align-items:center!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-head>div{min-width:0}
+#pageContent[data-ui-page="festivals"] .pdk-fc-head h2{font-size:clamp(21px,2.4vw,30px)!important;line-height:1.22!important;letter-spacing:-.025em!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-head p{max-width:680px!important;margin:8px 0 0!important;font-size:13px!important;line-height:1.6!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-year{min-width:78px!important;text-align:center!important;padding:10px 15px!important;border-radius:13px!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-summary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:11px!important;margin-top:22px!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-summary>div{
+ display:flex!important;flex-direction:column!important;justify-content:center!important;min-width:0!important;
+ min-height:82px!important;padding:14px 16px!important;border-radius:15px!important;
+ border:1px solid rgba(153,190,215,.23)!important;
+ background:linear-gradient(145deg,rgba(33,76,108,.72),rgba(6,27,47,.88))!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-summary b{font-size:clamp(23px,2.4vw,29px)!important;font-weight:850!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-summary span{font-size:11px!important;line-height:1.45!important}
+#pageContent[data-ui-page="festivals"] .pdk-festival-calendar>.panel:nth-child(2){
+ padding:19px!important;border:1px solid rgba(142,181,205,.22)!important;
+ background:linear-gradient(145deg,#102b45,#091e34)!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-festival-calendar>.panel:nth-child(2)>h3{
+ display:flex!important;align-items:center!important;gap:9px!important;margin:0 0 15px!important;
+ color:#ffe3a4!important;font-size:17px!important;font-weight:800!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-item{
+ display:grid!important;grid-template-columns:112px minmax(0,1fr) 30px!important;align-items:center!important;
+ gap:12px!important;min-width:0!important;min-height:72px!important;padding:11px 13px!important;
+ border-radius:14px!important;border:1px solid rgba(139,181,207,.2)!important;
+ background:linear-gradient(115deg,rgba(21,56,82,.78),rgba(6,26,45,.84))!important;
+ transition:border-color .18s ease,background .18s ease,box-shadow .18s ease!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-item:hover{
+ border-color:rgba(245,211,139,.65)!important;background:linear-gradient(115deg,rgba(33,74,102,.9),rgba(9,34,55,.94))!important;
+ box-shadow:0 7px 18px rgba(0,0,0,.16)!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-date{
+ min-width:0!important;white-space:normal!important;line-height:1.35!important;
+ border-radius:10px!important;padding:8px 6px!important;text-align:center!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-item>span:nth-child(2){min-width:0!important;display:grid!important;gap:4px!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-item strong{font-size:12px!important;line-height:1.45!important;overflow-wrap:anywhere!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-item small{font-size:10px!important;line-height:1.35!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-open{width:30px!important;height:30px!important;flex:0 0 30px!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-months{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:13px!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-month{
+ min-width:0!important;padding:15px!important;border-radius:16px!important;
+ border:1px solid rgba(135,177,203,.23)!important;
+ background:linear-gradient(155deg,#12344f 0%,#0a233b 70%,#071b30 100%)!important;
+ box-shadow:0 8px 22px rgba(0,0,0,.17),inset 0 1px rgba(255,255,255,.035)!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-month h3{display:flex!important;justify-content:space-between!important;gap:8px!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-week,#pageContent[data-ui-page="festivals"] .pdk-fc-days{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-day{
+ min-width:0!important;min-height:42px!important;display:flex!important;flex-direction:column!important;
+ justify-content:center!important;align-items:center!important;gap:3px!important;padding:4px 1px!important;
+ border-radius:9px!important;font-variant-numeric:tabular-nums!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fc-day .pdk-fc-mark{margin:0!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-day:hover{filter:brightness(1.17)!important;transform:translateY(-1px)}
+#pageContent[data-ui-page="festivals"] .pdk-fc-empty{min-height:42px!important}
+#pageContent[data-ui-page="festivals"] .pdk-fc-source{line-height:1.7!important}
+#pageContent[data-ui-page="festivals"] .pdk-festival-calendar button:focus-visible{
+ outline:2px solid #ffe5a6!important;outline-offset:3px!important;
+}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager{
+ padding:19px!important;border:1px solid rgba(142,181,205,.22)!important;
+ background:linear-gradient(145deg,#102b45,#091e34)!important;
+}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager>h3{margin:0 0 8px!important;color:#ffe3a4!important;font-size:17px!important}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager>.subtle{max-width:850px!important;line-height:1.65!important}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload{
+ max-width:none!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto!important;
+ align-items:end!important;gap:10px!important;padding:15px!important;border-radius:14px!important;
+}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload label{grid-row:1}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload select,
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload input[type=file]{min-width:0!important}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload .pdk-fvm-note{grid-column:1/-1}
+#pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-item{
+ border-radius:13px!important;background:rgba(6,25,43,.5)!important;
+}
+#pageContent[data-ui-page="festivals"] .pdk-fvm-popup-host{
+ border-radius:17px!important;padding:17px!important;
+ background:linear-gradient(145deg,#0a2037,#102f49)!important;
+}
+@media(max-width:1050px){
+ #pageContent[data-ui-page="festivals"] .pdk-fc-months{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-upcoming{grid-template-columns:1fr!important}
+}
+@media(max-width:620px){
+ #pageContent[data-ui-page="festivals"] .pdk-festival-calendar{gap:12px!important;padding-bottom:14px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-festival-calendar>.panel:first-child{padding:16px 13px!important;border-radius:17px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-head{align-items:flex-start!important;gap:8px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-head h2{font-size:20px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-head p{font-size:11px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-year{min-width:58px!important;padding:7px 9px!important;font-size:12px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-summary{gap:6px!important;margin-top:15px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-summary>div{min-height:65px!important;padding:9px 7px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-summary b{font-size:20px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-summary span{font-size:9px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-festival-calendar>.panel:nth-child(2),
+ #pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager{padding:13px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-item{grid-template-columns:88px minmax(0,1fr) 28px!important;gap:8px!important;min-height:64px!important;padding:8px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-upcoming-date{font-size:10px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-months{grid-template-columns:1fr!important;gap:9px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-month{padding:12px!important}
+ #pageContent[data-ui-page="festivals"] .pdk-fc-day,#pageContent[data-ui-page="festivals"] .pdk-fc-empty{min-height:43px!important}
+ #pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload{grid-template-columns:1fr!important}
+ #pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload label{grid-row:auto}
+ #pageContent[data-ui-page="festivals"] #pdkFestivalVideoManager .pdk-fvm-upload .pdk-fvm-note{grid-column:auto}
+}
+@media(prefers-reduced-motion:reduce){
+ #pageContent[data-ui-page="festivals"] .pdk-festival-calendar *,
+ #pageContent[data-ui-page="festivals"] .pdk-festival-calendar *:before,
+ #pageContent[data-ui-page="festivals"] .pdk-festival-calendar *:after{transition:none!important;animation:none!important}
+}
+</style>
+
 <script id="pdk-thailand-annual-festival-calendar-script">
 function renderThailandFestivalCalendar(){
  const root=document.getElementById('pageContent');
