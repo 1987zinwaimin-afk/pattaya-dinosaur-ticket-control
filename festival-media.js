@@ -198,6 +198,27 @@
         const event = selected.title
           ? events.find(e=>e.title===selected.title) || events[0]
           : events[0];
+
+        // No festival on this date: stop and restore the normal dashboard media.
+        // Never substitute the legacy PDK.mp4 on ordinary days.
+        if (!event) {
+          // Ordinary dates use the static dashboard scene, not a festival MP4.
+          // Stop playback and release the media source so it consumes no video bandwidth.
+          video.pause();
+          video.removeAttribute('autoplay');
+          video.setAttribute('preload','none');
+          if (source) source.removeAttribute('src');
+          else video.removeAttribute('src');
+          video.load();
+          delete video.dataset.festivalManaged;
+          delete video.dataset.festivalMediaId;
+          delete video.dataset.festivalBuiltin;
+          card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+          if (scene) scene.style.display = '';
+          if (holidayLabel) holidayLabel.hidden = true;
+          return;
+        }
+
         const url = builtInVideoForEvent(event);
         if (current !== url) {
           card.classList.remove('pdk-video-ready','pdk-video-fallback');
@@ -213,6 +234,8 @@
           video.loop = true;
           video.playsInline = true;
           video.load();
+        }
+        if (video.paused) {
           const play = video.play();
           if (play && play.catch) play.catch(() => {});
         }
@@ -243,6 +266,8 @@
         video.loop = true;
         video.playsInline = true;
         video.load();
+      }
+      if (video.paused) {
         const play = video.play();
         if (play && play.catch) play.catch(() => {});
       }

@@ -4514,7 +4514,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
  if(image){if(!image.complete)image.addEventListener('load',syncParkHeaderHeight,{once:true});if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(image)}}
 })();
 </script>
-<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted autoplay loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="auto" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-2" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-2" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
 <defs>
  <linearGradient id="pdkSky" x2="0" y2="1"><stop stop-color="#06132e"/><stop offset=".52" stop-color="#0b2852"/><stop offset="1" stop-color="#123c62"/></linearGradient>
  <linearGradient id="pdkWater" x2="0" y2="1"><stop stop-color="#16466d"/><stop offset=".45" stop-color="#0b315b"/><stop offset="1" stop-color="#061b3b"/></linearGradient>
@@ -9259,7 +9259,12 @@ function openThailandFestivalDate(date){
  const fallback=()=>card.classList.contains('pdk-video-fallback');
  const reveal=()=>{if(selected()&&!video.paused){card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')}};
  const start=async()=>{
-  if(!selected()||fallback())return;
+  if(!selected()){
+   video.pause();
+   card.classList.remove('pdk-video-ready','pdk-video-fallback');
+   return;
+  }
+  if(fallback())return;
   video.muted=true;video.defaultMuted=true;video.volume=0;
   video.setAttribute('muted','');video.setAttribute('autoplay','');video.setAttribute('loop','');
   video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
@@ -9273,7 +9278,14 @@ function openThailandFestivalDate(date){
  video.addEventListener('canplay',()=>{if(selected()&&!fallback()&&video.paused)start()});
  video.addEventListener('playing',reveal);
  video.addEventListener('error',()=>{card.classList.remove('pdk-video-ready');if(selected())card.classList.add('pdk-video-fallback');video.dataset.playbackError=String(video.error&&video.error.code||'unknown')});
- const observer=new MutationObserver(()=>{if(selected()&&!fallback())start()});
+ const observer=new MutationObserver(()=>{
+   if(selected()){
+    if(!fallback()&&video.paused)start();
+    return;
+   }
+   if(!video.paused)video.pause();
+   if(card.classList.contains('pdk-video-ready')||card.classList.contains('pdk-video-fallback'))card.classList.remove('pdk-video-ready','pdk-video-fallback');
+  });
  observer.observe(card,{attributes:true,attributeFilter:['class']});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else start()});
  window.addEventListener('pageshow',start);
@@ -9439,7 +9451,7 @@ function openThailandFestivalDate(date){
      if(theme==='buddhist'&&i%8===0)lantern(x,y,Math.max(.35,p.size/14),'#ffd47a');
     }
    });
-   if(!reduced||frame%3===0)raf=requestAnimationFrame(draw);else raf=requestAnimationFrame(draw);
+   if(!reduced&&!document.hidden)raf=requestAnimationFrame(draw);
   }
   resize();if('ResizeObserver'in window)new ResizeObserver(resize).observe(host);else window.addEventListener('resize',resize,{passive:true});
   draw();active.set(host,{canvas,theme});
