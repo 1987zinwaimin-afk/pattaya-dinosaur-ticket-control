@@ -174,110 +174,59 @@
   }
 
   async function syncDateTimeVideo(force) {
-    const card = document.getElementById('appDateTime');
-    if (!card || !currentUser) return;
-    const selected = activeDateAndTitle();
-    try {
-      const rows = await fetchMedia(!!force);
-      let row = selected.title
-        ? rows.find(x => x.festival_date === selected.date && x.festival_name === selected.title)
-        : null;
-      if (!row) row = rows.find(x => x.festival_date === selected.date);
-      const video = card.querySelector('.pdk-festival-video');
-      if (!video) return;
-      const source = video.querySelector('source');
-      if (!video.dataset.pdkOriginalSrc) {
-        video.dataset.pdkOriginalSrc = source?.getAttribute('src') || video.getAttribute('src') || '';
-      }
-      const scene = card.querySelector('.pdk-festival-scene');
-      const current = source?.getAttribute('src') || video.getAttribute('src') || '';
-      const holidayLabel = document.getElementById('appHolidayValue');
-
-      if (!row) {
-        const events = (window.__pdkThailandFestivalLookup || {})[selected.date] || [];
-        const event = selected.title
-          ? events.find(e=>e.title===selected.title) || events[0]
-          : events[0];
-
-        // No festival on this date: stop and restore the normal dashboard media.
-        // Never substitute the legacy PDK.mp4 on ordinary days.
-        if (!event) {
-          // Ordinary dates use the static dashboard scene, not a festival MP4.
-          // Stop playback and release the media source so it consumes no video bandwidth.
-          video.pause();
-          video.removeAttribute('autoplay');
-          video.setAttribute('preload','none');
-          if (source) source.removeAttribute('src');
-          else video.removeAttribute('src');
-          video.load();
-          delete video.dataset.festivalManaged;
-          delete video.dataset.festivalMediaId;
-          delete video.dataset.festivalBuiltin;
-          card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
-          if (scene) scene.style.display = '';
-          if (holidayLabel) holidayLabel.hidden = true;
-          return;
-        }
-
-        const url = builtInVideoForEvent(event);
-        if (current !== url) {
-          card.classList.remove('pdk-video-ready','pdk-video-fallback');
-          bindVideoPlayback(card,video);
-          video.pause();
-          if (source) source.src = url; else video.src = url;
-          delete video.dataset.festivalManaged;
-          delete video.dataset.festivalMediaId;
-          video.dataset.festivalBuiltin = '1';
-          video.setAttribute('preload','auto');
-          video.setAttribute('muted','');
-          video.muted = true;
-          video.loop = true;
-          video.playsInline = true;
-          video.load();
-        }
-        if (video.paused) {
-          const play = video.play();
-          if (play && play.catch) play.catch(() => {});
-        }
-        if (event && holidayLabel) {
-          holidayLabel.textContent=event.title;
-          holidayLabel.hidden=false;
-          holidayLabel.classList.add('is-special');
-          holidayLabel.classList.remove('is-holiday');
-        }
-        if (scene) scene.style.display = 'none';
-        card.classList.add('has-owner-festival-video');
-        return;
-      }
-
-      const url = await signedUrl(row.blob_path);
-      if(holidayLabel){holidayLabel.textContent=row.festival_name;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}
-      if (current !== url) {
+    const card=document.getElementById('appDateTime');
+    if(!card||!currentUser)return;
+    const selected=activeDateAndTitle();
+    const events=(window.__pdkThailandFestivalLookup||{})[selected.date]||[];
+    const event=selected.title?(events.find(e=>e.title===selected.title)||events[0]):events[0];
+    const video=card.querySelector('.pdk-festival-video');
+    if(!video)return;
+    const source=video.querySelector('source');
+    const scene=card.querySelector('.pdk-festival-scene');
+    const holidayLabel=document.getElementById('appHolidayValue');
+    if(!video.dataset.pdkOriginalSrc)video.dataset.pdkOriginalSrc=source?.getAttribute('src')||video.getAttribute('src')||'';
+    const currentSource=()=>source?.getAttribute('src')||video.getAttribute('src')||'';
+    const setSource=(url,managed,id)=>{
+      if(currentSource()!==url){
         card.classList.remove('pdk-video-ready','pdk-video-fallback');
         bindVideoPlayback(card,video);
         video.pause();
-        if (source) source.src = url; else video.src = url;
-        delete video.dataset.festivalBuiltin;
-        video.dataset.festivalManaged = '1';
-        video.dataset.festivalMediaId = row.id;
-        video.setAttribute('preload','auto');
-        video.setAttribute('muted','');
-        video.muted = true;
-        video.loop = true;
-        video.playsInline = true;
+        if(source)source.src=url;else video.src=url;
+        video.preload='auto';video.muted=true;video.defaultMuted=true;video.volume=0;
+        video.loop=true;video.playsInline=true;
+        video.setAttribute('muted','');video.setAttribute('loop','');video.setAttribute('playsinline','');
         video.load();
       }
-      if (video.paused) {
-        const play = video.play();
-        if (play && play.catch) play.catch(() => {});
-      }
-      if (scene) scene.style.display = 'none';
+      if(managed){delete video.dataset.festivalBuiltin;video.dataset.festivalManaged='1';video.dataset.festivalMediaId=id||'';}
+      else{delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;video.dataset.festivalBuiltin='1';}
       card.classList.add('has-owner-festival-video');
-    } catch (error) {
-      console.warn('Festival video sync failed:',error);
+      const art=card.querySelector('.pdk-festival-art');
+      art?.querySelectorAll('.pdk-calendar-preview-video,.pdk-calendar-preview-art,.pdk-auto-festival-canvas').forEach(el=>el.remove());
+      if(video.paused){const play=video.play();if(play&&play.catch)play.catch(()=>{});}
+    };
+    if(!event){
+      video.pause();video.removeAttribute('autoplay');video.preload='none';
+      if(source)source.removeAttribute('src');else video.removeAttribute('src');
+      video.load();delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;delete video.dataset.festivalBuiltin;
+      card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+      if(scene)scene.style.display='';
+      if(holidayLabel)holidayLabel.hidden=true;
+      try{await fetchMedia(!!force);}catch(error){console.warn('Festival video metadata check failed:',error);}
+      return;
     }
+    if(holidayLabel){holidayLabel.textContent=event.title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}
+    // Start the built-in footage immediately, then check for an Owner-uploaded replacement.
+    setSource(builtInVideoForEvent(event),false,null);
+    try{
+      const rows=await fetchMedia(!!force);
+      const row=rows.find(x=>x.festival_date===selected.date&&x.festival_name===event.title)||null;
+      if(!row)return;
+      const url=await signedUrl(row.blob_path);
+      const latest=activeDateAndTitle();
+      if(latest.date!==selected.date||(latest.title&&latest.title!==event.title))return;
+      setSource(url,true,row.id);
+    }catch(error){console.warn('Festival video sync failed:',error);}
   }
-
   function renderCalendar() {
     const root = document.getElementById('pageContent');
     if (!root) return;
@@ -313,38 +262,103 @@
       return '<section class="pdk-fc-month"><h3>'+escapeHtml(monthLabel(year,month))+' <small>'+count+' '+t('dates','ရက်')+'</small></h3><div class="pdk-fc-week">'+['M','T','W','T','F','S','S'].map(x=>'<span>'+x+'</span>').join('')+'</div><div class="pdk-fc-days">'+cells+'</div></section>';
     }).join('');
     const upcoming = all.filter(e=>e.date>=p.key).slice(0,8);
-    root.innerHTML = '<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 '+t('Thailand Festival Calendar','ထိုင်းနိုင်ငံ၏ နေ့ထူးနေ့မြတ် ပြက္ခဒိန်')+'</h2><p>'+t('From this month to the end of '+year,'ယခုလမှ '+year+' နှစ်ကုန်အထိ')+'</p></div><span class="pdk-fc-year">'+year+'</span></div><div class="pdk-fc-summary"><div><b>'+months.length+'</b><span>'+t('Months','လ')+'</span></div><div><b>'+new Set(all.map(e=>e.date)).size+'</b><span>'+t('Festival dates','ပွဲရက်များ')+'</span></div><div><b>'+all.length+'</b><span>'+t('Events','ပွဲများ')+'</span></div></div></section><section class="panel"><h3>✨ '+t('Upcoming festivals','လာမည့်ပွဲတော်များ')+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<div class="pdk-fc-upcoming-item"><div class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</div><div><strong>'+escapeHtml(e.icon+' '+e.title)+'</strong><small>'+escapeHtml(e.kind+' · '+e.status)+'</small></div></div>').join('')+'</div></section><div class="pdk-fc-months">'+monthHtml+'</div><section class="panel" id="pdkFestivalVideoManager"><h3>🎬 '+t('Festival Video Manager','ပွဲတော် Video စီမံခန့်ခွဲမှု')+'</h3><p class="subtle">'+t('Upload one video for each festival. Preview before the date; it will play automatically on the festival date.','ပွဲတစ်ခုချင်းစီအတွက် Video တင်နိုင်ပြီး ပွဲရက်မတိုင်မီ Preview ကြည့်နိုင်ပါသည်။ ပွဲရက်ရောက်လျှင် အလိုအလျောက် ပြသပါမည်။')+'</p><div id="pdkFestivalVideoManagerBody"><p>'+t('Loading festival videos…','Festival Video များ ဖတ်နေသည်…')+'</p></div></section></div>';
+    root.innerHTML = '<div class="pdk-festival-calendar"><section class="panel"><div class="pdk-fc-head"><div><h2>🎉 '+t('Thailand Festival Calendar','ထိုင်းနိုင်ငံ၏ နေ့ထူးနေ့မြတ် ပြက္ခဒိန်')+'</h2><p>'+t('From this month to the end of '+year,'ယခုလမှ '+year+' နှစ်ကုန်အထိ')+'</p></div><span class="pdk-fc-year">'+year+'</span></div><div class="pdk-fc-summary"><div><b>'+months.length+'</b><span>'+t('Months','လ')+'</span></div><div><b>'+new Set(all.map(e=>e.date)).size+'</b><span>'+t('Festival dates','ပွဲရက်များ')+'</span></div><div><b>'+all.length+'</b><span>'+t('Events','ပွဲများ')+'</span></div></div></section><section class="panel"><h3>✨ '+t('Upcoming festivals','လာမည့်ပွဲတော်များ')+'</h3><div class="pdk-fc-upcoming">'+upcoming.map(e=>'<button type="button" class="pdk-fc-upcoming-item" data-pdk-fc-date="'+escapeHtml(e.date)+'" data-pdk-fc-title="'+escapeHtml(e.title)+'"><span class="pdk-fc-upcoming-date">'+dateLabel(e.date)+'</span><span><strong>'+escapeHtml(e.icon+' '+e.title)+'</strong><small>'+escapeHtml(e.kind+' · '+e.status)+'</small></span><span class="pdk-fc-upcoming-open" aria-hidden="true">＋</span></button>').join('')+'</div></section><div class="pdk-fc-months">'+monthHtml+'</div><section class="panel" id="pdkFestivalVideoManager"><h3>🎬 '+t('Festival Video Manager','ပွဲတော် Video စီမံခန့်ခွဲမှု')+'</h3><p class="subtle">'+t('Upload one video for each festival. Preview before the date; it will play automatically on the festival date.','ပွဲတစ်ခုချင်းစီအတွက် Video တင်နိုင်ပြီး ပွဲရက်မတိုင်မီ Preview ကြည့်နိုင်ပါသည်။ ပွဲရက်ရောက်လျှင် အလိုအလျောက် ပြသပါမည်။')+'</p><div id="pdkFestivalVideoManagerBody"><p>'+t('Loading festival videos…','Festival Video များ ဖတ်နေသည်…')+'</p></div></section></div>';
     root.querySelectorAll('[data-pdk-fc-date]').forEach(btn=>btn.addEventListener('click',()=>{
       const key=btn.dataset.pdkFcDate;
-      if (typeof openThailandFestivalDate === 'function') openThailandFestivalDate(key);
+      const title=btn.dataset.pdkFcTitle||'';
       window.__pdkFestivalDateTimePreview = null;
-      setTimeout(()=>syncDateTimeVideo(true),50);
+      openFestivalUploadPopup(key,title);
     }));
     renderManager();
+  }
+
+
+  function openFestivalUploadPopup(date,title) {
+    if (typeof openThailandFestivalDate !== 'function') return;
+    openThailandFestivalDate(date);
+    const dialog=document.getElementById('pdkThailandFestivalModal');
+    const body=dialog?.querySelector('.pdk-fc-modal-body');
+    if(!dialog||!body)return;
+    body.querySelector('.pdk-fvm-popup-host')?.remove();
+    const host=document.createElement('section');
+    host.className='pdk-fvm-popup-host';
+    host.dataset.pdkFvmHost='true';
+    host.dataset.popupDate=date;
+    host.dataset.popupTitle=title||'';
+    body.appendChild(host);
+    renderPopupEditor(dialog,date,title||'');
+  }
+
+  async function renderPopupEditor(dialog,date,title) {
+    const host=dialog?.querySelector('.pdk-fvm-popup-host');
+    if(!host||!date)return;
+    try {
+      const rows=await fetchMedia(true);
+      const events=(window.__pdkThailandFestivalLookup||{})[date]||[];
+      const selectedTitle=title||events[0]?.title||'';
+      host.dataset.popupDate=date;
+      host.dataset.popupTitle=selectedTitle;
+      if(!events.length){
+        host.innerHTML='<div class="pdk-fvm-popup-empty">'+t('There is no festival assigned to this date.','ဤရက်စွဲတွင် ပွဲတော်သတ်မှတ်ထားခြင်း မရှိသေးပါ။')+'</div>';
+        return;
+      }
+      const options=events.map(e=>'<option value="'+escapeHtml(e.date+'|'+e.title)+'" '+(e.title===selectedTitle?'selected':'')+'>'+escapeHtml(e.title)+'</option>').join('');
+      host.innerHTML='<div class="pdk-fvm-popup-head"><div><strong>🎬 '+t('Festival Video Upload','ပွဲတော် Video တင်ရန်')+'</strong><p>'+escapeHtml(dateLabel(date))+' · '+t('Upload a video for the selected festival.','ရွေးထားသောပွဲအတွက် Video တင်နိုင်ပါသည်။')+'</p></div></div>'+
+        (events.length>1?'<label>'+t('Festival','ပွဲတော်')+'</label><select data-fvm-choice>'+options+'</select>':'<input type="hidden" data-fvm-choice value="'+escapeHtml(date+'|'+events[0].title)+'">')+
+        '<label>'+t('Choose video (MP4, WebM, MOV · max 50 MB)','Video ရွေးပါ (MP4, WebM, MOV · 50 MB အများဆုံး)')+'</label>'+
+        '<input data-fvm-file type="file" accept="video/mp4,video/webm,video/quicktime">'+
+        '<button type="button" class="gold" data-fvm-upload>'+t('＋ Upload Video','＋ Video တင်မည်')+'</button>'+
+        '<p class="pdk-fvm-note">'+t('Owner only · The video will play automatically on the selected festival date.','Owner သာ အသုံးပြုနိုင်သည် · သတ်မှတ်ရက်တွင် Video အလိုအလျောက် ပြသပါမည်။')+'</p>'+
+        '<div class="pdk-fvm-popup-list" data-fvm-list></div>';
+      const choice=host.querySelector('[data-fvm-choice]');
+      const list=host.querySelector('[data-fvm-list]');
+      const uploadButton=host.querySelector('[data-fvm-upload]');
+      const renderSelectedRows=()=>{
+        const parts=(choice?.value||'').split('|');
+        const selectedDate=parts[0]||date;
+        const selectedName=parts.slice(1).join('|');
+        const existing=rows.filter(r=>r.festival_date===selectedDate&&r.festival_name===selectedName);
+        host.dataset.popupTitle=selectedName;
+        if(list)list.innerHTML=existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>'):'<p>'+t('No video uploaded for this festival yet.','ဤပွဲအတွက် Video မတင်ရသေးပါ။')+'</p>';
+        if(uploadButton){uploadButton.disabled=!!existing.length||busy;uploadButton.title=existing.length?t('Delete the existing video before replacing it.','Video အသစ်မတင်မီ ရှိပြီးသား Video ကို ဖျက်ပါ။'):'';}
+        list?.querySelectorAll('[data-fvm-preview]').forEach(btn=>btn.addEventListener('click',()=>previewManagedVideo(btn.dataset.fvmPreview)));
+        list?.querySelectorAll('[data-fvm-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteManagedVideo(btn.dataset.fvmDelete)));
+      };
+      uploadButton?.addEventListener('click',uploadVideo);
+      choice?.addEventListener('change',()=>{
+        const selected=(choice.value||'').split('|');
+        host.dataset.popupDate=selected[0]||date;
+        renderSelectedRows();
+      });
+      renderSelectedRows();
+    } catch(error) {
+      host.innerHTML='<p role="alert">'+t('Could not load festival videos: ','Festival Video များ ဖတ်မရပါ: ')+escapeHtml(error.message)+'</p>';
+    }
   }
 
   async function renderManager() {
     const host = document.getElementById('pdkFestivalVideoManagerBody');
     if (!host || !currentUser || currentRole !== 'owner') return;
+    host.dataset.pdkFvmHost='true';
     try {
       const rows = await fetchMedia(true);
       const events = currentEvents();
       const options = events.map(e => '<option value="'+escapeHtml(e.date+'|'+e.title)+'">'+escapeHtml(dateLabel(e.date)+' — '+e.title)+'</option>').join('');
       const existing = rows.filter(r => r.festival_date.slice(0,4) === String(today().year));
-      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice">'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · max 50 MB)','Video ဖိုင် (MP4, WebM, MOV · အများဆုံး 50 MB)')+'</label><input id="pdkFestivalFile" type="file" accept="video/mp4,video/webm,video/quicktime"><button type="button" id="pdkFestivalUploadBtn" class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
+      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice" data-fvm-choice>'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · max 50 MB)','Video ဖိုင် (MP4, WebM, MOV · အများဆုံး 50 MB)')+'</label><input id="pdkFestivalFile" data-fvm-file type="file" accept="video/mp4,video/webm,video/quicktime"><button type="button" id="pdkFestivalUploadBtn" data-fvm-upload class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
       const select = host.querySelector('#pdkFestivalChoice');
       if (select) {
         const current = select.value;
         const selectedRow = existing.find(r=>r.festival_date+'|'+r.festival_name===current);
-        if (selectedRow) host.querySelector('#pdkFestivalUploadBtn').disabled = true;
+        if (selectedRow) host.querySelector('[data-fvm-upload],#pdkFestivalUploadBtn').disabled = true;
       }
-      host.querySelector('#pdkFestivalUploadBtn')?.addEventListener('click',uploadVideo);
+      host.querySelector('[data-fvm-upload],#pdkFestivalUploadBtn')?.addEventListener('click',uploadVideo);
       host.querySelectorAll('[data-fvm-preview]').forEach(btn=>btn.addEventListener('click',()=>previewManagedVideo(btn.dataset.fvmPreview)));
       host.querySelectorAll('[data-fvm-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteManagedVideo(btn.dataset.fvmDelete)));
       const refreshUploadButton = () => {
         const choice = host.querySelector('#pdkFestivalChoice')?.value || '';
         const row = existing.find(r=>r.festival_date+'|'+r.festival_name===choice);
-        const button = host.querySelector('#pdkFestivalUploadBtn');
+        const button = host.querySelector('[data-fvm-upload],#pdkFestivalUploadBtn');
         if (button) button.disabled = !!row || busy;
       };
       select?.addEventListener('change',refreshUploadButton);
@@ -368,12 +382,12 @@
     });
   }
 
-  async function uploadVideo() {
+  async function uploadVideo(event) {
     if (busy) return;
     if (!currentUser || currentRole !== 'owner') { alert(t('Owner access required.','Owner ခွင့်ပြုချက်လိုအပ်ပါသည်။')); return; }
-    const host = document.getElementById('pdkFestivalVideoManagerBody');
-    const choice = host?.querySelector('#pdkFestivalChoice')?.value || '';
-    const file = host?.querySelector('#pdkFestivalFile')?.files?.[0];
+    const host = event?.currentTarget?.closest('[data-pdk-fvm-host]') || document.getElementById('pdkFestivalVideoManagerBody');
+    const choice = host?.querySelector('[data-fvm-choice],#pdkFestivalChoice')?.value || '';
+    const file = host?.querySelector('[data-fvm-file],#pdkFestivalFile')?.files?.[0];
     if (!choice || !file) { alert(t('Choose a festival and a video file.','ပွဲတော်နှင့် Video ဖိုင်ကို ရွေးပါ။')); return; }
     if (!/^video\/(mp4|webm|quicktime)$/.test(file.type) || file.size > MAX_BYTES) {
       alert(t('Use MP4, WebM or MOV video up to 50 MB.','MP4, WebM သို့မဟုတ် MOV Video 50 MB အောက်ကိုသာ အသုံးပြုပါ။')); return;
@@ -383,7 +397,7 @@
       alert(t('A video already exists. Delete it before uploading a replacement.','Video ရှိပြီးသားဖြစ်သည်။ အသစ်မတင်မီ အဟောင်းကို ဖျက်ပါ။')); return;
     }
     busy = true;
-    const button = host.querySelector('#pdkFestivalUploadBtn');
+    const button = host.querySelector('[data-fvm-upload],#pdkFestivalUploadBtn');
     if (button) { button.disabled = true; button.textContent = t('Uploading…','တင်နေသည်…'); }
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-90) || 'festival-video.mp4';
     const path = date+'/'+crypto.randomUUID()+'-'+safeName;
@@ -430,6 +444,7 @@
       signedUrlCache.delete(path);
       alert(t('Video uploaded successfully. It will play automatically on its date.','Video တင်ပြီးပါပြီ။ သတ်မှတ်ရက်ရောက်လျှင် အလိုအလျောက် ပြသပါမည်။'));
       renderManager();
+      if (host?.dataset.popupDate) await renderPopupEditor(document.getElementById('pdkThailandFestivalModal'),date,name);
       syncDateTimeVideo(true);
     } catch (error) {
       alert(t('Upload failed: ','တင်မရပါ: ')+error.message);
@@ -470,6 +485,10 @@
       }
       alert(t('Video and database record deleted. You can upload a new video for this festival.','Video နှင့် Database မှတ်တမ်းကို ဖျက်ပြီးပါပြီ။ Video အသစ်ပြန်တင်နိုင်ပါပြီ။'));
       await renderManager();
+      if (document.getElementById('pdkThailandFestivalModal')?.querySelector('.pdk-fvm-popup-host')) {
+        const popupHost=document.querySelector('.pdk-fvm-popup-host');
+        await renderPopupEditor(document.getElementById('pdkThailandFestivalModal'),popupHost?.dataset.popupDate,popupHost?.dataset.popupTitle);
+      }
       await syncDateTimeVideo(true);
     } catch (error) {
       console.error('Festival video delete failed:',error);
@@ -503,6 +522,22 @@
     const style = document.createElement('style');
     style.id = 'pdk-festival-video-manager-css';
     style.textContent = `
+
+      .pdk-fc-upcoming-item{width:100%;text-align:left;cursor:pointer;color:inherit;font:inherit;background:rgba(7,24,43,.56);border:1px solid rgba(220,190,120,.22);display:grid;grid-template-columns:minmax(100px,145px) 1fr 28px;align-items:center;gap:12px}
+      .pdk-fc-upcoming-item:hover{border-color:rgba(244,213,140,.78);background:rgba(18,49,75,.72)}
+      .pdk-fc-upcoming-item:focus-visible{outline:3px solid #f4d58c;outline-offset:3px}
+      .pdk-fc-upcoming-open{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid rgba(244,213,140,.45);color:#f4d58c;font-size:20px}
+      .pdk-fvm-popup-host{display:grid;gap:9px;margin-top:16px;padding:15px;border:1px solid rgba(220,190,120,.42);border-radius:16px;background:linear-gradient(135deg,rgba(7,24,43,.96),rgba(12,39,61,.94));box-shadow:0 10px 30px rgba(0,0,0,.24)}
+      .pdk-fvm-popup-head strong{display:block;color:#f4d58c;font-size:16px}
+      .pdk-fvm-popup-head p{margin:5px 0 0;font-size:12px;opacity:.82}
+      .pdk-fvm-popup-host label{font-size:13px;font-weight:750;color:#f4d58c}
+      .pdk-fvm-popup-host input[type=file],.pdk-fvm-popup-host select{width:100%;min-height:46px;padding:10px;border:1px solid rgba(220,190,120,.35);border-radius:10px;background:#071b30;color:#fff}
+      .pdk-fvm-popup-host button{min-height:44px;padding:9px 13px;border-radius:10px}
+      .pdk-fvm-popup-host button:disabled{opacity:.45;cursor:not-allowed}
+      .pdk-fvm-popup-list{display:grid;gap:8px;margin-top:5px}
+      .pdk-fvm-popup-empty{padding:12px;border-radius:10px;background:rgba(0,0,0,.2);font-size:13px}
+      #appDateTime .pdk-auto-festival-canvas,#appDateTime .pdk-calendar-preview-art{display:none!important}
+      @media(max-width:560px){.pdk-fc-upcoming-item{grid-template-columns:1fr 28px;gap:5px}.pdk-fc-upcoming-date{grid-column:1/-1}.pdk-fvm-popup-host{padding:12px}}
       #pdkFestivalVideoManager .pdk-fvm-upload{display:grid;gap:9px;max-width:620px;padding:14px;border:1px solid rgba(220,190,120,.28);border-radius:14px;background:rgba(8,24,42,.45)}
       #pdkFestivalVideoManager label{font-size:13px;font-weight:750;color:#f4d58c}
       #pdkFestivalVideoManager input,#pdkFestivalVideoManager select{width:100%;min-height:44px;padding:9px;border-radius:9px}
@@ -518,10 +553,13 @@
       #pdkFestivalManagedPreview video{width:100%;max-height:76dvh;object-fit:contain}
       #pdkFestivalManagedPreview button{position:absolute;right:18px;top:18px;z-index:2;width:44px;height:44px;border-radius:50%;font-size:25px}
       #pdkFestivalManagedPreview p{color:#fff;text-align:center}
-      #appDateTime.has-owner-festival-video .pdk-festival-video{display:block!important;opacity:1!important;visibility:visible!important;z-index:2;object-fit:cover}
-      #appDateTime.has-owner-festival-video .pdk-festival-scene{display:none!important}
+      #appDateTime.has-owner-festival-video .pdk-festival-video{display:block!important;opacity:0!important;visibility:visible!important;z-index:2;object-fit:cover}
+      #appDateTime.has-owner-festival-video:not(.pdk-video-ready):not(.pdk-video-fallback) .pdk-festival-scene{display:block!important;opacity:1!important;visibility:visible!important}
+      #appDateTime.has-owner-festival-video.pdk-video-ready .pdk-festival-video{opacity:1!important}
+      #appDateTime.has-owner-festival-video.pdk-video-ready .pdk-festival-scene{display:none!important}
       #appDateTime.has-owner-festival-video.pdk-video-fallback .pdk-festival-video{display:none!important}
       #appDateTime.has-owner-festival-video.pdk-video-fallback .pdk-festival-scene{display:block!important;opacity:1!important;visibility:visible!important}
+      #appDateTime .pdk-auto-festival-canvas,#appDateTime .pdk-calendar-preview-art{display:none!important}
       @media(max-width:560px){.pdk-fvm-item{align-items:flex-start;flex-direction:column}.pdk-fvm-actions{width:100%}.pdk-fvm-actions button{flex:1}}
     `;
     document.head.appendChild(style);
@@ -556,7 +594,7 @@
       if(event.target.closest('[data-fc-datetime-preview]')) setTimeout(()=>syncDateTimeVideo(true),120);
       if(event.target.closest('[data-fc-close],.pdk-fc-close')) setTimeout(()=>syncDateTimeVideo(true),180);
     });
-    setTimeout(()=>syncDateTimeVideo(true),1500);
+    setTimeout(()=>syncDateTimeVideo(true),0);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
