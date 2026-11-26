@@ -198,6 +198,25 @@
         const event = selected.title
           ? events.find(e=>e.title===selected.title) || events[0]
           : events[0];
+
+        // No festival on this date: stop and restore the normal dashboard media.
+        // Never substitute the legacy PDK.mp4 on ordinary days.
+        if (!event) {
+          video.pause();
+          if (source && video.dataset.pdkOriginalSrc) source.setAttribute('src', video.dataset.pdkOriginalSrc);
+          else if (source) source.removeAttribute('src');
+          else if (video.dataset.pdkOriginalSrc) video.setAttribute('src', video.dataset.pdkOriginalSrc);
+          else video.removeAttribute('src');
+          video.load();
+          delete video.dataset.festivalManaged;
+          delete video.dataset.festivalMediaId;
+          delete video.dataset.festivalBuiltin;
+          card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+          if (scene) scene.style.display = '';
+          if (holidayLabel) holidayLabel.hidden = true;
+          return;
+        }
+
         const url = builtInVideoForEvent(event);
         if (current !== url) {
           card.classList.remove('pdk-video-ready','pdk-video-fallback');
