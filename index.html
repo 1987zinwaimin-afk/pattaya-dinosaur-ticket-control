@@ -9492,3 +9492,54 @@ function openThailandFestivalDate(date){
 
 
 
+
+<script id="pdk-owner-navigation-guard-v1">
+(function(){
+ if(window.__pdkOwnerNavigationGuardV1)return;
+ window.__pdkOwnerNavigationGuardV1=true;
+ function authIsBlocking(){
+  const auth=document.getElementById('authScreen');
+  if(!auth)return false;
+  return getComputedStyle(auth).display!=='none' && auth.getAttribute('aria-hidden')!=='true';
+ }
+ function closeMenu(){
+  document.getElementById('side')?.classList.remove('open');
+  document.getElementById('shade')?.classList.remove('open');
+  document.getElementById('openMenu')?.setAttribute('aria-expanded','false');
+ }
+ function toggleMenu(){
+  const side=document.getElementById('side'),shade=document.getElementById('shade'),button=document.getElementById('openMenu');
+  if(!side||!shade)return;
+  const opening=!side.classList.contains('open');
+  side.classList.toggle('open',opening);
+  shade.classList.toggle('open',opening);
+  button?.setAttribute('aria-expanded',opening?'true':'false');
+ }
+ // One document-level capture handler keeps navigation responsive even if a page
+ // re-render replaces individual buttons or a legacy handler was not attached.
+ document.addEventListener('click',function(event){
+  if(authIsBlocking())return;
+  const target=event.target instanceof Element?event.target:null;
+  if(!target)return;
+  const menu=target.closest('#openMenu');
+  if(menu){
+   event.preventDefault();event.stopImmediatePropagation();toggleMenu();return;
+  }
+  const shade=target.closest('#shade');
+  if(shade){
+   event.preventDefault();event.stopImmediatePropagation();closeMenu();return;
+  }
+  const pageButton=target.closest('#nav button[data-page], #pageContent [data-page]');
+  if(!pageButton)return;
+  const nextPage=pageButton.getAttribute('data-page');
+  if(!nextPage||typeof window.go!=='function')return;
+  event.preventDefault();event.stopImmediatePropagation();
+  try{window.go(nextPage)}catch(error){
+   console.error('Owner navigation failed:',error);
+   const root=document.getElementById('pageContent');
+   if(root)root.innerHTML='<section class="panel" role="alert"><h2>Page could not open</h2><p>Please reload the Owner application. Your saved ticket data has not been changed.</p><button type="button" class="gold" onclick="location.reload()">Reload application</button></section>';
+  }
+ },true);
+ window.addEventListener('pageshow',function(){closeMenu()});
+})();
+</script>
