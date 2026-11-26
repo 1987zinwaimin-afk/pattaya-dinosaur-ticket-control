@@ -7946,18 +7946,27 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
 <script>
 (function(){
  const marker='HARD FIX: one equal-width row';
- function removeLeakedCss(){
-  const root=document.body;if(!root)return;
+ function cleanTextNode(node,root){
+  if(!node||node.nodeType!==Node.TEXT_NODE||!node.nodeValue||!node.nodeValue.includes(marker))return;
+  const parent=node.parentElement;
+  if(parent&&parent!==root&&parent.children.length===0&&parent.textContent.includes(marker))parent.remove();
+  else node.remove();
+ }
+ function cleanAddedNode(root){
+  if(!root)return;
+  if(root.nodeType===Node.TEXT_NODE){cleanTextNode(root,document.body);return;}
+  if(root.nodeType!==Node.ELEMENT_NODE&&root.nodeType!==Node.DOCUMENT_FRAGMENT_NODE)return;
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   const remove=[];
-  while(walker.nextNode()){
-   const node=walker.currentNode;
-   if(node.nodeValue&&node.nodeValue.includes(marker))remove.push(node);
-  }
-  remove.forEach(node=>{const parent=node.parentElement;if(parent&&parent!==root&&parent.children.length===0&&parent.textContent.includes(marker))parent.remove();else node.remove();});
+  while(walker.nextNode()){const node=walker.currentNode;if(node.nodeValue&&node.nodeValue.includes(marker))remove.push(node);}
+  remove.forEach(node=>cleanTextNode(node,document.body));
  }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',removeLeakedCss,{once:true});else removeLeakedCss();
- new MutationObserver(removeLeakedCss).observe(document.documentElement,{childList:true,subtree:true});
+ function removeLeakedCss(){if(document.body)cleanAddedNode(document.body)}
+ const observer=new MutationObserver(records=>{
+  for(const record of records)for(const node of record.addedNodes)cleanAddedNode(node);
+ });
+ const start=()=>{removeLeakedCss();observer.observe(document.documentElement,{childList:true,subtree:true})};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
 </script>
 
