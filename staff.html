@@ -7649,7 +7649,14 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  video.addEventListener('canplay',()=>{if(selected()&&!fallback()&&video.paused)start()});
  video.addEventListener('playing',reveal);
  video.addEventListener('error',()=>{card.classList.remove('pdk-video-ready');if(selected())card.classList.add('pdk-video-fallback');video.dataset.playbackError=String(video.error&&video.error.code||'unknown')});
- const observer=new MutationObserver(()=>{if(!selected()||!fallback())start()});
+ const observer=new MutationObserver(()=>{
+   if(selected()){
+    if(!fallback()&&video.paused)start();
+    return;
+   }
+   if(!video.paused)video.pause();
+   if(card.classList.contains('pdk-video-ready')||card.classList.contains('pdk-video-fallback'))card.classList.remove('pdk-video-ready','pdk-video-fallback');
+  });
  observer.observe(card,{attributes:true,attributeFilter:['class']});
  document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else start()});
  window.addEventListener('pageshow',start);
