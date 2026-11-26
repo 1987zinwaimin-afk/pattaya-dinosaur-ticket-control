@@ -7737,6 +7737,7 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  const active=new WeakMap();
  function themeFor(host){const card=host.closest&&host.closest('#appDateTime');if(card){const t=card.dataset.festivalTheme||'';return t==='loy-krathong'?'loy':t;}return host.dataset.theme||'national';}
  function unmount(host){if(!host)return;const old=host.querySelector(':scope > .pdk-auto-festival-canvas');if(old)old.remove();host.dataset.autoFestivalCanvas='';host.dataset.autoFestivalTheme='';}
+ const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  function mount(host){
   if(!host)return;const theme=themeFor(host);if(!theme){unmount(host);return;}
   // Existing Loy Krathong MP4 + SVG fallback is the only animation layer for this theme.
@@ -7761,7 +7762,7 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
    else if(theme==='chinese'||theme==='national'){if(i%9===0)firework(x,y,(frame*.004+p.phase)%1,color);else{ctx.save();ctx.globalAlpha=.45+pulse*.45;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=9;ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();ctx.restore();}}
    else if(theme==='vegetarian'){ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(frame*.02+p.phase)*.7);ctx.globalAlpha=.35+pulse*.45;ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(0,0,3,7,0,0,Math.PI*2);ctx.fill();ctx.restore();}
    else{ctx.save();ctx.globalAlpha=.35+pulse*.55;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=12;ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();ctx.restore();if(theme==='buddhist'&&i%8===0)lantern(x,y,Math.max(.35,p.size/14),'#ffd47a');}
-  });raf=requestAnimationFrame(draw);}
+  });if(!reduced&&!document.hidden)raf=requestAnimationFrame(draw);}
   resize();if('ResizeObserver'in window)new ResizeObserver(resize).observe(host);else window.addEventListener('resize',resize,{passive:true});draw();active.set(host,{canvas,theme});
  }
  function scan(){const card=document.getElementById('appDateTime');if(card){const art=card.querySelector('.pdk-festival-art');if(art)mount(art);}}
