@@ -8060,7 +8060,12 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
    e.preventDefault();e.stopPropagation();
    if(side.classList.contains('open'))close();else open();
   },true);
-  shade.addEventListener('click',close,true);
+  shade.addEventListener('pointerdown',function(e){
+   e.preventDefault();e.stopPropagation();close();
+  },{capture:true,passive:false});
+  shade.addEventListener('click',function(e){
+   e.preventDefault();e.stopPropagation();close();
+  },true);
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initTicketMenu,{once:true});
@@ -9450,10 +9455,10 @@ function openThailandFestivalDate(date){
 
 
 
-<style id="pdk-owner-menu-layer-freeze-fix-v2">
-/* Keep the global Owner navigation above the sticky banner and page content. */
-header.brand-header,.top.brand-header{z-index:10000!important}
-#shade.side-shade{z-index:10001!important;pointer-events:auto!important}
+<style id="pdk-owner-menu-layer-freeze-fix-v3">
+/* Keep the banner controls tappable while the sidebar and dismiss layer are open. */
+#shade.side-shade{z-index:10000!important;pointer-events:auto!important}
+header.brand-header,.top.brand-header{z-index:10001!important}
 #side.side{z-index:10002!important;pointer-events:auto!important;isolation:isolate}
 #side .nav button,#side #ownerLogout{position:relative;z-index:1!important;pointer-events:auto!important;touch-action:manipulation!important}
 #openMenu{pointer-events:auto!important;touch-action:manipulation!important}
