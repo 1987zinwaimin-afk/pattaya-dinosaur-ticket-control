@@ -7,6 +7,18 @@
   const BUCKET = 'festival-videos';
   const MAX_BYTES = 50 * 1024 * 1024;
   const TZ = 'Asia/Bangkok';
+  if (!document.getElementById('pdk-normal-day-video-manager-v1')) {
+    const style = document.createElement('style');
+    style.id = 'pdk-normal-day-video-manager-v1';
+    style.textContent = `.pdk-day-message-form input[type="file"],.pdk-day-message-form input[type="url"]{width:100%;min-height:44px;padding:10px 12px;border:1px solid rgba(216,190,139,.38);border-radius:10px;background:#071a2d;color:#f6f2e8;font:inherit;box-sizing:border-box}
+.pdk-day-message-form input[type="file"]::file-selector-button{margin-right:10px;padding:8px 11px;border:0;border-radius:8px;background:#e5bd70;color:#10233a;font-weight:800}
+.pdk-day-message-remove-video{display:flex!important;align-items:center;gap:8px}.pdk-day-message-remove-video input{width:18px;height:18px;min-height:18px}
+#appDateTime.has-normal-day-message .app-date-notice{max-width:100%}
+#appDateTime.has-normal-day-message .pdk-festival-video{object-fit:cover!important}`;
+    document.head.appendChild(style);
+  }
+
+
   const signedUrlCache = new Map();
   let mediaRows = [];
   let seed2027 = [];
@@ -205,7 +217,6 @@
     const selected=activeDateAndTitle();
     const events=(window.__pdkThailandFestivalLookup||{})[selected.date]||[];
     const event=selected.title?(events.find(e=>e.title===selected.title)||null):(events[0]||null);
-    syncNormalDayNotice(false);
     const video=card.querySelector('.pdk-festival-video');
     if(!video)return;
     const source=video.querySelector('source');
@@ -240,6 +251,7 @@
       clearFestivalVideoNotice(card);
       if(scene)scene.style.display='';
       if(holidayLabel)holidayLabel.hidden=true;
+      await syncNormalDayNotice(!!force);
       try{await fetchMedia(!!force);}catch(error){console.warn('Festival video metadata check failed:',error);}
       return;
     }
@@ -277,7 +289,7 @@
     if (dayMessageFetchPromise) return dayMessageFetchPromise;
     dayMessageFetchPromise = (async () => {
       const {data,error} = await sb.from('calendar_day_messages')
-        .select('id,message_date,title,message,display_from,display_until,is_active,created_at,updated_at')
+        .select('id,message_date,title,message,display_from,display_until,is_active,video_path,video_url,video_content_type,video_file_size_bytes,created_at,updated_at')
         .order('message_date',{ascending:true})
         .order('display_from',{ascending:true});
       if (error) throw error;
@@ -315,6 +327,15 @@
     const hide = () => {
       box.hidden = true;
       card.classList.remove('has-normal-day-message');
+      const video = card.querySelector('.pdk-festival-video');
+      if (video && video.dataset.normalDayManaged === 'yes') {
+        const source = video.querySelector('source');
+        video.pause();
+        if (source) source.removeAttribute('src'); else video.removeAttribute('src');
+        video.load();
+        delete video.dataset.normalDayManaged; delete video.dataset.normalDayDate; delete video.dataset.festivalManaged;
+        card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+      }
     };
     // Festival dates always keep their own festival label/media; normal-day notices never replace them.
     if (events.length) { hide(); return; }
@@ -335,10 +356,36 @@
       if (!row) { hide(); return; }
       const title = document.getElementById('appDateNoticeTitle');
       const message = document.getElementById('appDateNoticeText');
-      if (title) title.textContent = row.title;
-      if (message) message.textContent = row.message;
-      box.hidden = false;
-      card.classList.add('has-normal-day-message');
+      if (title) { title.textContent = row.title || ''; title.hidden = !row.title; }
+      if (message) { message.textContent = row.message || ''; message.hidden = !row.message; }
+      box.hidden = !(row.title || row.message);
+      card.classList.toggle('has-normal-day-message', !box.hidden);
+      const video = card.querySelector('.pdk-festival-video');
+      const source = video?.querySelector('source');
+      const normalVideoSource = row.video_path ? await signedUrl(row.video_path) : (row.video_url || '');
+      if (video && normalVideoSource) {
+        const current = source?.getAttribute('src') || video.getAttribute('src') || '';
+        if (current !== normalVideoSource || video.dataset.normalDayManaged !== 'yes') {
+          video.pause();
+          if (source) source.src = normalVideoSource; else video.src = normalVideoSource;
+          video.dataset.normalDayManaged = 'yes';
+          video.dataset.normalDayDate = row.message_date;
+          video.dataset.festivalManaged = '1';
+          video.preload = 'auto'; video.muted = true; video.defaultMuted = true; video.volume = 0;
+          video.loop = true; video.playsInline = true;
+          video.setAttribute('muted',''); video.setAttribute('loop',''); video.setAttribute('playsinline','');
+          card.classList.add('has-owner-festival-video');
+          card.classList.remove('pdk-video-ready','pdk-video-fallback');
+          video.load();
+          const play = video.play(); if (play && play.catch) play.catch(() => {});
+        }
+      } else if (video && video.dataset.normalDayManaged === 'yes') {
+        video.pause();
+        if (source) source.removeAttribute('src'); else video.removeAttribute('src');
+        video.load();
+        delete video.dataset.normalDayManaged; delete video.dataset.normalDayDate; delete video.dataset.festivalManaged;
+        card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
+      }
     } catch (error) {
       console.warn('Normal-day Date & Time message could not be loaded:',error);
     }
@@ -357,13 +404,16 @@
             '<label>'+t('Display from','စတင်ပြသချိန်')+'<input name="display_from" type="time" value="00:00" required></label>' +
             '<label>'+t('Display until','ပြီးဆုံးချိန်')+'<input name="display_until" type="time" value="23:59" required></label>' +
             '<label>'+t('Title','ခေါင်းစဉ်')+'<input name="title" type="text" maxlength="120" placeholder="'+t('e.g. Special operating hours','ဥပမာ - အထူးဖွင့်ချိန်')+'" required></label>' +
-            '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time','Date & Time တွင်ပြမည့်စာသား')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'" required></textarea></label>' +
+            '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time (optional)','Date & Time တွင်ပြမည့်စာသား (မဖြစ်မနေမဟုတ်ပါ)')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'"></textarea></label>' +
+            '<label class="pdk-day-message-wide">'+t('Video file (MP4 / WebM, max 50 MB)','Video ဖိုင် (MP4 / WebM၊ အများဆုံး 50 MB)')+'<input name="video_file" type="file" accept="video/mp4,video/webm,video/quicktime"></label>' +
+            '<label class="pdk-day-message-wide">'+t('Or direct video URL','သို့မဟုတ် Video URL')+'<input name="video_url" type="url" maxlength="2048" placeholder="https://example.com/video.mp4"></label>' +
+            '<label class="pdk-day-message-wide pdk-day-message-remove-video"><input name="remove_video" type="checkbox"> '+t('Remove currently attached video','လက်ရှိ Video ကိုဖယ်ရှားမည်')+'</label>' +
           '</div>' +
           '<div class="pdk-day-message-actions"><label class="pdk-day-message-active"><input name="is_active" type="checkbox" checked> '+t('Active','ဖွင့်ထားမည်')+'</label><button type="submit" class="gold" data-day-message-save>'+t('＋ Save message','＋ သိမ်းမည်')+'</button><button type="button" data-day-message-cancel hidden>'+t('Cancel edit','မပြင်တော့ပါ')+'</button><span data-day-message-status role="status" aria-live="polite"></span></div>' +
         '</form>' +
         '<div class="pdk-day-message-list" data-day-message-list>' +
           (rows.length ? rows.slice(0,30).map(row =>
-            '<article class="pdk-day-message-item"><div class="pdk-day-message-copy"><strong>'+escapeHtml(dateLabel(row.message_date))+' · '+escapeHtml(row.title)+'</strong><small>'+escapeHtml(String(row.display_from).slice(0,5)+'–'+String(row.display_until).slice(0,5))+' · '+(row.is_active?t('Active','ဖွင့်ထားသည်'):t('Hidden','ပိတ်ထားသည်'))+'</small><p>'+escapeHtml(row.message)+'</p></div><div class="pdk-day-message-item-actions"><button type="button" data-day-message-edit="'+escapeHtml(row.id)+'">'+t('Edit','ပြင်မည်')+'</button><button type="button" class="danger" data-day-message-delete="'+escapeHtml(row.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>'
+            '<article class="pdk-day-message-item"><div class="pdk-day-message-copy"><strong>'+escapeHtml(dateLabel(row.message_date))+' · '+escapeHtml(row.title)+'</strong><small>'+escapeHtml(String(row.display_from).slice(0,5)+'–'+String(row.display_until).slice(0,5))+' · '+(row.is_active?t('Active','ဖွင့်ထားသည်'):t('Hidden','ပိတ်ထားသည်'))+' · '+(row.video_path||row.video_url?t('Video attached','Video ပါဝင်သည်'):t('Text only','စာသားသာ'))+'</small><p>'+escapeHtml(row.message||'')+'</p></div><div class="pdk-day-message-item-actions"><button type="button" data-day-message-edit="'+escapeHtml(row.id)+'">'+t('Edit','ပြင်မည်')+'</button><button type="button" class="danger" data-day-message-delete="'+escapeHtml(row.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>'
           ).join('') : '<p class="pdk-day-message-empty">'+t('No normal-day messages have been added yet.','ပုံမှန်ရက်အတွက် အသိပေးစာ မထည့်ရသေးပါ။')+'</p>') +
         '</div>';
 
@@ -379,6 +429,9 @@
         form.elements.namedItem('display_from').value = '00:00';
         form.elements.namedItem('display_until').value = '23:59';
         form.elements.namedItem('is_active').checked = true;
+        form.elements.namedItem('video_file').value = '';
+        form.elements.namedItem('video_url').value = '';
+        form.elements.namedItem('remove_video').checked = false;
         if(save) save.textContent = t('＋ Save message','＋ သိမ်းမည်');
         if(cancel) cancel.hidden = true;
         setStatus('');
@@ -393,6 +446,10 @@
         const title = form.elements.namedItem('title').value.trim();
         const message = form.elements.namedItem('message').value.trim();
         const active = form.elements.namedItem('is_active').checked;
+        const videoFile = form.elements.namedItem('video_file').files[0] || null;
+        const videoUrl = form.elements.namedItem('video_url').value.trim();
+        const removeVideo = form.elements.namedItem('remove_video').checked;
+        const existingRow = editingId ? dayMessageRows.find(x=>x.id===editingId) : null;
         if (!isOrdinaryDate(date)) {
           setStatus(t('Choose a normal date without a festival or public holiday.','ပွဲတော်/ရုံးပိတ်ရက် မရှိသော ပုံမှန်ရက်ကို ရွေးပါ။'));
           return;
@@ -401,8 +458,20 @@
           setStatus(t('End time must be later than start time.','ပြီးဆုံးချိန်သည် စတင်ချိန်ထက် နောက်ကျရပါမည်။'));
           return;
         }
-        if (!title || !message) {
-          setStatus(t('Enter both a title and a message.','ခေါင်းစဉ်နှင့် စာသားနှစ်ခုလုံး ဖြည့်ပါ။'));
+        if (!title || (!message && !videoFile && !videoUrl && !(existingRow && (existingRow.video_path || existingRow.video_url) && !removeVideo))) {
+          setStatus(t('Enter a title and add text or a video.','ခေါင်းစဉ်ဖြည့်ပြီး စာသား သို့မဟုတ် Video တစ်ခု ထည့်ပါ။'));
+          return;
+        }
+        if (videoFile && (!/^video\/(mp4|webm|quicktime)$/i.test(videoFile.type) || videoFile.size > MAX_BYTES)) {
+          setStatus(t('Choose an MP4/WebM video up to 50 MB.','MP4/WebM Video 50 MB အောက်ကို ရွေးပါ။'));
+          return;
+        }
+        if (videoUrl && !/^https?:\/\//i.test(videoUrl)) {
+          setStatus(t('Enter a direct video URL beginning with http:// or https://.','http:// သို့မဟုတ် https:// ဖြင့်စသော Video URL ထည့်ပါ။'));
+          return;
+        }
+        if (videoFile && videoUrl) {
+          setStatus(t('Choose either a video file or a URL, not both.','Video ဖိုင် သို့မဟုတ် URL တစ်မျိုးသာ ရွေးပါ။'));
           return;
         }
         dayMessageBusy = true;
@@ -415,24 +484,53 @@
           return from < existingUntil && until > existingFrom;
         });
         if (overlaps) {
+          dayMessageBusy = false;
+          if(save){save.disabled=false;save.textContent=editingId?t('Update message','ပြင်ဆင်သိမ်းမည်'):t('＋ Save message','＋ သိမ်းမည်');}
           setStatus(t('This time overlaps another active message on the same date.','ဤအချိန်သည် တူညီသောရက်စွဲရှိ အသိပေးစာတစ်ခုနှင့် အချိန်ထပ်နေပါသည်။'));
           return;
         }
-        const payload = {
-          message_date:date,title,message,
-          display_from:from+':00',display_until:until+':00',
-          is_active:active,updated_at:new Date().toISOString()
-        };
+        let uploadedPath = '';
+        const previousPath = existingRow?.video_path || '';
+        let nextVideoPath = existingRow?.video_path || null;
+        let nextVideoUrl = existingRow?.video_url || null;
+        let nextVideoType = existingRow?.video_content_type || null;
+        let nextVideoSize = existingRow?.video_file_size_bytes || null;
         try {
+          if (videoFile) {
+            const ext = videoFile.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'') || 'mp4';
+            uploadedPath = 'normal-day/'+currentUser.id+'/'+date+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'.'+ext;
+            const {error:uploadError} = await sb.storage.from(BUCKET).upload(uploadedPath,videoFile,{
+              contentType:videoFile.type,upsert:false,cacheControl:'3600'
+            });
+            if (uploadError) throw uploadError;
+            nextVideoPath = uploadedPath; nextVideoUrl = null;
+            nextVideoType = videoFile.type; nextVideoSize = videoFile.size;
+          } else if (videoUrl) {
+            nextVideoPath = null; nextVideoUrl = videoUrl;
+            nextVideoType = null; nextVideoSize = null;
+          } else if (removeVideo) {
+            nextVideoPath = null; nextVideoUrl = null; nextVideoType = null; nextVideoSize = null;
+          }
+          const payload = {
+            message_date:date,title,message,
+            display_from:from+':00',display_until:until+':00',
+            is_active:active,video_path:nextVideoPath,video_url:nextVideoUrl,
+            video_content_type:nextVideoType,video_file_size_bytes:nextVideoSize,
+            updated_at:new Date().toISOString()
+          };
           const result = editingId
             ? await sb.from('calendar_day_messages').update(payload).eq('id',editingId)
             : await sb.from('calendar_day_messages').insert({...payload,created_by:currentUser.id});
           if (result.error) throw result.error;
+          if (previousPath && previousPath !== nextVideoPath && (videoFile || videoUrl || removeVideo)) {
+            await sb.storage.from(BUCKET).remove([previousPath]);
+          }
           dayMessageRows=[];lastDayMessageFetch=0;
           await fetchDayMessages(true);
           await renderDayMessageManager();
           await syncNormalDayNotice(true);
         } catch(error) {
+          if (uploadedPath) await sb.storage.from(BUCKET).remove([uploadedPath]).catch(()=>{});
           setStatus(t('Could not save: ','သိမ်းမရပါ: ')+error.message);
           if(save){save.disabled=false;save.textContent=editingId?t('Update message','ပြင်ဆင်သိမ်းမည်'):t('＋ Save message','＋ သိမ်းမည်');}
         } finally { dayMessageBusy=false; }
@@ -445,7 +543,10 @@
         form.elements.namedItem('display_from').value=String(row.display_from).slice(0,5);
         form.elements.namedItem('display_until').value=String(row.display_until).slice(0,5);
         form.elements.namedItem('title').value=row.title;
-        form.elements.namedItem('message').value=row.message;
+        form.elements.namedItem('message').value=row.message || '';
+        form.elements.namedItem('video_file').value='';
+        form.elements.namedItem('video_url').value=row.video_url || '';
+        form.elements.namedItem('remove_video').checked=false;
         form.elements.namedItem('is_active').checked=!!row.is_active;
         if(save)save.textContent=t('Update message','ပြင်ဆင်သိမ်းမည်');
         if(cancel)cancel.hidden=false;
@@ -459,8 +560,10 @@
         dayMessageBusy=true;
         button.disabled=true;
         try{
+          const target=dayMessageRows.find(x=>x.id===button.dataset.dayMessageDelete);
           const {error}=await sb.from('calendar_day_messages').delete().eq('id',button.dataset.dayMessageDelete);
           if(error)throw error;
+          if(target?.video_path)await sb.storage.from(BUCKET).remove([target.video_path]);
           dayMessageRows=[];lastDayMessageFetch=0;
           await fetchDayMessages(true);
           await renderDayMessageManager();
