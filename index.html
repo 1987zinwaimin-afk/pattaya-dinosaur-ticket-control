@@ -8925,18 +8925,11 @@ function openThailandFestivalDate(date){
   card.classList.add('has-festival-theme','is-calendar-preview');
   const holidayLabel=document.getElementById('appHolidayValue');
   if(holidayLabel){holidayLabel.textContent=title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');}
-  const art=card.querySelector('.pdk-festival-art');
-  if(art){art.querySelector('.pdk-calendar-preview-art')?.remove();art.querySelector('.pdk-calendar-preview-video')?.remove();art.querySelector('.pdk-calendar-preview-gif')?.remove();if(dateTheme!=='loy-krathong'){
-   if(dateTheme==='new-year'||dateTheme==='children'){
-    const video=document.createElement('video');video.className='pdk-calendar-preview-video';video.src=dateTheme==='new-year'?'/Happy%20NewYear%E2%80%99s.mp4?v=20261125-1':'/Thailand%20National%20Children%E2%80%99s%20Day.mp4?v=20261125-1';video.autoplay=true;video.muted=true;video.loop=true;video.playsInline=true;video.preload='auto';video.setAttribute('aria-hidden','true');video.setAttribute('autoplay','');video.setAttribute('muted','');video.setAttribute('loop','');video.setAttribute('playsinline','');video.addEventListener('error',()=>video.classList.add('pdk-calendar-preview-video-failed'),{once:true});art.appendChild(video);const playAttempt=video.play();if(playAttempt&&typeof playAttempt.catch==='function')playAttempt.catch(()=>{});
-   }else{
-    const layer=document.createElement('div');layer.className='pdk-calendar-preview-art';layer.setAttribute('aria-hidden','true');
-    const map={songkran:['💦','🌊','💧','☀️'],buddhist:['🪷','🕯️','✨','🪷'],chinese:['🏮','🧧','🐉','✨'],royal:['👑','✨','💛','🌟'],vegetarian:['🥬','🏮','🌿','✨'],national:['🎆','🎉','✨','🎇'],children:['🦖','🎈','🎉','⭐']};
-    const symbols=map[dateTheme]||['✨',icon,'🌟','✨'];
-    layer.innerHTML=symbols.map((v,i)=>'<span class="pdk-calendar-preview-symbol p'+(i+1)+'">'+v+'</span>').join('');
-    art.appendChild(layer);
-   }
-  }}
+  // Remove legacy preview overlays and let festival-media.js control the one shared video element.
+  card.querySelectorAll('.pdk-calendar-preview-video,.pdk-calendar-preview-gif,.pdk-calendar-preview-art,.pdk-auto-festival-canvas').forEach(node=>node.remove());
+  card.classList.remove('pdk-video-ready','pdk-video-fallback');
+  if(window.__pdkSyncFestivalDateTime) window.__pdkSyncFestivalDateTime(true);
+
   close();
  });
  const previousBodyOverflow=document.body.style.overflow;
@@ -9174,7 +9167,7 @@ function openThailandFestivalDate(date){
  #appDateTime.app-datetime,#appDateTime.app-datetime:after{transition:none!important;animation:none!important}
 }
 </style>
-<script src="/festival-media.js?v=20261126-1"></script>
+<script src="/festival-media.js?v=20261126-2"></script>
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
@@ -9708,3 +9701,56 @@ function openThailandFestivalDate(date){
 
 
 
+
+<style id="pdk-datetime-single-renderer-v1">
+/* Final Date & Time cascade: compact card, one media element, no stacked decorative canvases. */
+#appDateTime.app-datetime{
+  width:min(calc(100% - 24px),760px)!important;max-width:760px!important;
+  min-height:112px!important;height:auto!important;aspect-ratio:auto!important;
+  margin:10px auto 14px!important;padding:14px 16px!important;
+  border-width:1px!important;border-radius:17px!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:12px!important;overflow:hidden!important;isolation:isolate!important;
+}
+#appDateTime .pdk-festival-art{
+  position:absolute!important;inset:0!important;z-index:0!important;
+  width:100%!important;height:100%!important;overflow:hidden!important;
+  pointer-events:none!important;opacity:1!important;
+}
+#appDateTime .pdk-festival-video{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  object-fit:cover!important;object-position:center 54%!important;
+  display:block!important;visibility:visible!important;opacity:0!important;
+  z-index:1!important;pointer-events:none!important;
+}
+#appDateTime.pdk-video-ready .pdk-festival-video{opacity:1!important}
+#appDateTime .pdk-festival-scene{display:none!important;opacity:0!important;visibility:hidden!important}
+#appDateTime.pdk-video-fallback[data-festival-theme="loy-krathong"] .pdk-festival-scene{
+  display:block!important;opacity:1!important;visibility:visible!important;
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+}
+#appDateTime .pdk-auto-festival-canvas,
+#appDateTime .pdk-calendar-preview-video,
+#appDateTime .pdk-calendar-preview-gif,
+#appDateTime .pdk-calendar-preview-art{display:none!important}
+#appDateTime:before{z-index:2!important;pointer-events:none!important}
+#appDateTime:after{z-index:2!important;pointer-events:none!important}
+#appDateTime.pdk-video-ready:before,
+#appDateTime.pdk-video-ready:after{opacity:0!important}
+#appDateTime .app-datetime-date,
+#appDateTime .app-datetime-clock{position:relative!important;z-index:4!important;width:auto!important;min-width:0!important}
+#appDateTime .app-datetime-date strong{font-size:clamp(19px,3vw,27px)!important}
+#appDateTime .app-datetime-clock strong{font-size:clamp(18px,2.8vw,25px)!important}
+#appDateTime .app-datetime-caption{font-size:9px!important;letter-spacing:1.35px!important}
+#appDateTime #appWeekdayValue,
+#appDateTime .app-datetime-zone{font-size:11px!important}
+#appDateTime .app-holiday-label{font-size:12px!important;max-width:100%!important}
+@media(max-width:520px){
+ #appDateTime.app-datetime{width:calc(100% - 18px)!important;min-height:104px!important;padding:11px 10px!important;gap:7px!important;border-radius:15px!important}
+ #appDateTime .app-datetime-date strong{font-size:clamp(16px,4.6vw,21px)!important}
+ #appDateTime .app-datetime-clock strong{font-size:clamp(15px,4.2vw,19px)!important}
+ #appDateTime .app-datetime-caption{font-size:8px!important;letter-spacing:1px!important}
+ #appDateTime #appWeekdayValue,#appDateTime .app-datetime-zone{font-size:9px!important}
+ #appDateTime .app-holiday-label{font-size:10px!important}
+}
+</style>
