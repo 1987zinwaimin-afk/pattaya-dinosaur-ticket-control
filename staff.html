@@ -3473,6 +3473,16 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 .chat-message-status{font-size:10px;letter-spacing:.1px}
 @media(max-width:520px){.emergency-alarm-card{border-radius:19px!important;padding:19px 16px!important}.emergency-alarm-symbol{width:56px;height:56px;font-size:29px}.emergency-alarm-card>p{font-size:13px}.emergency-alarm-details{font-size:11px;padding:10px}.emergency-alarm-actions{gap:7px}.emergency-alarm-actions button{flex-basis:100%;min-height:46px}.staff-alarm-popover{max-width:calc(100vw - 16px)}}
 </style>
+
+<style id="pdk-staff-mobile-menu-layer-v1">
+header.brand-header,.top.brand-header{z-index:100004!important}
+#openMenu{position:absolute!important;z-index:100005!important;pointer-events:auto!important;touch-action:manipulation!important;cursor:pointer!important;width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important;left:4px!important;top:4px!important;padding:0!important;margin:0!important;display:grid!important;place-items:center!important;box-sizing:border-box!important;-webkit-tap-highlight-color:rgba(232,189,98,.25)!important}
+#shade,.side-shade#shade{z-index:100001!important;pointer-events:auto!important}
+#side,.side#side{z-index:100002!important;pointer-events:auto!important;isolation:isolate!important;padding-top:calc(var(--pdk-header-height,22vw) + 12px)!important;padding-bottom:max(22px,env(safe-area-inset-bottom))!important;max-height:100dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important}
+#side .nav,#side .nav button,#side #staffLogout,#side #closeMenu,#side #staffInstallBtn{pointer-events:auto!important;touch-action:manipulation!important;position:relative!important;z-index:1!important}
+#side .nav button,#side #staffLogout,#side #closeMenu{min-height:48px!important;cursor:pointer!important;-webkit-tap-highlight-color:rgba(232,189,98,.22)!important}
+@media(min-width:980px){#openMenu{display:none!important}#side{padding-top:22px!important}}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -3557,6 +3567,8 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 const SUPABASE_URL="https://tlefnqzpilajeuyysujb.supabase.co";
 const SUPABASE_KEY="sb_publishable_7A7k-Dh3I7r3Gxk7EaakOQ_GLDon5wm";
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage,storageKey:'ticket-control-staff-auth-v1'}});
+// Bound critical read-only startup requests so a stalled mobile network cannot leave the Welcome Back screen blocking the whole Staff app.
+async function withStaffTimeout(promise,label,ms=10000){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after '+Math.round(ms/1000)+' seconds. Your saved login and ticket data are unchanged. Check the connection and retry.')),ms)})])}finally{clearTimeout(timer)}}
 // Ask the browser to preserve this installed app's local session storage where supported.
 try{if(navigator.storage?.persist)navigator.storage.persist().catch(()=>{})}catch(storageError){console.warn('Persistent storage request unavailable:',storageError)}
 let authMode="signin",currentUser=null,currentRole="staff",currentStaffId=null,cloudReady=false,cloudChannel=null;
@@ -3655,8 +3667,8 @@ async function checkStaffSiteAccess(){
   try{
    // Manual access is the only gate for the Staff website. Check it first and
    // never wait for subscription details before allowing an OPEN website.
-   const {data,error}=await sb.from('staff_site_access_control')
-    .select('is_open').eq('control_key','normal_staff').maybeSingle();
+   const {data,error}=await withStaffTimeout(sb.from('staff_site_access_control')
+    .select('is_open').eq('control_key','normal_staff').maybeSingle(),'Staff website access check',10000);
    if(error)throw error;
    if(!data||typeof data.is_open!=='boolean')throw new Error('Staff access setting is missing or invalid.');
    staffSiteAccessOpen=data.is_open===true;
@@ -4285,7 +4297,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  // Read the active identity and automatically replace a stale anonymous session on shared staff phones.
  let profile=knownProfile;
  if(!profile){
-  const profileResult=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle();
+  const profileResult=await withStaffTimeout(sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle(),'Staff profile lookup',10000);
   if(profileResult.error||!profileResult.data){currentUser=null;throw profileResult.error||new Error('Staff profile is not ready yet. Your saved login is kept; please retry.');}
   profile=profileResult.data;
  }
@@ -4303,7 +4315,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
   if(!claimed||String(claimed).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID could not be verified. Please contact Owner.');
   session=newSession.session;
   currentUser=session.user;
-  const refreshed=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle();
+  const refreshed=await withStaffTimeout(sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',currentUser.id).maybeSingle(),'Refreshed Staff profile lookup',10000);
   if(refreshed.error||!refreshed.data)throw refreshed.error||new Error('Staff profile is still being prepared. Please try once more.');
   profile=refreshed.data;
   if(profile.role!=='staff'||!profile.staff_id||String(profile.staff_id).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID verification did not finish. Please contact Owner.');
@@ -4484,11 +4496,11 @@ document.getElementById('authForm').onsubmit=async e=>{
  if(document.getElementById('authName').dataset.resolvedStaffId&&document.getElementById('authName').dataset.resolvedStaffId!==staffId.toUpperCase()){err.textContent='Staff ID changed. Please verify the ID again.';return}
  err.textContent='Checking Staff ID…';
   // Reuse the saved anonymous identity after a failed attempt; never create a new Auth user on every retry.
-  const {data:existingSession,error:sessionError}=await sb.auth.getSession();
+  const {data:existingSession,error:sessionError}=await withStaffTimeout(sb.auth.getSession(),'Saved Staff session lookup',10000);
   if(sessionError)throw sessionError;
   let session=existingSession?.session||null,knownProfile=null;
   if(session?.user?.id){
-   const {data:existingProfile,error:existingProfileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',session.user.id).maybeSingle();
+   const {data:existingProfile,error:existingProfileError}=await withStaffTimeout(sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',session.user.id).maybeSingle(),'Existing Staff profile lookup',10000);
    if(existingProfileError)throw existingProfileError;
    if(existingProfile?.is_archived){
     // This device may still hold a session belonging to a retired duplicate profile.
@@ -4519,7 +4531,7 @@ document.getElementById('authForm').onsubmit=async e=>{
   // securely save only when this Staff member supplied/changed their own date.
   const birthdayInput=document.getElementById('authBirthDate');
   const enteredBirthday=birthdayInput?.value||'';
-  const {data:savedBirthday,error:birthdayReadError}=await sb.rpc('get_my_staff_birthday');
+  const {data:savedBirthday,error:birthdayReadError}=await withStaffTimeout(sb.rpc('get_my_staff_birthday'),'Staff birthday lookup',10000);
   if(birthdayReadError)throw birthdayReadError;
   if(enteredBirthday){
    if(enteredBirthday>new Date().toISOString().slice(0,10))throw new Error('Date of Birth cannot be in the future.');
@@ -4530,7 +4542,7 @@ document.getElementById('authForm').onsubmit=async e=>{
    birthdayInput.value=String(savedBirthday).slice(0,10);
   }
   if(!knownProfile){
-   const {data:verifiedProfile,error:verifiedProfileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',session.user.id).maybeSingle();
+   const {data:verifiedProfile,error:verifiedProfileError}=await withStaffTimeout(sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',session.user.id).maybeSingle(),'Verified Staff profile lookup',10000);
    if(verifiedProfileError)throw verifiedProfileError;
    knownProfile=verifiedProfile;
   }
@@ -4551,13 +4563,13 @@ async function restoreSavedSession(){
  if(!(await checkStaffSiteAccess()))return;
  restoringSavedSession=true;
  try{
-  const {data,error}=await sb.auth.getSession();
+  const {data,error}=await withStaffTimeout(sb.auth.getSession(),'Restore Staff session',10000);
   if(error)throw error;
   if(!data.session){const authScreen=document.getElementById('authScreen');if(authScreen){authScreen.style.display='grid';authScreen.setAttribute('aria-hidden','false')}return;}
   let profile=null,lastProfileError=null;
   // A freshly reopened phone may need a moment for the network/profile query to become available.
   for(let attempt=0;attempt<3;attempt++){
-   const result=await sb.from('profiles').select('display_name,role,avatar_url,is_archived,staff_id').eq('id',data.session.user.id).maybeSingle();
+   const result=await withStaffTimeout(sb.from('profiles').select('display_name,role,avatar_url,is_archived,staff_id').eq('id',data.session.user.id).maybeSingle(),'Restore Staff profile lookup',7000);
    if(!result.error&&result.data){profile=result.data;break}
    lastProfileError=result.error||new Error('Staff profile is not ready yet.');
    if(attempt<2)await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)));
@@ -4568,7 +4580,7 @@ async function restoreSavedSession(){
    document.getElementById('authStaffId').value=profile.staff_id||'';
    // Load the signed-in Staff member's own saved birthday into the login form for next time.
    try{
-    const {data:birthday,error:birthdayError}=await sb.rpc('get_my_staff_birthday');
+    const {data:birthday,error:birthdayError}=await withStaffTimeout(sb.rpc('get_my_staff_birthday'),'Restore Staff birthday lookup',7000);
     if(!birthdayError&&birthday)document.getElementById('authBirthDate').value=String(birthday).slice(0,10);
    }catch(birthdayLoadError){console.warn('Staff birthday could not be loaded:',birthdayLoadError)}
    if(!staffLoginSubmitting){const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';document.getElementById('staffDepartment').value=['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale';}
@@ -6131,7 +6143,7 @@ function renderStaffSettings(){
 }function renderSettings(){document.getElementById('pageContent').dataset.uiPage='settings';document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+tr('cloud')+'</h2><p>'+tr('cloudMsg')+'</p><div class="summary-row"><span>Language / ภาษา</span><select id="settingLang" style="max-width:140px"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div><div class="summary-row"><span>Display theme</span><select id="themeSelect" style="max-width:160px"><option value="dark">Luxury Navy Gold</option><option value="light">Premium Light</option></select></div><p class="subtle">Premium Dark Navy + Champagne Gold is the default. Ticket records are synced to the Ticket Control Live cloud database.</p><button id="exportAll" class="gold">Export all ticket data (JSON)</button></div>';document.getElementById('settingLang').value=lang;document.getElementById('settingLang').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render()};document.getElementById('themeSelect').value=theme;document.getElementById('themeSelect').onchange=async e=>{const chosen=e.target.value;if(!['dark','light','emerald','midnight','luxury'].includes(chosen))return;theme=chosen;localStorage.setItem('tctl-theme-staff',theme);applyTheme();let status=document.getElementById('staffThemeSavedStatus');if(!status){status=document.createElement('p');status.id='staffThemeSavedStatus';status.className='subtle';document.getElementById('themeSelect').after(status)}status.textContent='Saving your Staff theme…';try{if(!currentUser?.id)throw new Error('Staff session is not ready');const {error}=await sb.from('theme_preferences').upsert({preference_key:'staff:'+currentUser.id,theme,updated_at:new Date().toISOString()},{onConflict:'preference_key'});if(error)throw error;status.textContent='Staff theme saved. Owner theme is unchanged.'}catch(err){status.textContent='Saved on this device only. Cloud save failed: '+err.message}};document.getElementById('exportAll').onclick=()=>{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(tickets,null,2)],{type:'application/json'}));a.download='ticket-control-backup.json';a.click();URL.revokeObjectURL(a.href)};if(typeof window.renderDeviceUiModeControls==='function')window.renderDeviceUiModeControls(document.getElementById('pageContent'))}
 function renderDatabase(){document.getElementById('pageContent').dataset.uiPage=page;document.getElementById('pageContent').innerHTML='<div class="panel"><h2>'+(page==='owner'?'Owner Database':'Staff Database')+'</h2><p>'+tr('staffNotice')+'</p><div class="notice">'+(page==='owner'?'Owner permissions and secure account provisioning are not configured.':'Staff name, department login, and activity logs require Firebase Authentication and database rules.')+'</div><p class="subtle">Signed in as ; account permissions are managed by the Ticket Control Live database.</p></div>'}
 function applyTheme(){['dark','light','emerald','midnight','luxury'].forEach(name=>document.body.classList.toggle('theme-'+name,theme===name));document.body.dataset.theme=theme}
-document.getElementById('language').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render();applyUILanguage()};document.getElementById('openMenu').onclick=()=>{document.getElementById('side').classList.add('open');document.getElementById('shade').classList.add('open')};document.getElementById('closeMenu').onclick=()=>{document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open')};document.getElementById('shade').onclick=()=>document.getElementById('closeMenu').click();document.getElementById('closeAction').onclick=()=>document.getElementById('actionModal').classList.remove('open');applyTheme();render();
+document.getElementById('language').onchange=e=>{lang=e.target.value;localStorage.setItem('tctl-lang',lang);render();applyUILanguage()};document.getElementById('openMenu').onclick=()=>{const side=document.getElementById('side'),shade=document.getElementById('shade'),button=document.getElementById('openMenu');const opening=!side.classList.contains('open');side.classList.toggle('open',opening);shade.classList.toggle('open',opening);button.setAttribute('aria-expanded',opening?'true':'false')};document.getElementById('closeMenu').onclick=()=>{document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');document.getElementById('openMenu').setAttribute('aria-expanded','false')};document.getElementById('shade').onclick=()=>document.getElementById('closeMenu').click();document.getElementById('closeAction').onclick=()=>document.getElementById('actionModal').classList.remove('open');applyTheme();render();
 
 /* Cross-platform Staff PWA installation */
 (()=>{
