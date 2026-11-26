@@ -315,7 +315,7 @@
 
   function openFestivalUploadPopup(date,title) {
     if (typeof openThailandFestivalDate !== 'function') return;
-    openThailandFestivalDate(date);
+    openThailandFestivalDate(date,title||'');
     const dialog=document.getElementById('pdkThailandFestivalModal');
     const body=dialog?.querySelector('.pdk-fc-modal-body');
     if(!dialog||!body)return;
