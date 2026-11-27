@@ -394,8 +394,8 @@
       if (video) {
         video.style.position = 'absolute';
         video.style.inset = 'auto';
-        video.style.left = '50%';
-        video.style.top = '50%';
+        video.style.left = (50+normalDayX)+'%';
+        video.style.top = (50+normalDayY)+'%';
         video.style.width = (normalDayZoom/100*100)+'%';
         video.style.height = (normalDayZoom/100*100)+'%';
         video.style.maxWidth = 'none';
@@ -404,8 +404,8 @@
         video.style.objectPosition = 'center center';
         video.style.transformOrigin = 'center center';
         video.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-        video.style.setProperty('left', '50%', 'important');
-        video.style.setProperty('top', '50%', 'important');
+        video.style.setProperty('left', (50+normalDayX)+'%', 'important');
+        video.style.setProperty('top', (50+normalDayY)+'%', 'important');
         video.style.setProperty('width', (normalDayZoom)+'%', 'important');
         video.style.setProperty('height', (normalDayZoom)+'%', 'important');
         video.style.setProperty('object-fit', 'cover', 'important');
@@ -805,7 +805,10 @@
         form.elements.namedItem('video_url').value=row.video_url || '';
         form.elements.namedItem('remove_video').checked=false;
         form.elements.namedItem('video_zoom').value=String(row.video_zoom||100);
-        applyZoomPreview(row.video_zoom||100);
+        form.elements.namedItem('video_position_x').value=String(row.video_position_x||0);
+        form.elements.namedItem('video_position_y').value=String(row.video_position_y||0);
+        applySavedPosition(row);
+        if(row.video_path) setPreviewSource(await signedUrl(row.video_path)); else if(row.video_url) setPreviewSource(row.video_url); else setPreviewSource('');
         form.elements.namedItem('is_active').checked=!!row.is_active;
         if(save)save.textContent=t('Update message','ပြင်ဆင်သိမ်းမည်');
         if(cancel)cancel.hidden=false;
