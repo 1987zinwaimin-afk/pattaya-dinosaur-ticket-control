@@ -376,13 +376,15 @@
       if (!row) { hide(); return; }
       const title = document.getElementById('appDateNoticeTitle');
       const message = document.getElementById('appDateNoticeText');
-      if (title) { title.textContent = row.title || ''; title.hidden = !row.title; }
-      if (message) { message.textContent = row.message || ''; message.hidden = !row.message; }
-      box.hidden = !(row.title || row.message);
-      card.classList.toggle('has-normal-day-message', !box.hidden);
       const video = card.querySelector('.pdk-festival-video');
       const source = video?.querySelector('source');
       const normalVideoSource = row.video_path ? await signedUrl(row.video_path) : (row.video_url || '');
+      const videoOnlyNotice = !!normalVideoSource && !row.message;
+      // A video-only notice must show its video, not the uploaded filename as a text title.
+      if (title) { title.textContent = row.title || ''; title.hidden = !row.title || videoOnlyNotice; }
+      if (message) { message.textContent = row.message || ''; message.hidden = !row.message; }
+      box.hidden = videoOnlyNotice || !(row.title || row.message);
+      card.classList.toggle('has-normal-day-message', !box.hidden);
       if (video && normalVideoSource) {
         const current = source?.getAttribute('src') || video.getAttribute('src') || '';
         if (current !== normalVideoSource || video.dataset.normalDayManaged !== 'yes') {
@@ -536,9 +538,7 @@
         const selectedFile = videoInput.files && videoInput.files[0];
         if (!selectedFile) return;
         const sizeMb = (selectedFile.size / (1024 * 1024)).toFixed(1);
-        const titleField = form.elements.namedItem('title');
-        // A video-only notice is valid; use the selected filename as its default title.
-        if (titleField && !titleField.value.trim()) titleField.value = String(selectedFile.name || '').replace(/\.[^.]+$/, '').trim();
+        // Keep the title optional for video-only notices. The source filename is not display text.
         // Intentionally do not read, decode, preview, or compress the File on selection.
         setStatus(t('Selected: ','ရွေးထားသည်: ')+selectedFile.name+' ('+sizeMb+' MB). '+t('Press Save message when ready.','သိမ်းရန် Save message ကိုနှိပ်ပါ။'));
       });
@@ -566,7 +566,7 @@
         const titleField = form.elements.namedItem('title');
         const message = form.elements.namedItem('message').value.trim();
         const videoFile = form.elements.namedItem('video_file').files[0] || null;
-        const title = titleField.value.trim() || (videoFile ? String(videoFile.name || '').replace(/\.[^.]+$/, '').trim() : '');
+        const title = titleField.value.trim();
         const active = form.elements.namedItem('is_active').checked;
         const videoUrl = form.elements.namedItem('video_url').value.trim();
         const removeVideo = form.elements.namedItem('remove_video').checked;
@@ -580,8 +580,8 @@
           setStatus(t('End time must be later than start time.','ပြီးဆုံးချိန်သည် စတင်ချိန်ထက် နောက်ကျရပါမည်။'));
           return;
         }
-        if (!title || (!message && !videoFile && !videoUrl && !(existingRow && (existingRow.video_path || existingRow.video_url) && !removeVideo))) {
-          setStatus(t('Enter a title and add text or a video.','ခေါင်းစဉ်ဖြည့်ပြီး စာသား သို့မဟုတ် Video တစ်ခု ထည့်ပါ။'));
+        if (!title && !message && !videoFile && !videoUrl && !(existingRow && (existingRow.video_path || existingRow.video_url) && !removeVideo)) {
+          setStatus(t('Add a video, or enter a title or message.','Video ထည့်ပါ၊ သို့မဟုတ် ခေါင်းစဉ်/စာသား ဖြည့်ပါ။'));
           return;
         }
         const allowedVideoTypes = {mp4:'video/mp4',webm:'video/webm',mov:'video/quicktime'};
