@@ -314,7 +314,7 @@
     if (dayMessageFetchPromise) return dayMessageFetchPromise;
     dayMessageFetchPromise = (async () => {
       const {data,error} = await sb.from('calendar_day_messages')
-        .select('id,message_date,title,message,display_from,display_until,is_active,video_path,video_url,video_content_type,video_file_size_bytes,video_zoom,created_at,updated_at')
+        .select('id,message_date,title,message,display_from,display_until,is_active,video_path,video_url,video_content_type,video_file_size_bytes,video_zoom,video_position_x,video_position_y,created_at,updated_at')
         .order('message_date',{ascending:true})
         .order('display_from',{ascending:true});
       if (error) throw error;
@@ -1253,7 +1253,7 @@
   style.textContent=
     '.pdk-day-video-editor{margin-top:10px;padding:12px;border:1px solid rgba(239,202,128,.35);border-radius:14px;background:rgba(4,20,36,.48)}'+
     '.pdk-day-video-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;color:#ffe0a0}'+
-    '.pdk-day-video-stage{position:relative;width:100%;aspect-ratio:16/6;min-height:130px;overflow:hidden;border:1px solid rgba(239,202,128,.55);border-radius:10px;background:#07182b;touch-action:none;user-select:none;cursor:grab}'+
+    '.pdk-day-video-stage{position:relative;width:100%;aspect-ratio:16/5;min-height:130px;overflow:hidden;border:1px solid rgba(239,202,128,.55);border-radius:10px;background:#07182b;touch-action:none;user-select:none;cursor:grab}'+
     '.pdk-day-video-stage:active{cursor:grabbing}'+
     '.pdk-day-video-stage video{position:absolute!important;left:50%!important;top:50%!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;transform:translate(-50%,-50%)!important;pointer-events:none}'+
     '.pdk-day-video-stage [data-day-video-empty]{position:absolute;inset:0;display:grid;place-items:center;color:#dbe8f3;font-size:13px;pointer-events:none}'+
