@@ -1322,7 +1322,10 @@
   function applyDateTimeHeaderLayout(){
     const card=document.getElementById('appDateTime');
     const menu=document.getElementById('openMenu');
+    const alarm=document.getElementById('ownerEmergencyAlarmHeader');
     if(!card) return;
+    /* Keep Alarm physically inside the Date/Time card so bottom-right is measured from that card, not the full header. */
+    if(alarm && alarm.parentElement!==card) card.appendChild(alarm);
     const header=card.closest('header')||card.parentElement;
     if(header){
       header.style.setProperty('position','fixed','important');
@@ -1354,6 +1357,9 @@
       // Let the final responsive stylesheet size weekday, festival and notice labels.
     }
     if(clock){
+      /* Remove the visible timezone label only; keep the actual Bangkok clock value. */
+      Array.from(clock.childNodes).forEach(node=>{if(node.nodeType===3 && /Asia\\s*\\/\\s*Bangkok|UTC\\s*\\+?\\s*7/i.test(node.nodeValue||'')) node.remove();});
+      clock.querySelectorAll('*').forEach(node=>{if(node.children.length===0 && /Asia\\s*\\/\\s*Bangkok|UTC\\s*\\+?\\s*7/i.test(node.textContent||'')) node.style.setProperty('display','none','important');});
       clock.style.setProperty('display','flex','important');
       clock.style.setProperty('flex-direction','row','important');
       clock.style.setProperty('align-items','center','important');
@@ -1549,6 +1555,22 @@
     'header.brand-header #ownerEmergencyAlarmHeader,header.top.brand-header #ownerEmergencyAlarmHeader{position:absolute!important;top:auto!important;right:8px!important;bottom:7px!important;left:auto!important;transform:none!important;margin:0!important;z-index:10071!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}',
     'header.brand-header #ownerEmergencyAlarmHeader[hidden],header.top.brand-header #ownerEmergencyAlarmHeader[hidden]{display:none!important}',
     '@media(max-width:520px){header.brand-header #ownerEmergencyAlarmHeader,header.top.brand-header #ownerEmergencyAlarmHeader{top:auto!important;right:8px!important;bottom:7px!important;left:auto!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
+
+
+/* Corrected placement: Alarm belongs to the Date/Time card's lower-right bottom bar. */
+(function(){
+  if(document.getElementById('pdk-alarm-card-bottom-right-v3')) return;
+  const style=document.createElement('style');
+  style.id='pdk-alarm-card-bottom-right-v3';
+  style.textContent=[
+    '#appDateTime{position:relative!important;isolation:isolate!important}',
+    '#appDateTime #ownerEmergencyAlarmHeader{position:absolute!important;top:auto!important;right:8px!important;bottom:7px!important;left:auto!important;inset-block-start:auto!important;inset-block-end:7px!important;transform:none!important;margin:0!important;z-index:20!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;max-width:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}',
+    '#appDateTime #ownerEmergencyAlarmHeader[hidden]{display:none!important}',
+    '#appDateTime .app-datetime-zone,#appDateTime .app-datetime-timezone,#appDateTime .app-timezone-label,#appDateTime [data-timezone]{display:none!important;visibility:hidden!important}',
+    '@media(max-width:520px){#appDateTime #ownerEmergencyAlarmHeader{right:8px!important;bottom:7px!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}}'
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
