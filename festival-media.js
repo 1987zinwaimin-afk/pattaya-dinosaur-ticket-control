@@ -506,11 +506,11 @@
             '<label>'+t('Display until','ပြီးဆုံးချိန်')+'<input name="display_until" type="time" value="23:59" required></label>' +
             '<label>'+t('Title','ခေါင်းစဉ်')+'<input name="title" type="text" maxlength="120" placeholder="'+t('e.g. Special operating hours','ဥပမာ - အထူးဖွင့်ချိန်')+'" required></label>' +
             '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time (optional)','Date & Time တွင်ပြမည့်စာသား (မဖြစ်မနေမဟုတ်ပါ)')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'"></textarea></label>' +
-            '<label class="pdk-day-message-wide">'+t('Video file (MP4 / WebM / MOV · files over 50 MB are auto-compressed)','Video ဖိုင် (MP4 / WebM / MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'<input name="video_file" type="file" accept="video/*,.mp4,.webm,.mov"></label>' +
+            '<div class="pdk-day-message-wide"><label for="pdkDayMessageVideo">'+t('Video file (MP4 / WebM / MOV · files over 50 MB are auto-compressed)','Video ဖိုင် (MP4 / WebM / MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkDayMessageVideo" name="video_file" type="file" accept="video/*,.mp4,.webm,.mov"></div>' +
             '<label class="pdk-day-message-wide">'+t('Or direct video URL','သို့မဟုတ် Video URL')+'<input name="video_url" type="url" maxlength="2048" placeholder="https://example.com/video.mp4"></label>' +
             '<label class="pdk-day-message-wide pdk-day-message-remove-video"><input name="remove_video" type="checkbox"> '+t('Remove currently attached video','လက်ရှိ Video ကိုဖယ်ရှားမည်')+'</label>' +
           '</div>' +
-          '<div class="pdk-day-message-actions"><label class="pdk-day-message-active"><input name="is_active" type="checkbox" checked> '+t('Active','ဖွင့်ထားမည်')+'</label><button type="submit" class="gold" data-day-message-save>'+t('＋ Save message','＋ သိမ်းမည်')+'</button><button type="button" data-day-message-cancel hidden>'+t('Cancel edit','မပြင်တော့ပါ')+'</button><span data-day-message-status role="status" aria-live="polite"></span></div>' +
+          '<div class="pdk-day-message-actions"><label class="pdk-day-message-active"><input name="is_active" type="checkbox" checked> '+t('Active','ဖွင့်ထားမည်')+'</label><button type="button" class="gold" data-day-message-save>'+t('＋ Save message','＋ သိမ်းမည်')+'</button><button type="button" data-day-message-cancel hidden>'+t('Cancel edit','မပြင်တော့ပါ')+'</button><span data-day-message-status role="status" aria-live="polite"></span></div>' +
         '</form>' +
         '<div class="pdk-day-message-list" data-day-message-list>' +
           (rows.length ? rows.slice(0,30).map(row =>
@@ -518,6 +518,14 @@
           ).join('') : '<p class="pdk-day-message-empty">'+t('No normal-day messages have been added yet.','ပုံမှန်ရက်အတွက် အသိပေးစာ မထည့်ရသေးပါ။')+'</p>') +
         '</div>';
 
+      const panel = host.closest('details');
+      if (panel) {
+        if (panel.dataset.dayMessagePickerStateBound !== '1') {
+          panel.addEventListener('toggle', () => { try { localStorage.setItem('pdk-day-message-panel-open', panel.open ? '1' : '0'); } catch (_) {} });
+          panel.dataset.dayMessagePickerStateBound = '1';
+        }
+        try { if (localStorage.getItem('pdk-day-message-panel-open') === '1') panel.open = true; } catch (_) {}
+      }
       const form = host.querySelector('[data-pdk-day-message-form]');
       const status = host.querySelector('[data-day-message-status]');
       const save = host.querySelector('[data-day-message-save]');
@@ -546,8 +554,8 @@
         setStatus('');
       };
       cancel?.addEventListener('click',resetEditor);
-      form?.addEventListener('submit',async event => {
-        event.preventDefault();
+      form?.addEventListener('submit',event=>event.preventDefault());
+      save?.addEventListener('click',async event => {
         if (!currentUser || currentRole !== 'owner' || dayMessageBusy) return;
         const date = form.elements.namedItem('message_date').value;
         const from = form.elements.namedItem('display_from').value;
