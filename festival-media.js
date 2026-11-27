@@ -1077,13 +1077,18 @@
       });
     }
     setInterval(()=>{
+      // Android Chrome may background this page while the system file picker is open.
+      // Never run video/database sync work while the document is hidden.
+      if (document.hidden) return;
       syncDateTimeVideo(false);
       syncNormalDayNotice(false);
       const yearNow=today().year;
       const root=document.getElementById('pageContent');
       if(yearNow!==lastCalendarYear){lastCalendarYear=yearNow;if(root&&root.dataset.uiPage==='festivals')renderCalendar();}
     },15000);
-    window.addEventListener('focus',()=>{syncDateTimeVideo(true);syncNormalDayNotice(true);});
+    // Do not reload/restart Date & Time media on window focus. Android Chrome fires
+    // focus when returning from the system file picker; doing network + video work
+    // at that moment can crash or close the Preview tab on mobile devices.
     document.addEventListener('click',event=>{
       if(event.target.closest('[data-fc-datetime-preview]')) setTimeout(()=>syncDateTimeVideo(true),120);
       if(event.target.closest('[data-fc-close],.pdk-fc-close')) setTimeout(()=>syncDateTimeVideo(true),180);
