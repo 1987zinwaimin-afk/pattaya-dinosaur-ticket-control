@@ -28,6 +28,7 @@
   let dayMessageRows = [];
   let lastDayMessageFetch = 0;
   let dayMessageFetchPromise = null;
+  let dayMessageBusy = false;
 
   const t = (en, my) => (typeof lang !== 'undefined' && lang === 'my' ? my : en);
   const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
@@ -449,6 +450,7 @@
         const videoFile = form.elements.namedItem('video_file').files[0] || null;
         const videoUrl = form.elements.namedItem('video_url').value.trim();
         const removeVideo = form.elements.namedItem('remove_video').checked;
+        const editingId = host.dataset.editingDayMessage || '';
         const existingRow = editingId ? dayMessageRows.find(x=>x.id===editingId) : null;
         if (!isOrdinaryDate(date)) {
           setStatus(t('Choose a normal date without a festival or public holiday.','ပွဲတော်/ရုံးပိတ်ရက် မရှိသော ပုံမှန်ရက်ကို ရွေးပါ။'));
@@ -476,7 +478,6 @@
         }
         dayMessageBusy = true;
         if(save){save.disabled=true;save.textContent=t('Saving…','သိမ်းနေသည်…');}
-        const editingId = host.dataset.editingDayMessage || '';
         const overlaps = active && dayMessageRows.some(row => {
           if (row.id === editingId || row.message_date !== date || !row.is_active) return false;
           const existingFrom = String(row.display_from).slice(0,5);
