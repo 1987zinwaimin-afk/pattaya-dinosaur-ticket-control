@@ -583,7 +583,9 @@
       const paintEditor = () => {
         const p=readEditor();
         if(zoomOutput) zoomOutput.textContent=p.zoom+'%';
-        [previewVideo,document.getElementById('appDateTime')?.querySelector('.pdk-festival-video')].filter(Boolean).forEach(video=>{
+        // Keep editor gestures isolated to this editor preview. The live Date & Time
+        // player must retain its saved framing until the user presses Save.
+        [previewVideo].filter(Boolean).forEach(video=>{
           video.style.setProperty('position','absolute','important');
           video.style.setProperty('left',(50+p.x)+'%','important');
           video.style.setProperty('top',(50+p.y)+'%','important');
@@ -658,9 +660,9 @@
         const selectedFile = videoInput.files && videoInput.files[0];
         if (!selectedFile) return;
         const sizeMb = (selectedFile.size / (1024 * 1024)).toFixed(1);
-        // Keep the title optional for video-only notices. The source filename is not display text.
-        // Intentionally do not read, decode, preview, or compress the File on selection.
-        setStatus(t('Selected: ','ရွေးထားသည်: ')+selectedFile.name+' ('+sizeMb+' MB). '+t('Press Save message when ready.','သိမ်းရန် Save message ကိုနှိပ်ပါ။'));
+        // Preview is created by the editor's first change handler above. Do not
+        // decode or compress the file here; compression happens only after Save.
+        setStatus(t('Selected: ','ရွေးထားသည်: ')+selectedFile.name+' ('+sizeMb+' MB). '+t('Adjust the frame, then press Save message.','ဘောင်ကို ချိန်ညှိပြီး Save message ကိုနှိပ်ပါ။'));
       });
       const resetEditor = () => {
         host.dataset.editingDayMessage = '';
@@ -783,6 +785,8 @@
             await sb.storage.from(BUCKET).remove([previousPath]);
           }
           dayMessageRows=[];lastDayMessageFetch=0;
+          // Release any local object URL before rebuilding the editor DOM.
+          setPreviewSource('');
           await fetchDayMessages(true);
           await renderDayMessageManager();
           await syncNormalDayNotice(true);
