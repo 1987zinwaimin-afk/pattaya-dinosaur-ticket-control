@@ -1358,8 +1358,7 @@
     }
     if(clock){
       /* Remove the visible timezone label only; keep the actual Bangkok clock value. */
-      Array.from(clock.childNodes).forEach(node=>{if(node.nodeType===3 && /Asia\s*\\/\s*Bangkok|UTC\s*\\+?\s*7/i.test(node.nodeValue||'')) node.remove();});
-      clock.querySelectorAll('*').forEach(node=>{if(node.children.length===0 && /Asia\s*\\/\s*Bangkok|UTC\s*\\+?\s*7/i.test(node.textContent||'')) node.style.setProperty('display','none','important');});
+      /* Timezone caption is hidden by the scoped CSS below; preserve the clock's text node and timer. */
       clock.style.setProperty('display','flex','important');
       clock.style.setProperty('flex-direction','row','important');
       clock.style.setProperty('align-items','center','important');
