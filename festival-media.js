@@ -1316,3 +1316,64 @@
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
+
+/* Mobile Date/Time hierarchy and full-width bottom menu bar. */
+(function(){
+  function applyDateTimeHeaderLayout(){
+    const card=document.getElementById('appDateTime');
+    if(!card||card.dataset.pdkCompactHeaderLayout==='1') return;
+    const date=card.querySelector('.app-datetime-date');
+    const clock=card.querySelector('.app-datetime-clock');
+    const menu=document.getElementById('openMenu');
+    if(date){
+      date.style.setProperty('display','flex','important');
+      date.style.setProperty('flex-direction','column','important');
+      date.style.setProperty('align-items','flex-start','important');
+      date.style.setProperty('gap','2px','important');
+      date.style.setProperty('min-width','0','important');
+      date.style.setProperty('max-width','48%','important');
+      date.querySelectorAll('.app-datetime-caption').forEach(el=>{
+        el.style.setProperty('font-size','10px','important');
+        el.style.setProperty('line-height','1.1','important');
+        el.style.setProperty('letter-spacing','.12em','important');
+      });
+      date.querySelectorAll('*').forEach(el=>{
+        if(!el.classList.contains('app-datetime-caption')){
+          el.style.setProperty('font-size','clamp(13px,2.6vw,18px)','important');
+          el.style.setProperty('line-height','1.2','important');
+          el.style.setProperty('white-space','nowrap','important');
+        }
+      });
+    }
+    if(clock){
+      clock.style.setProperty('max-width','48%','important');
+      clock.style.setProperty('text-align','right','important');
+    }
+    if(menu){
+      menu.style.setProperty('position','absolute','important');
+      menu.style.setProperty('left','0','important');
+      menu.style.setProperty('right','0','important');
+      menu.style.setProperty('top','auto','important');
+      menu.style.setProperty('bottom','0','important');
+      menu.style.setProperty('width','100%','important');
+      menu.style.setProperty('height','38px','important');
+      menu.style.setProperty('min-height','38px','important');
+      menu.style.setProperty('max-width','none','important');
+      menu.style.setProperty('border-radius','0','important');
+      menu.style.setProperty('display','flex','important');
+      menu.style.setProperty('align-items','center','important');
+      menu.style.setProperty('justify-content','flex-start','important');
+      menu.style.setProperty('padding','0 15px','important');
+      menu.style.setProperty('background','rgba(3,15,27,.78)','important');
+      menu.style.setProperty('border-top','1px solid rgba(239,202,128,.42)','important');
+      menu.style.setProperty('z-index','8','important');
+      menu.style.setProperty('box-shadow','none','important');
+    }
+    card.style.setProperty('padding-bottom','42px','important');
+    card.dataset.pdkCompactHeaderLayout='1';
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyDateTimeHeaderLayout,{once:true});
+  else applyDateTimeHeaderLayout();
+  const observer=new MutationObserver(applyDateTimeHeaderLayout);
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+})();
