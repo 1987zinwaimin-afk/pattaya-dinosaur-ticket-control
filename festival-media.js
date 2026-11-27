@@ -1317,14 +1317,19 @@
   (document.head||document.documentElement).appendChild(style);
 })();
 
-/* Mobile Date/Time hierarchy and full-width bottom menu bar. */
+/* Mobile Date/Time hierarchy and compact bottom-left menu button. */
 (function(){
   function applyDateTimeHeaderLayout(){
     const card=document.getElementById('appDateTime');
-    if(!card||card.dataset.pdkCompactHeaderLayout==='1') return;
+    const menu=document.getElementById('openMenu');
+    if(!card) return;
+    const header=card.closest('header')||card.parentElement;
+    if(header){
+      header.style.setProperty('position','relative','important');
+      header.style.setProperty('isolation','isolate','important');
+    }
     const date=card.querySelector('.app-datetime-date');
     const clock=card.querySelector('.app-datetime-clock');
-    const menu=document.getElementById('openMenu');
     if(date){
       date.style.setProperty('display','flex','important');
       date.style.setProperty('flex-direction','column','important');
@@ -1351,29 +1356,29 @@
     }
     if(menu){
       menu.style.setProperty('position','absolute','important');
-      menu.style.setProperty('left','0','important');
-      menu.style.setProperty('right','0','important');
+      menu.style.setProperty('left','9px','important');
+      menu.style.setProperty('right','auto','important');
       menu.style.setProperty('top','auto','important');
-      menu.style.setProperty('bottom','0','important');
-      menu.style.setProperty('width','100%','important');
-      menu.style.setProperty('height','38px','important');
-      menu.style.setProperty('min-height','38px','important');
-      menu.style.setProperty('max-width','none','important');
-      menu.style.setProperty('border-radius','0','important');
+      menu.style.setProperty('bottom','7px','important');
+      menu.style.setProperty('width','42px','important');
+      menu.style.setProperty('height','36px','important');
+      menu.style.setProperty('min-height','36px','important');
+      menu.style.setProperty('max-width','42px','important');
+      menu.style.setProperty('border-radius','10px','important');
       menu.style.setProperty('display','flex','important');
       menu.style.setProperty('align-items','center','important');
-      menu.style.setProperty('justify-content','flex-start','important');
-      menu.style.setProperty('padding','0 15px','important');
-      menu.style.setProperty('background','rgba(3,15,27,.78)','important');
-      menu.style.setProperty('border-top','1px solid rgba(239,202,128,.42)','important');
-      menu.style.setProperty('z-index','8','important');
-      menu.style.setProperty('box-shadow','none','important');
+      menu.style.setProperty('justify-content','center','important');
+      menu.style.setProperty('padding','0','important');
+      menu.style.setProperty('background','rgba(3,15,27,.82)','important');
+      menu.style.setProperty('border','1px solid rgba(239,202,128,.48)','important');
+      menu.style.setProperty('z-index','12','important');
+      menu.style.setProperty('box-shadow','0 2px 9px rgba(0,0,0,.28)','important');
     }
-    card.style.setProperty('padding-bottom','42px','important');
-    card.dataset.pdkCompactHeaderLayout='1';
+    card.style.setProperty('padding-bottom','48px','important');
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyDateTimeHeaderLayout,{once:true});
-  else applyDateTimeHeaderLayout();
+  applyDateTimeHeaderLayout();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyDateTimeHeaderLayout);
   const observer=new MutationObserver(applyDateTimeHeaderLayout);
   observer.observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('resize',applyDateTimeHeaderLayout,{passive:true});
 })();
