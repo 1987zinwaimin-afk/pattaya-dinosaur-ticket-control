@@ -1325,8 +1325,16 @@
     if(!card) return;
     const header=card.closest('header')||card.parentElement;
     if(header){
-      header.style.setProperty('position','relative','important');
+      header.style.setProperty('position','fixed','important');
+      header.style.setProperty('top','0','important');
+      header.style.setProperty('left','0','important');
+      header.style.setProperty('right','0','important');
+      header.style.setProperty('width','100%','important');
+      header.style.setProperty('max-width','100vw','important');
+      header.style.setProperty('z-index','10060','important');
+      header.style.setProperty('box-sizing','border-box','important');
       header.style.setProperty('isolation','isolate','important');
+      header.style.setProperty('margin','0','important');
     }
     const date=card.querySelector('.app-datetime-date');
     const clock=card.querySelector('.app-datetime-clock');
@@ -1421,4 +1429,32 @@
     '@media(max-width:700px){header.top.brand-header,header.brand-header,.brand-header{max-width:100vw!important}}'
   ].join('');
   (document.head||document.documentElement).appendChild(style);
+})();
+
+/* Pin the Date & Time header to the very top of the mobile viewport. */
+(function(){
+  if(document.getElementById('pdk-header-fixed-top-v2')) return;
+  const style=document.createElement('style');
+  style.id='pdk-header-fixed-top-v2';
+  style.textContent=[
+    'header.top.brand-header,header.brand-header,.brand-header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;max-width:100vw!important;margin:0!important;z-index:10060!important;box-sizing:border-box!important;transform:none!important}',
+    'header.top.brand-header #appDateTime,header.brand-header #appDateTime,.brand-header #appDateTime{position:relative!important;z-index:1!important}',
+    '#openMenu{z-index:10070!important}',
+    '@media(max-width:700px){header.top.brand-header,header.brand-header,.brand-header{inset:0 0 auto 0!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+  function pinHeader(){
+    const h=document.querySelector('header.top.brand-header,header.brand-header,.brand-header');
+    if(!h)return;
+    h.style.setProperty('position','fixed','important');
+    h.style.setProperty('top','0','important');
+    h.style.setProperty('left','0','important');
+    h.style.setProperty('right','0','important');
+    h.style.setProperty('width','100%','important');
+    h.style.setProperty('z-index','10060','important');
+    h.style.setProperty('transform','none','important');
+  }
+  pinHeader();
+  new MutationObserver(pinHeader).observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('resize',pinHeader,{passive:true});
 })();
