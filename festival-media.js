@@ -31,27 +31,22 @@
   let dayMessageFetchPromise = null;
   let dayMessageBusy = false;
 
-  // Android Chrome may suspend or discard a tab while the system video picker is open.
-  // Pause the Date & Time background video while the page is hidden to reduce decoder/memory pressure.
-  let videoPausedForPicker = null;
-  let videoWasPlayingBeforePicker = false;
+  // Pause active videos while Android Chrome's system file picker backgrounds the page.
+  let pickerPausedVideos = [];
   if (!document.documentElement.dataset.pdkPickerLifecycleBound) {
     document.documentElement.dataset.pdkPickerLifecycleBound = '1';
     document.addEventListener('visibilitychange', () => {
-      const video = document.querySelector('#appDateTime .pdk-festival-video');
       if (document.hidden) {
-        videoWasPlayingBeforePicker = !!(video && !video.paused && !video.ended);
-        videoPausedForPicker = videoWasPlayingBeforePicker ? video : null;
-        if (videoWasPlayingBeforePicker) video.pause();
-      } else if (videoPausedForPicker && videoPausedForPicker.isConnected && videoWasPlayingBeforePicker) {
-        const resumeVideo = videoPausedForPicker;
-        videoPausedForPicker = null;
-        videoWasPlayingBeforePicker = false;
-        const playPromise = resumeVideo.play();
-        if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+        pickerPausedVideos = Array.from(document.querySelectorAll('video')).filter(video => !video.paused && !video.ended);
+        pickerPausedVideos.forEach(video => { try { video.pause(); } catch (_) {} });
       } else {
-        videoPausedForPicker = null;
-        videoWasPlayingBeforePicker = false;
+        const resume = pickerPausedVideos;
+        pickerPausedVideos = [];
+        resume.forEach(video => {
+          if (!video.isConnected) return;
+          const promise = video.play();
+          if (promise && typeof promise.catch === 'function') promise.catch(() => {});
+        });
       }
     });
   }
@@ -780,7 +775,8 @@
       host.innerHTML='<div class="pdk-fvm-popup-head"><div><strong>🎬 '+t('Festival Video Upload','ပွဲတော် Video တင်ရန်')+'</strong><p>'+escapeHtml(dateLabel(date))+' · '+t('Upload a video for the selected festival.','ရွေးထားသောပွဲအတွက် Video တင်နိုင်ပါသည်။')+'</p></div></div>'+
         (events.length>1?'<label>'+t('Festival','ပွဲတော်')+'</label><select data-fvm-choice>'+options+'</select>':'<input type="hidden" data-fvm-choice value="'+escapeHtml(date+'|'+events[0].title)+'">')+
         '<label>'+t('Choose video (MP4, WebM, MOV · over 50 MB auto-compresses)','Video ရွေးပါ (MP4, WebM, MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label>'+
-        '<input data-fvm-file type="file" accept="video/mp4,video/webm,video/quicktime">'+
+        '<input data-fvm-file type="file" accept="video/*,.mp4,.webm,.mov">'+
+        '<p class="pdk-fvm-note" data-fvm-file-status role="status" aria-live="polite"></p>'+
         '<button type="button" class="gold" data-fvm-upload>'+t('＋ Upload Video','＋ Video တင်မည်')+'</button>'+
         '<p class="pdk-fvm-note">'+t('Owner only · The video will play automatically on the selected festival date.','Owner သာ အသုံးပြုနိုင်သည် · သတ်မှတ်ရက်တွင် Video အလိုအလျောက် ပြသပါမည်။')+'</p>'+
         '<div class="pdk-fvm-popup-list" data-fvm-list></div>';
@@ -798,6 +794,11 @@
         list?.querySelectorAll('[data-fvm-preview]').forEach(btn=>btn.addEventListener('click',()=>previewManagedVideo(btn.dataset.fvmPreview)));
         list?.querySelectorAll('[data-fvm-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteManagedVideo(btn.dataset.fvmDelete)));
       };
+      const popupFileInput=host.querySelector('[data-fvm-file]');
+      popupFileInput?.addEventListener('change',()=>{
+        const file=popupFileInput.files?.[0],note=host.querySelector('[data-fvm-file-status]');
+        if(note&&file) note.textContent=t('Selected: ','ရွေးထားသည်: ')+file.name+' ('+(file.size/1048576).toFixed(1)+' MB). '+t('Press Upload Video when ready.','Upload Video ကိုနှိပ်မှ တင်ပါမည်။');
+      });
       uploadButton?.addEventListener('click',uploadVideo);
       choice?.addEventListener('change',()=>{
         const selected=(choice.value||'').split('|');
@@ -819,13 +820,18 @@
       const events = currentEvents();
       const options = events.map(e => '<option value="'+escapeHtml(e.date+'|'+e.title)+'">'+escapeHtml(dateLabel(e.date)+' — '+e.title)+'</option>').join('');
       const existing = rows.filter(r => r.festival_date.slice(0,4) === String(today().year));
-      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice" data-fvm-choice>'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · over 50 MB auto-compresses)','Video ဖိုင် (MP4, WebM, MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkFestivalFile" data-fvm-file type="file" accept="video/mp4,video/webm,video/quicktime"><button type="button" id="pdkFestivalUploadBtn" data-fvm-upload class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
+      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice" data-fvm-choice>'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · over 50 MB auto-compresses)','Video ဖိုင် (MP4, WebM, MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkFestivalFile" data-fvm-file type="file" accept="video/*,.mp4,.webm,.mov"><button type="button" id="pdkFestivalUploadBtn" data-fvm-upload class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
       const select = host.querySelector('#pdkFestivalChoice');
       if (select) {
         const current = select.value;
         const selectedRow = existing.find(r=>r.festival_date+'|'+r.festival_name===current);
         if (selectedRow) host.querySelector('[data-fvm-upload],#pdkFestivalUploadBtn').disabled = true;
       }
+      const managerFileInput=host.querySelector('[data-fvm-file],#pdkFestivalFile');
+      managerFileInput?.addEventListener('change',()=>{
+        const file=managerFileInput.files?.[0],note=host.querySelector('[data-fvm-file-status]');
+        if(note&&file) note.textContent=t('Selected: ','ရွေးထားသည်: ')+file.name+' ('+(file.size/1048576).toFixed(1)+' MB). '+t('Press Upload Video when ready.','Upload Video ကိုနှိပ်မှ တင်ပါမည်။');
+      });
       host.querySelector('[data-fvm-upload],#pdkFestivalUploadBtn')?.addEventListener('click',uploadVideo);
       host.querySelectorAll('[data-fvm-preview]').forEach(btn=>btn.addEventListener('click',()=>previewManagedVideo(btn.dataset.fvmPreview)));
       host.querySelectorAll('[data-fvm-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteManagedVideo(btn.dataset.fvmDelete)));
