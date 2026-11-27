@@ -31,6 +31,31 @@
   let dayMessageFetchPromise = null;
   let dayMessageBusy = false;
 
+  // Android Chrome may suspend or discard a tab while the system video picker is open.
+  // Pause the Date & Time background video while the page is hidden to reduce decoder/memory pressure.
+  let videoPausedForPicker = null;
+  let videoWasPlayingBeforePicker = false;
+  if (!document.documentElement.dataset.pdkPickerLifecycleBound) {
+    document.documentElement.dataset.pdkPickerLifecycleBound = '1';
+    document.addEventListener('visibilitychange', () => {
+      const video = document.querySelector('#appDateTime .pdk-festival-video');
+      if (document.hidden) {
+        videoWasPlayingBeforePicker = !!(video && !video.paused && !video.ended);
+        videoPausedForPicker = videoWasPlayingBeforePicker ? video : null;
+        if (videoWasPlayingBeforePicker) video.pause();
+      } else if (videoPausedForPicker && videoPausedForPicker.isConnected && videoWasPlayingBeforePicker) {
+        const resumeVideo = videoPausedForPicker;
+        videoPausedForPicker = null;
+        videoWasPlayingBeforePicker = false;
+        const playPromise = resumeVideo.play();
+        if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+      } else {
+        videoPausedForPicker = null;
+        videoWasPlayingBeforePicker = false;
+      }
+    });
+  }
+
   const t = (en, my) => (typeof lang !== 'undefined' && lang === 'my' ? my : en);
   const escapeHtml = value => String(value == null ? '' : value).replace(/[&<>"']/g, c => ({
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
@@ -488,7 +513,7 @@
             '<label>'+t('Display until','ပြီးဆုံးချိန်')+'<input name="display_until" type="time" value="23:59" required></label>' +
             '<label>'+t('Title','ခေါင်းစဉ်')+'<input name="title" type="text" maxlength="120" placeholder="'+t('e.g. Special operating hours','ဥပမာ - အထူးဖွင့်ချိန်')+'" required></label>' +
             '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time (optional)','Date & Time တွင်ပြမည့်စာသား (မဖြစ်မနေမဟုတ်ပါ)')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'"></textarea></label>' +
-            '<label class="pdk-day-message-wide">'+t('Video file (MP4 / WebM / MOV · files over 50 MB are auto-compressed)','Video ဖိုင် (MP4 / WebM / MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'<input name="video_file" type="file" accept="video/mp4,video/webm,video/quicktime"></label>' +
+            '<label class="pdk-day-message-wide">'+t('Video file (MP4 / WebM / MOV · files over 50 MB are auto-compressed)','Video ဖိုင် (MP4 / WebM / MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'<input name="video_file" type="file" accept="video/*,.mp4,.webm,.mov"></label>' +
             '<label class="pdk-day-message-wide">'+t('Or direct video URL','သို့မဟုတ် Video URL')+'<input name="video_url" type="url" maxlength="2048" placeholder="https://example.com/video.mp4"></label>' +
             '<label class="pdk-day-message-wide pdk-day-message-remove-video"><input name="remove_video" type="checkbox"> '+t('Remove currently attached video','လက်ရှိ Video ကိုဖယ်ရှားမည်')+'</label>' +
           '</div>' +
@@ -505,6 +530,14 @@
       const save = host.querySelector('[data-day-message-save]');
       const cancel = host.querySelector('[data-day-message-cancel]');
       const setStatus = message => { if(status) status.textContent = message || ''; };
+      const videoInput = form?.elements.namedItem('video_file');
+      videoInput?.addEventListener('change', () => {
+        const selectedFile = videoInput.files && videoInput.files[0];
+        if (!selectedFile) return;
+        const sizeMb = (selectedFile.size / (1024 * 1024)).toFixed(1);
+        // Intentionally do not read, decode, preview, or compress the File on selection.
+        setStatus(t('Selected: ','ရွေးထားသည်: ')+selectedFile.name+' ('+sizeMb+' MB). '+t('Press Save message when ready.','သိမ်းရန် Save message ကိုနှိပ်ပါ။'));
+      });
       const resetEditor = () => {
         host.dataset.editingDayMessage = '';
         form.reset();
