@@ -4726,7 +4726,48 @@ function printStaffCvQr(row,qrData){
    ctx.fillStyle='#000';ctx.textAlign='center';ctx.textBaseline='middle';
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
-   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style></head><body><img id="receipt" alt="Customer visit pass">');doc.close();
+   doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style>
+<style id="pdk-staff-datetime-spacing-hitarea-v1">
+/* STAFF PAGE ONLY: keep the Date/Time hero in normal document flow and never let its
+   decorative media layer intercept ticket controls below it. */
+#appDateTime.app-datetime{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  float:none!important;
+  transform:none!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  margin:10px auto 26px!important;
+}
+#appDateTime.app-datetime .pdk-festival-art,
+#appDateTime.app-datetime .pdk-festival-video,
+#appDateTime.app-datetime .pdk-festival-scene,
+#appDateTime.app-datetime .pdk-auto-festival-canvas,
+#appDateTime.app-datetime .app-datetime-date,
+#appDateTime.app-datetime .app-datetime-clock{
+  pointer-events:none!important;
+}
+main.wrap{
+  position:relative!important;
+  z-index:2!important;
+  margin-top:0!important;
+  padding-top:0!important;
+}
+main.wrap>#stats{margin-top:14px!important}
+#ticketCards{position:relative!important;z-index:2!important;pointer-events:auto!important}
+#ticketCards>.ticket{position:relative!important;z-index:1!important;pointer-events:auto!important}
+#ticketCards button,#ticketCards input,#ticketCards select{pointer-events:auto!important}
+@media(max-width:700px){
+  #appDateTime.app-datetime{
+    width:calc(100% - 20px)!important;
+    margin:8px auto 24px!important;
+  }
+  main.wrap{padding:0 10px 30px!important}
+  main.wrap>#stats{margin:14px 0 12px!important}
+}
+</style>
+</head><body><img id="receipt" alt="Customer visit pass">');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
  };
