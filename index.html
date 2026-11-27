@@ -4789,7 +4789,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
  else syncParkHeaderHeight();
  window.addEventListener('load',syncParkHeaderHeight,{once:true});
  window.addEventListener('resize',syncParkHeaderHeight,{passive:true});
- if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(header)}
+ if('ResizeObserver'in window){var headerElement=document.querySelector('header.brand-header');if(headerElement)new ResizeObserver(syncParkHeaderHeight).observe(headerElement)}
 })();
 </script>
 
