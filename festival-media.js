@@ -464,8 +464,12 @@
           setStatus(t('Enter a title and add text or a video.','ခေါင်းစဉ်ဖြည့်ပြီး စာသား သို့မဟုတ် Video တစ်ခု ထည့်ပါ။'));
           return;
         }
-        if (videoFile && (!/^video\/(mp4|webm|quicktime)$/i.test(videoFile.type) || videoFile.size > MAX_BYTES)) {
-          setStatus(t('Choose an MP4/WebM video up to 50 MB.','MP4/WebM Video 50 MB အောက်ကို ရွေးပါ။'));
+        const videoExt = videoFile ? String(videoFile.name || '').split('.').pop().toLowerCase() : '';
+        const allowedVideoTypes = {mp4:'video/mp4',webm:'video/webm',mov:'video/quicktime'};
+        const detectedVideoType = videoFile ? String(videoFile.type || '').toLowerCase().split(';')[0] : '';
+        const uploadVideoType = videoFile ? (allowedVideoTypes[videoExt] || detectedVideoType) : '';
+        if (videoFile && (!['mp4','webm','mov'].includes(videoExt) || !['video/mp4','video/webm','video/quicktime','application/octet-stream',''].includes(detectedVideoType) || videoFile.size > MAX_BYTES || !videoFile.size)) {
+          setStatus(t('Choose a valid MP4, WebM or MOV video up to 50 MB.','MP4၊ WebM သို့မဟုတ် MOV Video မှန်ကန်သောဖိုင် 50 MB အောက်ကို ရွေးပါ။'));
           return;
         }
         if (videoUrl && !/^https?:\/\//i.test(videoUrl)) {
@@ -501,11 +505,11 @@
             const ext = videoFile.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'') || 'mp4';
             uploadedPath = 'normal-day/'+currentUser.id+'/'+date+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'.'+ext;
             const {error:uploadError} = await sb.storage.from(BUCKET).upload(uploadedPath,videoFile,{
-              contentType:videoFile.type,upsert:false,cacheControl:'3600'
+              contentType:uploadVideoType,upsert:false,cacheControl:'3600'
             });
             if (uploadError) throw uploadError;
             nextVideoPath = uploadedPath; nextVideoUrl = null;
-            nextVideoType = videoFile.type; nextVideoSize = videoFile.size;
+            nextVideoType = uploadVideoType; nextVideoSize = videoFile.size;
           } else if (videoUrl) {
             nextVideoPath = null; nextVideoUrl = videoUrl;
             nextVideoType = null; nextVideoSize = null;
