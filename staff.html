@@ -3473,6 +3473,46 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 .chat-message-status{font-size:10px;letter-spacing:.1px}
 @media(max-width:520px){.emergency-alarm-card{border-radius:19px!important;padding:19px 16px!important}.emergency-alarm-symbol{width:56px;height:56px;font-size:29px}.emergency-alarm-card>p{font-size:13px}.emergency-alarm-details{font-size:11px;padding:10px}.emergency-alarm-actions{gap:7px}.emergency-alarm-actions button{flex-basis:100%;min-height:46px}.staff-alarm-popover{max-width:calc(100vw - 16px)}}
 </style>
+<style id="pdk-staff-datetime-spacing-hitarea-v1">
+/* STAFF PAGE ONLY: keep the Date/Time hero in normal document flow and never let its
+   decorative media layer intercept ticket controls below it. */
+#appDateTime.app-datetime{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  float:none!important;
+  transform:none!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  margin:10px auto 26px!important;
+}
+#appDateTime.app-datetime .pdk-festival-art,
+#appDateTime.app-datetime .pdk-festival-video,
+#appDateTime.app-datetime .pdk-festival-scene,
+#appDateTime.app-datetime .pdk-auto-festival-canvas,
+#appDateTime.app-datetime .app-datetime-date,
+#appDateTime.app-datetime .app-datetime-clock{
+  pointer-events:none!important;
+}
+main.wrap{
+  position:relative!important;
+  z-index:2!important;
+  margin-top:0!important;
+  padding-top:0!important;
+}
+main.wrap>#stats{margin-top:14px!important}
+#ticketCards{position:relative!important;z-index:2!important;pointer-events:auto!important}
+#ticketCards>.ticket{position:relative!important;z-index:1!important;pointer-events:auto!important}
+#ticketCards button,#ticketCards input,#ticketCards select{pointer-events:auto!important}
+@media(max-width:700px){
+  #appDateTime.app-datetime{
+    width:calc(100% - 20px)!important;
+    margin:8px auto 24px!important;
+  }
+  main.wrap{padding:0 10px 30px!important}
+  main.wrap>#stats{margin:14px 0 12px!important}
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
@@ -4727,46 +4767,7 @@ function printStaffCvQr(row,qrData){
    ctx.font='bold 25px Arial,Helvetica,sans-serif';ctx.fillText('Please Scan QR at exit again.',224,518,430);
    ctx.font='bold 23px Tahoma,"Noto Sans Thai",sans-serif';ctx.fillText('โปรดสแกน QR Code อีกครั้งที่ทางออกนะครับ',224,555,430);
    doc.open();doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Customer visit pass</title><style>@page{size:58mm auto;margin:1mm}*{box-sizing:border-box}html,body{margin:0;padding:0;background:#fff;width:56mm}img{display:block;width:56mm;height:auto;margin:0;padding:0}</style>
-<style id="pdk-staff-datetime-spacing-hitarea-v1">
-/* STAFF PAGE ONLY: keep the Date/Time hero in normal document flow and never let its
-   decorative media layer intercept ticket controls below it. */
-#appDateTime.app-datetime{
-  position:relative!important;
-  inset:auto!important;
-  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
-  float:none!important;
-  transform:none!important;
-  z-index:1!important;
-  pointer-events:none!important;
-  margin:10px auto 26px!important;
-}
-#appDateTime.app-datetime .pdk-festival-art,
-#appDateTime.app-datetime .pdk-festival-video,
-#appDateTime.app-datetime .pdk-festival-scene,
-#appDateTime.app-datetime .pdk-auto-festival-canvas,
-#appDateTime.app-datetime .app-datetime-date,
-#appDateTime.app-datetime .app-datetime-clock{
-  pointer-events:none!important;
-}
-main.wrap{
-  position:relative!important;
-  z-index:2!important;
-  margin-top:0!important;
-  padding-top:0!important;
-}
-main.wrap>#stats{margin-top:14px!important}
-#ticketCards{position:relative!important;z-index:2!important;pointer-events:auto!important}
-#ticketCards>.ticket{position:relative!important;z-index:1!important;pointer-events:auto!important}
-#ticketCards button,#ticketCards input,#ticketCards select{pointer-events:auto!important}
-@media(max-width:700px){
-  #appDateTime.app-datetime{
-    width:calc(100% - 20px)!important;
-    margin:8px auto 24px!important;
-  }
-  main.wrap{padding:0 10px 30px!important}
-  main.wrap>#stats{margin:14px 0 12px!important}
-}
-</style>
+
 </head><body><img id="receipt" alt="Customer visit pass">');doc.close();
    const output=doc.getElementById('receipt');output.onload=()=>setTimeout(()=>{try{frame.contentWindow.focus();frame.contentWindow.print()}catch(e){const hint=document.querySelector('#staffCvQrModal p:last-child');if(hint)hint.textContent='Print could not start: '+(e.message||e)}},250);
    output.src=canvas.toDataURL('image/png');
