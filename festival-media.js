@@ -1721,3 +1721,54 @@
   observer.observe(document.documentElement,{childList:true,subtree:true});
   window.addEventListener('resize',mountDateTimeTopBar,{passive:true});
 })();
+
+
+/* Restore Owner activity notifications above the fixed Date/Time header. */
+(function(){
+  const styleId='pdk-owner-notification-header-layer-fix-v1';
+  if(!document.getElementById(styleId)){
+    const style=document.createElement('style');
+    style.id=styleId;
+    style.textContent=[
+      '#staffLoginToast,#eventStaffLoginToast,#ownerEmergencyAlarmNotice{position:fixed!important;z-index:2147482000!important;top:var(--owner-login-toast-top,130px)!important;left:12px!important;right:12px!important;width:min(560px,calc(100vw - 24px))!important;max-width:min(560px,calc(100vw - 24px))!important;margin:0 auto!important;pointer-events:none!important}',
+      '@media(max-width:520px){#staffLoginToast,#eventStaffLoginToast,#ownerEmergencyAlarmNotice{left:8px!important;right:8px!important;width:calc(100vw - 16px)!important;max-width:calc(100vw - 16px)!important}}'
+    ].join('');
+    (document.head||document.documentElement).appendChild(style);
+  }
+
+  function installToastLayerFix(){
+    const original=window.positionOwnerLoginToast;
+    if(typeof original!=='function'||original.__pdkToastLayerFix)return;
+    const fixed=function(toast){
+      const header=document.querySelector('.brand-header');
+      const top=Math.max(8,Math.ceil(header?header.getBoundingClientRect().bottom:0)+8);
+      document.documentElement.style.setProperty('--owner-login-toast-top',top+'px');
+      if(toast&&toast.parentElement!==document.body)document.body.appendChild(toast);
+      if(!toast)return;
+      toast.style.setProperty('position','fixed','important');
+      toast.style.setProperty('top',top+'px','important');
+      toast.style.setProperty('z-index','2147482000','important');
+      toast.style.setProperty('left','12px','important');
+      toast.style.setProperty('right','12px','important');
+      toast.style.setProperty('width','min(560px,calc(100vw - 24px))','important');
+      toast.style.setProperty('max-width','min(560px,calc(100vw - 24px))','important');
+      toast.style.setProperty('margin','0 auto','important');
+      toast.style.setProperty('pointer-events','none','important');
+    };
+    fixed.__pdkToastLayerFix=true;
+    window.positionOwnerLoginToast=fixed;
+  }
+
+  installToastLayerFix();
+  document.addEventListener('DOMContentLoaded',installToastLayerFix,{once:true});
+  window.addEventListener('resize',()=>{
+    const header=document.querySelector('.brand-header');
+    const top=Math.max(8,Math.ceil(header?header.getBoundingClientRect().bottom:0)+8);
+    document.documentElement.style.setProperty('--owner-login-toast-top',top+'px');
+  },{passive:true});
+
+  // Unlock Owner notification audio on the first real tap, including the sign-in tap.
+  document.addEventListener('pointerdown',()=>{
+    try{window.unlockStaffNotifyAudio?.()}catch(_){}
+  },{capture:true,passive:true});
+})();
