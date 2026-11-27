@@ -269,11 +269,17 @@
       if(video.paused){const play=video.play();if(play&&play.catch)play.catch(()=>{});}
     };
     if(!event){
-      video.pause();video.removeAttribute('autoplay');video.preload='none';
-      if(source)source.removeAttribute('src');else video.removeAttribute('src');
-      video.load();delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;delete video.dataset.festivalBuiltin;
-      card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback','pdk-video-no-media');
-      clearFestivalVideoNotice(card);
+      // A normal-day notice shares this Date & Time video element. Do not clear
+      // its source during the festival sync cycle: doing so caused a visible
+      // flash while syncNormalDayNotice re-attached the same signed URL.
+      const normalDayOwnsVideo = video.dataset.normalDayManaged === 'yes';
+      if(!normalDayOwnsVideo){
+        video.pause();video.removeAttribute('autoplay');video.preload='none';
+        if(source)source.removeAttribute('src');else video.removeAttribute('src');
+        video.load();delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;delete video.dataset.festivalBuiltin;
+        card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback','pdk-video-no-media');
+        clearFestivalVideoNotice(card);
+      }
       if(scene)scene.style.display='';
       if(holidayLabel)holidayLabel.hidden=true;
       await syncNormalDayNotice(!!force);
