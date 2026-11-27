@@ -20,7 +20,7 @@
 .pdk-day-message-form input[type="range"]{width:100%;min-height:34px;accent-color:#e5bd70;touch-action:pan-y}
 .pdk-day-video-zoom-control small{color:#c5d2df;font-size:12px}
 #appDateTime.has-normal-day-message .app-date-notice{max-width:100%}
-#appDateTime.has-normal-day-message .pdk-festival-video{object-fit:cover!important}`;
+#appDateTime.has-normal-day-message .pdk-festival-video,#appDateTime.has-normal-day-video .pdk-festival-video{object-fit:contain!important;background:#07182b!important}`;
     document.head.appendChild(style);
   }
 
@@ -351,7 +351,7 @@
     const events = (window.__pdkThailandFestivalLookup || {})[selected.date] || [];
     const hide = () => {
       box.hidden = true;
-      card.classList.remove('has-normal-day-message');
+      card.classList.remove('has-normal-day-message','has-normal-day-video');
       const video = card.querySelector('.pdk-festival-video');
       if (video && video.dataset.normalDayManaged === 'yes') {
         card.style.removeProperty('--pdk-normal-day-video-zoom');
@@ -400,7 +400,7 @@
         video.style.height = (normalDayZoom/100*100)+'%';
         video.style.maxWidth = 'none';
         video.style.maxHeight = 'none';
-        video.style.objectFit = 'cover';
+        video.style.objectFit = 'contain';
         video.style.objectPosition = 'center center';
         video.style.transformOrigin = 'center center';
         video.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
@@ -408,13 +408,14 @@
         video.style.setProperty('top', (50+normalDayY)+'%', 'important');
         video.style.setProperty('width', (normalDayZoom)+'%', 'important');
         video.style.setProperty('height', (normalDayZoom)+'%', 'important');
-        video.style.setProperty('object-fit', 'cover', 'important');
+        video.style.setProperty('object-fit', 'contain', 'important');
       }
       // A video-only notice must show its video, not the uploaded filename as a text title.
       if (title) { title.textContent = row.title || ''; title.hidden = !row.title || videoOnlyNotice; }
       if (message) { message.textContent = row.message || ''; message.hidden = !row.message; }
       box.hidden = videoOnlyNotice || !(row.title || row.message);
       card.classList.toggle('has-normal-day-message', !box.hidden);
+      card.classList.toggle('has-normal-day-video', !!normalVideoSource);
       if (video && normalVideoSource) {
         const current = source?.getAttribute('src') || video.getAttribute('src') || '';
         if (current !== normalVideoSource || video.dataset.normalDayManaged !== 'yes') {
@@ -1257,9 +1258,9 @@
   style.textContent=
     '.pdk-day-video-editor{margin-top:10px;padding:12px;border:1px solid rgba(239,202,128,.35);border-radius:14px;background:rgba(4,20,36,.48)}'+
     '.pdk-day-video-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;color:#ffe0a0}'+
-    '.pdk-day-video-stage{position:relative;width:100%;aspect-ratio:16/5;min-height:130px;overflow:hidden;border:1px solid rgba(239,202,128,.55);border-radius:10px;background:#07182b;touch-action:none;user-select:none;cursor:grab}'+
+    '.pdk-day-video-stage{position:relative;width:100%;aspect-ratio:16/7;min-height:150px;overflow:hidden;border:1px solid rgba(239,202,128,.55);border-radius:10px;background:#07182b;touch-action:none;user-select:none;cursor:grab}'+
     '.pdk-day-video-stage:active{cursor:grabbing}'+
-    '.pdk-day-video-stage video{position:absolute!important;left:50%!important;top:50%!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;transform:translate(-50%,-50%)!important;pointer-events:none}'+
+    '.pdk-day-video-stage video{position:absolute!important;left:50%!important;top:50%!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;background:#07182b!important;object-position:center!important;transform:translate(-50%,-50%)!important;pointer-events:none}'+
     '.pdk-day-video-stage [data-day-video-empty]{position:absolute;inset:0;display:grid;place-items:center;color:#dbe8f3;font-size:13px;pointer-events:none}'+
     '.pdk-day-video-stage i{position:absolute;left:8px;right:8px;bottom:7px;text-align:center;color:#fff;font-size:11px;font-style:normal;text-shadow:0 1px 4px #000;pointer-events:none}'+
     '.pdk-day-video-editor-actions{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}'+
@@ -1270,8 +1271,8 @@
     '#appDateTime .app-date-notice[hidden]{display:none!important}'+
     '#appDateTime .app-date-notice strong{color:#ffe0a0;font-size:11px;line-height:1.3;overflow-wrap:anywhere}'+
     '#appDateTime .app-date-notice span{color:#e4edf4;font-size:10px;line-height:1.4;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}'+
-    '#appDateTime.has-normal-day-message:not(.has-festival-theme):not(.is-calendar-preview){min-height:118px!important}'+
-    '@media(max-width:520px){#appDateTime .app-date-notice{max-width:100%;padding:5px 7px}#appDateTime .app-date-notice strong{font-size:10px}#appDateTime .app-date-notice span{font-size:9px}#appDateTime.has-normal-day-message:not(.has-festival-theme):not(.is-calendar-preview){min-height:108px!important}}';
+    '#appDateTime.has-normal-day-message:not(.has-festival-theme):not(.is-calendar-preview),#appDateTime.has-normal-day-video:not(.has-festival-theme):not(.is-calendar-preview){min-height:140px!important}'+
+    '@media(max-width:520px){#appDateTime .app-date-notice{max-width:100%;padding:5px 7px}#appDateTime .app-date-notice strong{font-size:10px}#appDateTime .app-date-notice span{font-size:9px}#appDateTime.has-normal-day-message:not(.has-festival-theme):not(.is-calendar-preview),#appDateTime.has-normal-day-video:not(.has-festival-theme):not(.is-calendar-preview){min-height:126px!important}}';
   (document.head||document.documentElement).appendChild(style);
 })();
 /* v5: one authoritative Date & Time media layer; no stacked video/canvas renderers. */
