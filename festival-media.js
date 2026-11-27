@@ -391,7 +391,9 @@
       card.style.setProperty('--pdk-normal-day-video-zoom', String(normalDayZoom/100));
       if (video) {
         video.style.position = 'absolute';
-        video.style.inset = '0';
+        video.style.inset = 'auto';
+        video.style.left = '50%';
+        video.style.top = '50%';
         video.style.width = '100%';
         video.style.height = '100%';
         video.style.maxWidth = 'none';
@@ -399,7 +401,12 @@
         video.style.objectFit = 'cover';
         video.style.objectPosition = 'center center';
         video.style.transformOrigin = 'center center';
-        video.style.transform = normalVideoSource ? 'scale('+(normalDayZoom/100)+')' : '';
+        video.style.setProperty('transform', normalVideoSource ? 'translate(-50%, -50%) scale('+(normalDayZoom/100)+')' : 'translate(-50%, -50%)', 'important');
+        video.style.setProperty('left', '50%', 'important');
+        video.style.setProperty('top', '50%', 'important');
+        video.style.setProperty('width', '100%', 'important');
+        video.style.setProperty('height', '100%', 'important');
+        video.style.setProperty('object-fit', 'cover', 'important');
       }
       // A video-only notice must show its video, not the uploaded filename as a text title.
       if (title) { title.textContent = row.title || ''; title.hidden = !row.title || videoOnlyNotice; }
@@ -567,7 +574,9 @@
         card.style.setProperty('--pdk-normal-day-video-zoom', String(zoom/100));
         if (video && (video.dataset.normalDayManaged === 'yes' || card.classList.contains('has-owner-festival-video'))) {
           video.style.position = 'absolute';
-          video.style.inset = '0';
+          video.style.inset = 'auto';
+          video.style.left = '50%';
+          video.style.top = '50%';
           video.style.width = '100%';
           video.style.height = '100%';
           video.style.maxWidth = 'none';
@@ -575,7 +584,12 @@
           video.style.objectFit = 'cover';
           video.style.objectPosition = 'center center';
           video.style.transformOrigin = 'center center';
-          video.style.transform = 'scale('+(zoom/100)+')';
+          video.style.setProperty('transform', 'translate(-50%, -50%) scale('+(zoom/100)+')', 'important');
+          video.style.setProperty('left', '50%', 'important');
+          video.style.setProperty('top', '50%', 'important');
+          video.style.setProperty('width', '100%', 'important');
+          video.style.setProperty('height', '100%', 'important');
+          video.style.setProperty('object-fit', 'cover', 'important');
         }
       };
       zoomInput?.addEventListener('input',()=>applyZoomPreview(zoomInput.value));
