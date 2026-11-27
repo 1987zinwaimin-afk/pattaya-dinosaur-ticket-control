@@ -4497,15 +4497,27 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 </style>
 <style id="pdk-owner-normal-datetime-state-v1">
 /* Keep the Owner Date & Time panel compact on ordinary dates. */
-#appDateTime.app-datetime:not(.has-festival-theme):not(.is-calendar-preview){
+#appDateTime.app-datetime:not(.has-festival-theme):not(.is-calendar-preview):not(.has-owner-festival-video){
   aspect-ratio:auto!important;min-height:94px!important;height:auto!important;
   padding:14px 18px!important;align-items:center!important;
   background:linear-gradient(112deg,#071a31,#102d49 58%,#0b2942)!important;
 }
-#appDateTime:not(.has-festival-theme):not(.is-calendar-preview) .pdk-festival-art,
-#appDateTime:not(.has-festival-theme):not(.is-calendar-preview) .pdk-festival-video,
-#appDateTime:not(.has-festival-theme):not(.is-calendar-preview) .pdk-festival-scene{
+#appDateTime:not(.has-festival-theme):not(.is-calendar-preview):not(.has-owner-festival-video) .pdk-festival-art,
+#appDateTime:not(.has-festival-theme):not(.is-calendar-preview):not(.has-owner-festival-video) .pdk-festival-video,
+#appDateTime:not(.has-festival-theme):not(.is-calendar-preview):not(.has-owner-festival-video) .pdk-festival-scene{
   display:none!important;opacity:0!important;visibility:hidden!important;
+}
+/* Saved Normal-day video must be visible in the Date & Time hero on ordinary dates too. */
+#appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art,
+#appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
+  display:block!important;visibility:visible!important;
+}
+#appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
+  position:absolute!important;inset:0!important;z-index:0!important;opacity:1!important;
+}
+#appDateTime.app-datetime.has-owner-festival-video{
+  min-height:180px!important;aspect-ratio:3/1!important;height:auto!important;
+  background:#071b3a!important;
 }
 @media(max-width:520px){
  #appDateTime.app-datetime:not(.has-festival-theme):not(.is-calendar-preview){
