@@ -309,7 +309,7 @@
     if (dayMessageFetchPromise) return dayMessageFetchPromise;
     dayMessageFetchPromise = (async () => {
       const {data,error} = await sb.from('calendar_day_messages')
-        .select('id,message_date,title,message,display_from,display_until,is_active,video_path,video_url,video_content_type,video_file_size_bytes,created_at,updated_at')
+        .select('id,message_date,title,message,display_from,display_until,is_active,video_path,video_url,video_content_type,video_file_size_bytes,video_zoom,created_at,updated_at')
         .order('message_date',{ascending:true})
         .order('display_from',{ascending:true});
       if (error) throw error;
@@ -380,6 +380,8 @@
       const source = video?.querySelector('source');
       const normalVideoSource = row.video_path ? await signedUrl(row.video_path) : (row.video_url || '');
       const videoOnlyNotice = !!normalVideoSource && !row.message;
+      const normalDayZoom = Math.max(60,Math.min(150,Number(row.video_zoom)||100));
+      if (video) video.style.transform = normalVideoSource ? 'scale('+(normalDayZoom/100)+')' : '';
       // A video-only notice must show its video, not the uploaded filename as a text title.
       if (title) { title.textContent = row.title || ''; title.hidden = !row.title || videoOnlyNotice; }
       if (message) { message.textContent = row.message || ''; message.hidden = !row.message; }
@@ -509,6 +511,7 @@
             '<label>'+t('Title','ခေါင်းစဉ်')+'<input name="title" type="text" maxlength="120" placeholder="'+t('e.g. Special operating hours','ဥပမာ - အထူးဖွင့်ချိန်')+'" required></label>' +
             '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time (optional)','Date & Time တွင်ပြမည့်စာသား (မဖြစ်မနေမဟုတ်ပါ)')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'"></textarea></label>' +
             '<div class="pdk-day-message-wide"><label for="pdkDayMessageVideo">'+t('Video file (MP4 / WebM / MOV · files over 50 MB are auto-compressed)','Video ဖိုင် (MP4 / WebM / MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkDayMessageVideo" name="video_file" type="file" accept="video/*,.mp4,.webm,.mov"></div>' +
+            '<div class="pdk-day-message-wide pdk-day-video-zoom-control"><label for="pdkDayMessageVideoZoom">'+t('Date & Time video size','Date & Time Video အရွယ်အစား')+' <output data-day-video-zoom-value>100%</output></label><input id="pdkDayMessageVideoZoom" name="video_zoom" type="range" min="60" max="150" step="5" value="100"><small>'+t('Smaller 60%  ·  Default 100%  ·  Larger 150%','သေး 60%  ·  ပုံမှန် 100%  ·  ကြီး 150%')+'</small></div>' +
             '<label class="pdk-day-message-wide">'+t('Or direct video URL','သို့မဟုတ် Video URL')+'<input name="video_url" type="url" maxlength="2048" placeholder="https://example.com/video.mp4"></label>' +
             '<label class="pdk-day-message-wide pdk-day-message-remove-video"><input name="remove_video" type="checkbox"> '+t('Remove currently attached video','လက်ရှိ Video ကိုဖယ်ရှားမည်')+'</label>' +
           '</div>' +
@@ -534,6 +537,16 @@
       const cancel = host.querySelector('[data-day-message-cancel]');
       const setStatus = message => { if(status) status.textContent = message || ''; };
       const videoInput = form?.elements.namedItem('video_file');
+      const zoomInput = form?.elements.namedItem('video_zoom');
+      const zoomOutput = form?.querySelector('[data-day-video-zoom-value]');
+      const applyZoomPreview = value => {
+        const zoom = Math.max(60,Math.min(150,Number(value)||100));
+        if (zoomOutput) zoomOutput.textContent = zoom+'%';
+        const card = document.getElementById('appDateTime');
+        const video = card?.querySelector('.pdk-festival-video');
+        if (card?.classList.contains('has-owner-festival-video') && video) video.style.transform = 'scale('+(zoom/100)+')';
+      };
+      zoomInput?.addEventListener('input',()=>applyZoomPreview(zoomInput.value));
       videoInput?.addEventListener('change', () => {
         const selectedFile = videoInput.files && videoInput.files[0];
         if (!selectedFile) return;
@@ -552,6 +565,8 @@
         form.elements.namedItem('video_file').value = '';
         form.elements.namedItem('video_url').value = '';
         form.elements.namedItem('remove_video').checked = false;
+        form.elements.namedItem('video_zoom').value = '100';
+        applyZoomPreview(100);
         if(save) save.textContent = t('＋ Save message','＋ သိမ်းမည်');
         if(cancel) cancel.hidden = true;
         setStatus('');
@@ -647,6 +662,7 @@
             display_from:from+':00',display_until:until+':00',
             is_active:active,video_path:nextVideoPath,video_url:nextVideoUrl,
             video_content_type:nextVideoType,video_file_size_bytes:nextVideoSize,
+            video_zoom:Math.max(60,Math.min(150,Number(form.elements.namedItem('video_zoom').value)||100)),
             updated_at:new Date().toISOString()
           };
           const result = editingId
@@ -678,6 +694,8 @@
         form.elements.namedItem('video_file').value='';
         form.elements.namedItem('video_url').value=row.video_url || '';
         form.elements.namedItem('remove_video').checked=false;
+        form.elements.namedItem('video_zoom').value=String(row.video_zoom||100);
+        applyZoomPreview(row.video_zoom||100);
         form.elements.namedItem('is_active').checked=!!row.is_active;
         if(save)save.textContent=t('Update message','ပြင်ဆင်သိမ်းမည်');
         if(cancel)cancel.hidden=false;
