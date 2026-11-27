@@ -1406,3 +1406,19 @@
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
+
+/* Keep the navigation drawer above the Date & Time banner on mobile. */
+(function(){
+  if(document.getElementById('pdk-header-drawer-layer-fix-v1')) return;
+  const style=document.createElement('style');
+  style.id='pdk-header-drawer-layer-fix-v1';
+  style.textContent=[
+    'header.top.brand-header,header.brand-header,.brand-header{z-index:20!important;isolation:auto!important}',
+    'header.top.brand-header #appDateTime,header.brand-header #appDateTime,.brand-header #appDateTime{z-index:1!important}',
+    '#openMenu{z-index:25!important}',
+    '#sidebar,#sideMenu,#side-menu,.sidebar,.side-menu,.side-drawer,.menu-drawer,.nav-drawer,.navigation-drawer,.offcanvas,.drawer,[role="dialog"]{z-index:10050!important}',
+    '.sidebar-backdrop,.side-menu-backdrop,.menu-backdrop,.drawer-backdrop,.offcanvas-backdrop{z-index:10040!important}',
+    '@media(max-width:700px){header.top.brand-header,header.brand-header,.brand-header{max-width:100vw!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
