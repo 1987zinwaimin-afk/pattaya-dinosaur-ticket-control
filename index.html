@@ -4724,24 +4724,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 
 </head>
 <body>
-<header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
-<script id="pdk-header-height-sync-v2">
-(function(){
- function syncParkHeaderHeight(){
-  var header=document.querySelector('header.brand-header');
-  if(!header)return;
-  var h=Math.ceil(header.getBoundingClientRect().height);
-  if(h>0)document.documentElement.style.setProperty('--pdk-header-height',h+'px');
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncParkHeaderHeight,{once:true});
- else syncParkHeaderHeight();
- window.addEventListener('load',syncParkHeaderHeight,{once:true});
- window.addEventListener('resize',syncParkHeaderHeight,{passive:true});
- var image=document.querySelector('header.brand-header .brand-banner');
- if(image){if(!image.complete)image.addEventListener('load',syncParkHeaderHeight,{once:true});if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(image)}}
-})();
-</script>
-<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-2" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+<header class="top brand-header"><div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-2" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
 <defs>
  <linearGradient id="pdkSky" x2="0" y2="1"><stop stop-color="#06132e"/><stop offset=".52" stop-color="#0b2852"/><stop offset="1" stop-color="#123c62"/></linearGradient>
  <linearGradient id="pdkWater" x2="0" y2="1"><stop stop-color="#16466d"/><stop offset=".45" stop-color="#0b315b"/><stop offset="1" stop-color="#061b3b"/></linearGradient>
@@ -4793,7 +4776,23 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 </g>
 <g class="pdk-svg-krathong pdk-svg-krathong-small" transform="translate(310 370) scale(.46)"><ellipse cy="12" rx="96" ry="22" fill="#154c31" stroke="#d8a64e" stroke-width="4"/><path d="M-90 8Q-50-60-22 0Q0-70 26 0Q60-52 90 8" fill="#277344" stroke="#a9bf62" stroke-width="4"/><g fill="url(#pdkPetal)"><path d="M-32 0Q-30-70 0-42Q0-12-32 0Z"/><path d="M0 0Q20-70 45-38Q32-10 0 0Z"/></g><path d="M0-30q-8-28 0-40q8 13 0 40" fill="#fff1b0"/></g>
 <g class="pdk-svg-krathong pdk-svg-krathong-small" transform="translate(1190 374) scale(.4)"><ellipse cy="12" rx="96" ry="22" fill="#154c31" stroke="#d8a64e" stroke-width="4"/><path d="M-90 8Q-50-60-22 0Q0-70 26 0Q60-52 90 8" fill="#277344" stroke="#a9bf62" stroke-width="4"/><g fill="url(#pdkPetal)"><path d="M-32 0Q-30-70 0-42Q0-12-32 0Z"/><path d="M0 0Q20-70 45-38Q32-10 0 0Z"/></g><path d="M0-30q-8-28 0-40q8 13 0 40" fill="#fff1b0"/></g>
-</svg><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i><i class="pdk-petal pdk-petal-one"></i><i class="pdk-petal pdk-petal-two"></i><i class="pdk-petal pdk-petal-three"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span><div id="appDateNoticeValue" class="app-date-notice" hidden role="status" aria-live="polite"><strong id="appDateNoticeTitle"></strong><span id="appDateNoticeText"></span></div></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
+</svg><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i><i class="pdk-petal pdk-petal-one"></i><i class="pdk-petal pdk-petal-two"></i><i class="pdk-petal pdk-petal-three"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span><div id="appDateNoticeValue" class="app-date-notice" hidden role="status" aria-live="polite"><strong id="appDateNoticeTitle"></strong><span id="appDateNoticeText"></span></div></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="ownerEmergencyAlarmHeader" class="owner-emergency-alarm-header" aria-label="Send Emergency Alarm to all Normal Staff" title="Emergency Alarm" hidden>🚨</button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
+<script id="pdk-header-height-sync-v2">
+(function(){
+ function syncParkHeaderHeight(){
+  var header=document.querySelector('header.brand-header');
+  if(!header)return;
+  var h=Math.ceil(header.getBoundingClientRect().height);
+  if(h>0)document.documentElement.style.setProperty('--pdk-header-height',h+'px');
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',syncParkHeaderHeight,{once:true});
+ else syncParkHeaderHeight();
+ window.addEventListener('load',syncParkHeaderHeight,{once:true});
+ window.addEventListener('resize',syncParkHeaderHeight,{passive:true});
+ if('ResizeObserver'in window){new ResizeObserver(syncParkHeaderHeight).observe(header)}
+})();
+</script>
+
 <div class="side-shade" id="shade"></div><aside class="side" id="side"><h2>Ticket Control</h2><div class="menu-language-wrap"><label class="menu-language-label" for="language">Language / ภาษา</label><select class="menu-language" id="language" aria-label="Language"><option value="en">English</option><option value="th">ไทย</option><option value="my">မြန်မာ</option></select></div><nav class="nav" id="nav"></nav><div style="margin-top:20px"><button id="ownerLogout" class="red" style="width:100%">↪ Logout</button></div></aside>
 <main class="wrap">
 <section id="stats" class="stats"></section>
@@ -9380,6 +9379,65 @@ function openThailandFestivalDate(date,requestedTitle){
 }
 </style>
 <script src="/festival-media.js?v=20261126-4"></script>
+
+<style id="pdk-datetime-replaces-banner-header-v1">
+/* Replace the old image banner with the existing live Date & Time hero.
+   The clock, festival media, menu and emergency actions keep their existing logic. */
+html,body{overflow-x:clip!important}
+body{padding-top:var(--pdk-header-height,112px)!important}
+header.brand-header,.top.brand-header{
+  position:fixed!important;top:0!important;left:0!important;right:0!important;
+  display:block!important;width:100%!important;max-width:none!important;
+  height:auto!important;min-height:0!important;margin:0!important;padding:0!important;
+  overflow:hidden!important;line-height:normal!important;background:#07172b!important;
+  box-sizing:border-box!important;z-index:100000!important;
+  border:0!important;border-bottom:3px solid #e8c779!important;
+}
+header.brand-header .brand-banner,
+header.brand-header .green-dino-cover{display:none!important}
+header.brand-header #appDateTime.app-datetime{
+  position:relative!important;display:flex!important;flex-direction:row!important;
+  align-items:center!important;justify-content:space-between!important;
+  width:100%!important;max-width:none!important;min-width:0!important;
+  min-height:108px!important;height:auto!important;aspect-ratio:auto!important;
+  margin:0!important;padding:13px 56px 13px 54px!important;
+  border:0!important;border-radius:0!important;
+  box-shadow:none!important;box-sizing:border-box!important;
+  overflow:hidden!important;gap:9px!important;
+}
+header.brand-header #appDateTime .app-datetime-date,
+header.brand-header #appDateTime .app-datetime-clock{
+  position:relative!important;z-index:4!important;min-width:0!important;width:49%!important;
+}
+header.brand-header #appDateTime .app-datetime-date{align-items:flex-start!important}
+header.brand-header #appDateTime .app-datetime-clock{align-items:flex-end!important;text-align:right!important}
+header.brand-header #openMenu{left:8px!important;top:50%!important;z-index:8!important}
+header.brand-header #ownerEmergencyAlarmHeader{right:8px!important;top:50%!important;z-index:8!important}
+@media(min-width:980px){
+  header.brand-header #appDateTime.app-datetime{
+    min-height:112px!important;padding:14px 66px 14px 24px!important;
+  }
+  header.brand-header #openMenu{display:none!important}
+  .side{
+    top:var(--pdk-header-height,112px)!important;
+    height:calc(100dvh - var(--pdk-header-height,112px))!important;
+  }
+}
+@media(max-width:520px){
+  header.brand-header #appDateTime.app-datetime{
+    min-height:104px!important;padding:11px 50px 11px 51px!important;gap:6px!important;
+  }
+  header.brand-header #appDateTime .app-datetime-date strong{font-size:clamp(15px,4.5vw,20px)!important}
+  header.brand-header #appDateTime .app-datetime-clock strong{font-size:clamp(14px,4vw,18px)!important}
+  header.brand-header #appDateTime .app-datetime-zone{font-size:8px!important;white-space:normal!important}
+}
+@media(max-width:360px){
+  header.brand-header #appDateTime.app-datetime{padding-left:48px!important;padding-right:46px!important}
+  header.brand-header #appDateTime .app-datetime-date strong{font-size:15px!important}
+  header.brand-header #appDateTime .app-datetime-clock strong{font-size:14px!important}
+}
+</style>
+
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
