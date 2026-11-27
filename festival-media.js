@@ -1382,3 +1382,27 @@
   observer.observe(document.documentElement,{childList:true,subtree:true});
   window.addEventListener('resize',applyDateTimeHeaderLayout,{passive:true});
 })();
+
+/* Compact month cards for a clean year-at-a-glance festival calendar. */
+(function(){
+  if(document.getElementById('pdk-festival-calendar-compact-v1')) return;
+  const style=document.createElement('style');
+  style.id='pdk-festival-calendar-compact-v1';
+  style.textContent=[
+    '.pdk-festival-calendar .pdk-fc-months{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;align-items:start!important}',
+    '.pdk-festival-calendar .pdk-fc-month{min-width:0!important;padding:12px!important;margin:0!important;border-radius:14px!important}',
+    '.pdk-festival-calendar .pdk-fc-month>h3{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:6px!important;margin:0 0 8px!important;font-size:14px!important;line-height:1.25!important}',
+    '.pdk-festival-calendar .pdk-fc-month>h3 small{font-size:10px!important;white-space:nowrap!important}',
+    '.pdk-festival-calendar .pdk-fc-week,.pdk-festival-calendar .pdk-fc-days{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:4px!important}',
+    '.pdk-festival-calendar .pdk-fc-week{margin-bottom:4px!important}',
+    '.pdk-festival-calendar .pdk-fc-week>span{min-width:0!important;height:20px!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:10px!important;font-weight:700!important}',
+    '.pdk-festival-calendar .pdk-fc-day,.pdk-festival-calendar .pdk-fc-empty{box-sizing:border-box!important;min-width:0!important;width:100%!important;height:36px!important;min-height:36px!important;max-height:36px!important;padding:0!important;border-radius:8px!important;font-size:12px!important;line-height:1!important}',
+    '.pdk-festival-calendar .pdk-fc-day{position:relative!important;display:flex!important;align-items:center!important;justify-content:center!important}',
+    '.pdk-festival-calendar .pdk-fc-mark{width:5px!important;height:5px!important;min-width:5px!important;position:absolute!important;bottom:4px!important;left:50%!important;transform:translateX(-50%)!important}',
+    '.pdk-festival-calendar .pdk-fc-head h2{font-size:18px!important}',
+    '.pdk-festival-calendar .pdk-fc-summary{gap:8px!important}',
+    '@media(max-width:560px){.pdk-festival-calendar .pdk-fc-months{grid-template-columns:minmax(0,1fr)!important;gap:9px!important}.pdk-festival-calendar .pdk-fc-month{padding:10px!important}.pdk-festival-calendar .pdk-fc-day,.pdk-festival-calendar .pdk-fc-empty{height:38px!important;min-height:38px!important;max-height:38px!important;font-size:12px!important}}',
+    '@media(min-width:561px) and (max-width:900px){.pdk-festival-calendar .pdk-fc-months{grid-template-columns:repeat(2,minmax(0,1fr))!important}.pdk-festival-calendar .pdk-fc-day,.pdk-festival-calendar .pdk-fc-empty{height:34px!important;min-height:34px!important;max-height:34px!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
