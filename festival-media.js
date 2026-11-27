@@ -1573,3 +1573,20 @@
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
+
+
+/* Top-corner alignment: Date stays flush left and Thailand Time flush right in the header's first row. */
+(function(){
+  if(document.getElementById('pdk-datetime-top-corners-v1')) return;
+  const style=document.createElement('style');
+  style.id='pdk-datetime-top-corners-v1';
+  style.textContent=[
+    '#appDateTime .app-datetime-date{position:absolute!important;top:8px!important;left:8px!important;right:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;gap:4px!important;z-index:30!important}',
+    '#appDateTime .app-datetime-clock{position:absolute!important;top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-end!important;text-align:right!important;gap:4px!important;z-index:30!important}',
+    '#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{white-space:nowrap!important;box-sizing:border-box!important}',
+    '#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){white-space:nowrap!important}',
+    '@media(max-width:520px){#appDateTime .app-datetime-date{top:7px!important;left:7px!important;width:47%!important;max-width:47%!important}#appDateTime .app-datetime-clock{top:7px!important;right:7px!important;width:47%!important;max-width:47%!important}}',
+    '@media(max-width:360px){#appDateTime .app-datetime-date{left:6px!important;width:48%!important;max-width:48%!important}#appDateTime .app-datetime-clock{right:6px!important;width:48%!important;max-width:48%!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
