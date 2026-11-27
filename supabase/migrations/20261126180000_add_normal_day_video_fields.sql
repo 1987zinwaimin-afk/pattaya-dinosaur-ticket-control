@@ -5,6 +5,9 @@ alter table public.calendar_day_messages
   add column if not exists video_file_size_bytes bigint;
 
 alter table public.calendar_day_messages
+  drop constraint if exists calendar_day_messages_video_source_check;
+
+alter table public.calendar_day_messages
   add constraint calendar_day_messages_video_source_check
   check (
     (video_path is null or length(trim(video_path)) > 0)
