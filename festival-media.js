@@ -6,6 +6,7 @@
 
   const BUCKET = 'festival-videos';
   const MAX_BYTES = 50 * 1024 * 1024;
+  const COMPRESS_TARGET_BYTES = 44 * 1024 * 1024;
   const TZ = 'Asia/Bangkok';
   if (!document.getElementById('pdk-normal-day-video-manager-v1')) {
     const style = document.createElement('style');
@@ -392,6 +393,87 @@
     }
   }
 
+
+  // Compress oversized videos in the browser so Supabase Free's 50 MB/object
+  // limit can still be respected. The source File is never modified.
+  async function prepareUploadVideo(file, onProgress) {
+    if (!file || file.size <= MAX_BYTES) return file;
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) {
+      throw new Error(t('This browser cannot compress large videos. Please use Chrome on Android or choose a smaller video.','ဤ Browser တွင် Video အကြီးစားကို ချုံ့မရပါ။ Android Chrome ကိုသုံးပါ သို့မဟုတ် Video ဖိုင်အသေးကို ရွေးပါ။'));
+    }
+    const sourceUrl = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    video.muted = false;
+    video.playsInline = true;
+    video.preload = 'auto';
+    video.src = sourceUrl;
+    video.style.cssText = 'position:fixed;left:-10000px;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+    document.body.appendChild(video);
+    let recorder, animationFrame = 0, stream;
+    const chunks = [];
+    const cleanup = () => {
+      cancelAnimationFrame(animationFrame);
+      try { if (video.pause) video.pause(); } catch (_) {}
+      try { if (stream) stream.getTracks().forEach(track=>track.stop()); } catch (_) {}
+      try { video.removeAttribute('src'); video.load(); video.remove(); } catch (_) {}
+      URL.revokeObjectURL(sourceUrl);
+    };
+    try {
+      await new Promise((resolve,reject)=>{
+        video.onloadedmetadata=resolve;
+        video.onerror=()=>reject(new Error(t('The selected video could not be decoded by this browser.','ရွေးထားသော Video ကို ဤ Browser မှ ဖွင့်ဖတ်မရပါ။')));
+      });
+      const width=video.videoWidth||1280, height=video.videoHeight||720;
+      if(!width||!height||!Number.isFinite(video.duration)||video.duration<=0) throw new Error(t('Could not read the video duration or dimensions.','Video ကြာချိန်နှင့် အရွယ်အစားကို ဖတ်မရပါ။'));
+      const scale=Math.min(1,1280/width,720/height);
+      const canvas=document.createElement('canvas');
+      canvas.width=Math.max(2,Math.round(width*scale/2)*2);
+      canvas.height=Math.max(2,Math.round(height*scale/2)*2);
+      const ctx=canvas.getContext('2d',{alpha:false});
+      if(!ctx) throw new Error('Video compression is unavailable on this device.');
+      const videoBitrate=Math.max(120000,Math.min(3200000,Math.floor((COMPRESS_TARGET_BYTES*8/video.duration)-112000)));
+      const mimeCandidates=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+      const mimeType=mimeCandidates.find(type=>MediaRecorder.isTypeSupported(type));
+      if(!mimeType) throw new Error(t('WebM video compression is not supported by this browser. Please use Chrome on Android.','ဤ Browser တွင် WebM ချုံ့ခြင်း မရနိုင်ပါ။ Android Chrome ကို အသုံးပြုပါ။'));
+      stream=canvas.captureStream(24);
+      try {
+        const captured=video.captureStream?video.captureStream():null;
+        captured?.getAudioTracks().forEach(track=>stream.addTrack(track));
+      } catch (_) {}
+      recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:videoBitrate,audioBitsPerSecond:96000});
+      const finished=new Promise((resolve,reject)=>{
+        recorder.ondataavailable=event=>{if(event.data&&event.data.size)chunks.push(event.data);};
+        recorder.onerror=event=>reject(event.error||new Error('Video compression failed.'));
+        recorder.onstop=()=>resolve();
+      });
+      video.ontimeupdate=()=>{
+        if(onProgress) onProgress(Math.min(99,Math.round(video.currentTime/video.duration*100)));
+      };
+      const draw=()=>{
+        if(video.readyState>=2) ctx.drawImage(video,0,0,canvas.width,canvas.height);
+        if(!video.ended&&!video.paused) animationFrame=requestAnimationFrame(draw);
+      };
+      recorder.start(1000);
+      await video.play();
+      draw();
+      await new Promise((resolve,reject)=>{
+        video.onended=resolve;
+        video.onerror=()=>reject(new Error('Video playback stopped during compression.'));
+      });
+      if(recorder.state!=='inactive') recorder.stop();
+      await finished;
+      const blob=new Blob(chunks,{type:mimeType});
+      if(!blob.size) throw new Error(t('Video compression produced an empty file.','Video ချုံ့ရာတွင် ဖိုင်အလွတ်ဖြစ်သွားပါသည်။'));
+      if(blob.size>MAX_BYTES) throw new Error(t('This video is too long to fit under 50 MB even after compression. Try a shorter clip.','ချုံ့ပြီးသော်လည်း 50 MB အောက် မရောက်နိုင်ပါ။ Video အတိုကို ရွေးပါ။'));
+      if(onProgress) onProgress(100);
+      const baseName=(file.name||'video').replace(/\.[^.]+$/,'');
+      return new File([blob],baseName+'.webm',{type:'video/webm',lastModified:Date.now()});
+    } finally {
+      if(recorder&&recorder.state!=='inactive'){try{recorder.stop();}catch(_){}}
+      cleanup();
+    }
+  }
+
   async function renderDayMessageManager() {
     const host = document.getElementById('pdkCalendarDayMessageManager');
     if (!host || !currentUser || currentRole !== 'owner') return;
@@ -406,7 +488,7 @@
             '<label>'+t('Display until','ပြီးဆုံးချိန်')+'<input name="display_until" type="time" value="23:59" required></label>' +
             '<label>'+t('Title','ခေါင်းစဉ်')+'<input name="title" type="text" maxlength="120" placeholder="'+t('e.g. Special operating hours','ဥပမာ - အထူးဖွင့်ချိန်')+'" required></label>' +
             '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time (optional)','Date & Time တွင်ပြမည့်စာသား (မဖြစ်မနေမဟုတ်ပါ)')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'"></textarea></label>' +
-            '<label class="pdk-day-message-wide">'+t('Video file (MP4 / WebM, max 50 MB)','Video ဖိုင် (MP4 / WebM၊ အများဆုံး 50 MB)')+'<input name="video_file" type="file" accept="video/mp4,video/webm,video/quicktime"></label>' +
+            '<label class="pdk-day-message-wide">'+t('Video file (MP4 / WebM / MOV · files over 50 MB are auto-compressed)','Video ဖိုင် (MP4 / WebM / MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'<input name="video_file" type="file" accept="video/mp4,video/webm,video/quicktime"></label>' +
             '<label class="pdk-day-message-wide">'+t('Or direct video URL','သို့မဟုတ် Video URL')+'<input name="video_url" type="url" maxlength="2048" placeholder="https://example.com/video.mp4"></label>' +
             '<label class="pdk-day-message-wide pdk-day-message-remove-video"><input name="remove_video" type="checkbox"> '+t('Remove currently attached video','လက်ရှိ Video ကိုဖယ်ရှားမည်')+'</label>' +
           '</div>' +
@@ -468,8 +550,8 @@
         const allowedVideoTypes = {mp4:'video/mp4',webm:'video/webm',mov:'video/quicktime'};
         const detectedVideoType = videoFile ? String(videoFile.type || '').toLowerCase().split(';')[0] : '';
         const uploadVideoType = videoFile ? (allowedVideoTypes[videoExt] || detectedVideoType) : '';
-        if (videoFile && (!['mp4','webm','mov'].includes(videoExt) || !['video/mp4','video/webm','video/quicktime','application/octet-stream',''].includes(detectedVideoType) || videoFile.size > MAX_BYTES || !videoFile.size)) {
-          setStatus(t('Choose a valid MP4, WebM or MOV video up to 50 MB.','MP4၊ WebM သို့မဟုတ် MOV Video မှန်ကန်သောဖိုင် 50 MB အောက်ကို ရွေးပါ။'));
+        if (videoFile && (!['mp4','webm','mov'].includes(videoExt) || !['video/mp4','video/webm','video/quicktime','application/octet-stream',''].includes(detectedVideoType) || !videoFile.size)) {
+          setStatus(t('Choose a valid MP4, WebM or MOV video file.','MP4၊ WebM သို့မဟုတ် MOV Video ဖိုင်မှန်ကန်သောဖိုင်ကို ရွေးပါ။'));
           return;
         }
         if (videoUrl && !/^https?:\/\//i.test(videoUrl)) {
@@ -502,14 +584,18 @@
         let nextVideoSize = existingRow?.video_file_size_bytes || null;
         try {
           if (videoFile) {
-            const ext = videoFile.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'') || 'mp4';
+            setStatus(videoFile.size>MAX_BYTES?t('Compressing large video… 0%','Video ဖိုင်ကြီးကို ချုံ့နေသည်… 0%'):t('Preparing video…','Video ပြင်ဆင်နေသည်…'));
+            const uploadFile = await prepareUploadVideo(videoFile,percent=>setStatus(t('Compressing large video… ','Video ဖိုင်ကြီးကို ချုံ့နေသည်… ')+percent+'%'));
+            const ext = uploadFile.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g,'') || 'webm';
+            const finalVideoType = uploadFile.type || uploadVideoType;
             uploadedPath = 'normal-day/'+currentUser.id+'/'+date+'/'+Date.now()+'-'+Math.random().toString(36).slice(2,9)+'.'+ext;
-            const {error:uploadError} = await sb.storage.from(BUCKET).upload(uploadedPath,videoFile,{
-              contentType:uploadVideoType,upsert:false,cacheControl:'3600'
+            setStatus(t('Uploading video…','Video တင်နေသည်…'));
+            const {error:uploadError} = await sb.storage.from(BUCKET).upload(uploadedPath,uploadFile,{
+              contentType:finalVideoType,upsert:false,cacheControl:'3600'
             });
             if (uploadError) throw uploadError;
             nextVideoPath = uploadedPath; nextVideoUrl = null;
-            nextVideoType = uploadVideoType; nextVideoSize = videoFile.size;
+            nextVideoType = finalVideoType; nextVideoSize = uploadFile.size;
           } else if (videoUrl) {
             nextVideoPath = null; nextVideoUrl = videoUrl;
             nextVideoType = null; nextVideoSize = null;
@@ -660,7 +746,7 @@
       const options=events.map(e=>'<option value="'+escapeHtml(e.date+'|'+e.title)+'" '+(e.title===selectedTitle?'selected':'')+'>'+escapeHtml(e.title)+'</option>').join('');
       host.innerHTML='<div class="pdk-fvm-popup-head"><div><strong>🎬 '+t('Festival Video Upload','ပွဲတော် Video တင်ရန်')+'</strong><p>'+escapeHtml(dateLabel(date))+' · '+t('Upload a video for the selected festival.','ရွေးထားသောပွဲအတွက် Video တင်နိုင်ပါသည်။')+'</p></div></div>'+
         (events.length>1?'<label>'+t('Festival','ပွဲတော်')+'</label><select data-fvm-choice>'+options+'</select>':'<input type="hidden" data-fvm-choice value="'+escapeHtml(date+'|'+events[0].title)+'">')+
-        '<label>'+t('Choose video (MP4, WebM, MOV · max 50 MB)','Video ရွေးပါ (MP4, WebM, MOV · 50 MB အများဆုံး)')+'</label>'+
+        '<label>'+t('Choose video (MP4, WebM, MOV · over 50 MB auto-compresses)','Video ရွေးပါ (MP4, WebM, MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label>'+
         '<input data-fvm-file type="file" accept="video/mp4,video/webm,video/quicktime">'+
         '<button type="button" class="gold" data-fvm-upload>'+t('＋ Upload Video','＋ Video တင်မည်')+'</button>'+
         '<p class="pdk-fvm-note">'+t('Owner only · The video will play automatically on the selected festival date.','Owner သာ အသုံးပြုနိုင်သည် · သတ်မှတ်ရက်တွင် Video အလိုအလျောက် ပြသပါမည်။')+'</p>'+
@@ -700,7 +786,7 @@
       const events = currentEvents();
       const options = events.map(e => '<option value="'+escapeHtml(e.date+'|'+e.title)+'">'+escapeHtml(dateLabel(e.date)+' — '+e.title)+'</option>').join('');
       const existing = rows.filter(r => r.festival_date.slice(0,4) === String(today().year));
-      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice" data-fvm-choice>'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · max 50 MB)','Video ဖိုင် (MP4, WebM, MOV · အများဆုံး 50 MB)')+'</label><input id="pdkFestivalFile" data-fvm-file type="file" accept="video/mp4,video/webm,video/quicktime"><button type="button" id="pdkFestivalUploadBtn" data-fvm-upload class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
+      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice" data-fvm-choice>'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · over 50 MB auto-compresses)','Video ဖိုင် (MP4, WebM, MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkFestivalFile" data-fvm-file type="file" accept="video/mp4,video/webm,video/quicktime"><button type="button" id="pdkFestivalUploadBtn" data-fvm-upload class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
       const select = host.querySelector('#pdkFestivalChoice');
       if (select) {
         const current = select.value;
@@ -754,16 +840,19 @@
     busy = true;
     const button = host.querySelector('[data-fvm-upload],#pdkFestivalUploadBtn');
     if (button) { button.disabled = true; button.textContent = t('Uploading…','တင်နေသည်…'); }
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-90) || 'festival-video.mp4';
-    const path = date+'/'+crypto.randomUUID()+'-'+safeName;
+    let path = '';
     try {
+      const uploadFile = await prepareUploadVideo(file,percent=>{if(button)button.textContent=t('Compressing… ','ချုံ့နေသည်… ')+percent+'%';});
+      const safeName = (uploadFile.name||'festival-video.webm').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-90) || 'festival-video.webm';
+      const uploadType = uploadFile.type || 'video/webm';
       const {data:{session},error:sessionError} = await sb.auth.getSession();
       if (sessionError) throw sessionError;
       if (!session?.access_token) throw new Error('Your login session expired. Sign in again and retry.');
+      path = date+'/'+crypto.randomUUID()+'-'+safeName;
       const tus = await loadTusClient();
       await new Promise((resolve,reject)=>{
         let tusUpload;
-        tusUpload = new tus.Upload(file,{
+        tusUpload = new tus.Upload(uploadFile,{
           endpoint:'https://tlefnqzpilajeuyysujb.storage.supabase.co/storage/v1/upload/resumable',
           headers:{authorization:'Bearer '+session.access_token,apikey:SUPABASE_KEY},
           retryDelays:[0,3000,5000,10000,20000],
@@ -771,7 +860,7 @@
           removeFingerprintOnSuccess:true,
           storeFingerprintForResuming:false,
           chunkSize:6*1024*1024,
-          metadata:{bucketName:BUCKET,objectName:path,contentType:file.type,cacheControl:'0'},
+          metadata:{bucketName:BUCKET,objectName:path,contentType:uploadType,cacheControl:'0'},
           onError:error=>{try{tusUpload.abort(true).catch(()=>{})}catch(_){};reject(error)},
           onProgress:(uploaded,total)=>{
             const percent=Math.min(100,Math.round(uploaded/total*100));
@@ -788,7 +877,7 @@
         festival_theme:selectedEvent.theme || 'national',
         display_time:'00:00:00',timezone:TZ,
         blob_url:'storage://'+BUCKET+'/'+path,blob_path:path,
-        content_type:file.type,file_size_bytes:file.size,created_by:currentUser.id
+        content_type:uploadType,file_size_bytes:uploadFile.size,created_by:currentUser.id
       }).select('id,festival_date,festival_name,blob_path,content_type,file_size_bytes').single();
       if (insertError) {
         await sb.storage.from(BUCKET).remove([path]);
