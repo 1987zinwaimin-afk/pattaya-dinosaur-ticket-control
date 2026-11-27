@@ -830,8 +830,10 @@
     const choice = host?.querySelector('[data-fvm-choice],#pdkFestivalChoice')?.value || '';
     const file = host?.querySelector('[data-fvm-file],#pdkFestivalFile')?.files?.[0];
     if (!choice || !file) { alert(t('Choose a festival and a video file.','ပွဲတော်နှင့် Video ဖိုင်ကို ရွေးပါ။')); return; }
-    if (!/^video\/(mp4|webm|quicktime)$/.test(file.type) || file.size > MAX_BYTES) {
-      alert(t('Use MP4, WebM or MOV video up to 50 MB.','MP4, WebM သို့မဟုတ် MOV Video 50 MB အောက်ကိုသာ အသုံးပြုပါ။')); return;
+    const selectedExt=(file.name||'').split('.').pop().toLowerCase();
+    const selectedMime=String(file.type||'').toLowerCase().split(';')[0];
+    if (!['mp4','webm','mov'].includes(selectedExt) || (selectedMime && !['video/mp4','video/webm','video/quicktime','application/octet-stream'].includes(selectedMime))) {
+      alert(t('Choose a valid MP4, WebM or MOV video file.','MP4၊ WebM သို့မဟုတ် MOV Video ဖိုင်မှန်ကန်သောဖိုင်ကို ရွေးပါ။')); return;
     }
     const [date,name] = choice.split('|');
     if (mediaRows.some(r=>r.festival_date===date && r.festival_name===name)) {
@@ -844,7 +846,7 @@
     try {
       const uploadFile = await prepareUploadVideo(file,percent=>{if(button)button.textContent=t('Compressing… ','ချုံ့နေသည်… ')+percent+'%';});
       const safeName = (uploadFile.name||'festival-video.webm').replace(/[^a-zA-Z0-9._-]/g,'_').slice(-90) || 'festival-video.webm';
-      const uploadType = uploadFile.type || 'video/webm';
+      const uploadType = uploadFile.type || ({mp4:'video/mp4',mov:'video/quicktime',webm:'video/webm'}[selectedExt] || 'video/webm');
       const {data:{session},error:sessionError} = await sb.auth.getSession();
       if (sessionError) throw sessionError;
       if (!session?.access_token) throw new Error('Your login session expired. Sign in again and retry.');
