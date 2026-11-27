@@ -286,7 +286,7 @@
       try{await fetchMedia(!!force);}catch(error){console.warn('Festival video metadata check failed:',error);}
       return;
     }
-    if(holidayLabel){holidayLabel.textContent=event.title;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}
+    if(holidayLabel){holidayLabel.textContent=event.title;holidayLabel.hidden=selected.date!==today().key;holidayLabel.classList.toggle('is-special',!holidayLabel.hidden);holidayLabel.classList.remove('is-holiday');}
     // Only play footage explicitly assigned to this festival; never substitute generic PDK/Loy Krathong media.
     const builtIn=builtInVideoForEvent(event);
     if(builtIn)setSource(builtIn,false,null);
@@ -1226,7 +1226,7 @@
       window.renderThailandFestivalCalendar = renderCalendar;
     }
     const holidayLabel=document.getElementById('appHolidayValue');
-    if(holidayLabel){new MutationObserver(()=>{const selected=activeDateAndTitle();const row=mediaRows.find(x=>x.festival_date===selected.date&&(selected.title?x.festival_name===selected.title:true))||mediaRows.find(x=>x.festival_date===selected.date);if(row&&(holidayLabel.textContent!==row.festival_name||holidayLabel.hidden)){holidayLabel.textContent=row.festival_name;holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}}).observe(holidayLabel,{childList:true,characterData:true,subtree:true});}
+    if(holidayLabel){new MutationObserver(()=>{const selected=activeDateAndTitle();const eventDateIsToday=selected.date===today().key;const events=(window.__pdkThailandFestivalLookup||{})[selected.date]||[];const event=selected.title?events.find(e=>e.title===selected.title):events[0];const row=event&&eventDateIsToday?mediaRows.find(x=>x.festival_date===selected.date&&x.festival_name===event.title):null;if(!eventDateIsToday||!event){holidayLabel.hidden=true;holidayLabel.classList.remove('is-special','is-holiday');return;}if(row&&holidayLabel.textContent!==event.title){holidayLabel.textContent=event.title;}holidayLabel.hidden=false;holidayLabel.classList.add('is-special');holidayLabel.classList.remove('is-holiday');}).observe(holidayLabel,{childList:true,characterData:true,subtree:true});}
     if (sb && sb.auth) {
       sb.auth.onAuthStateChange(() => {
         mediaRows=[];lastMediaFetch=0;dayMessageRows=[];lastDayMessageFetch=0;
@@ -1478,6 +1478,27 @@
     '#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{color:#fff!important;text-shadow:0 2px 5px rgba(0,0,0,.85)!important}',
     '@media(max-width:520px){#appDateTime{height:164px!important;min-height:164px!important}#appDateTime .app-datetime-date{top:18px!important;left:14px!important;width:calc(50% - 20px)!important;max-width:calc(50% - 20px)!important}#appDateTime .app-datetime-clock{top:18px!important;right:60px!important;width:calc(50% - 78px)!important;max-width:calc(50% - 78px)!important;min-width:104px!important}#ownerEmergencyAlarmHeader{top:60px!important;right:10px!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}#appDateTime #appHolidayValue{bottom:46px!important;max-width:calc(100% - 104px)!important;font-size:9px!important;padding:3px 8px!important}#openMenu{left:10px!important;bottom:7px!important;width:38px!important;height:32px!important;min-height:32px!important}}',
     '@media(max-width:380px){#appDateTime .app-datetime-date{top:16px!important;left:11px!important}#appDateTime .app-datetime-clock{top:16px!important;right:54px!important;min-width:96px!important}#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){font-size:14px!important}#appDateTime .app-datetime-date .app-datetime-caption,#appDateTime .app-datetime-clock .app-datetime-caption{font-size:9px!important}#ownerEmergencyAlarmHeader{right:8px!important;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
+
+
+/* Final Date & Time layering: live-day-only festival label and non-overlapping controls. */
+(function(){
+  if(document.getElementById('pdk-datetime-live-label-layer-fix-v1')) return;
+  const style=document.createElement('style');
+  style.id='pdk-datetime-live-label-layer-fix-v1';
+  style.textContent=[
+    'header.top.brand-header,header.brand-header,.brand-header{z-index:100!important;isolation:isolate!important}',
+    'header.top.brand-header #appDateTime,header.brand-header #appDateTime,.brand-header #appDateTime{position:relative!important;z-index:1!important}',
+    '#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{z-index:2!important}',
+    '#ownerEmergencyAlarmHeader{z-index:3!important}',
+    '#appDateTime #appHolidayValue{z-index:4!important;bottom:46px!important;left:50%!important;max-width:calc(100% - 112px)!important}',
+    '#appDateTime #appHolidayValue[hidden]{display:none!important}',
+    '#openMenu{z-index:5!important;left:10px!important;bottom:7px!important}',
+    '#sidebar,#sideMenu,#side-menu,.sidebar,.side-menu,.side-drawer,.menu-drawer,.nav-drawer,.navigation-drawer,.offcanvas,.drawer,[role="dialog"]{z-index:1000!important}',
+    '.sidebar-backdrop,.side-menu-backdrop,.menu-backdrop,.drawer-backdrop,.offcanvas-backdrop{z-index:990!important}',
+    '@media(max-width:520px){#appDateTime #appHolidayValue{bottom:46px!important;max-width:calc(100% - 104px)!important}}'
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
