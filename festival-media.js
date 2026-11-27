@@ -394,18 +394,18 @@
         video.style.inset = 'auto';
         video.style.left = '50%';
         video.style.top = '50%';
-        video.style.width = '100%';
-        video.style.height = '100%';
+        video.style.width = (normalDayZoom/100*100)+'%';
+        video.style.height = (normalDayZoom/100*100)+'%';
         video.style.maxWidth = 'none';
         video.style.maxHeight = 'none';
         video.style.objectFit = 'cover';
         video.style.objectPosition = 'center center';
         video.style.transformOrigin = 'center center';
-        video.style.setProperty('transform', normalVideoSource ? 'translate(-50%, -50%) scale('+(normalDayZoom/100)+')' : 'translate(-50%, -50%)', 'important');
+        video.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
         video.style.setProperty('left', '50%', 'important');
         video.style.setProperty('top', '50%', 'important');
-        video.style.setProperty('width', '100%', 'important');
-        video.style.setProperty('height', '100%', 'important');
+        video.style.setProperty('width', (normalDayZoom)+'%', 'important');
+        video.style.setProperty('height', (normalDayZoom)+'%', 'important');
         video.style.setProperty('object-fit', 'cover', 'important');
       }
       // A video-only notice must show its video, not the uploaded filename as a text title.
@@ -577,18 +577,18 @@
           video.style.inset = 'auto';
           video.style.left = '50%';
           video.style.top = '50%';
-          video.style.width = '100%';
-          video.style.height = '100%';
+          video.style.width = zoom+'%';
+          video.style.height = zoom+'%';
           video.style.maxWidth = 'none';
           video.style.maxHeight = 'none';
           video.style.objectFit = 'cover';
           video.style.objectPosition = 'center center';
           video.style.transformOrigin = 'center center';
-          video.style.setProperty('transform', 'translate(-50%, -50%) scale('+(zoom/100)+')', 'important');
+          video.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
           video.style.setProperty('left', '50%', 'important');
           video.style.setProperty('top', '50%', 'important');
-          video.style.setProperty('width', '100%', 'important');
-          video.style.setProperty('height', '100%', 'important');
+          video.style.setProperty('width', zoom+'%', 'important');
+          video.style.setProperty('height', zoom+'%', 'important');
           video.style.setProperty('object-fit', 'cover', 'important');
         }
       };
@@ -1201,6 +1201,7 @@
   style.textContent=
     '#appDateTime .pdk-auto-festival-canvas,#appDateTime .pdk-calendar-preview-video,#appDateTime .pdk-calendar-preview-gif,#appDateTime .pdk-calendar-preview-art{display:none!important}'+
     '#appDateTime{position:relative!important;overflow:hidden!important}'+
+     '#appDateTime .pdk-festival-art{overflow:hidden!important}'+
      '#appDateTime .pdk-festival-video{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center center!important;transform-origin:center center!important;visibility:visible!important;opacity:0!important;z-index:1!important}'+
     '#appDateTime.pdk-video-ready .pdk-festival-video{opacity:1!important}'+
     '#appDateTime .pdk-festival-scene{display:none!important}'+
