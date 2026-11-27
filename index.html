@@ -5282,6 +5282,15 @@ function bindOwnerNotificationSettings(){const prefs=getStaffNotifyPrefs(),sound
 
 function unlockStaffNotifyAudio(){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;staffNotifyAudioContext=staffNotifyAudioContext||new AC();if(staffNotifyAudioContext.state==='suspended')staffNotifyAudioContext.resume().catch(()=>{})}catch(e){console.warn('Notification audio could not be unlocked',e)}}
 async function playStaffLoginTone(kind=getStaffNotifyPrefs().sound){try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;staffNotifyAudioContext=staffNotifyAudioContext||new AC();const ctx=staffNotifyAudioContext;if(ctx.state==='suspended')await ctx.resume();if(ctx.state!=='running')return;const now=ctx.currentTime;const notes=kind==='ding'?[1046]:kind==='alert'?[880,880]:[880,1175,1568];notes.forEach((freq,i)=>{const osc=ctx.createOscillator(),gain=ctx.createGain(),t=now+i*(kind==='alert'?.23:.14);osc.type=kind==='ding'?'sine':'triangle';osc.frequency.value=freq;gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(.16,t+.025);gain.gain.exponentialRampToValueAtTime(.0001,t+(kind==='ding'?.32:.14));osc.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+(kind==='ding'?.34:.16))})}catch(e){console.warn('Login notification sound unavailable',e)}}
+function unlockStaffLoginAudio(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  staffNotifyAudioContext=staffNotifyAudioContext||new AC();
+  if(staffNotifyAudioContext.state==='suspended')staffNotifyAudioContext.resume().catch(()=>{});
+ }catch(e){console.warn('Could not unlock Staff notification audio:',e)}
+}
+['pointerdown','touchstart','keydown'].forEach(type=>window.addEventListener(type,unlockStaffLoginAudio,{once:true,passive:true}));
 let ownerEmergencyThaiVoicePending=false;
 let ownerChatVoicePending=null;
 async function speakOwnerChatMessage(senderName,messageBody){
@@ -5376,33 +5385,39 @@ function positionOwnerLoginToast(toast){
  toast.style.width='min(560px,calc(100vw - 24px))';
  toast.style.pointerEvents='none';
 }
-function showStaffLoginNotice(row){
+function showStaffActivityNotice(row,loggedIn){
  const p=getStaffNotifyPrefs();
  const depts={sale:'Sale Ticket Department',entry:'Entry Ticket Department',playing:'Playing Ticket Department',event:'Event Ticket Department',all:'All Departments'};
  const name=row.display_name||'Staff',id=row.staff_id||'—';
  const dept=depts[row.department]||row.department||'Unknown Department';
  const fullMsg=name+' · ID '+id+' · '+dept;
+ const title=loggedIn
+  ?pdkNotificationText('Staff Login','พนักงานเข้าสู่ระบบ','ဝန်ထမ်း Login ဝင်ရောက်မှု')
+  :pdkNotificationText('Staff Logout','พนักงานออกจากระบบ','ဝန်ထမ်း Logout ထွက်ခွာမှု');
+ const status=loggedIn?pdkNotificationText('Online','ออนไลน์','အွန်လိုင်း'):pdkNotificationText('Offline','ออฟไลน์','အော့ဖ်လိုင်း');
+ const when=loggedIn?(row.logged_in_at||Date.now()):(row.last_seen||Date.now());
  playStaffLoginTone(p.sound);
- const header=document.body;
  let toast=document.getElementById('staffLoginToast');
  if(!toast){
   toast=document.createElement('div');toast.id='staffLoginToast';
   toast.innerHTML='<span class="notify-bell" aria-hidden="true">🔔</span><span class="notify-copy"><strong class="notify-title"></strong><span class="notify-details"></span></span><span class="notify-status"><i></i></span>';
-  header.appendChild(toast);
+  document.body.appendChild(toast);
  }
- toast.className='header-activity-toast staff-login-toast';
- toast.querySelector('.notify-title').textContent=pdkNotificationText('Staff Login','พนักงานเข้าสู่ระบบ','ဝန်ထမ်း Login ဝင်ရောက်မှု');
-  toast.querySelector('.notify-status').lastChild.textContent=pdkNotificationText('Online','ออนไลน์','အွန်လိုင်း');
-  toast.querySelector('.notify-details').textContent=name+'  ·  ID '+id+'  ·  '+dept;
+ toast.className='header-activity-toast staff-login-toast'+(loggedIn?' is-online':' is-offline');
+ toast.querySelector('.notify-title').textContent=title;
+ toast.querySelector('.notify-status').lastChild.textContent=status;
+ toast.querySelector('.notify-details').textContent=fullMsg;
  toast.title=fullMsg;
  positionOwnerLoginToast(toast);
  toast.style.display='flex';
  clearTimeout(window.staffLoginToastTimer);
  window.staffLoginToastTimer=setTimeout(()=>{toast.style.display='none'},7000);
  if('Notification'in window&&Notification.permission==='granted'&&(document.visibilityState!=='visible'||p.background==='both')){
-  try{new Notification(pdkNotificationText('Staff Login','พนักงานเข้าสู่ระบบ','ဝန်ထမ်း Login ဝင်ရောက်မှု'),{body:fullMsg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-login-'+row.normalized_name})}catch(e){}
+  try{new Notification(title,{body:fullMsg,icon:'/file_000000006da082119bbf212e4f6fad52.png',tag:'staff-'+(loggedIn?'login':'logout')+'-'+row.normalized_name+'-'+String(when)})}catch(e){}
  }
 }
+function showStaffLoginNotice(row){showStaffActivityNotice(row,true)}
+function showStaffLogoutNotice(row){showStaffActivityNotice(row,false)}
 async function pollStaffLoginNotifications(){
  if(!sb||!currentUser||currentRole!=='owner')return;
  // Prevent the realtime callback and 5-second poll from racing during baseline setup.
@@ -5418,7 +5433,7 @@ async function pollStaffLoginNotifications(){
      if(!r.normalized_name)return;
      const stamp=r.logged_in_at||'';
      if(stamp&&Date.parse(stamp)>=staffNotifyStartedAt-30000)showStaffLoginNotice(r);
-     staffNotifySeen[r.normalized_name]=stamp;
+     staffNotifySeen[r.normalized_name]={stamp,isActive:!!r.is_active};
     });
     staffNotifyBaseline=true;
     return;
@@ -5427,12 +5442,18 @@ async function pollStaffLoginNotifications(){
     const key=r.normalized_name||'';
     if(!key)continue;
     const stamp=r.logged_in_at||'';
-    if(Object.prototype.hasOwnProperty.call(staffNotifySeen,key)){
-     if(stamp&&stamp!==(staffNotifySeen[key]||''))showStaffLoginNotice(r);
-    }else if(stamp&&Date.parse(stamp)>=staffNotifyStartedAt-2000){
+    const active=!!r.is_active;
+    const previous=staffNotifySeen[key];
+    if(previous){
+     const previousStamp=typeof previous==='string'?previous:(previous.stamp||'');
+     const previousActive=typeof previous==='string'?true:!!previous.isActive;
+     if(previousActive&&!active)showStaffLogoutNotice(r);
+     else if(!previousActive&&active)showStaffLoginNotice(r);
+     else if(active&&stamp&&stamp!==previousStamp)showStaffLoginNotice(r);
+    }else if(active&&stamp&&Date.parse(stamp)>=staffNotifyStartedAt-2000){
      showStaffLoginNotice(r);
     }
-    staffNotifySeen[key]=stamp;
+    staffNotifySeen[key]={stamp,isActive:active};
    }
   }catch(e){console.warn('Staff login notification check failed',e.message)}
   finally{staffNotifyPollPromise=null}
