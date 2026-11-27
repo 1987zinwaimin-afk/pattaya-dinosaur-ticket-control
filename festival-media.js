@@ -1389,13 +1389,78 @@
       menu.style.setProperty('z-index','12','important');
       menu.style.setProperty('box-shadow','0 2px 9px rgba(0,0,0,.28)','important');
     }
-    card.style.setProperty('padding-bottom','48px','important');
+    /* Apply the two corner anchors directly to the live elements so older injected styles cannot move them. */
+    card.style.setProperty('position','fixed','important');
+    card.style.setProperty('top','0','important');
+    card.style.setProperty('left','0','important');
+    card.style.setProperty('right','0','important');
+    card.style.setProperty('bottom','auto','important');
+    card.style.setProperty('width','100%','important');
+    card.style.setProperty('max-width','100vw','important');
+    card.style.setProperty('height','112px','important');
+    card.style.setProperty('min-height','112px','important');
+    card.style.setProperty('max-height','112px','important');
+    card.style.setProperty('margin','0','important');
+    card.style.setProperty('padding','0','important');
+    card.style.setProperty('box-sizing','border-box','important');
+    if(date){
+      date.style.setProperty('position','absolute','important');
+      date.style.setProperty('top','7px','important');
+      date.style.setProperty('left','8px','important');
+      date.style.setProperty('right','auto','important');
+      date.style.setProperty('bottom','auto','important');
+      date.style.setProperty('width','47%','important');
+      date.style.setProperty('max-width','47%','important');
+      date.style.setProperty('min-width','0','important');
+      date.style.setProperty('flex-direction','column','important');
+      date.style.setProperty('align-items','flex-start','important');
+      date.style.setProperty('justify-content','flex-start','important');
+      date.style.setProperty('text-align','left','important');
+    }
+    if(clock){
+      clock.style.setProperty('position','absolute','important');
+      clock.style.setProperty('top','7px','important');
+      clock.style.setProperty('right','8px','important');
+      clock.style.setProperty('left','auto','important');
+      clock.style.setProperty('bottom','auto','important');
+      clock.style.setProperty('width','47%','important');
+      clock.style.setProperty('max-width','47%','important');
+      clock.style.setProperty('min-width','0','important');
+      clock.style.setProperty('flex-direction','column','important');
+      clock.style.setProperty('align-items','flex-end','important');
+      clock.style.setProperty('justify-content','flex-start','important');
+      clock.style.setProperty('text-align','right','important');
+    }
+    if(header){
+      header.style.setProperty('position','fixed','important');
+      header.style.setProperty('top','0','important');
+      header.style.setProperty('left','0','important');
+      header.style.setProperty('right','0','important');
+      header.style.setProperty('height','112px','important');
+      header.style.setProperty('min-height','112px','important');
+      header.style.setProperty('max-height','112px','important');
+      header.style.setProperty('overflow','hidden','important');
+    }
   }
   applyDateTimeHeaderLayout();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',applyDateTimeHeaderLayout);
   const observer=new MutationObserver(applyDateTimeHeaderLayout);
   observer.observe(document.documentElement,{childList:true,subtree:true});
   window.addEventListener('resize',applyDateTimeHeaderLayout,{passive:true});
+})();
+
+/* Keep the actual top bar and Date/Time anchors sized consistently on small screens. */
+(function(){
+  const apply=()=>{
+    const header=document.querySelector('header.top.brand-header,header.brand-header,.brand-header');
+    const card=document.getElementById('appDateTime');
+    if(header&&window.innerWidth<=520) header.style.setProperty('height','104px','important');
+    if(card&&window.innerWidth<=520) card.style.setProperty('height','104px','important');
+    if(card&&window.innerWidth<=520) card.style.setProperty('min-height','104px','important');
+    if(card&&window.innerWidth<=520) card.style.setProperty('max-height','104px','important');
+  };
+  apply();
+  window.addEventListener('resize',apply,{passive:true});
 })();
 
 /* Compact month cards for a clean year-at-a-glance festival calendar. */
