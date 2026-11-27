@@ -40,13 +40,11 @@
         pickerPausedVideos = Array.from(document.querySelectorAll('video')).filter(video => !video.paused && !video.ended);
         pickerPausedVideos.forEach(video => { try { video.pause(); } catch (_) {} });
       } else {
-        const resume = pickerPausedVideos;
+        // Do not restart media from the file-picker return callback. The active
+        // Date & Time player is restored by the normal focus/sync handlers.
+        // Restarting every video here can destabilize Android Chrome after a
+        // large local file has been selected.
         pickerPausedVideos = [];
-        resume.forEach(video => {
-          if (!video.isConnected) return;
-          const promise = video.play();
-          if (promise && typeof promise.catch === 'function') promise.catch(() => {});
-        });
       }
     });
   }
@@ -574,9 +572,11 @@
           setStatus(t('Enter a title and add text or a video.','ခေါင်းစဉ်ဖြည့်ပြီး စာသား သို့မဟုတ် Video တစ်ခု ထည့်ပါ။'));
           return;
         }
-        const videoExt = videoFile ? String(videoFile.name || '').split('.').pop().toLowerCase() : '';
         const allowedVideoTypes = {mp4:'video/mp4',webm:'video/webm',mov:'video/quicktime'};
         const detectedVideoType = videoFile ? String(videoFile.type || '').toLowerCase().split(';')[0] : '';
+        const mimeExtension = {'video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'}[detectedVideoType] || '';
+        const rawVideoExt = videoFile ? String(videoFile.name || '').split('.').pop().toLowerCase() : '';
+        const videoExt = ['mp4','webm','mov'].includes(rawVideoExt) ? rawVideoExt : mimeExtension;
         const uploadVideoType = videoFile ? (allowedVideoTypes[videoExt] || detectedVideoType) : '';
         if (videoFile && (!['mp4','webm','mov'].includes(videoExt) || !['video/mp4','video/webm','video/quicktime','application/octet-stream',''].includes(detectedVideoType) || !videoFile.size)) {
           setStatus(t('Choose a valid MP4, WebM or MOV video file.','MP4၊ WebM သို့မဟုတ် MOV Video ဖိုင်မှန်ကန်သောဖိုင်ကို ရွေးပါ။'));
@@ -820,7 +820,7 @@
       const events = currentEvents();
       const options = events.map(e => '<option value="'+escapeHtml(e.date+'|'+e.title)+'">'+escapeHtml(dateLabel(e.date)+' — '+e.title)+'</option>').join('');
       const existing = rows.filter(r => r.festival_date.slice(0,4) === String(today().year));
-      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice" data-fvm-choice>'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · over 50 MB auto-compresses)','Video ဖိုင် (MP4, WebM, MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkFestivalFile" data-fvm-file type="file" accept="video/*,.mp4,.webm,.mov"><button type="button" id="pdkFestivalUploadBtn" data-fvm-upload class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
+      host.innerHTML = '<div class="pdk-fvm-upload"><label for="pdkFestivalChoice">'+t('Festival / date','ပွဲတော် / ရက်စွဲ')+'</label><select id="pdkFestivalChoice" data-fvm-choice>'+options+'</select><label for="pdkFestivalFile">'+t('Video file (MP4, WebM, MOV · over 50 MB auto-compresses)','Video ဖိုင် (MP4, WebM, MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkFestivalFile" data-fvm-file type="file" accept="video/*,.mp4,.webm,.mov"><p class="pdk-fvm-note" data-fvm-file-status role="status" aria-live="polite"></p><button type="button" id="pdkFestivalUploadBtn" data-fvm-upload class="gold">'+t('＋ Upload Video','＋ Video တင်မည်')+'</button><p class="pdk-fvm-note">'+t('Only the Owner can upload or delete. Staff can view the scheduled video in Date & Time.','Owner သာ Upload / Delete လုပ်နိုင်ပြီး Staff များက Date & Time တွင် ကြည့်ရှုနိုင်ပါသည်။')+'</p></div><div class="pdk-fvm-list">'+(existing.length?existing.map(r=>'<article class="pdk-fvm-item"><div><strong>'+escapeHtml(r.festival_name)+'</strong><small>'+escapeHtml(dateLabel(r.festival_date))+' · '+(r.file_size_bytes/1048576).toFixed(1)+' MB</small></div><div class="pdk-fvm-actions"><button type="button" data-fvm-preview="'+escapeHtml(r.id)+'">'+t('▶ Preview','▶ ကြိုကြည့်')+'</button><button type="button" class="danger" data-fvm-delete="'+escapeHtml(r.id)+'">'+t('Delete','ဖျက်မည်')+'</button></div></article>').join(''):'<p>'+t('No videos uploaded for this year yet.','ယခုနှစ်အတွက် Video မတင်ရသေးပါ။')+'</p>')+'</div>';
       const select = host.querySelector('#pdkFestivalChoice');
       if (select) {
         const current = select.value;
@@ -869,8 +869,10 @@
     const choice = host?.querySelector('[data-fvm-choice],#pdkFestivalChoice')?.value || '';
     const file = host?.querySelector('[data-fvm-file],#pdkFestivalFile')?.files?.[0];
     if (!choice || !file) { alert(t('Choose a festival and a video file.','ပွဲတော်နှင့် Video ဖိုင်ကို ရွေးပါ။')); return; }
-    const selectedExt=(file.name||'').split('.').pop().toLowerCase();
     const selectedMime=String(file.type||'').toLowerCase().split(';')[0];
+    const rawSelectedExt=(file.name||'').split('.').pop().toLowerCase();
+    const mimeSelectedExt={'video/mp4':'mp4','video/webm':'webm','video/quicktime':'mov'}[selectedMime] || '';
+    const selectedExt=['mp4','webm','mov'].includes(rawSelectedExt)?rawSelectedExt:mimeSelectedExt;
     if (!['mp4','webm','mov'].includes(selectedExt) || (selectedMime && !['video/mp4','video/webm','video/quicktime','application/octet-stream'].includes(selectedMime))) {
       alert(t('Choose a valid MP4, WebM or MOV video file.','MP4၊ WebM သို့မဟုတ် MOV Video ဖိုင်မှန်ကန်သောဖိုင်ကို ရွေးပါ။')); return;
     }
