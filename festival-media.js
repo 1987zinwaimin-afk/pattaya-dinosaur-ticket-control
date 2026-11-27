@@ -14,6 +14,11 @@
     style.textContent = `.pdk-day-message-form input[type="file"],.pdk-day-message-form input[type="url"]{width:100%;min-height:44px;padding:10px 12px;border:1px solid rgba(216,190,139,.38);border-radius:10px;background:#071a2d;color:#f6f2e8;font:inherit;box-sizing:border-box}
 .pdk-day-message-form input[type="file"]::file-selector-button{margin-right:10px;padding:8px 11px;border:0;border-radius:8px;background:#e5bd70;color:#10233a;font-weight:800}
 .pdk-day-message-remove-video{display:flex!important;align-items:center;gap:8px}.pdk-day-message-remove-video input{width:18px;height:18px;min-height:18px}
+.pdk-day-video-zoom-control{display:grid;gap:7px;padding:10px 12px;border:1px solid rgba(216,190,139,.3);border-radius:10px;background:rgba(7,26,45,.55)}
+.pdk-day-video-zoom-control label{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pdk-day-video-zoom-control output{color:#f2c978;font-weight:800}
+.pdk-day-message-form input[type="range"]{width:100%;min-height:34px;accent-color:#e5bd70;touch-action:pan-y}
+.pdk-day-video-zoom-control small{color:#c5d2df;font-size:12px}
 #appDateTime.has-normal-day-message .app-date-notice{max-width:100%}
 #appDateTime.has-normal-day-message .pdk-festival-video{object-fit:cover!important}`;
     document.head.appendChild(style);
