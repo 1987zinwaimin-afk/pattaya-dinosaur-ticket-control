@@ -1616,3 +1616,43 @@
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
+
+
+/* Structural top-bar layout: pin the video Date/Time card over the original full-width header. */
+(function(){
+  function mountDateTimeTopBar(){
+    const card=document.getElementById('appDateTime');
+    const header=document.querySelector('header.top.brand-header,header.brand-header,.brand-header');
+    if(!card||!header||!card.querySelector('.pdk-festival-art')) return;
+    if(!document.getElementById('pdk-datetime-top-header-structure-v2')){
+      const style=document.createElement('style');
+      style.id='pdk-datetime-top-header-structure-v2';
+      style.textContent=[
+        'header.top.brand-header,header.brand-header,.brand-header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:112px!important;min-height:112px!important;max-height:112px!important;margin:0!important;padding:0!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;z-index:10062!important;box-sizing:border-box!important}',
+        'header.top.brand-header .brand-banner,header.brand-header .brand-banner,header.brand-header .green-dino-cover{display:none!important;visibility:hidden!important}',
+        '#appDateTime{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:auto!important;width:100%!important;max-width:none!important;height:112px!important;min-height:112px!important;max-height:112px!important;margin:0!important;padding:0 0 48px!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;z-index:10061!important;isolation:isolate!important}',
+        '#appDateTime .app-datetime-date{position:absolute!important;top:8px!important;left:8px!important;right:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;gap:4px!important;white-space:nowrap!important;z-index:30!important}',
+        '#appDateTime .app-datetime-clock{position:absolute!important;top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-end!important;text-align:right!important;gap:4px!important;white-space:nowrap!important;z-index:30!important}',
+        '#appDateTime .app-datetime-caption,#appDateTime .app-datetime-zone{display:none!important;visibility:hidden!important}',
+        '#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){font-size:clamp(11px,2.8vw,15px)!important;line-height:1.2!important;white-space:nowrap!important}',
+        '#openMenu{position:absolute!important;top:auto!important;left:8px!important;right:auto!important;bottom:7px!important;z-index:10080!important}',
+        '#staffAlarmHeaderButton{position:absolute!important;top:auto!important;left:auto!important;right:8px!important;bottom:7px!important;z-index:10080!important}',
+        'main.wrap{margin-top:112px!important}',
+        '@media(max-width:360px){#appDateTime .app-datetime-date{left:6px!important;width:48%!important;max-width:48%!important}#appDateTime .app-datetime-clock{right:6px!important;width:48%!important;max-width:48%!important}}'
+      ].join('');
+      (document.head||document.documentElement).appendChild(style);
+    }
+    header.style.setProperty('position','fixed','important');
+    header.style.setProperty('top','0','important');
+    header.style.setProperty('left','0','important');
+    header.style.setProperty('right','0','important');
+    header.style.setProperty('width','100%','important');
+    header.style.setProperty('height','112px','important');
+    header.style.setProperty('z-index','10062','important');
+  }
+  mountDateTimeTopBar();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mountDateTimeTopBar);
+  const observer=new MutationObserver(mountDateTimeTopBar);
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  window.addEventListener('resize',mountDateTimeTopBar,{passive:true});
+})();
