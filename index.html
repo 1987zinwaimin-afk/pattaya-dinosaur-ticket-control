@@ -5232,7 +5232,11 @@ async function refreshCloudTickets(force=false){
    );
    // Ticket polling/realtime must not rebuild the Customer Visits form and history.
    // Re-render only pages whose visible content actually depends on ticket rows.
-   if(!keepProfileEditorOpen&&page!=='customervisits')render();
+   // The Thailand Festival Calendar is independent of ticket rows. Keep its DOM stable
+   // while Android Chrome returns from the system video picker; a forced focus refresh
+   // must not recreate the Normal-day file input and discard the selected File.
+   const keepFestivalCalendarOpen=page==='festivals'&&!!document.getElementById('pdkCalendarDayMessageManager');
+   if(!keepProfileEditorOpen&&!keepFestivalCalendarOpen&&page!=='customervisits')render();
   }
  }catch(e){console.error('Auto-refresh cloud tickets failed',e)}
  finally{cloudLoadBusy=false}
