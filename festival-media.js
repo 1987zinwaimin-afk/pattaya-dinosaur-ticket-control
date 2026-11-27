@@ -386,7 +386,9 @@
       const source = video?.querySelector('source');
       const normalVideoSource = row.video_path ? await signedUrl(row.video_path) : (row.video_url || '');
       const videoOnlyNotice = !!normalVideoSource && !row.message;
-      const normalDayZoom = Math.max(60,Math.min(150,Number(row.video_zoom)||100));
+      const normalDayZoom = Math.max(50,Math.min(200,Number(row.video_zoom)||100));
+       const normalDayX = Math.max(-100,Math.min(100,Number(row.video_position_x)||0));
+       const normalDayY = Math.max(-100,Math.min(100,Number(row.video_position_y)||0));
       // Zoom only the rendered Date & Time viewport; never alter or re-encode the uploaded source.
       card.style.setProperty('--pdk-normal-day-video-zoom', String(normalDayZoom/100));
       if (video) {
@@ -537,7 +539,7 @@
             '<label>'+t('Title','ခေါင်းစဉ်')+'<input name="title" type="text" maxlength="120" placeholder="'+t('e.g. Special operating hours','ဥပမာ - အထူးဖွင့်ချိန်')+'" required></label>' +
             '<label class="pdk-day-message-wide">'+t('Message shown in Date & Time (optional)','Date & Time တွင်ပြမည့်စာသား (မဖြစ်မနေမဟုတ်ပါ)')+'<textarea name="message" rows="2" maxlength="600" placeholder="'+t('Write the notice for staff…','Staff များဖတ်ရန် အသိပေးစာရေးပါ…')+'"></textarea></label>' +
             '<div class="pdk-day-message-wide"><label for="pdkDayMessageVideo">'+t('Video file (MP4 / WebM / MOV · files over 50 MB are auto-compressed)','Video ဖိုင် (MP4 / WebM / MOV · 50 MB ကျော်လျှင် အလိုအလျောက် ချုံ့မည်)')+'</label><input id="pdkDayMessageVideo" name="video_file" type="file" accept="video/*,.mp4,.webm,.mov"></div>' +
-            '<div class="pdk-day-message-wide pdk-day-video-zoom-control"><label for="pdkDayMessageVideoZoom">'+t('Date & Time video size','Date & Time Video အရွယ်အစား')+' <output data-day-video-zoom-value>100%</output></label><input id="pdkDayMessageVideoZoom" name="video_zoom" type="range" min="60" max="150" step="5" value="100"><small>'+t('Smaller 60%  ·  Default 100%  ·  Larger 150%','သေး 60%  ·  ပုံမှန် 100%  ·  ကြီး 150%')+'</small></div>' +
+            '<div class="pdk-day-video-editor pdk-day-message-wide"><div class="pdk-day-video-editor-head"><strong>'+t('Adjust video in Date & Time','Date & Time အကွက်အတွင်း Video ချိန်ညှိရန်')+'</strong><span data-day-video-zoom-value>100%</span></div><div class="pdk-day-video-stage" data-day-video-stage><video data-day-video-preview muted playsinline loop preload="metadata"></video><span data-day-video-empty>'+t('Choose a video to preview','Preview ကြည့်ရန် Video ရွေးပါ')+'</span><i>'+t('Drag to move · Pinch to zoom','လက်နဲ့ဆွဲရွှေ့ပါ · လက်နှစ်ချောင်းနဲ့ Zoom ချဲ့/ချုံ့ပါ')+'</i></div><input type="hidden" name="video_zoom" value="100"><input type="hidden" name="video_position_x" value="0"><input type="hidden" name="video_position_y" value="0"><div class="pdk-day-video-editor-actions"><button type="button" data-day-video-reset>'+t('Reset position','မူလအနေအထား')+'</button><small>'+t('Adjust here before saving. The Date & Time frame stays fixed.','မသိမ်းမီ ဒီနေရာမှာ ချိန်ညှိပါ။ Date & Time ဘောင် မပြောင်းပါ။')+'</small></div></div>' +
             '<label class="pdk-day-message-wide">'+t('Or direct video URL','သို့မဟုတ် Video URL')+'<input name="video_url" type="url" maxlength="2048" placeholder="https://example.com/video.mp4"></label>' +
             '<label class="pdk-day-message-wide pdk-day-message-remove-video"><input name="remove_video" type="checkbox"> '+t('Remove currently attached video','လက်ရှိ Video ကိုဖယ်ရှားမည်')+'</label>' +
           '</div>' +
@@ -564,35 +566,94 @@
       const setStatus = message => { if(status) status.textContent = message || ''; };
       const videoInput = form?.elements.namedItem('video_file');
       const zoomInput = form?.elements.namedItem('video_zoom');
+      const positionXInput = form?.elements.namedItem('video_position_x');
+      const positionYInput = form?.elements.namedItem('video_position_y');
       const zoomOutput = form?.querySelector('[data-day-video-zoom-value]');
-      const applyZoomPreview = value => {
-        const zoom = Math.max(60,Math.min(150,Number(value)||100));
-        if (zoomOutput) zoomOutput.textContent = zoom+'%';
-        const card = document.getElementById('appDateTime');
-        const video = card?.querySelector('.pdk-festival-video');
-        if (!card) return;
-        card.style.setProperty('--pdk-normal-day-video-zoom', String(zoom/100));
-        if (video && (video.dataset.normalDayManaged === 'yes' || card.classList.contains('has-owner-festival-video'))) {
-          video.style.position = 'absolute';
-          video.style.inset = 'auto';
-          video.style.left = '50%';
-          video.style.top = '50%';
-          video.style.width = zoom+'%';
-          video.style.height = zoom+'%';
-          video.style.maxWidth = 'none';
-          video.style.maxHeight = 'none';
-          video.style.objectFit = 'cover';
-          video.style.objectPosition = 'center center';
-          video.style.transformOrigin = 'center center';
-          video.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
-          video.style.setProperty('left', '50%', 'important');
-          video.style.setProperty('top', '50%', 'important');
-          video.style.setProperty('width', zoom+'%', 'important');
-          video.style.setProperty('height', zoom+'%', 'important');
-          video.style.setProperty('object-fit', 'cover', 'important');
-        }
+      const previewStage = form?.querySelector('[data-day-video-stage]');
+      const previewVideo = form?.querySelector('[data-day-video-preview]');
+      const previewEmpty = form?.querySelector('[data-day-video-empty]');
+      let previewObjectUrl = '';
+      const editorPointers = new Map();
+      let pinchStartDistance = 0, pinchStartZoom = 100, dragStart = null;
+      const readEditor = () => ({
+        zoom:Math.max(50,Math.min(200,Number(zoomInput?.value)||100)),
+        x:Math.max(-100,Math.min(100,Number(positionXInput?.value)||0)),
+        y:Math.max(-100,Math.min(100,Number(positionYInput?.value)||0))
+      });
+      const paintEditor = () => {
+        const p=readEditor();
+        if(zoomOutput) zoomOutput.textContent=p.zoom+'%';
+        [previewVideo,document.getElementById('appDateTime')?.querySelector('.pdk-festival-video')].filter(Boolean).forEach(video=>{
+          video.style.setProperty('position','absolute','important');
+          video.style.setProperty('left',(50+p.x)+'%','important');
+          video.style.setProperty('top',(50+p.y)+'%','important');
+          video.style.setProperty('width',p.zoom+'%','important');
+          video.style.setProperty('height',p.zoom+'%','important');
+          video.style.setProperty('max-width','none','important');
+          video.style.setProperty('max-height','none','important');
+          video.style.setProperty('object-fit','cover','important');
+          video.style.setProperty('object-position','center center','important');
+          video.style.setProperty('transform','translate(-50%, -50%)','important');
+        });
       };
-      zoomInput?.addEventListener('input',()=>applyZoomPreview(zoomInput.value));
+      const setPreviewSource = url => {
+        if(!previewVideo)return;
+        if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl='';}
+        previewVideo.pause();
+        previewVideo.removeAttribute('src');
+        if(url){previewVideo.src=url;previewVideo.load();previewVideo.play().catch(()=>{});if(previewEmpty)previewEmpty.hidden=true;}
+        else {previewVideo.load();if(previewEmpty)previewEmpty.hidden=false;}
+        paintEditor();
+      };
+      const resetEditorPosition = () => {
+        if(zoomInput)zoomInput.value='100';
+        if(positionXInput)positionXInput.value='0';
+        if(positionYInput)positionYInput.value='0';
+        paintEditor();
+      };
+      previewStage?.addEventListener('pointerdown',event=>{
+        if(!previewVideo?.getAttribute('src'))return;
+        event.preventDefault();
+        previewStage.setPointerCapture?.(event.pointerId);
+        editorPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+        if(editorPointers.size===1){
+          const p=readEditor();dragStart={x:event.clientX,y:event.clientY,px:p.x,py:p.y};
+        } else if(editorPointers.size===2){
+          const pts=[...editorPointers.values()];
+          pinchStartDistance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y)||1;
+          pinchStartZoom=readEditor().zoom;dragStart=null;
+        }
+      });
+      previewStage?.addEventListener('pointermove',event=>{
+        if(!editorPointers.has(event.pointerId))return;
+        editorPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+        const rect=previewStage.getBoundingClientRect();
+        if(editorPointers.size>=2){
+          const pts=[...editorPointers.values()];
+          const dist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+          if(zoomInput)zoomInput.value=String(Math.round(Math.max(50,Math.min(200,pinchStartZoom*dist/pinchStartDistance))));
+        } else if(dragStart&&rect.width&&rect.height){
+          const p=readEditor();
+          if(positionXInput)positionXInput.value=String(Math.max(-100,Math.min(100,dragStart.px+(event.clientX-dragStart.x)/rect.width*100)));
+          if(positionYInput)positionYInput.value=String(Math.max(-100,Math.min(100,dragStart.py+(event.clientY-dragStart.y)/rect.height*100)));
+        }
+        paintEditor();
+      });
+      const finishPointer=event=>{editorPointers.delete(event.pointerId);dragStart=null;if(editorPointers.size===1){const p=[...editorPointers.values()][0];dragStart={x:p.x,y:p.y,...readEditor(),px:readEditor().x,py:readEditor().y};}};
+      previewStage?.addEventListener('pointerup',finishPointer);
+      previewStage?.addEventListener('pointercancel',finishPointer);
+      form?.querySelector('[data-day-video-reset]')?.addEventListener('click',resetEditorPosition);
+      videoInput?.addEventListener('change',()=>{
+        const file=videoInput.files?.[0];
+        if(file){previewObjectUrl=URL.createObjectURL(file);setPreviewSource(previewObjectUrl);resetEditorPosition();}
+      });
+      const applySavedPosition = (row) => {
+        if(zoomInput)zoomInput.value=String(Math.max(50,Math.min(200,Number(row?.video_zoom)||100)));
+        if(positionXInput)positionXInput.value=String(Number(row?.video_position_x)||0);
+        if(positionYInput)positionYInput.value=String(Number(row?.video_position_y)||0);
+        paintEditor();
+      };
+      paintEditor();
       videoInput?.addEventListener('change', () => {
         const selectedFile = videoInput.files && videoInput.files[0];
         if (!selectedFile) return;
@@ -708,7 +769,9 @@
             display_from:from+':00',display_until:until+':00',
             is_active:active,video_path:nextVideoPath,video_url:nextVideoUrl,
             video_content_type:nextVideoType,video_file_size_bytes:nextVideoSize,
-            video_zoom:Math.max(60,Math.min(150,Number(form.elements.namedItem('video_zoom').value)||100)),
+            video_zoom:Math.max(50,Math.min(200,Number(form.elements.namedItem('video_zoom').value)||100)),
+             video_position_x:Math.max(-100,Math.min(100,Number(form.elements.namedItem('video_position_x').value)||0)),
+             video_position_y:Math.max(-100,Math.min(100,Number(form.elements.namedItem('video_position_y').value)||0)),
             updated_at:new Date().toISOString()
           };
           const result = editingId
