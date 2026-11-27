@@ -1537,3 +1537,18 @@
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
+
+
+/* Final override: remove the timezone subtitle and anchor Alarm to the header's lower-right edge. */
+(function(){
+  if(document.getElementById('pdk-datetime-zone-hide-alarm-bottom-v2')) return;
+  const style=document.createElement('style');
+  style.id='pdk-datetime-zone-hide-alarm-bottom-v2';
+  style.textContent=[
+    '#appDateTime .app-datetime-zone{display:none!important;visibility:hidden!important}',
+    'header.brand-header #ownerEmergencyAlarmHeader,header.top.brand-header #ownerEmergencyAlarmHeader{position:absolute!important;top:auto!important;right:8px!important;bottom:7px!important;left:auto!important;transform:none!important;margin:0!important;z-index:10071!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important;display:flex!important;align-items:center!important;justify-content:center!important}',
+    'header.brand-header #ownerEmergencyAlarmHeader[hidden],header.top.brand-header #ownerEmergencyAlarmHeader[hidden]{display:none!important}',
+    '@media(max-width:520px){header.brand-header #ownerEmergencyAlarmHeader,header.top.brand-header #ownerEmergencyAlarmHeader{top:auto!important;right:8px!important;bottom:7px!important;left:auto!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
