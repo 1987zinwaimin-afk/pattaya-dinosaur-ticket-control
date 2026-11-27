@@ -601,7 +601,7 @@
         if(previewObjectUrl){URL.revokeObjectURL(previewObjectUrl);previewObjectUrl='';}
         previewVideo.pause();
         previewVideo.removeAttribute('src');
-        if(url){previewVideo.src=url;previewVideo.load();previewVideo.play().catch(()=>{});if(previewEmpty)previewEmpty.hidden=true;}
+        if(url){previewObjectUrl=url.startsWith('blob:')?url:'';previewVideo.src=url;previewVideo.load();previewVideo.play().catch(()=>{});if(previewEmpty)previewEmpty.hidden=true;}
         else {previewVideo.load();if(previewEmpty)previewEmpty.hidden=false;}
         paintEditor();
       };
@@ -645,7 +645,7 @@
       form?.querySelector('[data-day-video-reset]')?.addEventListener('click',resetEditorPosition);
       videoInput?.addEventListener('change',()=>{
         const file=videoInput.files?.[0];
-        if(file){previewObjectUrl=URL.createObjectURL(file);setPreviewSource(previewObjectUrl);resetEditorPosition();}
+        if(file){const objectUrl=URL.createObjectURL(file);setPreviewSource(objectUrl);resetEditorPosition();}
       });
       const applySavedPosition = (row) => {
         if(zoomInput)zoomInput.value=String(Math.max(50,Math.min(200,Number(row?.video_zoom)||100)));
@@ -673,7 +673,8 @@
         form.elements.namedItem('video_url').value = '';
         form.elements.namedItem('remove_video').checked = false;
         form.elements.namedItem('video_zoom').value = '100';
-        applyZoomPreview(100);
+        setPreviewSource('');
+        paintEditor();
         if(save) save.textContent = t('＋ Save message','＋ သိမ်းမည်');
         if(cancel) cancel.hidden = true;
         setStatus('');
@@ -791,7 +792,7 @@
           if(save){save.disabled=false;save.textContent=editingId?t('Update message','ပြင်ဆင်သိမ်းမည်'):t('＋ Save message','＋ သိမ်းမည်');}
         } finally { dayMessageBusy=false; }
       });
-      host.querySelectorAll('[data-day-message-edit]').forEach(button=>button.addEventListener('click',()=>{
+      host.querySelectorAll('[data-day-message-edit]').forEach(button=>button.addEventListener('click',async()=>{
         const row=rows.find(x=>x.id===button.dataset.dayMessageEdit);
         if(!row)return;
         host.dataset.editingDayMessage=row.id;
@@ -1247,6 +1248,16 @@
   const style=document.createElement('style');
   style.id='pdk-date-time-normal-day-message-style';
   style.textContent=
+    '.pdk-day-video-editor{margin-top:10px;padding:12px;border:1px solid rgba(239,202,128,.35);border-radius:14px;background:rgba(4,20,36,.48)}'+
+    '.pdk-day-video-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;color:#ffe0a0}'+
+    '.pdk-day-video-stage{position:relative;width:100%;aspect-ratio:16/6;min-height:130px;overflow:hidden;border:1px solid rgba(239,202,128,.55);border-radius:10px;background:#07182b;touch-action:none;user-select:none;cursor:grab}'+
+    '.pdk-day-video-stage:active{cursor:grabbing}'+
+    '.pdk-day-video-stage video{position:absolute!important;left:50%!important;top:50%!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center!important;transform:translate(-50%,-50%)!important;pointer-events:none}'+
+    '.pdk-day-video-stage [data-day-video-empty]{position:absolute;inset:0;display:grid;place-items:center;color:#dbe8f3;font-size:13px;pointer-events:none}'+
+    '.pdk-day-video-stage i{position:absolute;left:8px;right:8px;bottom:7px;text-align:center;color:#fff;font-size:11px;font-style:normal;text-shadow:0 1px 4px #000;pointer-events:none}'+
+    '.pdk-day-video-editor-actions{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}'+
+    '.pdk-day-video-editor-actions button{padding:8px 12px;border-radius:9px}'+
+    '.pdk-day-video-editor-actions small{color:#c7d6e4;font-size:11px}'+
     '#appDateTime .app-datetime-date{flex:1 1 auto;min-width:0}'+
     '#appDateTime .app-date-notice{display:flex;flex-direction:column;gap:2px;max-width:min(440px,100%);margin-top:5px;padding:6px 9px;border:1px solid rgba(239,202,128,.42);border-radius:8px;background:rgba(3,19,35,.68);box-shadow:inset 0 1px rgba(255,255,255,.04)}'+
     '#appDateTime .app-date-notice[hidden]{display:none!important}'+
