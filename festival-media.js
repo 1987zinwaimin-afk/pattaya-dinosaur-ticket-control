@@ -1340,9 +1340,10 @@
     const clock=card.querySelector('.app-datetime-clock');
     if(date){
       date.style.setProperty('display','flex','important');
-      date.style.setProperty('flex-direction','column','important');
+      date.style.setProperty('flex-direction','row','important');
       date.style.setProperty('align-items','flex-start','important');
-      date.style.setProperty('gap','2px','important');
+      date.style.setProperty('gap','6px','important');
+      date.querySelectorAll('.app-datetime-caption').forEach(el=>el.style.setProperty('display','none','important'));
       date.style.setProperty('min-width','0','important');
       date.style.setProperty('max-width','48%','important');
       date.querySelectorAll('.app-datetime-caption').forEach(el=>{
@@ -1353,6 +1354,11 @@
       // Let the final responsive stylesheet size weekday, festival and notice labels.
     }
     if(clock){
+      clock.style.setProperty('display','flex','important');
+      clock.style.setProperty('flex-direction','row','important');
+      clock.style.setProperty('align-items','center','important');
+      clock.style.setProperty('gap','6px','important');
+      clock.querySelectorAll('.app-datetime-caption').forEach(el=>el.style.setProperty('display','none','important'));
       clock.style.setProperty('max-width','48%','important');
       clock.style.setProperty('text-align','right','important');
     }
@@ -1506,6 +1512,28 @@
   style.textContent=[
     '#sidebar,#sideMenu,#side-menu,.sidebar,.side-menu,.side-drawer,.menu-drawer,.nav-drawer,.navigation-drawer,.offcanvas,.drawer,[role="dialog"]{z-index:10080!important}',
     '.sidebar-backdrop,.side-menu-backdrop,.menu-backdrop,.drawer-backdrop,.offcanvas-backdrop{z-index:10070!important}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
+
+
+/* Compact video-header bar: date and Thailand time share one top row. */
+(function(){
+  if(document.getElementById('pdk-datetime-single-row-video-header-v1')) return;
+  const style=document.createElement('style');
+  style.id='pdk-datetime-single-row-video-header-v1';
+  style.textContent=[
+    '#appDateTime{height:112px!important;min-height:112px!important;max-height:112px!important;padding:0!important;overflow:hidden!important}',
+    '#appDateTime .app-datetime-date{position:absolute!important;top:12px!important;left:12px!important;right:auto!important;width:auto!important;max-width:58%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;gap:5px!important;white-space:nowrap!important;z-index:8!important}',
+    '#appDateTime .app-datetime-clock{position:absolute!important;top:12px!important;left:auto!important;right:12px!important;width:auto!important;max-width:43%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important;gap:5px!important;white-space:nowrap!important;z-index:8!important}',
+    '#appDateTime .app-datetime-caption{display:none!important}',
+    '#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){font-size:clamp(11px,2.6vw,16px)!important;line-height:1.2!important;white-space:nowrap!important}',
+    '#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{color:#fff!important;text-shadow:0 2px 5px rgba(0,0,0,.95)!important}',
+    '#ownerEmergencyAlarmHeader{top:auto!important;right:10px!important;bottom:8px!important;left:auto!important;z-index:9!important}',
+    '#openMenu{top:auto!important;left:10px!important;right:auto!important;bottom:8px!important;z-index:10!important}',
+    '#appDateTime #appHolidayValue{left:50%!important;right:auto!important;top:auto!important;bottom:12px!important;transform:translateX(-50%)!important;max-width:calc(100% - 124px)!important;z-index:7!important}',
+    '@media(max-width:520px){#appDateTime{height:104px!important;min-height:104px!important;max-height:104px!important}#appDateTime .app-datetime-date{top:11px!important;left:9px!important;max-width:57%!important;gap:3px!important}#appDateTime .app-datetime-clock{top:11px!important;right:9px!important;max-width:42%!important;gap:3px!important}#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){font-size:clamp(10px,2.8vw,13px)!important}#ownerEmergencyAlarmHeader{right:8px!important;bottom:7px!important;width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}#openMenu{left:8px!important;bottom:7px!important;width:38px!important;height:34px!important;min-height:34px!important}#appDateTime #appHolidayValue{bottom:12px!important;max-width:calc(100% - 104px)!important;font-size:9px!important}}',
+    '@media(max-width:360px){#appDateTime .app-datetime-date{max-width:56%!important}#appDateTime .app-datetime-clock{max-width:41%!important}#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){font-size:10px!important}}'
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
