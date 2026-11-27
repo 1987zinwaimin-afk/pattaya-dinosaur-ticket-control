@@ -20,7 +20,7 @@
 .pdk-day-message-form input[type="range"]{width:100%;min-height:34px;accent-color:#e5bd70;touch-action:pan-y}
 .pdk-day-video-zoom-control small{color:#c5d2df;font-size:12px}
 #appDateTime.has-normal-day-message .app-date-notice{max-width:100%}
-#appDateTime.has-normal-day-message .pdk-festival-video,#appDateTime.has-normal-day-video .pdk-festival-video{object-fit:contain!important;background:#07182b!important}`;
+#appDateTime.has-normal-day-message .pdk-festival-video,#appDateTime.has-normal-day-video .pdk-festival-video{object-fit:cover!important;background:#07182b!important}`;
     document.head.appendChild(style);
   }
 
@@ -400,7 +400,7 @@
         video.style.height = (normalDayZoom/100*100)+'%';
         video.style.maxWidth = 'none';
         video.style.maxHeight = 'none';
-        video.style.objectFit = 'contain';
+        video.style.objectFit = 'cover';
         video.style.objectPosition = 'center center';
         video.style.transformOrigin = 'center center';
         video.style.setProperty('transform', 'translate(-50%, -50%)', 'important');
@@ -408,7 +408,7 @@
         video.style.setProperty('top', (50+normalDayY)+'%', 'important');
         video.style.setProperty('width', (normalDayZoom)+'%', 'important');
         video.style.setProperty('height', (normalDayZoom)+'%', 'important');
-        video.style.setProperty('object-fit', 'contain', 'important');
+        video.style.setProperty('object-fit', 'cover', 'important');
       }
       // A video-only notice must show its video, not the uploaded filename as a text title.
       if (title) { title.textContent = row.title || ''; title.hidden = !row.title || videoOnlyNotice; }
@@ -582,6 +582,9 @@
         y:Math.max(-100,Math.min(100,Number(positionYInput?.value)||0))
       });
       const paintEditor = () => {
+        // Match the editor viewport to the live Date & Time card's current aspect ratio.
+        const liveFrame=document.getElementById('appDateTime');
+        if(previewStage&&liveFrame){const frameRect=liveFrame.getBoundingClientRect();if(frameRect.width>0&&frameRect.height>0){previewStage.style.aspectRatio=frameRect.width+'/'+frameRect.height;previewStage.style.minHeight='0';}}
         const p=readEditor();
         if(zoomOutput) zoomOutput.textContent=p.zoom+'%';
         // Keep editor gestures isolated to this editor preview. The live Date & Time
@@ -1258,7 +1261,7 @@
   style.textContent=
     '.pdk-day-video-editor{margin-top:10px;padding:12px;border:1px solid rgba(239,202,128,.35);border-radius:14px;background:rgba(4,20,36,.48)}'+
     '.pdk-day-video-editor-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:9px;color:#ffe0a0}'+
-    '.pdk-day-video-stage{position:relative;width:100%;aspect-ratio:16/7;min-height:150px;overflow:hidden;border:1px solid rgba(239,202,128,.55);border-radius:10px;background:#07182b;touch-action:none;user-select:none;cursor:grab}'+
+    '.pdk-day-video-stage{position:relative;width:100%;aspect-ratio:auto;min-height:0;overflow:hidden;border:1px solid rgba(239,202,128,.55);border-radius:10px;background:#07182b;touch-action:none;user-select:none;cursor:grab}'+
     '.pdk-day-video-stage:active{cursor:grabbing}'+
     '.pdk-day-video-stage video{position:absolute!important;left:50%!important;top:50%!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;background:#07182b!important;object-position:center!important;transform:translate(-50%,-50%)!important;pointer-events:none}'+
     '.pdk-day-video-stage [data-day-video-empty]{position:absolute;inset:0;display:grid;place-items:center;color:#dbe8f3;font-size:13px;pointer-events:none}'+
