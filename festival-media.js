@@ -1300,3 +1300,19 @@
     '#appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{position:relative!important;z-index:4!important}';
   (document.head||document.documentElement).appendChild(style);
 })();
+
+/* Date & Time special-day label: restrained overlay that keeps festival footage visible. */
+(function(){
+  if(document.getElementById('pdk-date-time-special-day-label-v1')) return;
+  const style=document.createElement('style');
+  style.id='pdk-date-time-special-day-label-v1';
+  style.textContent=[
+    '#appDateTime{--pdk-special-label-bg:rgba(4,15,27,.68)}',
+    '#appDateTime #appHolidayValue{position:absolute!important;z-index:6!important;left:50%!important;bottom:9px!important;transform:translateX(-50%)!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:6px!important;width:max-content!important;max-width:min(82%,520px)!important;min-height:23px!important;padding:4px 11px!important;box-sizing:border-box!important;border:1px solid rgba(239,202,128,.52)!important;border-radius:999px!important;background:var(--pdk-special-label-bg)!important;color:#ffe4ad!important;font-size:clamp(9px,1.15vw,12px)!important;font-weight:750!important;line-height:1.25!important;letter-spacing:.025em!important;text-align:center!important;text-shadow:0 1px 3px rgba(0,0,0,.9)!important;box-shadow:0 3px 12px rgba(0,0,0,.18)!important;white-space:normal!important;overflow-wrap:anywhere!important;backdrop-filter:blur(5px)!important;-webkit-backdrop-filter:blur(5px)!important}',
+    '#appDateTime #appHolidayValue::before{content:"✦";flex:0 0 auto;color:#f2c978;font-size:11px}',
+    '#appDateTime #appHolidayValue[hidden]{display:none!important}',
+    '#appDateTime #appHolidayValue.is-special{border-color:rgba(239,202,128,.62)!important}',
+    '@media(max-width:520px){#appDateTime #appHolidayValue{bottom:6px!important;max-width:88%!important;padding:3px 8px!important;font-size:9px!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
