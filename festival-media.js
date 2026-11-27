@@ -1326,7 +1326,9 @@
     if(!card) return;
     /* Keep Alarm physically inside the Date/Time card so bottom-right is measured from that card, not the full header. */
     if(alarm && alarm.parentElement!==card) card.appendChild(alarm);
-    const header=card.closest('header')||card.parentElement;
+    const header=card.closest('header')||document.querySelector('header.top.brand-header,header.brand-header,.brand-header');
+    /* The Date/Time/video panel is authored after the header; move it into the real header instead of treating BODY as its header. */
+    if(header && card.parentElement!==header) header.appendChild(card);
     if(header){
       header.style.setProperty('position','fixed','important');
       header.style.setProperty('top','0','important');
@@ -1587,6 +1589,30 @@
     '#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){white-space:nowrap!important}',
     '@media(max-width:520px){#appDateTime .app-datetime-date{top:7px!important;left:7px!important;width:47%!important;max-width:47%!important}#appDateTime .app-datetime-clock{top:7px!important;right:7px!important;width:47%!important;max-width:47%!important}}',
     '@media(max-width:360px){#appDateTime .app-datetime-date{left:6px!important;width:48%!important;max-width:48%!important}#appDateTime .app-datetime-clock{right:6px!important;width:48%!important;max-width:48%!important}}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
+
+
+/* True top-bar placement: Date/Time panel is a child overlay of the brand header. */
+(function(){
+  if(document.getElementById('pdk-datetime-inside-brand-header-v2')) return;
+  const style=document.createElement('style');
+  style.id='pdk-datetime-inside-brand-header-v2';
+  style.textContent=[
+    'header.top.brand-header,header.brand-header,.brand-header{position:fixed!important;inset:0 0 auto 0!important;width:100%!important;height:112px!important;min-height:112px!important;max-height:112px!important;margin:0!important;padding:0!important;overflow:hidden!important;z-index:10060!important;box-sizing:border-box!important}',
+    'header.top.brand-header>.brand-banner,header.brand-header>.brand-banner,.brand-header>.brand-banner{display:block!important;width:100%!important;height:100%!important;min-height:100%!important;max-height:none!important;aspect-ratio:auto!important;object-fit:cover!important;object-position:center!important}',
+    'header.top.brand-header>#appDateTime,header.brand-header>#appDateTime,.brand-header>#appDateTime{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;min-height:100%!important;max-height:100%!important;margin:0!important;padding:0!important;box-sizing:border-box!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:hidden!important;z-index:3!important}',
+    'header.top.brand-header>#appDateTime .app-datetime-date,header.brand-header>#appDateTime .app-datetime-date,.brand-header>#appDateTime .app-datetime-date{position:absolute!important;top:7px!important;left:8px!important;right:auto!important;bottom:auto!important;width:47%!important;max-width:47%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;gap:2px!important;z-index:30!important}',
+    'header.top.brand-header>#appDateTime .app-datetime-clock,header.brand-header>#appDateTime .app-datetime-clock,.brand-header>#appDateTime .app-datetime-clock{position:absolute!important;top:7px!important;right:8px!important;left:auto!important;bottom:auto!important;width:47%!important;max-width:47%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:column!important;align-items:flex-end!important;justify-content:flex-start!important;text-align:right!important;gap:2px!important;z-index:30!important}',
+    'header.top.brand-header>#appDateTime .app-datetime-caption,header.brand-header>#appDateTime .app-datetime-caption,.brand-header>#appDateTime .app-datetime-caption{display:none!important}',
+    'header.top.brand-header>#appDateTime .app-datetime-date :not(.app-datetime-caption),header.top.brand-header>#appDateTime .app-datetime-clock :not(.app-datetime-caption){white-space:nowrap!important}',
+    'header.top.brand-header>#appDateTime .app-datetime-date,header.top.brand-header>#appDateTime .app-datetime-clock,header.brand-header>#appDateTime .app-datetime-date,header.brand-header>#appDateTime .app-datetime-clock{color:#fff!important;text-shadow:0 2px 5px rgba(0,0,0,.95)!important}',
+    'header.top.brand-header>#openMenu,header.brand-header>#openMenu,.brand-header>#openMenu{position:absolute!important;top:auto!important;left:8px!important;right:auto!important;bottom:7px!important;transform:none!important;z-index:10070!important}',
+    'header.top.brand-header>#appDateTime #ownerEmergencyAlarmHeader,header.brand-header>#appDateTime #ownerEmergencyAlarmHeader{position:absolute!important;top:auto!important;right:8px!important;bottom:7px!important;left:auto!important;transform:none!important;z-index:40!important}',
+    'header.top.brand-header>#appDateTime #appHolidayValue,header.brand-header>#appDateTime #appHolidayValue{bottom:8px!important;left:50%!important;top:auto!important;transform:translateX(-50%)!important;z-index:35!important}',
+    '@media(max-width:520px){header.top.brand-header,header.brand-header,.brand-header{height:104px!important;min-height:104px!important;max-height:104px!important}header.top.brand-header>#appDateTime .app-datetime-date,header.brand-header>#appDateTime .app-datetime-date{top:6px!important;left:7px!important;width:47%!important;max-width:47%!important}header.top.brand-header>#appDateTime .app-datetime-clock,header.brand-header>#appDateTime .app-datetime-clock{top:6px!important;right:7px!important;width:47%!important;max-width:47%!important}}',
+    '@media(max-width:360px){header.top.brand-header>#appDateTime .app-datetime-date,header.brand-header>#appDateTime .app-datetime-date{left:6px!important;width:48%!important;max-width:48%!important}header.top.brand-header>#appDateTime .app-datetime-clock,header.brand-header>#appDateTime .app-datetime-clock{right:6px!important;width:48%!important;max-width:48%!important}}'
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
