@@ -536,6 +536,9 @@
         const selectedFile = videoInput.files && videoInput.files[0];
         if (!selectedFile) return;
         const sizeMb = (selectedFile.size / (1024 * 1024)).toFixed(1);
+        const titleField = form.elements.namedItem('title');
+        // A video-only notice is valid; use the selected filename as its default title.
+        if (titleField && !titleField.value.trim()) titleField.value = String(selectedFile.name || '').replace(/\\.[^.]+$/, '').trim();
         // Intentionally do not read, decode, preview, or compress the File on selection.
         setStatus(t('Selected: ','ရွေးထားသည်: ')+selectedFile.name+' ('+sizeMb+' MB). '+t('Press Save message when ready.','သိမ်းရန် Save message ကိုနှိပ်ပါ။'));
       });
@@ -560,10 +563,11 @@
         const date = form.elements.namedItem('message_date').value;
         const from = form.elements.namedItem('display_from').value;
         const until = form.elements.namedItem('display_until').value;
-        const title = form.elements.namedItem('title').value.trim();
+        const titleField = form.elements.namedItem('title');
         const message = form.elements.namedItem('message').value.trim();
-        const active = form.elements.namedItem('is_active').checked;
         const videoFile = form.elements.namedItem('video_file').files[0] || null;
+        const title = titleField.value.trim() || (videoFile ? String(videoFile.name || '').replace(/\\.[^.]+$/, '').trim() : '');
+        const active = form.elements.namedItem('is_active').checked;
         const videoUrl = form.elements.namedItem('video_url').value.trim();
         const removeVideo = form.elements.namedItem('remove_video').checked;
         const editingId = host.dataset.editingDayMessage || '';
