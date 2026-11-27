@@ -1702,7 +1702,7 @@
         '#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){font-size:clamp(11px,2.8vw,15px)!important;line-height:1.2!important;white-space:nowrap!important}',
         '#openMenu{position:absolute!important;top:auto!important;left:8px!important;right:auto!important;bottom:7px!important;z-index:10080!important}',
         '#staffAlarmHeaderButton{position:absolute!important;top:auto!important;left:auto!important;right:8px!important;bottom:7px!important;z-index:10080!important}',
-        'main.wrap{margin-top:112px!important}',
+        'main.wrap{margin-top:112px!important;padding-top:0!important}main.wrap>#stats{margin-top:0!important}',
         '@media(max-width:360px){#appDateTime .app-datetime-date{left:6px!important;width:48%!important;max-width:48%!important}#appDateTime .app-datetime-clock{right:6px!important;width:48%!important;max-width:48%!important}}'
       ].join('');
       (document.head||document.documentElement).appendChild(style);
