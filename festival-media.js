@@ -1350,13 +1350,7 @@
         el.style.setProperty('line-height','1.1','important');
         el.style.setProperty('letter-spacing','.12em','important');
       });
-      date.querySelectorAll('*').forEach(el=>{
-        if(!el.classList.contains('app-datetime-caption')){
-          el.style.setProperty('font-size','clamp(13px,2.6vw,18px)','important');
-          el.style.setProperty('line-height','1.2','important');
-          el.style.setProperty('white-space','nowrap','important');
-        }
-      });
+      // Let the final responsive stylesheet size weekday, festival and notice labels.
     }
     if(clock){
       clock.style.setProperty('max-width','48%','important');
