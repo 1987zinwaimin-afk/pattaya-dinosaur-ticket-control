@@ -1502,3 +1502,16 @@
   ].join('');
   (document.head||document.documentElement).appendChild(style);
 })();
+
+
+/* Drawer must sit above the fixed header's inline z-index (10060). */
+(function(){
+  if(document.getElementById('pdk-header-drawer-above-fixed-v2')) return;
+  const style=document.createElement('style');
+  style.id='pdk-header-drawer-above-fixed-v2';
+  style.textContent=[
+    '#sidebar,#sideMenu,#side-menu,.sidebar,.side-menu,.side-drawer,.menu-drawer,.nav-drawer,.navigation-drawer,.offcanvas,.drawer,[role="dialog"]{z-index:10080!important}',
+    '.sidebar-backdrop,.side-menu-backdrop,.menu-backdrop,.drawer-backdrop,.offcanvas-backdrop{z-index:10070!important}'
+  ].join('');
+  (document.head||document.documentElement).appendChild(style);
+})();
