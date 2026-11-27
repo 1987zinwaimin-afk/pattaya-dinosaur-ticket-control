@@ -354,6 +354,7 @@
       card.classList.remove('has-normal-day-message');
       const video = card.querySelector('.pdk-festival-video');
       if (video && video.dataset.normalDayManaged === 'yes') {
+        card.style.removeProperty('--pdk-normal-day-video-zoom');
         const source = video.querySelector('source');
         video.pause();
         if (source) source.removeAttribute('src'); else video.removeAttribute('src');
@@ -386,7 +387,20 @@
       const normalVideoSource = row.video_path ? await signedUrl(row.video_path) : (row.video_url || '');
       const videoOnlyNotice = !!normalVideoSource && !row.message;
       const normalDayZoom = Math.max(60,Math.min(150,Number(row.video_zoom)||100));
-      if (video) video.style.transform = normalVideoSource ? 'scale('+(normalDayZoom/100)+')' : '';
+      // Zoom only the rendered Date & Time viewport; never alter or re-encode the uploaded source.
+      card.style.setProperty('--pdk-normal-day-video-zoom', String(normalDayZoom/100));
+      if (video) {
+        video.style.position = 'absolute';
+        video.style.inset = '0';
+        video.style.width = '100%';
+        video.style.height = '100%';
+        video.style.maxWidth = 'none';
+        video.style.maxHeight = 'none';
+        video.style.objectFit = 'cover';
+        video.style.objectPosition = 'center center';
+        video.style.transformOrigin = 'center center';
+        video.style.transform = normalVideoSource ? 'scale('+(normalDayZoom/100)+')' : '';
+      }
       // A video-only notice must show its video, not the uploaded filename as a text title.
       if (title) { title.textContent = row.title || ''; title.hidden = !row.title || videoOnlyNotice; }
       if (message) { message.textContent = row.message || ''; message.hidden = !row.message; }
@@ -549,7 +563,20 @@
         if (zoomOutput) zoomOutput.textContent = zoom+'%';
         const card = document.getElementById('appDateTime');
         const video = card?.querySelector('.pdk-festival-video');
-        if (card?.classList.contains('has-owner-festival-video') && video) video.style.transform = 'scale('+(zoom/100)+')';
+        if (!card) return;
+        card.style.setProperty('--pdk-normal-day-video-zoom', String(zoom/100));
+        if (video && (video.dataset.normalDayManaged === 'yes' || card.classList.contains('has-owner-festival-video'))) {
+          video.style.position = 'absolute';
+          video.style.inset = '0';
+          video.style.width = '100%';
+          video.style.height = '100%';
+          video.style.maxWidth = 'none';
+          video.style.maxHeight = 'none';
+          video.style.objectFit = 'cover';
+          video.style.objectPosition = 'center center';
+          video.style.transformOrigin = 'center center';
+          video.style.transform = 'scale('+(zoom/100)+')';
+        }
       };
       zoomInput?.addEventListener('input',()=>applyZoomPreview(zoomInput.value));
       videoInput?.addEventListener('change', () => {
@@ -1159,7 +1186,8 @@
   style.id='pdk-festival-video-visibility-fix-v5';
   style.textContent=
     '#appDateTime .pdk-auto-festival-canvas,#appDateTime .pdk-calendar-preview-video,#appDateTime .pdk-calendar-preview-gif,#appDateTime .pdk-calendar-preview-art{display:none!important}'+
-    '#appDateTime .pdk-festival-video{display:block!important;visibility:visible!important;opacity:0!important;z-index:1!important}'+
+    '#appDateTime{position:relative!important;overflow:hidden!important}'+
+     '#appDateTime .pdk-festival-video{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center center!important;transform-origin:center center!important;visibility:visible!important;opacity:0!important;z-index:1!important}'+
     '#appDateTime.pdk-video-ready .pdk-festival-video{opacity:1!important}'+
     '#appDateTime .pdk-festival-scene{display:none!important}'+
     '#appDateTime.pdk-video-ready .pdk-festival-scene{display:none!important}'+
