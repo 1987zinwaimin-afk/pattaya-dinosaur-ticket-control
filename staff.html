@@ -7836,3 +7836,56 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
   }
 }
 </style>
+<style id="pdk-staff-department-actions-one-row-v1">
+/* Compact the main department action bar only; keep Date/Time card untouched. */
+@media(max-width:700px){
+  #pageContent > .actions:has(#ticketArchiveOpen){
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    align-items:stretch!important;
+    gap:6px!important;
+    width:100%!important;
+    margin:10px 0 12px!important;
+  }
+  #pageContent > .actions:has(#ticketRangeCalcBtn){
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:40px!important;
+    height:40px!important;
+    padding:5px 2px!important;
+    margin:0!important;
+    border-radius:10px!important;
+    font-size:clamp(9px,2.8vw,11px)!important;
+    line-height:1.1!important;
+    font-weight:800!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn{
+    min-width:0!important;
+    width:100%!important;
+    height:40px!important;
+    min-height:40px!important;
+    padding:5px!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn svg{
+    width:21px!important;
+    height:21px!important;
+  }
+}
+@media(max-width:360px){
+  #pageContent > .actions:has(#ticketArchiveOpen){gap:4px!important}
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{
+    font-size:9px!important;
+    padding:4px 1px!important;
+    border-radius:9px!important;
+  }
+}
+</style>
