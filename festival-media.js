@@ -1709,13 +1709,13 @@
     const card=document.getElementById('appDateTime');
     const header=document.querySelector('header.top.brand-header,header.brand-header,.brand-header');
     if(!card||!header||!card.querySelector('.pdk-festival-art')) return;
-    if(!document.getElementById('pdk-datetime-top-header-structure-v3')){
+    if(!document.getElementById('pdk-datetime-top-header-structure-v4')){
       const style=document.createElement('style');
-      style.id='pdk-datetime-top-header-structure-v3';
+      style.id='pdk-datetime-top-header-structure-v4';
       style.textContent=[
-        'header.top.brand-header,header.brand-header,.brand-header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--pdk-live-header-height,112px)!important;min-height:var(--pdk-live-header-height,112px)!important;max-height:none!important;margin:0!important;padding:0!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;z-index:10062!important;box-sizing:border-box!important}',
+        'header.top.brand-header,header.brand-header,.brand-header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--pdk-live-header-height,112px)!important;min-height:var(--pdk-live-header-height,112px)!important;max-height:none!important;margin:0!important;padding:0!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;z-index:10062!important;box-sizing:border-box!important;transition:none!important}',
         'header.top.brand-header .brand-banner,header.brand-header .brand-banner,header.brand-header .green-dino-cover{display:none!important;visibility:hidden!important}',
-        '#appDateTime{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:auto!important;width:100%!important;max-width:none!important;height:var(--pdk-live-header-height,112px)!important;min-height:var(--pdk-live-header-height,112px)!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;z-index:10061!important;isolation:isolate!important}',
+        '#appDateTime{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:auto!important;width:100%!important;max-width:none!important;height:var(--pdk-live-header-height,112px)!important;min-height:var(--pdk-live-header-height,112px)!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;z-index:10061!important;isolation:isolate!important;transition:none!important}',
         '#appDateTime .pdk-festival-art{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;overflow:hidden!important}',
         '#appDateTime .pdk-festival-video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center center!important}',
         '#appDateTime .app-datetime-date{position:absolute!important;top:8px!important;left:8px!important;right:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;gap:4px!important;white-space:nowrap!important;z-index:30!important}',
@@ -1730,47 +1730,67 @@
       (document.head||document.documentElement).appendChild(style);
     }
     const video=card.querySelector('.pdk-festival-video');
-    const updateHeight=()=>{
-      let height=window.matchMedia('(max-width:520px)').matches?104:112;
-      if(card.classList.contains('has-owner-festival-video')&&video&&video.videoWidth>0&&video.videoHeight>0){
-        const width=card.getBoundingClientRect().width||document.documentElement.clientWidth||window.innerWidth;
-        height=Math.max(1,Math.ceil(width*video.videoHeight/video.videoWidth));
+    const mobile=window.matchMedia('(max-width:520px)');
+    let stableRatio=0;
+    let lastAppliedHeight=0;
+    let framePending=false;
+    function applyHeight(){
+      framePending=false;
+      const width=Math.max(1,document.documentElement.clientWidth||window.innerWidth||card.getBoundingClientRect().width);
+      const base=mobile.matches?104:112;
+      let height=base;
+      if(card.classList.contains('has-owner-festival-video')){
+        const ratio=stableRatio||(video&&video.videoWidth>0&&video.videoHeight>0?video.videoWidth/video.videoHeight:16/9);
+        height=Math.max(base,Math.ceil(width/ratio));
       }
+      if(Math.abs(height-lastAppliedHeight)<2)return;
+      lastAppliedHeight=height;
       const value=height+'px';
       document.documentElement.style.setProperty('--pdk-live-header-height',value);
       header.style.setProperty('height',value,'important');
       header.style.setProperty('min-height',value,'important');
-      header.style.setProperty('max-height','none','important');
       card.style.setProperty('height',value,'important');
       card.style.setProperty('min-height',value,'important');
-      card.style.setProperty('max-height','none','important');
-      card.style.setProperty('aspect-ratio','auto','important');
       document.body.style.setProperty('padding-top',value,'important');
-    };
-    if(!card.dataset.pdkStableHeaderBound){
-      card.dataset.pdkStableHeaderBound='1';
+    }
+    function scheduleHeight(){
+      if(framePending)return;
+      framePending=true;
+      requestAnimationFrame(applyHeight);
+    }
+    if(!card.dataset.pdkStableHeaderBoundV4){
+      card.dataset.pdkStableHeaderBoundV4='1';
       if(video){
-        ['loadedmetadata','loadeddata','resize'].forEach(name=>video.addEventListener(name,updateHeight));
-        video.addEventListener('emptied',updateHeight);
-        new MutationObserver(updateHeight).observe(video,{childList:true,subtree:true,attributes:true,attributeFilter:['src']});
+        function readRatio(){
+          if(video.videoWidth>0&&video.videoHeight>0){
+            const next=video.videoWidth/video.videoHeight;
+            if(Number.isFinite(next)&&next>0)stableRatio=next;
+            scheduleHeight();
+          }
+        }
+        video.addEventListener('loadedmetadata',readRatio);
+        video.addEventListener('loadeddata',readRatio);
+        const sourceObserver=new MutationObserver(function(){
+          /* Keep the last valid ratio while a replacement source loads. */
+          if(video.readyState>=1)readRatio();
+          else scheduleHeight();
+        });
+        sourceObserver.observe(video,{attributes:true,attributeFilter:['src']});
       }
+      window.addEventListener('resize',scheduleHeight,{passive:true});
+      window.addEventListener('orientationchange',scheduleHeight,{passive:true});
       if(window.ResizeObserver){
-        let lastWidth=0;
-        new ResizeObserver(entries=>{
-          const width=Math.round(entries[0]?.contentRect?.width||0);
-          if(width&&width!==lastWidth){lastWidth=width;updateHeight();}
-        }).observe(card);
-      }else{
-        window.addEventListener('resize',updateHeight,{passive:true});
+        new ResizeObserver(scheduleHeight).observe(document.documentElement);
       }
-      window.addEventListener('resize',updateHeight,{passive:true});
+      const classObserver=new MutationObserver(scheduleHeight);
+      classObserver.observe(card,{attributes:true,attributeFilter:['class']});
     }
     header.style.setProperty('position','fixed','important');
     header.style.setProperty('top','0','important');
     header.style.setProperty('left','0','important');
     header.style.setProperty('right','0','important');
     header.style.setProperty('width','100%','important');
-    updateHeight();
+    scheduleHeight();
   }
   mountDateTimeTopBar();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mountDateTimeTopBar);
