@@ -7767,52 +7767,7 @@ function monthlyReportBuildHtml(data){
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
  '
-<script id="pdk-owner-datetime-intrinsic-ratio-v6">
-(function(){
- 'use strict';
- var card=document.getElementById('appDateTime');
- if(!card)return;
- var video=card.querySelector('.pdk-festival-video');
- if(!video)return;
- function applySourceRatio(){
-  if(!card.classList.contains('has-owner-festival-video'))return;
-  var w=video.videoWidth,h=video.videoHeight;
-  if(!(w>0&&h>0))return;
-  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);\n  card.style.aspectRatio=w+' / '+h;
-  card.style.height='auto';
-  card.style.minHeight='0';
-  card.style.maxHeight='none';
-  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);
-  var header=card.closest('header.brand-header');
-  if(header){
-   var sync=function(){
-    var height=Math.ceil(header.getBoundingClientRect().height);
-    if(height>0)document.documentElement.style.setProperty('--pdk-header-height',height+'px');
-    document.body.style.setProperty('padding-top',height+'px','important');
-   };
-   requestAnimationFrame(sync);
-   if(window.ResizeObserver&&!header.__pdkRatioObserver){
-    header.__pdkRatioObserver=new ResizeObserver(sync);
-    header.__pdkRatioObserver.observe(header);
-   }
-  }
- }
- video.addEventListener('loadedmetadata',applySourceRatio);
- video.addEventListener('loadeddata',applySourceRatio);
- video.addEventListener('resize',applySourceRatio);
- var observer=new MutationObserver(function(records){
-  for(var i=0;i<records.length;i++){
-   if(records[i].type==='attributes'&&records[i].attributeName==='src'){
-    card.style.setProperty('--pdk-owner-video-ratio','16 / 9');\n    card.style.aspectRatio='16 / 9';
-   }
-  }
- });
- observer.observe(video,{attributes:true,attributeFilter:['src']});
- if(video.readyState>=1)applySourceRatio();
- var classObserver=new MutationObserver(function(){if(card.classList.contains('has-owner-festival-video'))applySourceRatio();});
- classObserver.observe(card,{attributes:true,attributeFilter:['class']});
-})();
-</script>
+
 </body></html>';
 
 }
@@ -9799,6 +9754,52 @@ header.brand-header #ownerEmergencyAlarmHeader{right:8px!important;top:50%!impor
 }
 </style>
 
+<script id="pdk-owner-datetime-intrinsic-ratio-v6">
+(function(){
+ 'use strict';
+ var card=document.getElementById('appDateTime');
+ if(!card)return;
+ var video=card.querySelector('.pdk-festival-video');
+ if(!video)return;
+ function applySourceRatio(){
+  if(!card.classList.contains('has-owner-festival-video'))return;
+  var w=video.videoWidth,h=video.videoHeight;
+  if(!(w>0&&h>0))return;
+  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);\n  card.style.aspectRatio=w+' / '+h;
+  card.style.height='auto';
+  card.style.minHeight='0';
+  card.style.maxHeight='none';
+  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);
+  var header=card.closest('header.brand-header');
+  if(header){
+   var sync=function(){
+    var height=Math.ceil(header.getBoundingClientRect().height);
+    if(height>0)document.documentElement.style.setProperty('--pdk-header-height',height+'px');
+    document.body.style.setProperty('padding-top',height+'px','important');
+   };
+   requestAnimationFrame(sync);
+   if(window.ResizeObserver&&!header.__pdkRatioObserver){
+    header.__pdkRatioObserver=new ResizeObserver(sync);
+    header.__pdkRatioObserver.observe(header);
+   }
+  }
+ }
+ video.addEventListener('loadedmetadata',applySourceRatio);
+ video.addEventListener('loadeddata',applySourceRatio);
+ video.addEventListener('resize',applySourceRatio);
+ var observer=new MutationObserver(function(records){
+  for(var i=0;i<records.length;i++){
+   if(records[i].type==='attributes'&&records[i].attributeName==='src'){
+    card.style.setProperty('--pdk-owner-video-ratio','16 / 9');\n    card.style.aspectRatio='16 / 9';
+   }
+  }
+ });
+ observer.observe(video,{attributes:true,attributeFilter:['src']});
+ if(video.readyState>=1)applySourceRatio();
+ var classObserver=new MutationObserver(function(){if(card.classList.contains('has-owner-festival-video'))applySourceRatio();});
+ classObserver.observe(card,{attributes:true,attributeFilter:['class']});
+})();
+</script>
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
