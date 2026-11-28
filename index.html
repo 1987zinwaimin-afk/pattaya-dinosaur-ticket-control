@@ -4845,6 +4845,29 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 }
 </style>
 
+
+<style id="pdk-owner-datetime-intrinsic-ratio-v6">
+/* Use the saved video's real dimensions for the full-width fixed header.
+   The hero grows to the source aspect ratio; the entire frame remains visible. */
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video{
+ position:relative!important;box-sizing:border-box!important;
+ display:flex!important;width:100%!important;max-width:none!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ aspect-ratio:16/9!important;padding:0!important;margin:0!important;
+ overflow:hidden!important;isolation:isolate!important;background:#050b16!important;
+}
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ display:block!important;overflow:hidden!important;visibility:visible!important;opacity:1!important;
+ background:#050b16!important;z-index:0!important;
+}
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ min-width:0!important;min-height:0!important;max-width:100%!important;max-height:100%!important;
+ display:block!important;object-fit:contain!important;object-position:center!important;
+ transform:none!important;background:#050b16!important;opacity:1!important;visibility:visible!important;
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
@@ -7743,7 +7766,54 @@ function monthlyReportBuildHtml(data){
  '<h2>Daily ticket details</h2>'+dailySections+
  '<section class="monthly"><h2>Monthly total by ticket type</h2><table><thead><tr><th>Department</th><th>Ticket type</th><th>Unit price (THB)</th><th>Total tickets</th><th>Total sales (THB)</th></tr></thead><tbody>'+monthlyRows+'</tbody><tfoot><tr><th colspan="3">MONTHLY GRAND TOTAL</th><th class="num">'+data.totalQuantity.toLocaleString('en-US')+'</th><th class="num">'+fmtMoney(data.totalAmount)+'</th></tr></tfoot></table><div class="grand"><strong>MONTHLY GRAND TOTAL</strong><strong>'+data.totalQuantity.toLocaleString('en-US')+' tickets · '+fmtMoney(data.totalAmount)+'</strong></div></section>'+
  '<p class="foot">Generated from saved daily ticket sales records. No ticket or staff data was changed.</p>'+
- '</body></html>';
+ '
+<script id="pdk-owner-datetime-intrinsic-ratio-v6">
+(function(){
+ 'use strict';
+ var card=document.getElementById('appDateTime');
+ if(!card)return;
+ var video=card.querySelector('.pdk-festival-video');
+ if(!video)return;
+ function applySourceRatio(){
+  if(!card.classList.contains('has-owner-festival-video'))return;
+  var w=video.videoWidth,h=video.videoHeight;
+  if(!(w>0&&h>0))return;
+  card.style.aspectRatio=w+' / '+h;
+  card.style.height='auto';
+  card.style.minHeight='0';
+  card.style.maxHeight='none';
+  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);
+  var header=card.closest('header.brand-header');
+  if(header){
+   var sync=function(){
+    var height=Math.ceil(header.getBoundingClientRect().height);
+    if(height>0)document.documentElement.style.setProperty('--pdk-header-height',height+'px');
+    document.body.style.paddingTop=height+'px';
+   };
+   requestAnimationFrame(sync);
+   if(window.ResizeObserver&&!header.__pdkRatioObserver){
+    header.__pdkRatioObserver=new ResizeObserver(sync);
+    header.__pdkRatioObserver.observe(header);
+   }
+  }
+ }
+ video.addEventListener('loadedmetadata',applySourceRatio);
+ video.addEventListener('loadeddata',applySourceRatio);
+ video.addEventListener('resize',applySourceRatio);
+ var observer=new MutationObserver(function(records){
+  for(var i=0;i<records.length;i++){
+   if(records[i].type==='attributes'&&records[i].attributeName==='src'){
+    card.style.aspectRatio='16 / 9';
+   }
+  }
+ });
+ observer.observe(video,{attributes:true,attributeFilter:['src']});
+ if(video.readyState>=1)applySourceRatio();
+ var classObserver=new MutationObserver(function(){if(card.classList.contains('has-owner-festival-video'))applySourceRatio();});
+ classObserver.observe(card,{attributes:true,attributeFilter:['class']});
+})();
+</script>
+</body></html>';
 
 }
 function monthlyReportExcelContent(data){
