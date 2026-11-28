@@ -2297,6 +2297,20 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .mk-dashboard-head h2{font-size:clamp(1.45rem,3vw,2rem);margin:0;color:#fff}
 .mk-dashboard-head p{margin:5px 0 0;color:#afc4d9}
 .mk-dashboard-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mk-kpi-sub{display:block;margin-top:7px;color:#b6c9dc;font-size:.75rem;font-weight:600}
+.mk-sales-section{display:grid;gap:8px}
+.mk-sales-period{flex:0 0 auto;padding:6px 9px;border:1px solid rgba(255,215,120,.28);border-radius:999px;color:#ffe09a;font-size:.68rem;font-weight:800;letter-spacing:.08em}
+.mk-sales-trend-list{display:grid;gap:12px}
+.mk-sales-trend-row{display:grid;grid-template-columns:minmax(86px,.55fr) minmax(70px,1fr) auto;gap:12px;align-items:center}
+.mk-sales-trend-label{display:grid;gap:3px}
+.mk-sales-trend-label b{color:#fff;font-size:.84rem}
+.mk-sales-trend-label span,.mk-sales-muted{color:#a9bfd3;font-size:.76rem}
+.mk-sales-trend-track{height:10px;overflow:hidden;border-radius:999px;background:#07182a;border:1px solid rgba(255,255,255,.08)}
+.mk-sales-trend-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#d79e36,#ffe6a4)}
+.mk-sales-trend-row>strong{color:#ffe09a;font-size:.82rem;text-align:right;white-space:nowrap}
+.mk-sales-muted{margin:8px 0 0}
+.mk-sales-error{margin:0;padding:10px 12px;border-radius:12px;background:rgba(140,45,45,.18);color:#ffc5c5;font-size:.82rem}
+
 .mk-kpi{position:relative;overflow:hidden;padding:17px;border-radius:20px;background:linear-gradient(145deg,rgba(21,62,94,.9),rgba(7,27,47,.94));border:1px solid rgba(145,185,215,.25);box-shadow:var(--mk-shadow)}
 .mk-kpi:after{content:"";position:absolute;width:100px;height:100px;right:-34px;top:-38px;border-radius:50%;background:rgba(255,215,120,.08)}
 .mk-kpi-label{display:flex;align-items:center;gap:8px;color:#c0d1e0;font-size:.82rem;font-weight:700}
@@ -2339,7 +2353,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 @media(max-width:760px){
  .wrap{padding:12px 12px 34px}
  .mk-dashboard{gap:12px}
- .mk-dashboard-kpis{gap:8px}
+ .mk-dashboard-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .mk-sales-trend-row{grid-template-columns:74px minmax(45px,1fr) auto;gap:7px}
+ .mk-sales-trend-row>strong{font-size:.72rem}
+ .mk-sales-trend-label span{font-size:.68rem}
  .mk-kpi{padding:12px;border-radius:16px}
  .mk-kpi-label{font-size:.72rem;gap:5px}
  .mk-kpi-value{font-size:1.15rem;margin-top:6px}
@@ -6900,7 +6917,72 @@ function renderSettings(){
   const retry=root.querySelector('#settingsRetry');if(retry)retry.addEventListener('click',()=>render(true));
  }
 }
+async function loadDashboardSales(root){
+ const panel=root.querySelector('#dashSalesSummary');
+ if(!panel)return;
+ if(!currentUser||!cloudReady||!navigator.onLine){
+  panel.innerHTML='<p class="mk-sales-muted">Cloud sales data is unavailable while offline.</p>';
+  return;
+ }
+ panel.innerHTML='<p class="mk-sales-muted" role="status">Loading verified sales data…</p>';
+ try{
+  await captureDailyTicketSales();
+  const today=localToday();
+  const [year,month]=today.split('-');
+  const monthStart=year+'-'+month+'-01';
+  const [{data:dailyRows,error:dailyError},{data:manualRows,error:manualError}]=await Promise.all([
+   sb.from('ticket_daily_sales').select('business_date,department,quantity,total_amount,unit_price').gte('business_date',monthStart).lte('business_date',today),
+   sb.from('ticket_manual_sales').select('business_date,department,quantity,total_amount,unit_price').gte('business_date',monthStart).lte('business_date',today)
+  ]);
+  if(dailyError)throw dailyError;
+  if(manualError)throw manualError;
+  const rows=[...(dailyRows||[]),...(manualRows||[])];
+  const totalFor=row=>{
+   const amount=Number(row.total_amount);
+   return Number.isFinite(amount)?amount:Number(row.unit_price||0)*Number(row.quantity||0);
+  };
+  const todayRows=rows.filter(row=>row.business_date===today);
+  const monthQuantity=rows.reduce((sum,row)=>sum+Number(row.quantity||0),0);
+  const monthRevenue=rows.reduce((sum,row)=>sum+totalFor(row),0);
+  const todayQuantity=todayRows.reduce((sum,row)=>sum+Number(row.quantity||0),0);
+  const todayRevenue=todayRows.reduce((sum,row)=>sum+totalFor(row),0);
+  const fmt=n=>Number(n||0).toLocaleString('en-US');
+  const moneyFmt=n=>'฿'+Number(n||0).toLocaleString('en-US',{maximumFractionDigits:2});
+  const byDate=new Map();
+  rows.forEach(row=>{
+   const key=String(row.business_date||'');
+   if(!key)return;
+   const current=byDate.get(key)||{quantity:0,revenue:0};
+   current.quantity+=Number(row.quantity||0);
+   current.revenue+=totalFor(row);
+   byDate.set(key,current);
+  });
+  const days=[];
+  for(let offset=6;offset>=0;offset--){
+   const d=new Date(Number(year),Number(month)-1,Number(today.slice(8,10))-offset);
+   const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+   days.push({date:key,label:d.toLocaleDateString('en-US',{weekday:'short'}),...(byDate.get(key)||{quantity:0,revenue:0})});
+  }
+  const maxRevenue=Math.max(1,...days.map(day=>day.revenue));
+  const dailyTicketEl=root.querySelector('#dashTodayTickets');
+  const dailyRevenueEl=root.querySelector('#dashTodayRevenue');
+  const monthRevenueEl=root.querySelector('#dashMonthRevenue');
+  const monthTicketsEl=root.querySelector('#dashMonthTickets');
+  if(dailyTicketEl)dailyTicketEl.textContent=fmt(todayQuantity);
+  if(dailyRevenueEl)dailyRevenueEl.textContent=moneyFmt(todayRevenue);
+  if(monthRevenueEl)monthRevenueEl.textContent=moneyFmt(monthRevenue);
+  if(monthTicketsEl)monthTicketsEl.textContent=fmt(monthQuantity)+' tickets this month';
+  panel.innerHTML='<div class="mk-sales-trend-list">'+days.map(day=>'<div class="mk-sales-trend-row"><div class="mk-sales-trend-label"><b>'+day.label+'</b><span>'+fmt(day.quantity)+' tickets</span></div><div class="mk-sales-trend-track"><div class="mk-sales-trend-fill" style="width:'+Math.max(0,Math.min(100,day.revenue/maxRevenue*100))+'%"></div></div><strong>'+moneyFmt(day.revenue)+'</strong></div>').join('')+'</div><p class="mk-sales-muted">Based on saved daily and manual sales records · THB</p>';
+ }catch(error){
+  console.error('Dashboard sales summary could not load:',error);
+  panel.innerHTML='<p class="mk-sales-error">Sales summary could not be loaded. Please check the Cloud connection and try again.</p>';
+  const values=[root.querySelector('#dashTodayTickets'),root.querySelector('#dashTodayRevenue'),root.querySelector('#dashMonthRevenue')];
+  values.forEach(el=>{if(el)el.textContent='—'});
+ }
+}
 function renderDashboard(){
+ const root=document.getElementById('pageContent');
+ if(!root)return;
  const activeTickets=tickets.filter(t=>!t.isArchived);
  const all=activeTickets.reduce((s,t)=>s+(Number(t.quantity)||0),0);
  const val=activeTickets.reduce((s,t)=>s+(Number(t.quantity)||0)*(Number(t.price)||0),0);
@@ -6909,24 +6991,28 @@ function renderDashboard(){
   return {...d,count:a.length,qty:q,value:v};
  });
  const maxValue=Math.max(1,...deptRows.map(d=>d.value));
- const fmt=n=>Number(n||0).toLocaleString();
- document.getElementById('pageContent').innerHTML=
+ const fmt=n=>Number(n||0).toLocaleString('en-US');
+ root.innerHTML=
  '<div class="mk-dashboard">'+
  '<div class="mk-dashboard-head"><div><h2>Welcome to Ticket Control</h2><p>Owner workspace · Pattaya Dinosaur Kingdom</p></div><span class="subtle">Premium Management</span></div>'+
  '<div class="mk-dashboard-kpis">'+
- '<div class="mk-kpi"><div class="mk-kpi-label">🎟️ Ticket Types</div><strong class="mk-kpi-value">'+fmt(activeTickets.length)+'</strong></div>'+
- '<div class="mk-kpi"><div class="mk-kpi-label">👥 Recorded Quantity</div><strong class="mk-kpi-value">'+fmt(all)+'</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">🎟️ Active Ticket Types</div><strong class="mk-kpi-value">'+fmt(activeTickets.length)+'</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">📦 Ticket Stock Quantity</div><strong class="mk-kpi-value">'+fmt(all)+'</strong></div>'+
  '<div class="mk-kpi"><div class="mk-kpi-label">฿ Inventory Value</div><strong class="mk-kpi-value">'+money(val)+'</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">🎫 Tickets Sold Today</div><strong class="mk-kpi-value" id="dashTodayTickets">Loading…</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">💰 Revenue Today</div><strong class="mk-kpi-value" id="dashTodayRevenue">Loading…</strong></div>'+
+ '<div class="mk-kpi"><div class="mk-kpi-label">📈 Revenue This Month</div><strong class="mk-kpi-value" id="dashMonthRevenue">Loading…</strong><small id="dashMonthTickets" class="mk-kpi-sub">Loading monthly tickets…</small></div>'+
  '</div>'+
+ '<section class="mk-section mk-sales-section"><div class="mk-section-title"><div><h3>7-Day Sales Performance</h3><span class="subtle">Daily revenue · Thailand local date</span></div><span class="mk-sales-period">LAST 7 DAYS</span></div><div id="dashSalesSummary" aria-live="polite"><p class="mk-sales-muted">Loading verified sales data…</p></div></section>'+
  '<div class="mk-dashboard-grid"><section class="mk-section"><div class="mk-section-title"><h3>Department Overview</h3><span class="subtle">Live ticket records</span></div><div class="mk-department-grid">'+deptRows.map(d=>'<button type="button" class="mk-dept-card" data-page="'+d.id+'"><span class="mk-dept-icon">'+d.icon+'</span><span class="mk-dept-copy"><b>'+(d[lang]||d.en)+'</b><small>'+fmt(d.count)+' ticket types</small><strong>'+fmt(d.qty)+' · '+money(d.value)+'</strong></span></button>').join('')+'</div></section>'+
  '<section class="mk-section"><div class="mk-section-title"><h3>Quick Actions</h3></div><div class="mk-quick-actions"><button type="button" class="mk-quick-primary" id="dashAdd">＋ Add New Ticket</button><button type="button" data-page="train">🚆 Garden Train</button><button type="button" data-page="monthly">▥ Monthly Summary</button><button type="button" data-page="customervisits">👥 Customer Visits</button><button type="button" id="dashReport">▤ Save Dashboard Report</button></div></section></div>'+
- '<section class="mk-section"><div class="mk-section-title"><h3>Department Value Overview</h3><span class="subtle">THB</span></div><div class="mk-progress-list">'+deptRows.map(d=>'<div class="mk-progress-row"><span>'+d.icon+' '+(d[lang]||d.en)+'</span><b>'+money(d.value)+'</b><div class="mk-progress-track"><div class="mk-progress-fill" style="width:'+Math.max(0,Math.min(100,d.value/maxValue*100))+'%"></div></div></div>').join('')+'</div></section>'+
+ '<section class="mk-section"><div class="mk-section-title"><h3>Department Value Overview</h3><span class="subtle">THB · Inventory value</span></div><div class="mk-progress-list">'+deptRows.map(d=>'<div class="mk-progress-row"><span>'+d.icon+' '+(d[lang]||d.en)+'</span><b>'+money(d.value)+'</b><div class="mk-progress-track"><div class="mk-progress-fill" style="width:'+Math.max(0,Math.min(100,d.value/maxValue*100))+'%"></div></div></div>').join('')+'</div></section>'+
  '<div class="mk-dashboard-footer"><span>☁ '+tr('cloudMsg')+'</span><span>Currency: THB</span></div></div>';
- document.querySelectorAll('#pageContent [data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));
- const add=document.getElementById('dashAdd');if(add)add.onclick=()=>{page='sale';openTicket()};
- const report=document.getElementById('dashReport');if(report)report.onclick=saveReport;
+ root.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));
+ const add=root.querySelector('#dashAdd');if(add)add.onclick=()=>{page='sale';openTicket()};
+ const report=root.querySelector('#dashReport');if(report)report.onclick=saveReport;
+ loadDashboardSales(root);
 }
-
 let backdateEntryDate='',backdateSalesByTicket={};
 function localYesterday(){const d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function openBackdateDatePicker(list){
