@@ -1313,7 +1313,7 @@
     '#appDateTime .pdk-auto-festival-canvas,#appDateTime .pdk-calendar-preview-video,#appDateTime .pdk-calendar-preview-gif,#appDateTime .pdk-calendar-preview-art{display:none!important}'+
     '#appDateTime{position:relative!important;overflow:hidden!important}'+
      '#appDateTime .pdk-festival-art{overflow:hidden!important}'+
-     '#appDateTime .pdk-festival-video{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center center!important;transform-origin:center center!important;visibility:visible!important;opacity:0!important;z-index:1!important}'+
+     '#appDateTime .pdk-festival-video{display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center center!important;transform-origin:center center!important;visibility:visible!important;opacity:0!important;z-index:1!important}'+
     '#appDateTime.pdk-video-ready .pdk-festival-video{opacity:1!important}'+
     '#appDateTime .pdk-festival-scene{display:none!important}'+
     '#appDateTime.pdk-video-ready .pdk-festival-scene{display:none!important}'+
