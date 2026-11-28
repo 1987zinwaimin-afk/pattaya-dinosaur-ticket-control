@@ -9752,65 +9752,7 @@ header.brand-header #ownerEmergencyAlarmHeader{right:8px!important;top:50%!impor
 }
 </style>
 
-<script id="pdk-owner-datetime-intrinsic-ratio-v8">
-(function(){
- 'use strict';
- var card=document.getElementById('appDateTime');
- if(!card)return;
- var video=card.querySelector('.pdk-festival-video');
- if(!video)return;
- var header=card.closest('header.brand-header');
- var lastHeight=0;
- function syncPageOffset(){
-  if(!header)return;
-  var h=Math.ceil(header.getBoundingClientRect().height);
-  if(h>0&&h!==lastHeight){
-   lastHeight=h;
-   document.documentElement.style.setProperty('--pdk-header-height',h+'px');
-   document.body.style.setProperty('padding-top',h+'px','important');
-  }
- }
- function setRatio(){
-  if(!card.classList.contains('has-owner-festival-video'))return;
-  var w=video.videoWidth,h=video.videoHeight;
-  if(!(w>0&&h>0))return;
-  /* Set only the intrinsic ratio. CSS owns sizing; no competing pixel-height writes. */
-  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);
-  video.style.setProperty('object-fit','contain','important');
-  video.style.setProperty('object-position','center center','important');
-  syncPageOffset();
- }
- function resetRatio(){
-  card.style.removeProperty('--pdk-owner-video-ratio');
-  syncPageOffset();
- }
- video.addEventListener('loadedmetadata',setRatio);
- video.addEventListener('loadeddata',setRatio);
- video.addEventListener('emptied',resetRatio);
- var sourceObserver=new MutationObserver(function(records){
-  for(var i=0;i<records.length;i++){
-   if(records[i].attributeName==='src'){
-    resetRatio();
-    if(video.readyState>=1)setRatio();
-   }
-  }
- });
- sourceObserver.observe(video,{attributes:true,attributeFilter:['src']});
- var classObserver=new MutationObserver(function(){
-  if(card.classList.contains('has-owner-festival-video'))setRatio();
-  else resetRatio();
- });
- classObserver.observe(card,{attributes:true,attributeFilter:['class']});
- if(window.ResizeObserver){
-  new ResizeObserver(syncPageOffset).observe(card);
- }else{
-  window.addEventListener('resize',syncPageOffset,{passive:true});
- }
- window.addEventListener('resize',syncPageOffset,{passive:true});
- if(video.readyState>=1)setRatio();
- syncPageOffset();
-})();
-</script>
+
 </body></html>
 
 <style id="pdk-owner-login-toast-menu-clearance-v1">
@@ -10494,61 +10436,4 @@ body{padding-top:126px!important}
 
 <script src="/account-profile.js?v=20261128-1"></script>
 
-<style id="pdk-owner-datetime-full-source-final-v7">
-/* Last-in-cascade override: show the complete saved video at its intrinsic aspect ratio. */
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video{
- position:relative!important;display:flex!important;box-sizing:border-box!important;
- width:100%!important;max-width:none!important;margin:0!important;
- height:auto!important;min-height:0!important;max-height:none!important;
- aspect-ratio:var(--pdk-owner-video-ratio,16/9)!important;
- padding:0!important;overflow:hidden!important;border-radius:0!important;
-}
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
- position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
- display:block!important;overflow:hidden!important;z-index:0!important;
-}
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
- position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
- max-width:none!important;max-height:none!important;object-fit:contain!important;
- object-position:center center!important;display:block!important;visibility:visible!important;
- opacity:1!important;transform:none!important;background:#050b16!important;
-}
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .app-datetime-date,
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .app-datetime-clock{
- position:relative!important;z-index:5!important;
-}
-@media(max-width:520px){
- header.brand-header #appDateTime.app-datetime.has-owner-festival-video{
-  width:100%!important;max-width:none!important;height:auto!important;
-  min-height:0!important;max-height:none!important;aspect-ratio:var(--pdk-owner-video-ratio,16/9)!important;
-  padding:0!important;
- }
-}
-</style>
-<style id="pdk-owner-datetime-stable-ratio-final-v8">
-/* Stable intrinsic sizing: one ratio controls the card; no JS pixel-height feedback loop. */
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video{
- position:relative!important;display:flex!important;box-sizing:border-box!important;
- width:100%!important;max-width:none!important;min-width:0!important;
- height:auto!important;min-height:0!important;max-height:none!important;
- aspect-ratio:var(--pdk-owner-video-ratio,16/9)!important;
- margin:0!important;padding:0!important;overflow:hidden!important;
- border:0!important;border-radius:0!important;isolation:isolate!important;
- background:#050b16!important;
-}
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
- position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
- display:block!important;overflow:hidden!important;z-index:0!important;
-}
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
- position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
- min-width:0!important;min-height:0!important;max-width:100%!important;max-height:100%!important;
- object-fit:contain!important;object-position:center center!important;
- display:block!important;visibility:visible!important;opacity:1!important;
- background:#050b16!important;transform:none!important;
-}
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .app-datetime-date,
-header.brand-header #appDateTime.app-datetime.has-owner-festival-video .app-datetime-clock{
- position:relative!important;z-index:5!important;
-}
-</style>
+
