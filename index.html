@@ -7844,7 +7844,62 @@ function printCustomerVisitQr(row,qrData){
  return frame
 }
 async function checkoutCustomerVisitQr(raw){const m=String(raw||'').trim().match(/^PDKCV:([0-9a-f-]{36})$/i);if(!m)throw new Error('Invalid Customer Visit QR');const {data:r,error}=await sb.from('customer_visit_logs').select('id,group_number,total_visitors,status,exit_at').eq('id',m[1]).maybeSingle();if(error)throw error;if(!r)throw new Error('Group record not found');if(r.status==='completed'||r.exit_at)return {already:true,row:r};const at=new Date().toISOString(),{data,error:updateError}=await sb.from('customer_visit_logs').update({status:'completed',exit_at:at}).eq('id',r.id).eq('status','pending').select('id').maybeSingle();if(updateError)throw updateError;if(!data)return {already:true,row:r};return {already:false,row:r}}
-async function scanCustomerVisitQr(){await ensureCustomerVisitScannerLib();const old=document.getElementById('customerVisitScanModal');if(old)old.remove();const m=document.createElement('div');m.id='customerVisitScanModal';m.style.cssText='position:fixed;inset:0;z-index:10070;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px';m.innerHTML='<section class="panel" style="width:min(100%,460px);padding:14px;background:#0b2037"><div style="display:flex;justify-content:space-between"><h2>📷 Scan Group QR</h2><button id="cvScanClose">✕</button></div><p class="subtle">Scan the same QR when the group exits.</p><div id="cvQrReader" style="background:#fff;border-radius:12px"></div><p id="cvScanStatus" class="subtle">Starting camera…</p><label>Manual QR fallback<input id="cvManualQr" placeholder="PDKCV:…"></label><button id="cvManualScan" class="gold" style="width:100%">Confirm Manual Scan</button></section>';document.body.appendChild(m);const status=document.getElementById('cvScanStatus');const close=async()=>{try{if(customerVisitScanner){await customerVisitScanner.stop();await customerVisitScanner.clear()}}catch(e){}customerVisitScanner=null;m.remove()};document.getElementById('cvScanClose').onclick=close;const done=async raw=>{try{status.textContent='Checking group…';if(customerVisitScanner)try{await customerVisitScanner.stop()}catch(e){}const result=await checkoutCustomerVisitQr(raw);status.textContent=result.already?'Already checked out — duplicate scan ignored.':'✓ Group #'+(result.row.group_number||'')+' checked out.';await loadCustomerVisits();setTimeout(close,1400)}catch(e){status.textContent=e.message||String(e)}};document.getElementById('cvManualScan').onclick=()=>done(document.getElementById('cvManualQr').value);try{customerVisitScanner=new Html5Qrcode('cvQrReader');await customerVisitScanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},done,()=>{});status.textContent='Camera ready — scan a group QR.'}catch(e){status.textContent='Camera unavailable: '+(e.message||e)+'. Use manual QR text below.'}}
+async function scanCustomerVisitQr(){
+ const prior=document.getElementById('customerVisitScanModal');
+ if(prior)prior.remove();
+ try{await ensureCustomerVisitScannerLib()}catch(error){alert('QR scanner could not start: '+(error.message||error));return}
+ const m=document.createElement('div');
+ m.id='customerVisitScanModal';
+ m.style.cssText='position:fixed;inset:0;z-index:10070;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px';
+ m.innerHTML='<section class="panel" role="dialog" aria-modal="true" aria-labelledby="cvScanTitle" style="width:min(100%,460px);padding:14px;background:#0b2037"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="cvScanTitle">📷 Scan Group QR</h2><button type="button" id="cvScanClose" aria-label="Close QR scanner">✕</button></div><p class="subtle">Scan the same QR when the group exits.</p><div id="cvQrReader" style="background:#fff;border-radius:12px;overflow:hidden"></div><p id="cvScanStatus" class="subtle" role="status" aria-live="polite">Starting camera…</p><label>Manual QR fallback<input id="cvManualQr" autocomplete="off" placeholder="PDKCV:…"></label><button type="button" id="cvManualScan" class="gold" style="width:100%">Confirm Manual Scan</button></section>';
+ document.body.appendChild(m);
+ const status=m.querySelector('#cvScanStatus'),manual=m.querySelector('#cvManualScan');
+ let scanner=null,scannerRunning=false,processing=false,closed=false;
+ const stopCamera=async()=>{
+  if(!scanner)return;
+  if(scannerRunning){try{await scanner.stop()}catch(error){console.warn('QR camera stop:',error)}scannerRunning=false}
+  try{await scanner.clear()}catch(error){console.warn('QR camera clear:',error)}
+  if(customerVisitScanner===scanner)customerVisitScanner=null;
+ };
+ const close=async()=>{
+  if(closed)return;
+  closed=true;
+  await stopCamera();
+  if(m.isConnected)m.remove();
+  document.removeEventListener('keydown',onKeyDown);
+ };
+ const onKeyDown=e=>{if(e.key==='Escape'&&m.isConnected)close()};
+ document.addEventListener('keydown',onKeyDown);
+ m.addEventListener('click',e=>{if(e.target===m)close()});
+ m.querySelector('#cvScanClose').onclick=close;
+ const done=async raw=>{
+  if(closed||processing)return;
+  processing=true;manual.disabled=true;
+  status.textContent='Checking group…';
+  await stopCamera();
+  try{
+   const result=await checkoutCustomerVisitQr(raw);
+   if(closed)return;
+   status.textContent=result.already?'Already checked out — duplicate scan ignored.':'✓ Group #'+(result.row.group_number||'')+' checked out.';
+   await loadCustomerVisits();
+   if(!closed)setTimeout(close,1400);
+  }catch(error){
+   if(!closed){status.textContent=error.message||String(error);processing=false;manual.disabled=false}
+  }
+ };
+ manual.onclick=()=>done(m.querySelector('#cvManualQr').value);
+ try{
+  scanner=new Html5Qrcode('cvQrReader');
+  customerVisitScanner=scanner;
+  await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},done,()=>{});
+  scannerRunning=true;
+  if(!closed)status.textContent='Camera ready — scan a group QR.';
+  else await stopCamera();
+ }catch(error){
+  await stopCamera();
+  if(!closed)status.textContent='Camera unavailable: '+(error.message||error)+'. Use manual QR text below.';
+ }
+}
 
 async function renderCustomerVisits(){
  const root=document.getElementById('pageContent');root.dataset.uiPage='customervisits';
