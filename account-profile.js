@@ -60,7 +60,7 @@
    '<div class="pdk-ap-head"><div><h2 id="pdkAccountProfileTitle">👤 My Profile</h2><p class="pdk-ap-sub" id="pdkAccountProfileSubtitle">Personal and contact information</p></div><button type="button" class="pdk-ap-close" id="pdkAccountProfileClose" aria-label="Close">×</button></div>'+
    '<div class="pdk-ap-avatar" id="pdkAccountProfileAvatar"></div>'+
    '<form id="pdkAccountProfileForm">'+
-   '<div class="pdk-ap-readonly" id="pdkAccountProfileStaffMeta" hidden><div><span>Staff ID</span><strong id="pdkAccountProfileStaffId">—</strong></div><div><span>Department</span><strong id="pdkAccountProfileDepartment">—</strong></div></div>'+
+   '<div class="pdk-ap-readonly" id="pdkAccountProfileStaffMeta" hidden><div><span>Staff ID</span><strong id="pdkAccountProfileStaffId">—</strong></div><div><label for="pdkAccountProfileDepartment"><span>Department / ဌာန *</span><select id="pdkAccountProfileDepartment" required><option value="">Select Department</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option></select></label></div></div>'+
    '<label for="pdkAccountProfileName"><span id="pdkAccountProfileNameLabel">Full name / အမည်</span><input id="pdkAccountProfileName" maxlength="80" autocomplete="name" required></label>'+
    '<div class="pdk-ap-grid"><label for="pdkAccountProfileBirth">🎂 Date of birth / မွေးနေ့<input id="pdkAccountProfileBirth" type="date"></label><label for="pdkAccountProfilePhone">☎ Phone / ဖုန်း<input id="pdkAccountProfilePhone" type="tel" maxlength="40" autocomplete="tel" placeholder="+66 ..."></label></div>'+
    '<div class="pdk-ap-grid"><label for="pdkAccountProfilePlatform">Social platform<select id="pdkAccountProfilePlatform"><option value="">Select platform</option>'+platformHtml+'</select></label><label for="pdkAccountProfileSocial">Social profile link<input id="pdkAccountProfileSocial" type="url" maxlength="500" placeholder="https://..."></label></div>'+
@@ -105,6 +105,8 @@
   $('pdkAccountProfileSubtitle').textContent=isStaff?'Your details are visible to Owner in Staff Directory.':'Your Owner contact details and name used in Team Chat.';
   $('pdkAccountProfileNameLabel').textContent=isStaff?'Staff name / ဝန်ထမ်းအမည်':'Owner name / Owner အမည်';
   $('pdkAccountProfileNotesWrap').hidden=!isStaff;$('pdkAccountProfileStaffMeta').hidden=!isStaff;
+  $('pdkAccountProfileBirth').required=isStaff;
+  $('pdkAccountProfileDepartment').required=isStaff;
   $('pdkAccountProfileBirth').max=new Date().toISOString().slice(0,10);
   try{
    let values={display_name:activeProfile.display_name||'',birth_date:activeProfile.birth_date||'',phone:activeProfile.phone||'',social_platform:activeProfile.social_platform||'',social_link:activeProfile.social_link||'',notes:''};
@@ -118,7 +120,7 @@
     const source=detailRes.data||directoryRes.data||{};
     values={...values,display_name:source.display_name||values.display_name,birth_date:source.birth_date||values.birth_date,phone:source.phone||'',social_platform:source.social_platform||'',social_link:source.social_link||'',notes:source.notes||''};
     $('pdkAccountProfileStaffId').textContent=activeProfile.staff_id;
-    $('pdkAccountProfileDepartment').textContent=deptNames[directoryRes.data?.department]||directoryRes.data?.department||'Not assigned';
+    $('pdkAccountProfileDepartment').value=['sale','entry','playing','event'].includes(directoryRes.data?.department)?directoryRes.data.department:'';
    }
    $('pdkAccountProfileName').value=values.display_name;
    $('pdkAccountProfileBirth').value=String(values.birth_date||'').slice(0,10);
@@ -140,7 +142,10 @@
    const birth=$('pdkAccountProfileBirth').value||null,phone=$('pdkAccountProfilePhone').value.trim()||null;
    const platform=$('pdkAccountProfilePlatform').value||null,social=$('pdkAccountProfileSocial').value.trim()||null;
    const notes=$('pdkAccountProfileNotes').value.trim()||null;
+   const department=$('pdkAccountProfileDepartment').value;
    if(!name||name.length>80)throw new Error('Please enter a name (1–80 characters).');
+   if(activeProfile.role==='staff'&&!birth)throw new Error('Date of Birth is required.');
+   if(activeProfile.role==='staff'&&!['sale','entry','playing','event'].includes(department))throw new Error('Please select your Department.');
    if(birth&&birth>new Date().toISOString().slice(0,10))throw new Error('Date of birth cannot be in the future.');
    if(phone&&phone.length>40)throw new Error('Phone number must be 40 characters or fewer.');
    if(social&&(!/^https?:\/\//i.test(social)||social.length>500))throw new Error('Enter a valid social profile link beginning with https:// or http://.');
@@ -149,9 +154,9 @@
     if(error)throw error;if(!data)throw new Error('Owner profile was not updated. Check Owner account permissions.');
     activeProfile=data;
    }else{
-    const {data,error}=await client.from('staff_profile_details').upsert({staff_id:activeProfile.staff_id,display_name:name,birth_date:birth,phone,social_platform:platform,social_link:social,notes},{onConflict:'staff_id'}).select('staff_id,display_name,birth_date,phone,social_platform,social_link,notes').maybeSingle();
+    const {data,error}=await client.rpc('save_my_staff_profile',{p_display_name:name,p_birth_date:birth,p_department:department,p_phone:phone,p_social_platform:platform,p_social_link:social,p_notes:notes});
     if(error)throw error;if(!data)throw new Error('Staff profile was not saved. Please retry.');
-    activeProfile.display_name=data.display_name;
+    activeProfile.display_name=name;activeProfile.birth_date=birth;activeProfile.phone=phone;activeProfile.social_platform=platform;activeProfile.social_link=social;
    }
    try{await client.auth.updateUser({data:{display_name:name}})}catch(metaError){console.warn('Auth display metadata sync skipped:',metaError?.message||metaError)}
    status.textContent='✓ Profile saved. Team Chat and staff identity names will update automatically.';
