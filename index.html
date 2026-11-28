@@ -4752,6 +4752,50 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
   display:block!important;visibility:visible!important;pointer-events:none!important;
 }
 </style>
+
+<style id="pdk-owner-video-full-bleed-v2">
+/* Make the saved phone video the actual full-bleed background of the Owner Date & Time card. */
+#appDateTime.app-datetime.has-owner-festival-video{
+  position:relative!important;isolation:isolate!important;overflow:hidden!important;
+  display:flex!important;align-items:center!important;justify-content:space-between!important;
+  width:calc(100% - 24px)!important;max-width:760px!important;
+  min-height:clamp(180px,32vw,260px)!important;height:auto!important;
+  aspect-ratio:3/1!important;padding:16px 18px!important;
+  background:#071b3a!important;
+}
+#appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  display:block!important;overflow:hidden!important;opacity:1!important;visibility:visible!important;
+  z-index:0!important;pointer-events:none!important;
+}
+#appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100%!important;height:100%!important;min-width:100%!important;min-height:100%!important;
+  max-width:none!important;max-height:none!important;object-fit:cover!important;
+  object-position:50% 50%!important;opacity:1!important;visibility:visible!important;
+  z-index:0!important;pointer-events:none!important;
+}
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-date,
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-clock,
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-alarm,
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-actions{
+  position:relative!important;z-index:2!important;
+  text-shadow:0 2px 5px rgba(0,0,0,.95),0 1px 2px rgba(0,0,0,.95)!important;
+}
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-caption,
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-date span,
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-zone{
+  color:#fff!important;text-shadow:0 2px 5px #000!important;
+}
+@media(max-width:520px){
+ #appDateTime.app-datetime.has-owner-festival-video{
+  width:calc(100% - 16px)!important;max-width:none!important;
+  min-height:180px!important;height:180px!important;aspect-ratio:auto!important;
+  padding:12px!important;
+ }
+}
+</style>
+
 </head>
 <body>
 <header class="top brand-header"><div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
