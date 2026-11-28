@@ -120,7 +120,7 @@ label{color:#c0d0e0}
 
 .auth-screen{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at 20% 0%,#174a75,transparent 40%),#041326;display:grid;place-items:center;padding:20px}
 .auth-card{width:min(440px,100%);padding:24px;border:1px solid #315573;border-radius:24px;background:linear-gradient(145deg,#102d49,#06172a);box-shadow:0 20px 60px #0008}
-.auth-card h2{color:#ffd778;margin:0 0 8px}.auth-card p{color:#b8cadd}.auth-card .auth-actions{display:grid;gap:10px;margin-top:18px}.auth-error{color:#ff8ea8;white-space:pre-wrap;font-size:.9rem;margin-top:12px}.auth-meta{font-size:.82rem;color:#a8bad0;margin-top:12px}
+.auth-card h2{color:#ffd778;margin:0 0 8px}.auth-card p{color:#b8cadd}.auth-card .auth-actions{display:grid;gap:10px;margin-top:18px}.auth-birth-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 12px}.auth-birth-grid label{min-width:0;margin:0;font-size:.78rem}.auth-birth-grid label span{display:block;margin-bottom:5px}.auth-birth-grid select{min-width:0;padding:11px 8px;min-height:46px}.auth-error{color:#ff8ea8;white-space:pre-wrap;font-size:.9rem;margin-top:12px}.auth-meta{font-size:.82rem;color:#a8bad0;margin-top:12px}
 
 /* Compact mobile dashboard: reduce oversized cards, buttons and spacing */
 .wrap{padding:12px 10px 30px}
@@ -3586,7 +3586,7 @@ main.wrap>#stats{margin-top:14px!important}
 
 <div id="staffSiteAccessOverlay" hidden role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button><div id="staffSubscriptionPaymentPanel" hidden></div></div></div><div class="auth-screen" id="authScreen" style="display:none" aria-hidden="true"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
-<form id="authForm"><label for="authStaffId">Staff ID *</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Full Name / အမည် *</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="authBirthDate">Date of Birth / မွေးနေ့ *</label><input id="authBirthDate" type="date" required max="9999-12-31" autocomplete="bday" aria-describedby="authBirthDateHint"><small id="authBirthDateHint" style="display:block;margin:-5px 0 12px;color:#aebed0;font-size:12px">Required field. Enter your Date of Birth every time you sign in.</small><label for="staffDepartment">Department / ဌာန *</label><select id="staffDepartment" required><option value="" selected disabled>Select your Department</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
+<form id="authForm"><label for="authStaffId">Staff ID *</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Full Name / အမည် *</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label>Date of Birth / မွေးနေ့ *</label><div class="auth-birth-grid"><label for="authBirthDay"><span>Day / ရက်</span><select id="authBirthDay" required aria-label="Birth day"><option value="">Day</option></select></label><label for="authBirthMonth"><span>Month / လ</span><select id="authBirthMonth" required aria-label="Birth month"><option value="">Month</option></select></label><label for="authBirthYear"><span>Year / ခုနှစ်</span><select id="authBirthYear" required aria-label="Birth year"><option value="">Year</option></select></label></div><small id="authBirthDateHint" style="display:block;margin:-5px 0 12px;color:#aebed0;font-size:12px">Choose Day, Month and Year. This device remembers your signed-in session.</small><label for="staffDepartment">Department / ဌာန *</label><select id="staffDepartment" required><option value="" selected disabled>Select your Department</option><option value="sale">Sale Departments</option><option value="entry">Entry Departments</option><option value="playing">Playing Departments</option><option value="all">All Departments</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
 
@@ -4226,7 +4226,7 @@ async function checkStaffBirthdayPostcard(){
    if(attempt<2)await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)));
   }
   if(birthdayError)console.warn('Birthday RPC read failed; checking the verified login form value as a safe fallback:',birthdayError.message||birthdayError);
-  const birthday=String(birthdayData||document.getElementById('authBirthDate')?.value||'').trim().slice(0,10);
+  const birthday=String(birthdayData||getStaffBirthDateValue()||'').trim().slice(0,10);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(birthday)){
    console.info('Birthday postcard skipped: no valid saved Date of Birth for this Staff account.');
    return;
@@ -4391,6 +4391,31 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  }
  Promise.allSettled(backgroundTasks);
 }
+// Date of Birth uses separate Day / Month / Year selectors while preserving the database YYYY-MM-DD format.
+function populateStaffBirthDateFields(){
+ const day=document.getElementById('authBirthDay'),month=document.getElementById('authBirthMonth'),year=document.getElementById('authBirthYear');
+ if(!day||!month||!year||day.dataset.ready==='1')return;
+ day.innerHTML='<option value="">Day</option>'+Array.from({length:31},(_,i)=>'<option value="'+String(i+1).padStart(2,'0')+'">'+String(i+1).padStart(2,'0')+'</option>').join('');
+ month.innerHTML='<option value="">Month</option>'+Array.from({length:12},(_,i)=>'<option value="'+String(i+1).padStart(2,'0')+'">'+String(i+1).padStart(2,'0')+'</option>').join('');
+ const currentYear=new Date().getFullYear();
+ year.innerHTML='<option value="">Year</option>'+Array.from({length:currentYear-1899},(_,i)=>{const y=currentYear-i;return '<option value="'+y+'">'+y+'</option>'}).join('');
+ day.dataset.ready='1';
+}
+function setStaffBirthDateFields(value){
+ populateStaffBirthDateFields();
+ const day=document.getElementById('authBirthDay'),month=document.getElementById('authBirthMonth'),year=document.getElementById('authBirthYear');
+ if(!day||!month||!year)return;
+ const match=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+ year.value=match?match[1]:'';month.value=match?match[2]:'';day.value=match?match[3]:'';
+}
+function getStaffBirthDateValue(){
+ const d=document.getElementById('authBirthDay')?.value||'',m=document.getElementById('authBirthMonth')?.value||'',y=document.getElementById('authBirthYear')?.value||'';
+ if(!d||!m||!y)return '';
+ const date=new Date(Date.UTC(Number(y),Number(m)-1,Number(d)));
+ if(date.getUTCFullYear()!==Number(y)||date.getUTCMonth()!==Number(m)-1||date.getUTCDate()!==Number(d))return '';
+ return y+'-'+m+'-'+d;
+}
+populateStaffBirthDateFields();
 // Staff ID lookup: existing IDs fill the registered name; new IDs remain available for self-registration.
 let staffNameLookupTimer=null,staffNameLookupSequence=0,staffLookupError=null,staffLookupCompletedId='';
 let staffSessionCreationPromise=null;
@@ -4453,7 +4478,7 @@ async function lookupStaffNameById(){
    nameInput.placeholder='Registered Staff name';
    nameInput.dataset.resolvedStaffId=staffId.toUpperCase();
    const departmentSelect=document.getElementById('staffDepartment');
-   if(departmentSelect&&!departmentSelect.value)departmentSelect.value=['sale','entry','playing','event'].includes(data.department)?data.department:'';
+   if(departmentSelect&&!departmentSelect.value)departmentSelect.value=['all','sale','entry','playing','event'].includes(data.department)?data.department:'';
    if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name filled automatically. Please enter your Date of Birth and confirm your Department.';
   }else{
    // Keep any manually entered name for a new Staff ID.
@@ -4478,7 +4503,7 @@ document.getElementById('authStaffId').addEventListener('keydown',event=>{
 document.getElementById('authStaffId').addEventListener('input',()=>{
  clearTimeout(staffNameLookupTimer);
  // Clear the previous employee's date on shared devices; the signed-in ID's saved date is reloaded after verification.
- const birthday=document.getElementById('authBirthDate');if(birthday)birthday.value='';
+ setStaffBirthDateFields('');
  const department=document.getElementById('staffDepartment');if(department)department.value='';
  const name=document.getElementById('authName');
  name.value='';name.readOnly=false;name.dataset.resolvedStaffId='';
@@ -4502,7 +4527,7 @@ document.getElementById('authForm').onsubmit=async e=>{
  const staffId=staffIdInput.value.trim();
  // Freeze department before asynchronous lookup/session calls.
  const chosenDepartment=document.getElementById('staffDepartment').value;
- const birthDate=document.getElementById('authBirthDate').value;
+ const birthDate=getStaffBirthDateValue();
  const err=document.getElementById('authError');
  try{
   if(!/^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/.test(staffId)){
@@ -4512,7 +4537,7 @@ document.getElementById('authForm').onsubmit=async e=>{
   if(!nameInput.value.trim())throw new Error('Please enter your full name.');
   if(!birthDate)throw new Error('Date of Birth is required. Please enter your birthday before login.');
   if(birthDate>new Date().toISOString().slice(0,10))throw new Error('Date of Birth cannot be in the future.');
-  if(!['sale','entry','playing','event'].includes(chosenDepartment))throw new Error('Please select your Department before login.');
+  if(!['all','sale','entry','playing','event'].includes(chosenDepartment))throw new Error('Please select your Department before login.');
   // Cancel the debounce timer and finish the latest ID lookup before claiming the identity.
   // This prevents a fast tap on Continue from racing the 650ms lookup on mobile.
   clearTimeout(staffNameLookupTimer);
@@ -4604,11 +4629,11 @@ async function restoreSavedSession(){
    // Load the signed-in Staff member's own saved birthday into the login form for next time.
    try{
     const {data:birthday,error:birthdayError}=await sb.rpc('get_my_staff_birthday');
-    if(!birthdayError&&birthday)document.getElementById('authBirthDate').value=String(birthday).slice(0,10);
+    if(!birthdayError&&birthday)setStaffBirthDateFields(String(birthday).slice(0,10));
    }catch(birthdayLoadError){console.warn('Staff birthday could not be loaded:',birthdayLoadError)}
-   if(!staffLoginSubmitting){const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';document.getElementById('staffDepartment').value=['sale','entry','playing','event'].includes(savedDepartment)?savedDepartment:'';}
+   if(!staffLoginSubmitting){const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';document.getElementById('staffDepartment').value=['all','sale','entry','playing','event'].includes(savedDepartment)?savedDepartment:'';}
    const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';
-   await startCloudSession(data.session,true,profile,'app_open',['sale','entry','playing','event'].includes(savedDepartment)?savedDepartment:'sale');
+   await startCloudSession(data.session,true,profile,'app_open',['all','sale','entry','playing','event'].includes(savedDepartment)?savedDepartment:'sale');
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
    const authScreen=document.getElementById('authScreen');if(authScreen){authScreen.style.display='grid';authScreen.setAttribute('aria-hidden','false')}
