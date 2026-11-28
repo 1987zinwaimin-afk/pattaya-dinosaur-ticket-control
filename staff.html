@@ -4510,7 +4510,7 @@ document.getElementById('authStaffId').addEventListener('input',()=>{
  name.placeholder='Enter your name';
  const hint=document.getElementById('authNameHint');
  if(hint)hint.textContent='Enter an existing Staff ID to fill the registered name automatically. For a new ID, enter any available number and your name.';
- staffNameLookupTimer=setTimeout(()=>{staffLookupInFlight=lookupStaffNameById()},650);
+ staffNameLookupTimer=setTimeout(()=>{staffLookupInFlight=lookupStaffNameById()},180);
 });
 
 let staffLoginSubmitting=false;
