@@ -188,6 +188,7 @@
    renderDirectoryCards();
   }catch(error){const list=$('pdkStaffDirectoryList');if(list)list.textContent='Could not load Staff Directory: '+(error.message||error)}
  }
+ window.pdkRefreshStaffDirectory=loadStaffDirectory;
  function renderDirectoryCards(){
   const list=$('pdkStaffDirectoryList');if(!list)return;
   const query=String($('pdkStaffDirectorySearch')?.value||'').trim().toLocaleLowerCase();
@@ -231,5 +232,4 @@
   if(!directoryTimer)directoryTimer=setInterval(()=>{if(activeProfile?.role==='owner'&&$('pageContent')?.dataset.uiPage==='staff')loadStaffDirectory()},30000);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
- setInterval(()=>{if(window.sb&&!activeProfile)init()},2000);
 })();
