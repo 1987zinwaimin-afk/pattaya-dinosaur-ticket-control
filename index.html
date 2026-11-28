@@ -9752,52 +9752,73 @@ header.brand-header #ownerEmergencyAlarmHeader{right:8px!important;top:50%!impor
 }
 </style>
 
-<script id="pdk-owner-datetime-intrinsic-ratio-v6">
+<script id="pdk-owner-datetime-intrinsic-ratio-v7">
 (function(){
  'use strict';
  var card=document.getElementById('appDateTime');
  if(!card)return;
  var video=card.querySelector('.pdk-festival-video');
  if(!video)return;
+ var header=card.closest('header.brand-header');
+ var resizeObserver=null;
+ function syncHeader(){
+  if(!header)return;
+  var height=Math.ceil(header.getBoundingClientRect().height);
+  if(height>0){
+   document.documentElement.style.setProperty('--pdk-header-height',height+'px');
+   document.body.style.setProperty('padding-top',height+'px','important');
+  }
+ }
  function applySourceRatio(){
   if(!card.classList.contains('has-owner-festival-video'))return;
   var w=video.videoWidth,h=video.videoHeight;
   if(!(w>0&&h>0))return;
-  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);
-  card.style.aspectRatio=w+' / '+h;
-  card.style.height='auto';
-  card.style.minHeight='0';
-  card.style.maxHeight='none';
-  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);
-  var header=card.closest('header.brand-header');
-  if(header){
-   var sync=function(){
-    var height=Math.ceil(header.getBoundingClientRect().height);
-    if(height>0)document.documentElement.style.setProperty('--pdk-header-height',height+'px');
-    document.body.style.setProperty('padding-top',height+'px','important');
-   };
-   requestAnimationFrame(sync);
-   if(window.ResizeObserver&&!header.__pdkRatioObserver){
-    header.__pdkRatioObserver=new ResizeObserver(sync);
-    header.__pdkRatioObserver.observe(header);
-   }
-  }
+  var width=card.getBoundingClientRect().width||window.innerWidth;
+  var height=Math.ceil(width*h/w);
+  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h,'important');
+  card.style.setProperty('aspect-ratio',w+' / '+h,'important');
+  card.style.setProperty('height',height+'px','important');
+  card.style.setProperty('min-height',height+'px','important');
+  card.style.setProperty('max-height',height+'px','important');
+  card.style.setProperty('width','100%','important');
+  card.style.setProperty('max-width','none','important');
+  card.style.setProperty('overflow','hidden','important');
+  video.style.setProperty('object-fit','contain','important');
+  video.style.setProperty('object-position','center center','important');
+  video.style.setProperty('width','100%','important');
+  video.style.setProperty('height','100%','important');
+  requestAnimationFrame(syncHeader);
+ }
+ function resetRatio(){
+  card.style.removeProperty('height');
+  card.style.removeProperty('min-height');
+  card.style.removeProperty('max-height');
+  card.style.removeProperty('aspect-ratio');
+  card.style.removeProperty('--pdk-owner-video-ratio');
+  requestAnimationFrame(syncHeader);
  }
  video.addEventListener('loadedmetadata',applySourceRatio);
  video.addEventListener('loadeddata',applySourceRatio);
  video.addEventListener('resize',applySourceRatio);
- var observer=new MutationObserver(function(records){
+ video.addEventListener('emptied',resetRatio);
+ var sourceObserver=new MutationObserver(function(records){
   for(var i=0;i<records.length;i++){
-   if(records[i].type==='attributes'&&records[i].attributeName==='src'){
-    card.style.setProperty('--pdk-owner-video-ratio','16 / 9');
-    card.style.aspectRatio='16 / 9';
-   }
+   if(records[i].attributeName==='src'){resetRatio();if(video.readyState>=1)applySourceRatio();}
   }
  });
- observer.observe(video,{attributes:true,attributeFilter:['src']});
- if(video.readyState>=1)applySourceRatio();
- var classObserver=new MutationObserver(function(){if(card.classList.contains('has-owner-festival-video'))applySourceRatio();});
+ sourceObserver.observe(video,{attributes:true,attributeFilter:['src']});
+ var classObserver=new MutationObserver(function(){
+  if(card.classList.contains('has-owner-festival-video'))applySourceRatio();
+  else resetRatio();
+ });
  classObserver.observe(card,{attributes:true,attributeFilter:['class']});
+ if(window.ResizeObserver&&header){
+  resizeObserver=new ResizeObserver(syncHeader);
+  resizeObserver.observe(header);
+ }
+ window.addEventListener('resize',function(){if(video.videoWidth)applySourceRatio();else syncHeader();},{passive:true});
+ if(video.readyState>=1)applySourceRatio();
+ syncHeader();
 })();
 </script>
 </body></html>
@@ -10482,3 +10503,35 @@ body{padding-top:126px!important}
 </style>
 
 <script src="/account-profile.js?v=20261128-1"></script>
+
+<style id="pdk-owner-datetime-full-source-final-v7">
+/* Last-in-cascade override: show the complete saved video at its intrinsic aspect ratio. */
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video{
+ position:relative!important;display:flex!important;box-sizing:border-box!important;
+ width:100%!important;max-width:none!important;margin:0!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ aspect-ratio:var(--pdk-owner-video-ratio,16/9)!important;
+ padding:0!important;overflow:hidden!important;border-radius:0!important;
+}
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ display:block!important;overflow:hidden!important;z-index:0!important;
+}
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ max-width:none!important;max-height:none!important;object-fit:contain!important;
+ object-position:center center!important;display:block!important;visibility:visible!important;
+ opacity:1!important;transform:none!important;background:#050b16!important;
+}
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video .app-datetime-date,
+header.brand-header #appDateTime.app-datetime.has-owner-festival-video .app-datetime-clock{
+ position:relative!important;z-index:5!important;
+}
+@media(max-width:520px){
+ header.brand-header #appDateTime.app-datetime.has-owner-festival-video{
+  width:100%!important;max-width:none!important;height:auto!important;
+  min-height:0!important;max-height:none!important;aspect-ratio:var(--pdk-owner-video-ratio,16/9)!important;
+  padding:0!important;
+ }
+}
+</style>
