@@ -30,6 +30,8 @@
   let seed2027 = [];
   let lastCalendarYear = null;
   let lastMediaFetch = 0;
+  let mediaFetchPromise = null;
+  const signedUrlPending = new Map();
   let busy = false;
   let dayMessageRows = [];
   let lastDayMessageFetch = 0;
@@ -169,22 +171,33 @@
   async function fetchMedia(force) {
     if (!currentUser || !sb) return [];
     if (!force && Date.now() - lastMediaFetch < 30000) return mediaRows;
-    const {data,error} = await sb.from('festival_media')
-      .select('id,festival_date,festival_name,festival_kind,festival_theme,display_time,blob_path,content_type,file_size_bytes')
-      .order('festival_date',{ascending:true});
-    if (error) throw error;
-    mediaRows = data || [];
-    lastMediaFetch = Date.now();
-    return mediaRows;
+    if (mediaFetchPromise) return mediaFetchPromise;
+    mediaFetchPromise = (async () => {
+      const {data,error} = await sb.from('festival_media')
+        .select('id,festival_date,festival_name,festival_kind,display_time,blob_path,content_type,file_size_bytes')
+        .order('festival_date',{ascending:true});
+      if (error) throw error;
+      mediaRows = data || [];
+      lastMediaFetch = Date.now();
+      return mediaRows;
+    })();
+    try { return await mediaFetchPromise; }
+    finally { mediaFetchPromise = null; }
   }
 
   async function signedUrl(path) {
     const cached = signedUrlCache.get(path);
     if (cached && cached.expires > Date.now()) return cached.url;
-    const {data,error} = await sb.storage.from(BUCKET).createSignedUrl(path,3600);
-    if (error) throw error;
-    signedUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+3300000});
-    return data.signedUrl;
+    if (signedUrlPending.has(path)) return signedUrlPending.get(path);
+    const pending = (async () => {
+      const {data,error} = await sb.storage.from(BUCKET).createSignedUrl(path,3600);
+      if (error) throw error;
+      signedUrlCache.set(path,{url:data.signedUrl,expires:Date.now()+3300000});
+      return data.signedUrl;
+    })();
+    signedUrlPending.set(path,pending);
+    try { return await pending; }
+    finally { if (signedUrlPending.get(path) === pending) signedUrlPending.delete(path); }
   }
 
   function activeDateAndTitle() {
@@ -239,6 +252,8 @@
   async function syncDateTimeVideo(force) {
     const card=document.getElementById('appDateTime');
     if(!card||!currentUser)return;
+    const video=card.querySelector('.pdk-festival-video');
+    if(!video)return;
     const selected=activeDateAndTitle();
     if(video.dataset.pdkActiveDate!==selected.date){
       video.dataset.pdkActiveDate=selected.date;
@@ -246,8 +261,6 @@
     }
     const events=(window.__pdkThailandFestivalLookup||{})[selected.date]||[];
     const event=selected.title?(events.find(e=>e.title===selected.title)||null):(events[0]||null);
-    const video=card.querySelector('.pdk-festival-video');
-    if(!video)return;
     const source=video.querySelector('source');
     const scene=card.querySelector('.pdk-festival-scene');
     const holidayLabel=document.getElementById('appHolidayValue');
@@ -287,7 +300,6 @@
       if(scene)scene.style.display='';
       if(holidayLabel)holidayLabel.hidden=true;
       await syncNormalDayNotice(!!force);
-      try{await fetchMedia(!!force);}catch(error){console.warn('Festival video metadata check failed:',error);}
       return;
     }
     if(holidayLabel){holidayLabel.textContent=event.title;holidayLabel.hidden=selected.date!==today().key;holidayLabel.classList.toggle('is-special',!holidayLabel.hidden);holidayLabel.classList.remove('is-holiday');}
@@ -1239,7 +1251,7 @@
     if (sb && sb.auth) {
       sb.auth.onAuthStateChange(() => {
         mediaRows=[];lastMediaFetch=0;dayMessageRows=[];lastDayMessageFetch=0;
-        setTimeout(()=>{if(document.getElementById('appDateTime')){syncDateTimeVideo(true);syncNormalDayNotice(true);}},500);
+        setTimeout(()=>{if(document.getElementById('appDateTime'))syncDateTimeVideo(true);},120);
       });
     }
     setInterval(()=>{
@@ -1247,7 +1259,6 @@
       // Never run video/database sync work while the document is hidden.
       if (document.hidden) return;
       syncDateTimeVideo(false);
-      syncNormalDayNotice(false);
       const yearNow=today().year;
       const root=document.getElementById('pageContent');
       if(yearNow!==lastCalendarYear){lastCalendarYear=yearNow;if(root&&root.dataset.uiPage==='festivals')renderCalendar();}
@@ -1259,7 +1270,7 @@
       if(event.target.closest('[data-fc-datetime-preview]')) setTimeout(()=>syncDateTimeVideo(true),120);
       if(event.target.closest('[data-fc-close],.pdk-fc-close')) setTimeout(()=>syncDateTimeVideo(true),180);
     });
-    setTimeout(()=>{syncDateTimeVideo(true);syncNormalDayNotice(true);},0);
+    setTimeout(()=>syncDateTimeVideo(true),0);
   }
 
   // Expose the single authoritative player so Calendar Preview never creates a second video layer.
