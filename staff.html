@@ -4405,7 +4405,7 @@ function setStaffBirthDateFields(value){
  populateStaffBirthDateFields();
  const day=document.getElementById('authBirthDay'),month=document.getElementById('authBirthMonth'),year=document.getElementById('authBirthYear');
  if(!day||!month||!year)return;
- const match=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+ const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
  year.value=match?match[1]:'';month.value=match?match[2]:'';day.value=match?match[3]:'';
 }
 function getStaffBirthDateValue(){
