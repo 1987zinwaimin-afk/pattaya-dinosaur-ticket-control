@@ -4815,18 +4815,14 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 </style>
 
 
-<style id="pdk-owner-video-source-ratio-v4">
-/* Match the Owner Date & Time hero to the uploaded 16:9 landscape video.
-   The complete source frame stays visible; no crop and no aspect-ratio distortion. */
+<style id="pdk-owner-video-source-ratio-v5">
+/* Keep the Date & Time bar at its fixed full-width header size.
+   Contain portrait and landscape footage so no part of the source frame is cropped. */
 #appDateTime.app-datetime.has-owner-festival-video{
  position:relative!important;isolation:isolate!important;overflow:hidden!important;
- box-sizing:border-box!important;
- width:min(760px,calc(100vw - 24px))!important;max-width:760px!important;
- height:auto!important;min-height:0!important;max-height:none!important;
- aspect-ratio:16/9!important;
- padding:clamp(12px,2.2vw,22px)!important;
- margin-inline:auto!important;
- background:#050b16!important;
+ box-sizing:border-box!important;width:100%!important;max-width:none!important;
+ height:112px!important;min-height:112px!important;max-height:112px!important;
+ aspect-ratio:auto!important;padding:0!important;margin:0!important;background:#050b16!important;
 }
 #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
@@ -4834,24 +4830,20 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
  z-index:0!important;background:#050b16!important;
 }
 #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
- position:absolute!important;inset:0!important;
- display:block!important;width:100%!important;height:100%!important;
- min-width:0!important;min-height:0!important;max-width:100%!important;max-height:100%!important;
- object-fit:contain!important;object-position:center center!important;
- transform:none!important;background:#050b16!important;
+ position:absolute!important;inset:0!important;display:block!important;
+ width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ max-width:100%!important;max-height:100%!important;object-fit:contain!important;
+ object-position:center center!important;transform:none!important;background:#050b16!important;
  opacity:1!important;visibility:visible!important;z-index:0!important;
 }
 #appDateTime.app-datetime.has-owner-festival-video .app-datetime-date,
 #appDateTime.app-datetime.has-owner-festival-video .app-datetime-clock,
 #appDateTime.app-datetime.has-owner-festival-video .app-datetime-alarm,
-#appDateTime.app-datetime.has-owner-festival-video .app-datetime-actions{
- position:relative!important;z-index:2!important;
-}
+#appDateTime.app-datetime.has-owner-festival-video .app-datetime-actions{position:relative!important;z-index:2!important}
 @media(max-width:520px){
  #appDateTime.app-datetime.has-owner-festival-video{
-  width:calc(100vw - 16px)!important;max-width:none!important;
-  min-height:0!important;height:auto!important;aspect-ratio:16/9!important;
-  padding:10px!important;
+  width:100%!important;max-width:none!important;height:104px!important;
+  min-height:104px!important;max-height:104px!important;aspect-ratio:auto!important;padding:0!important;
  }
 }
 </style>
