@@ -227,9 +227,9 @@
 
   function bindVideoPlayback(card, video) {
     if (video.dataset.festivalPlaybackBound) return;
-    video.addEventListener('playing',()=>{card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready');clearFestivalVideoNotice(card)});
+    video.addEventListener('playing',()=>{card.classList.remove('pdk-media-pending','pdk-video-fallback');card.classList.add('pdk-video-ready');clearFestivalVideoNotice(card)});
     video.addEventListener('error',()=>{
-      card.classList.remove('pdk-video-ready');
+      card.classList.remove('pdk-media-pending','pdk-video-ready');
       card.classList.add('pdk-video-fallback');
       setFestivalVideoNotice(card,'No video is available for this festival.');
     });
@@ -240,6 +240,10 @@
     const card=document.getElementById('appDateTime');
     if(!card||!currentUser)return;
     const selected=activeDateAndTitle();
+    if(video.dataset.pdkActiveDate!==selected.date){
+      video.dataset.pdkActiveDate=selected.date;
+      card.classList.add('pdk-media-pending');
+    }
     const events=(window.__pdkThailandFestivalLookup||{})[selected.date]||[];
     const event=selected.title?(events.find(e=>e.title===selected.title)||null):(events[0]||null);
     const video=card.querySelector('.pdk-festival-video');
@@ -287,15 +291,13 @@
       return;
     }
     if(holidayLabel){holidayLabel.textContent=event.title;holidayLabel.hidden=selected.date!==today().key;holidayLabel.classList.toggle('is-special',!holidayLabel.hidden);holidayLabel.classList.remove('is-holiday');}
-    // Only play footage explicitly assigned to this festival; never substitute generic PDK/Loy Krathong media.
+    // Resolve Owner-uploaded footage first. A built-in festival clip is only a
+    // fallback after the database confirms there is no Owner upload for this date.
     const builtIn=builtInVideoForEvent(event);
-    if(builtIn)setSource(builtIn,false,null);
-    else{
-      video.pause();video.removeAttribute('autoplay');video.preload='none';
-      if(source)source.removeAttribute('src');else video.removeAttribute('src');
-      video.load();delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;delete video.dataset.festivalBuiltin;
-      card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
-    }
+    video.pause();video.removeAttribute('autoplay');video.preload='none';
+    if(source)source.removeAttribute('src');else video.removeAttribute('src');
+    video.load();delete video.dataset.festivalManaged;delete video.dataset.festivalMediaId;delete video.dataset.festivalBuiltin;
+    card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
     try{
       const rows=await fetchMedia(!!force);
       const latest=activeDateAndTitle();
@@ -306,12 +308,16 @@
         const stillLatest=activeDateAndTitle();
         if(stillLatest.date!==selected.date||(stillLatest.title&&stillLatest.title!==event.title))return;
         setSource(url,true,row.id);
-      }else if(!builtIn){
+      }else if(builtIn){
+        setSource(builtIn,false,null);
+      }else{
         setFestivalVideoNotice(card,'No video has been added for this festival yet.');
+        card.classList.remove('pdk-media-pending');
       }
     }catch(error){
       console.warn('Festival video sync failed:',error);
       if(!builtIn)setFestivalVideoNotice(card,'Festival video could not be loaded. Please try again.');
+      card.classList.remove('pdk-media-pending');
     }
   }
   async function fetchDayMessages(force) {
@@ -368,6 +374,7 @@
         delete video.dataset.normalDayManaged; delete video.dataset.normalDayDate; delete video.dataset.festivalManaged;
         card.classList.remove('has-owner-festival-video','pdk-video-ready','pdk-video-fallback');
       }
+      card.classList.remove('pdk-media-pending');
     };
     // Festival dates always keep their own festival label/media; normal-day notices never replace them.
     if (events.length) { hide(); return; }
@@ -423,6 +430,7 @@
       card.classList.toggle('has-normal-day-message', !box.hidden);
       card.classList.toggle('has-normal-day-video', !!normalVideoSource);
       if (video && normalVideoSource) {
+        bindVideoPlayback(card,video);
         const current = source?.getAttribute('src') || video.getAttribute('src') || '';
         if (current !== normalVideoSource || video.dataset.normalDayManaged !== 'yes') {
           video.pause();
@@ -447,6 +455,7 @@
       }
     } catch (error) {
       console.warn('Normal-day Date & Time message could not be loaded:',error);
+      card.classList.remove('pdk-media-pending');
     }
   }
 
