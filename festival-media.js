@@ -1709,88 +1709,61 @@
     const card=document.getElementById('appDateTime');
     const header=document.querySelector('header.top.brand-header,header.brand-header,.brand-header');
     if(!card||!header||!card.querySelector('.pdk-festival-art')) return;
-    if(!document.getElementById('pdk-datetime-top-header-structure-v4')){
+    if(!document.getElementById('pdk-datetime-compact-header-v5')){
       const style=document.createElement('style');
-      style.id='pdk-datetime-top-header-structure-v4';
+      style.id='pdk-datetime-compact-header-v5';
       style.textContent=[
-        'header.top.brand-header,header.brand-header,.brand-header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--pdk-live-header-height,112px)!important;min-height:var(--pdk-live-header-height,112px)!important;max-height:none!important;margin:0!important;padding:0!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;z-index:10062!important;box-sizing:border-box!important;transition:none!important}',
+        'header.top.brand-header,header.brand-header,.brand-header{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;height:var(--pdk-live-header-height,190px)!important;min-height:var(--pdk-live-header-height,190px)!important;max-height:var(--pdk-live-header-height,190px)!important;margin:0!important;padding:0!important;overflow:visible!important;background:transparent!important;border:0!important;box-shadow:none!important;z-index:10062!important;box-sizing:border-box!important;transition:none!important}',
         'header.top.brand-header .brand-banner,header.brand-header .brand-banner,header.brand-header .green-dino-cover{display:none!important;visibility:hidden!important}',
-        '#appDateTime{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:auto!important;width:100%!important;max-width:none!important;height:var(--pdk-live-header-height,112px)!important;min-height:var(--pdk-live-header-height,112px)!important;max-height:none!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;z-index:10061!important;isolation:isolate!important;transition:none!important}',
-        '#appDateTime .pdk-festival-art{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;overflow:hidden!important}',
-        '#appDateTime .pdk-festival-video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center center!important}',
-        '#appDateTime .app-datetime-date{position:absolute!important;top:8px!important;left:8px!important;right:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;gap:4px!important;white-space:nowrap!important;z-index:30!important}',
-        '#appDateTime .app-datetime-clock{position:absolute!important;top:8px!important;right:8px!important;left:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-end!important;text-align:right!important;gap:4px!important;white-space:nowrap!important;z-index:30!important}',
+        'header.brand-header #appDateTime.app-datetime,header.brand-header #appDateTime.app-datetime.has-owner-festival-video{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:auto!important;width:100%!important;max-width:none!important;min-width:0!important;height:var(--pdk-live-header-height,190px)!important;min-height:var(--pdk-live-header-height,190px)!important;max-height:var(--pdk-live-header-height,190px)!important;aspect-ratio:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-sizing:border-box!important;overflow:hidden!important;z-index:10061!important;isolation:isolate!important;transition:none!important}',
+        'header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;overflow:hidden!important}',
+        'header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center 54%!important}',
+        '#appDateTime .app-datetime-date{position:absolute!important;top:9px!important;left:10px!important;right:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-start!important;text-align:left!important;gap:4px!important;white-space:nowrap!important;z-index:30!important}',
+        '#appDateTime .app-datetime-clock{position:absolute!important;top:9px!important;right:10px!important;left:auto!important;bottom:auto!important;width:46%!important;max-width:46%!important;min-width:0!important;margin:0!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:flex-end!important;text-align:right!important;gap:4px!important;white-space:nowrap!important;z-index:30!important}',
         '#appDateTime .app-datetime-caption,#appDateTime .app-datetime-zone{display:none!important;visibility:hidden!important}',
         '#appDateTime .app-datetime-date :not(.app-datetime-caption),#appDateTime .app-datetime-clock :not(.app-datetime-caption){font-size:clamp(11px,2.8vw,15px)!important;line-height:1.2!important;white-space:nowrap!important}',
-        '#openMenu{position:absolute!important;top:auto!important;left:8px!important;right:auto!important;bottom:7px!important;z-index:10080!important}',
-        '#staffAlarmHeaderButton{position:absolute!important;top:auto!important;left:auto!important;right:8px!important;bottom:7px!important;z-index:10080!important}',
+        '#openMenu{position:absolute!important;top:auto!important;left:9px!important;right:auto!important;bottom:8px!important;z-index:10080!important}',
+        '#staffAlarmHeaderButton,#ownerEmergencyAlarmHeader{position:absolute!important;top:auto!important;left:auto!important;right:9px!important;bottom:8px!important;z-index:10080!important}',
         'main.wrap{margin-top:0!important;padding-top:0!important}main.wrap>#stats{margin-top:8px!important}',
-        '@media(max-width:360px){#appDateTime .app-datetime-date{left:6px!important;width:48%!important;max-width:48%!important}#appDateTime .app-datetime-clock{right:6px!important;width:48%!important;max-width:48%!important}}'
+        '@media(max-width:520px){header.brand-header #appDateTime.app-datetime,header.brand-header #appDateTime.app-datetime.has-owner-festival-video{height:190px!important;min-height:190px!important;max-height:190px!important}header.top.brand-header,header.brand-header,.brand-header{height:190px!important;min-height:190px!important;max-height:190px!important}}',
+        '@media(min-width:521px){header.brand-header #appDateTime.app-datetime,header.brand-header #appDateTime.app-datetime.has-owner-festival-video{height:210px!important;min-height:210px!important;max-height:210px!important}header.top.brand-header,header.brand-header,.brand-header{height:210px!important;min-height:210px!important;max-height:210px!important}}',
+        '@media(max-width:360px){#appDateTime .app-datetime-date{left:7px!important;width:48%!important;max-width:48%!important}#appDateTime .app-datetime-clock{right:7px!important;width:48%!important;max-width:48%!important}}'
       ].join('');
       (document.head||document.documentElement).appendChild(style);
     }
-    const video=card.querySelector('.pdk-festival-video');
     const mobile=window.matchMedia('(max-width:520px)');
-    let stableRatio=0;
-    let lastAppliedHeight=0;
     let framePending=false;
-    function applyHeight(){
+    function applyFixedHeight(){
       framePending=false;
-      const width=Math.max(1,document.documentElement.clientWidth||window.innerWidth||card.getBoundingClientRect().width);
-      const base=mobile.matches?104:112;
-      let height=base;
-      if(card.classList.contains('has-owner-festival-video')){
-        const ratio=stableRatio||(video&&video.videoWidth>0&&video.videoHeight>0?video.videoWidth/video.videoHeight:16/9);
-        height=Math.max(base,Math.ceil(width/ratio));
-      }
-      if(Math.abs(height-lastAppliedHeight)<2)return;
-      lastAppliedHeight=height;
+      const height=mobile.matches?190:210;
       const value=height+'px';
       document.documentElement.style.setProperty('--pdk-live-header-height',value);
       header.style.setProperty('height',value,'important');
       header.style.setProperty('min-height',value,'important');
+      header.style.setProperty('max-height',value,'important');
       card.style.setProperty('height',value,'important');
       card.style.setProperty('min-height',value,'important');
+      card.style.setProperty('max-height',value,'important');
+      card.style.setProperty('aspect-ratio','auto','important');
       document.body.style.setProperty('padding-top',value,'important');
     }
-    function scheduleHeight(){
+    function scheduleFixedHeight(){
       if(framePending)return;
       framePending=true;
-      requestAnimationFrame(applyHeight);
+      requestAnimationFrame(applyFixedHeight);
     }
-    if(!card.dataset.pdkStableHeaderBoundV4){
-      card.dataset.pdkStableHeaderBoundV4='1';
-      if(video){
-        function readRatio(){
-          if(video.videoWidth>0&&video.videoHeight>0){
-            const next=video.videoWidth/video.videoHeight;
-            if(Number.isFinite(next)&&next>0)stableRatio=next;
-            scheduleHeight();
-          }
-        }
-        video.addEventListener('loadedmetadata',readRatio);
-        video.addEventListener('loadeddata',readRatio);
-        const sourceObserver=new MutationObserver(function(){
-          /* Keep the last valid ratio while a replacement source loads. */
-          if(video.readyState>=1)readRatio();
-          else scheduleHeight();
-        });
-        sourceObserver.observe(video,{attributes:true,attributeFilter:['src']});
-      }
-      window.addEventListener('resize',scheduleHeight,{passive:true});
-      window.addEventListener('orientationchange',scheduleHeight,{passive:true});
-      if(window.ResizeObserver){
-        new ResizeObserver(scheduleHeight).observe(document.documentElement);
-      }
-      const classObserver=new MutationObserver(scheduleHeight);
-      classObserver.observe(card,{attributes:true,attributeFilter:['class']});
+    if(!card.dataset.pdkCompactHeaderBoundV5){
+      card.dataset.pdkCompactHeaderBoundV5='1';
+      window.addEventListener('resize',scheduleFixedHeight,{passive:true});
+      window.addEventListener('orientationchange',scheduleFixedHeight,{passive:true});
+      if(window.ResizeObserver)new ResizeObserver(scheduleFixedHeight).observe(document.documentElement);
     }
     header.style.setProperty('position','fixed','important');
     header.style.setProperty('top','0','important');
     header.style.setProperty('left','0','important');
     header.style.setProperty('right','0','important');
     header.style.setProperty('width','100%','important');
-    scheduleHeight();
+    scheduleFixedHeight();
   }
   mountDateTimeTopBar();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mountDateTimeTopBar);
