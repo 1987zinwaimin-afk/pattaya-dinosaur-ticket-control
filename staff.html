@@ -7816,3 +7816,23 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  new MutationObserver(scan).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['data-festival-theme','class']});scan();
 })();
 </script>
+<style id="pdk-staff-datetime-flow-fix-v2">
+/* Staff Date/Time card must reserve its full mobile height before dashboard controls. */
+@media(max-width:700px){
+  #appDateTime.app-datetime{
+    position:relative!important;
+    display:flex!important;
+    aspect-ratio:unset!important;
+    height:auto!important;
+    min-height:245px!important;
+    margin:10px auto 52px!important;
+  }
+  main.wrap{
+    position:relative!important;
+    display:flow-root!important;
+    z-index:1!important;
+    clear:both!important;
+    margin-top:0!important;
+  }
+}
+</style>
