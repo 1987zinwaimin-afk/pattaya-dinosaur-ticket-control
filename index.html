@@ -6930,20 +6930,28 @@ async function loadDashboardSales(root){
   const today=localToday();
   const [year,month]=today.split('-');
   const monthStart=year+'-'+month+'-01';
+  const todayDate=new Date(Number(year),Number(month)-1,Number(today.slice(8,10)));
+  const weekStartDate=new Date(todayDate);weekStartDate.setDate(weekStartDate.getDate()-6);
+  const weekStart=weekStartDate.getFullYear()+'-'+String(weekStartDate.getMonth()+1).padStart(2,'0')+'-'+String(weekStartDate.getDate()).padStart(2,'0');
+  const rangeStart=weekStart<monthStart?weekStart:monthStart;
   const [{data:dailyRows,error:dailyError},{data:manualRows,error:manualError}]=await Promise.all([
-   sb.from('ticket_daily_sales').select('business_date,department,quantity,total_amount,unit_price').gte('business_date',monthStart).lte('business_date',today),
-   sb.from('ticket_manual_sales').select('business_date,department,quantity,total_amount,unit_price').gte('business_date',monthStart).lte('business_date',today)
+   sb.from('ticket_daily_sales').select('business_date,department,quantity,total_amount,unit_price').gte('business_date',rangeStart).lte('business_date',today),
+   sb.from('ticket_manual_sales').select('business_date,department,quantity,total_amount,unit_price').gte('business_date',rangeStart).lte('business_date',today)
   ]);
   if(dailyError)throw dailyError;
   if(manualError)throw manualError;
   const rows=[...(dailyRows||[]),...(manualRows||[])];
   const totalFor=row=>{
-   const amount=Number(row.total_amount);
-   return Number.isFinite(amount)?amount:Number(row.unit_price||0)*Number(row.quantity||0);
+   if(row.total_amount!==null&&row.total_amount!==undefined&&row.total_amount!==''){
+    const amount=Number(row.total_amount);
+    if(Number.isFinite(amount))return amount;
+   }
+   return Number(row.unit_price||0)*Number(row.quantity||0);
   };
   const todayRows=rows.filter(row=>row.business_date===today);
-  const monthQuantity=rows.reduce((sum,row)=>sum+Number(row.quantity||0),0);
-  const monthRevenue=rows.reduce((sum,row)=>sum+totalFor(row),0);
+  const monthRows=rows.filter(row=>String(row.business_date||'')>=monthStart);
+  const monthQuantity=monthRows.reduce((sum,row)=>sum+Number(row.quantity||0),0);
+  const monthRevenue=monthRows.reduce((sum,row)=>sum+totalFor(row),0);
   const todayQuantity=todayRows.reduce((sum,row)=>sum+Number(row.quantity||0),0);
   const todayRevenue=todayRows.reduce((sum,row)=>sum+totalFor(row),0);
   const fmt=n=>Number(n||0).toLocaleString('en-US');
