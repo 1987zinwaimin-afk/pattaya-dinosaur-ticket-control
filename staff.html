@@ -4453,7 +4453,7 @@ async function lookupStaffNameById(){
    nameInput.placeholder='Registered Staff name';
    nameInput.dataset.resolvedStaffId=staffId.toUpperCase();
    const departmentSelect=document.getElementById('staffDepartment');
-   if(departmentSelect)departmentSelect.value=['sale','entry','playing','event'].includes(data.department)?data.department:'';
+   if(departmentSelect&&!departmentSelect.value)departmentSelect.value=['sale','entry','playing','event'].includes(data.department)?data.department:'';
    if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name filled automatically. Please enter your Date of Birth and confirm your Department.';
   }else{
    // Keep any manually entered name for a new Staff ID.
@@ -4479,6 +4479,7 @@ document.getElementById('authStaffId').addEventListener('input',()=>{
  clearTimeout(staffNameLookupTimer);
  // Clear the previous employee's date on shared devices; the signed-in ID's saved date is reloaded after verification.
  const birthday=document.getElementById('authBirthDate');if(birthday)birthday.value='';
+ const department=document.getElementById('staffDepartment');if(department)department.value='';
  const name=document.getElementById('authName');
  name.value='';name.readOnly=false;name.dataset.resolvedStaffId='';
  name.placeholder='Enter your name';
