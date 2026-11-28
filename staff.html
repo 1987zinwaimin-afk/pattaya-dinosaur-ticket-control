@@ -4795,7 +4795,46 @@ function printStaffCvQr(row,qrData){
  return frame
 }
 async function staffCvCheckout(raw){const m=String(raw||'').trim().match(/^PDKCV:([0-9a-f-]{36})$/i);if(!m)throw new Error('Invalid Customer Visit QR');const {data:r,error}=await sb.from('customer_visit_logs').select('id,group_number,status,exit_at').eq('id',m[1]).maybeSingle();if(error)throw error;if(!r)throw new Error('Group not found');if(r.status==='completed'||r.exit_at)return {already:true,row:r};const {data,error:updateError}=await sb.from('customer_visit_logs').update({status:'completed',exit_at:new Date().toISOString()}).eq('id',r.id).eq('status','pending').select('id').maybeSingle();if(updateError)throw updateError;return {already:!data,row:r}}
-async function scanStaffCvQr(){await staffCvScanLib();const m=document.createElement('div');m.id='staffCvScanModal';m.style.cssText='position:fixed;inset:0;z-index:10070;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px';m.innerHTML='<section class="panel" style="width:min(100%,440px);padding:14px;background:#0b2037"><div style="display:flex;justify-content:space-between"><h2>📷 Scan Group QR</h2><button id="staffCvScanClose">✕</button></div><p class="subtle">Scan the group ticket at exit.</p><div id="staffCvReader" style="background:#fff"></div><p id="staffCvScanStatus" class="subtle">Starting camera…</p><label>Manual QR<input id="staffCvManual" placeholder="PDKCV:…"></label><button id="staffCvManualGo" class="gold" style="width:100%">Confirm Scan</button></section>';document.body.appendChild(m);const status=document.getElementById('staffCvScanStatus'),close=async()=>{try{if(staffCvScanner){await staffCvScanner.stop();await staffCvScanner.clear()}}catch(e){}staffCvScanner=null;m.remove()};document.getElementById('staffCvScanClose').onclick=close;const done=async raw=>{try{status.textContent='Checking group…';if(staffCvScanner)try{await staffCvScanner.stop()}catch(e){}const r=await staffCvCheckout(raw);status.textContent=r.already?'Already checked out; duplicate scan ignored.':'✓ Group checked out successfully.';await loadStaffCustomerVisits();setTimeout(close,1300)}catch(e){status.textContent=e.message||String(e)}};document.getElementById('staffCvManualGo').onclick=()=>done(document.getElementById('staffCvManual').value);try{staffCvScanner=new Html5Qrcode('staffCvReader');await staffCvScanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},done,()=>{});status.textContent='Camera ready. Scan a group QR.'}catch(e){status.textContent='Camera unavailable: '+(e.message||e)+'. Use manual QR below.'}}
+async function scanStaffCvQr(){
+ const prior=document.getElementById('staffCvScanModal');if(prior)prior.remove();
+ try{await staffCvScanLib()}catch(error){alert('QR scanner could not start: '+(error.message||error));return}
+ const m=document.createElement('div');m.id='staffCvScanModal';
+ m.style.cssText='position:fixed;inset:0;z-index:10070;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px';
+ m.innerHTML='<section class="panel" role="dialog" aria-modal="true" aria-labelledby="staffCvScanTitle" style="width:min(100%,440px);padding:14px;background:#0b2037"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="staffCvScanTitle">📷 Scan Group QR</h2><button type="button" id="staffCvScanClose" aria-label="Close QR scanner">✕</button></div><p class="subtle">Scan the group ticket at exit.</p><div id="staffCvReader" style="background:#fff;border-radius:12px;overflow:hidden"></div><p id="staffCvScanStatus" class="subtle" role="status" aria-live="polite">Starting camera…</p><label>Manual QR<input id="staffCvManual" autocomplete="off" placeholder="PDKCV:…"></label><button type="button" id="staffCvManualGo" class="gold" style="width:100%">Confirm Scan</button></section>';
+ document.body.appendChild(m);
+ const status=m.querySelector('#staffCvScanStatus'),manual=m.querySelector('#staffCvManualGo');
+ let scanner=null,scannerRunning=false,processing=false,closed=false;
+ const stopCamera=async()=>{
+  if(!scanner)return;
+  if(scannerRunning){try{await scanner.stop()}catch(error){console.warn('Staff QR camera stop:',error)}scannerRunning=false}
+  try{await scanner.clear()}catch(error){console.warn('Staff QR camera clear:',error)}
+  if(staffCvScanner===scanner)staffCvScanner=null;
+ };
+ const close=async()=>{if(closed)return;closed=true;await stopCamera();if(m.isConnected)m.remove();document.removeEventListener('keydown',onKeyDown)};
+ const onKeyDown=e=>{if(e.key==='Escape'&&m.isConnected)close()};
+ document.addEventListener('keydown',onKeyDown);
+ m.addEventListener('click',e=>{if(e.target===m)close()});
+ m.querySelector('#staffCvScanClose').onclick=close;
+ const done=async raw=>{
+  if(closed||processing)return;
+  processing=true;manual.disabled=true;status.textContent='Checking group…';
+  await stopCamera();
+  try{
+   const result=await staffCvCheckout(raw);
+   if(closed)return;
+   status.textContent=result.already?'Already checked out; duplicate scan ignored.':'✓ Group checked out successfully.';
+   await loadStaffCustomerVisits();
+   if(!closed)setTimeout(close,1300);
+  }catch(error){if(!closed){status.textContent=error.message||String(error);processing=false;manual.disabled=false}}
+ };
+ manual.onclick=()=>done(m.querySelector('#staffCvManual').value);
+ try{
+  scanner=new Html5Qrcode('staffCvReader');staffCvScanner=scanner;
+  await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},done,()=>{});
+  scannerRunning=true;
+  if(!closed)status.textContent='Camera ready. Scan a group QR.';else await stopCamera();
+ }catch(error){await stopCamera();if(!closed)status.textContent='Camera unavailable: '+(error.message||error)+'. Use manual QR below.'}
+}
 
 function renderStaffCustomerVisits(){
  const root=document.getElementById('pageContent');root.dataset.uiPage='customer-visits';
