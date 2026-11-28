@@ -92,7 +92,7 @@
   try{
    activeUser=session?.user||null;
    activeProfile=await readProfile(session);
-   if(activeProfile){addStyles();ensureModal();ensureNavButton()}
+   if(activeProfile){addStyles();ensureModal();ensureNavButton();ensureSystemAdministratorButton()}
    else{$('pdkMyProfileButton')?.remove()}
   }catch(error){console.warn('Account profile could not be initialized:',error?.message||error)}
  }
@@ -224,6 +224,67 @@
   pageObserver.observe(root,{childList:true,subtree:false,attributes:true,attributeFilter:['data-ui-page']});
   if(activeProfile?.role==='owner'&&root.dataset.uiPage==='staff')loadStaffDirectory();
  }
+
+ function ensureSystemAdministratorButton(){
+  const nav=$('nav');if(!nav)return;
+  let button=$('pdkSystemAdministratorButton');
+  if(activeProfile?.role!=='staff'){
+   if(button)button.remove();
+   $('pdkSystemAdministratorModal')?.remove();
+   return;
+  }
+  if(!button){
+   button=document.createElement('button');button.id='pdkSystemAdministratorButton';button.type='button';
+   button.textContent='🛠️ System Administrator';button.setAttribute('aria-label','System Administrator contact');
+   button.style.cssText='display:flex;align-items:center;gap:9px;width:100%;min-height:48px;margin:0 0 10px;padding:11px 14px;border:1px solid rgba(244,202,112,.48);border-radius:13px;background:linear-gradient(135deg,#244b68,#102b47);color:#ffe1a0;font-weight:850;text-align:left;cursor:pointer';
+   button.onclick=openSystemAdministratorContact;
+  }
+  const profileButton=$('pdkMyProfileButton');
+  if(profileButton&&profileButton.parentElement===nav){
+   if(button.previousElementSibling!==profileButton)profileButton.insertAdjacentElement('afterend',button);
+  }else if(button.parentElement!==nav)nav.insertBefore(button,nav.firstChild);
+ }
+ function ensureSystemAdministratorModal(){
+  if($('pdkSystemAdministratorModal'))return;
+  const modal=document.createElement('div');modal.id='pdkSystemAdministratorModal';
+  modal.style.cssText='position:fixed;inset:0;z-index:2147483001;display:none;align-items:center;justify-content:center;padding:14px;background:rgba(0,7,16,.8);backdrop-filter:blur(8px)';
+  modal.innerHTML='<section role="dialog" aria-modal="true" aria-labelledby="pdkSystemAdministratorTitle" style="width:min(460px,100%);max-height:85dvh;overflow:auto;padding:19px;border:1px solid rgba(244,202,112,.45);border-radius:19px;background:linear-gradient(150deg,#102d49,#06172a);color:#f6f8fc;box-shadow:0 22px 65px #000a"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><h2 id="pdkSystemAdministratorTitle" style="margin:0;color:#ffd778;font-size:20px">🛠️ System Administrator</h2><button type="button" id="pdkSystemAdministratorClose" aria-label="Close" style="width:42px;height:42px;border-radius:11px;font-size:22px">×</button></div><p style="margin:7px 0 14px;color:#b8cadd;font-size:12px">System support and account assistance</p><div id="pdkSystemAdministratorContent" style="display:grid;gap:10px;overflow-wrap:anywhere">Loading contact details…</div></section>';
+  document.body.appendChild(modal);
+  const close=()=>{modal.style.display='none';modal.setAttribute('aria-hidden','true')};
+  $('pdkSystemAdministratorClose').onclick=close;
+  modal.addEventListener('click',e=>{if(e.target===modal)close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.style.display==='flex')close()});
+ }
+ function contactLink(url){
+  try{const parsed=new URL(url);return ['http:','https:'].includes(parsed.protocol)?parsed.href:''}catch(_){return ''}
+ }
+ async function openSystemAdministratorContact(){
+  if(activeProfile?.role!=='staff'||!activeUser)return;
+  ensureSystemAdministratorModal();
+  const modal=$('pdkSystemAdministratorModal'),content=$('pdkSystemAdministratorContent');
+  modal.style.display='flex';modal.setAttribute('aria-hidden','false');content.textContent='Loading contact details…';
+  try{
+   const {data,error}=await window.sb.rpc('get_system_administrator_contact');
+   if(error)throw error;
+   const contact=Array.isArray(data)?data[0]:data;
+   if(!contact){
+    content.innerHTML='<div style="padding:13px;border:1px solid #365a79;border-radius:12px;background:#071d32;color:#cbd9e7">System Administrator contact details are not available yet.</div>';
+    return;
+   }
+   const rows=[];
+   if(contact.phone){
+    const phone=String(contact.phone),tel=phone.replace(/[^+0-9*#]/g,'');
+    rows.push('<div style="padding:12px;border:1px solid #365a79;border-radius:12px;background:#071d32"><div style="color:#9fb5ca;font-size:11px">☎ Phone</div><a style="display:inline-block;margin-top:5px;color:#ffe1a0;font-weight:800" href="tel:'+esc(tel)+'">'+esc(phone)+'</a></div>');
+   }
+   const social=contactLink(contact.social_link);
+   if(social){
+    const platform=String(contact.social_platform||'Social profile');
+    rows.push('<div style="padding:12px;border:1px solid #365a79;border-radius:12px;background:#071d32"><div style="color:#9fb5ca;font-size:11px">🌐 '+esc(platform)+'</div><a style="display:inline-block;margin-top:5px;color:#ffe1a0;font-weight:800;overflow-wrap:anywhere" href="'+esc(social)+'" target="_blank" rel="noopener noreferrer">Open '+esc(platform)+' contact ↗</a></div>');
+   }
+   if(!rows.length)rows.push('<div style="padding:13px;border:1px solid #365a79;border-radius:12px;background:#071d32;color:#cbd9e7">Contact details have not been added yet. Please ask the System Administrator to update Phone and Social Profile in My Profile.</div>');
+   content.innerHTML='<div style="color:#f6f8fc;font-weight:850">'+esc(contact.display_name||'System Administrator')+'</div>'+rows.join('');
+  }catch(error){content.textContent='Could not load contact details: '+(error.message||error)}
+ }
  function init(){
   const client=window.sb;if(!client)return;
   if(!authSubscription){
@@ -232,7 +293,7 @@
   }
   client.auth.getSession().then(({data,error})=>{if(!error)syncSession(data.session)}).catch(e=>console.warn('Account profile session check failed:',e));
   const nav=$('nav');
-  if(nav&&!navObserver){navObserver=new MutationObserver(ensureNavButton);navObserver.observe(nav,{childList:true,subtree:true})}
+  if(nav&&!navObserver){navObserver=new MutationObserver(()=>{ensureNavButton();ensureSystemAdministratorButton()});navObserver.observe(nav,{childList:true,subtree:true})}
   observePages();
   if(!directoryTimer)directoryTimer=setInterval(()=>{if(activeProfile?.role==='owner'&&$('pageContent')?.dataset.uiPage==='staff')loadStaffDirectory()},30000);
  }
