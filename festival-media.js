@@ -20,7 +20,7 @@
 .pdk-day-message-form input[type="range"]{width:100%;min-height:34px;accent-color:#e5bd70;touch-action:pan-y}
 .pdk-day-video-zoom-control small{color:#c5d2df;font-size:12px}
 #appDateTime.has-normal-day-message .app-date-notice{max-width:100%}
-#appDateTime.has-normal-day-message .pdk-festival-video,#appDateTime.has-normal-day-video .pdk-festival-video{object-fit:cover!important;background:#07182b!important}`;
+#appDateTime.has-normal-day-message .pdk-festival-video,#appDateTime.has-normal-day-video .pdk-festival-video{object-fit:contain!important;background:#07182b!important}`;
     document.head.appendChild(style);
   }
 
@@ -433,7 +433,7 @@
         video.style.setProperty('top', (50+normalDayY)+'%', 'important');
         video.style.setProperty('width', (normalDayZoom)+'%', 'important');
         video.style.setProperty('height', (normalDayZoom)+'%', 'important');
-        video.style.setProperty('object-fit', 'cover', 'important');
+        video.style.setProperty('object-fit', 'contain', 'important');
       }
       // A video-only notice must show its video, not the uploaded filename as a text title.
       if (title) { title.textContent = row.title || ''; title.hidden = !row.title || videoOnlyNotice; }
@@ -624,7 +624,7 @@
           video.style.setProperty('height',p.zoom+'%','important');
           video.style.setProperty('max-width','none','important');
           video.style.setProperty('max-height','none','important');
-          video.style.setProperty('object-fit','cover','important');
+          video.style.setProperty('object-fit','contain','important');
           video.style.setProperty('object-position','center center','important');
           video.style.setProperty('transform','translate(-50%, -50%)','important');
         });
@@ -1224,7 +1224,7 @@
       #pdkFestivalManagedPreview video{width:100%;max-height:76dvh;object-fit:contain}
       #pdkFestivalManagedPreview button{position:absolute;right:18px;top:18px;z-index:2;width:44px;height:44px;border-radius:50%;font-size:25px}
       #pdkFestivalManagedPreview p{color:#fff;text-align:center}
-      #appDateTime.has-owner-festival-video .pdk-festival-video{display:block!important;opacity:0!important;visibility:visible!important;z-index:2;object-fit:cover}
+      #appDateTime.has-owner-festival-video .pdk-festival-video{display:block!important;opacity:0!important;visibility:visible!important;z-index:2;object-fit:contain!important;background:#07182b}
       #appDateTime.has-owner-festival-video:not(.pdk-video-ready):not(.pdk-video-fallback) .pdk-festival-scene{display:block!important;opacity:1!important;visibility:visible!important}
       #appDateTime.has-owner-festival-video.pdk-video-ready .pdk-festival-video{opacity:1!important}
       #appDateTime.has-owner-festival-video.pdk-video-ready .pdk-festival-scene{display:none!important}
