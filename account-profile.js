@@ -60,7 +60,7 @@
    '<div class="pdk-ap-head"><div><h2 id="pdkAccountProfileTitle">👤 My Profile</h2><p class="pdk-ap-sub" id="pdkAccountProfileSubtitle">Personal and contact information</p></div><button type="button" class="pdk-ap-close" id="pdkAccountProfileClose" aria-label="Close">×</button></div>'+
    '<div class="pdk-ap-avatar" id="pdkAccountProfileAvatar"></div>'+
    '<form id="pdkAccountProfileForm">'+
-   '<div class="pdk-ap-readonly" id="pdkAccountProfileStaffMeta" hidden><div><span>Staff ID</span><strong id="pdkAccountProfileStaffId">—</strong></div><div><label for="pdkAccountProfileDepartment"><span>Department / ဌာန *</span><select id="pdkAccountProfileDepartment" required><option value="">Select Department</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option><option value="event">Event Department</option></select></label></div></div>'+
+   '<div class="pdk-ap-readonly" id="pdkAccountProfileStaffMeta" hidden><div><span>Staff ID</span><strong id="pdkAccountProfileStaffId">—</strong></div><div><label for="pdkAccountProfileDepartment"><span>Department / ဌာန *</span><select id="pdkAccountProfileDepartment" required><option value="">Select Department</option><option value="sale">Sale Departments</option><option value="entry">Entry Departments</option><option value="playing">Playing Departments</option><option value="all">All Departments</option></select></label></div></div>'+
    '<label for="pdkAccountProfileName"><span id="pdkAccountProfileNameLabel">Full name / အမည်</span><input id="pdkAccountProfileName" maxlength="80" autocomplete="name" required></label>'+
    '<div class="pdk-ap-grid"><label for="pdkAccountProfileBirth">🎂 Date of birth / မွေးနေ့<input id="pdkAccountProfileBirth" type="date"></label><label for="pdkAccountProfilePhone">☎ Phone / ဖုန်း<input id="pdkAccountProfilePhone" type="tel" maxlength="40" autocomplete="tel" placeholder="+66 ..."></label></div>'+
    '<div class="pdk-ap-grid"><label for="pdkAccountProfilePlatform">Social platform<select id="pdkAccountProfilePlatform"><option value="">Select platform</option>'+platformHtml+'</select></label><label for="pdkAccountProfileSocial">Social profile link<input id="pdkAccountProfileSocial" type="url" maxlength="500" placeholder="https://..."></label></div>'+
@@ -120,7 +120,7 @@
     const source=detailRes.data||directoryRes.data||{};
     values={...values,display_name:source.display_name||values.display_name,birth_date:source.birth_date||values.birth_date,phone:source.phone||'',social_platform:source.social_platform||'',social_link:source.social_link||'',notes:source.notes||''};
     $('pdkAccountProfileStaffId').textContent=activeProfile.staff_id;
-    $('pdkAccountProfileDepartment').value=['sale','entry','playing','event'].includes(directoryRes.data?.department)?directoryRes.data.department:'';
+    $('pdkAccountProfileDepartment').value=['all','sale','entry','playing','event'].includes(directoryRes.data?.department)?directoryRes.data.department:'';
    }
    $('pdkAccountProfileName').value=values.display_name;
    $('pdkAccountProfileBirth').value=String(values.birth_date||'').slice(0,10);
@@ -145,7 +145,7 @@
    const department=$('pdkAccountProfileDepartment').value;
    if(!name||name.length>80)throw new Error('Please enter a name (1–80 characters).');
    if(activeProfile.role==='staff'&&!birth)throw new Error('Date of Birth is required.');
-   if(activeProfile.role==='staff'&&!['sale','entry','playing','event'].includes(department))throw new Error('Please select your Department.');
+   if(activeProfile.role==='staff'&&!['all','sale','entry','playing','event'].includes(department))throw new Error('Please select your Department.');
    if(birth&&birth>new Date().toISOString().slice(0,10))throw new Error('Date of birth cannot be in the future.');
    if(phone&&phone.length>40)throw new Error('Phone number must be 40 characters or fewer.');
    if(social&&(!/^https?:\/\//i.test(social)||social.length>500))throw new Error('Enter a valid social profile link beginning with https:// or http://.');
