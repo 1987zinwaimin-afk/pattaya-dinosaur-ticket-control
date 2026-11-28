@@ -4873,8 +4873,8 @@ async function staffCustomerVisitExport(share){
  const completed=rows.filter(r=>r.status==='completed').length;
  ctx.font='22px Arial';ctx.fillStyle='#cbd5e1';
  ctx.fillText('Groups: '+rows.length+'     Visitors: '+total+'     Completed: '+completed,pad,188);
- const cols=[pad,pad+170,pad+440,pad+650,pad+1000];
- const labels=['GROUP','VISITOR TYPE','PEOPLE','ENTRY TIME','EXIT TIME'];
+ const cols=[pad,pad+150,pad+360,pad+520,pad+800,pad+1080];
+ const labels=['GROUP','VISITOR TYPE','PEOPLE','ENTRY TIME','EXIT TIME','DURATION'];
  ctx.fillStyle='#26364d';ctx.fillRect(pad,headerH,W-pad*2,58);
  ctx.font='bold 19px Arial';ctx.fillStyle='#f5c66b';
  labels.forEach((v,i)=>ctx.fillText(v,cols[i]+12,headerH+37));
@@ -4883,9 +4883,10 @@ async function staffCustomerVisitExport(share){
   const y=headerH+58+i*rowH;
   ctx.fillStyle=i%2?'#111d2d':'#152338';ctx.fillRect(pad,y,W-pad*2,rowH);
   const type=({thai:'Thai',foreign:'Foreign',review:'Review'})[r.visitor_type]||String(r.visitor_type||'—');
-  const values=['#'+String(r.group_number??'—'),type,String(Number(r.total_visitors||0)),fmt(r.entry_at),fmt(r.exit_at)];
-  ctx.font='21px Arial';ctx.fillStyle='#f8fafc';
-  values.forEach((v,j)=>{let value=String(v);const max=j===3||j===4?330:240;while(ctx.measureText(value).width>max&&value.length>4)value=value.slice(0,-2)+'…';ctx.fillText(value,cols[j]+12,y+45)});
+  const mins=Number(r.duration_minutes);const duration=r.duration_minutes===null||r.duration_minutes===undefined?'—':mins<60?mins+' min':Math.floor(mins/60)+' h '+(mins%60)+' min';
+  const values=['#'+String(r.group_number??'—'),type,String(Number(r.total_visitors||0)),fmt(r.entry_at),fmt(r.exit_at),duration];
+  ctx.font='20px Arial';ctx.fillStyle='#f8fafc';
+  values.forEach((v,j)=>{let value=String(v);const max=j===3||j===4?270:j===5?150:190;while(ctx.measureText(value).width>max&&value.length>4)value=value.slice(0,-2)+'…';ctx.fillText(value,cols[j]+10,y+45)});
   if(r.status==='pending'){ctx.fillStyle='#f5c66b';ctx.font='15px Arial';ctx.fillText('PENDING',W-pad-105,y+20)}
  });
  ctx.fillStyle='#94a3b8';ctx.font='17px Arial';ctx.fillText('Generated from Customer Service · Pattaya Dinosaur Ticket Control',pad,H-34);
