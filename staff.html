@@ -4349,6 +4349,8 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
   if(profile.role!=='staff'||!profile.staff_id||String(profile.staff_id).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID verification did not finish. Please contact Owner.');
  }
  currentRole=profile.role;currentStaffId=profile.staff_id||null;
+ // Start Date & Time media immediately after the verified staff identity is ready.
+ setTimeout(()=>window.__pdkSyncFestivalDateTime?.(true),0);
   chatPresenceStart().catch(error=>console.warn('Staff Team Chat presence startup failed:',error?.message||error));
  // Refresh an existing background push subscription as soon as the Staff identity is verified.
  // This is non-blocking and never changes login, ticket, or payroll data.
@@ -7243,7 +7245,7 @@ input:focus,select:focus{border-color:#55d6ff!important;box-shadow:0 0 0 3px rgb
 /* v4: visibility is managed by festival-media.js for all themes. */
 #appDateTime .pdk-auto-festival-canvas{mix-blend-mode:screen;opacity:.72!important}
 </style>
-<script src="/festival-media.js?v=20261126-4"></script>
+<script src="/festival-media.js?v=20261128-1"></script>
 </body></html>
 
 <style id="pdk-staff-access-maintenance-center-v1">
