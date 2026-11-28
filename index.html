@@ -5558,6 +5558,9 @@ async function startCloudSession(session){
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
   refreshOwnerPushSubscription().catch(e=>console.warn('Owner push subscription refresh failed:',e.message||e));
   document.getElementById('authScreen').style.display='none';
+  // Start the shared Date & Time media immediately after the Owner identity is verified.
+  // This runs before the slower ticket-data load so the header video appears on app entry.
+  setTimeout(()=>{if(currentRole==='owner'&&currentUser&&document.getElementById('appDateTime'))window.__pdkSyncFestivalDateTime?.(true)},0);
   // Start activity polling before the slower ticket download so Staff logins during startup are not missed.
   startStaffLoginNotifications();
   try{
@@ -9405,7 +9408,7 @@ function openThailandFestivalDate(date,requestedTitle){
  #appDateTime.app-datetime,#appDateTime.app-datetime:after{transition:none!important;animation:none!important}
 }
 </style>
-<script src="/festival-media.js?v=20261126-4"></script>
+<script src="/festival-media.js?v=20261128-2"></script>
 
 <style id="pdk-datetime-replaces-banner-header-v1">
 /* Replace the old image banner with the existing live Date & Time hero.
