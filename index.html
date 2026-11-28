@@ -4796,6 +4796,24 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 }
 </style>
 
+
+<style id="pdk-owner-video-stretch-entire-frame-v3">
+/* Fit every uploaded video frame edge-to-edge: never crop portrait/landscape footage. */
+#appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ overflow:hidden!important;display:block!important;visibility:visible!important;opacity:1!important;
+}
+#appDateTime.app-datetime.has-owner-festival-video .pdk-festival-video{
+ position:absolute!important;inset:0!important;
+ width:100%!important;height:100%!important;
+ min-width:100%!important;min-height:100%!important;
+ max-width:none!important;max-height:none!important;
+ object-fit:fill!important;object-position:50% 50%!important;
+ transform:none!important;
+ display:block!important;visibility:visible!important;opacity:1!important;
+}
+</style>
+
 </head>
 <body>
 <header class="top brand-header"><div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
