@@ -4853,7 +4853,7 @@ header.brand-header #appDateTime.app-datetime.has-owner-festival-video{
  position:relative!important;box-sizing:border-box!important;
  display:flex!important;width:100%!important;max-width:none!important;
  height:auto!important;min-height:0!important;max-height:none!important;
- aspect-ratio:16/9!important;padding:0!important;margin:0!important;
+ aspect-ratio:var(--pdk-owner-video-ratio,16/9)!important;padding:0!important;margin:0!important;
  overflow:hidden!important;isolation:isolate!important;background:#050b16!important;
 }
 header.brand-header #appDateTime.app-datetime.has-owner-festival-video .pdk-festival-art{
@@ -7778,7 +7778,7 @@ function monthlyReportBuildHtml(data){
   if(!card.classList.contains('has-owner-festival-video'))return;
   var w=video.videoWidth,h=video.videoHeight;
   if(!(w>0&&h>0))return;
-  card.style.aspectRatio=w+' / '+h;
+  card.style.setProperty('--pdk-owner-video-ratio',w+' / '+h);\n  card.style.aspectRatio=w+' / '+h;
   card.style.height='auto';
   card.style.minHeight='0';
   card.style.maxHeight='none';
@@ -7788,7 +7788,7 @@ function monthlyReportBuildHtml(data){
    var sync=function(){
     var height=Math.ceil(header.getBoundingClientRect().height);
     if(height>0)document.documentElement.style.setProperty('--pdk-header-height',height+'px');
-    document.body.style.paddingTop=height+'px';
+    document.body.style.setProperty('padding-top',height+'px','important');
    };
    requestAnimationFrame(sync);
    if(window.ResizeObserver&&!header.__pdkRatioObserver){
@@ -7803,7 +7803,7 @@ function monthlyReportBuildHtml(data){
  var observer=new MutationObserver(function(records){
   for(var i=0;i<records.length;i++){
    if(records[i].type==='attributes'&&records[i].attributeName==='src'){
-    card.style.aspectRatio='16 / 9';
+    card.style.setProperty('--pdk-owner-video-ratio','16 / 9');\n    card.style.aspectRatio='16 / 9';
    }
   }
  });
