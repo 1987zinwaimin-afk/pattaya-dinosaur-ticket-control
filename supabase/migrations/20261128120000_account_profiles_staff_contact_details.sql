@@ -32,43 +32,20 @@ ALTER TABLE public.staff_profile_details ENABLE ROW LEVEL SECURITY;
 GRANT SELECT, INSERT, UPDATE ON public.staff_profile_details TO authenticated;
 
 DROP POLICY IF EXISTS "Owners manage staff profile details" ON public.staff_profile_details;
-CREATE POLICY "Owners manage staff profile details"
-  ON public.staff_profile_details FOR ALL TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = (SELECT auth.uid())
-        AND p.role = 'owner'
-        AND COALESCE(p.is_archived, false) = false
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = (SELECT auth.uid())
-        AND p.role = 'owner'
-        AND COALESCE(p.is_archived, false) = false
-    )
-  );
-
 DROP POLICY IF EXISTS "Staff read own profile details" ON public.staff_profile_details;
-CREATE POLICY "Staff read own profile details"
+DROP POLICY IF EXISTS "Staff create own profile details" ON public.staff_profile_details;
+DROP POLICY IF EXISTS "Staff update own profile details" ON public.staff_profile_details;
+
+CREATE POLICY "Team members read permitted staff profile details"
   ON public.staff_profile_details FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = (SELECT auth.uid())
-        AND p.role = 'staff'
+        AND p.role = 'owner'
         AND COALESCE(p.is_archived, false) = false
-        AND upper(btrim(p.staff_id)) = upper(btrim(staff_profile_details.staff_id))
     )
-  );
-
-DROP POLICY IF EXISTS "Staff create own profile details" ON public.staff_profile_details;
-CREATE POLICY "Staff create own profile details"
-  ON public.staff_profile_details FOR INSERT TO authenticated
-  WITH CHECK (
-    EXISTS (
+    OR EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = (SELECT auth.uid())
         AND p.role = 'staff'
@@ -77,11 +54,34 @@ CREATE POLICY "Staff create own profile details"
     )
   );
 
-DROP POLICY IF EXISTS "Staff update own profile details" ON public.staff_profile_details;
-CREATE POLICY "Staff update own profile details"
+CREATE POLICY "Team members insert permitted staff profile details"
+  ON public.staff_profile_details FOR INSERT TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = (SELECT auth.uid())
+        AND p.role = 'owner'
+        AND COALESCE(p.is_archived, false) = false
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = (SELECT auth.uid())
+        AND p.role = 'staff'
+        AND COALESCE(p.is_archived, false) = false
+        AND upper(btrim(p.staff_id)) = upper(btrim(staff_profile_details.staff_id))
+    )
+  );
+
+CREATE POLICY "Team members update permitted staff profile details"
   ON public.staff_profile_details FOR UPDATE TO authenticated
   USING (
     EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = (SELECT auth.uid())
+        AND p.role = 'owner'
+        AND COALESCE(p.is_archived, false) = false
+    )
+    OR EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = (SELECT auth.uid())
         AND p.role = 'staff'
@@ -91,6 +91,12 @@ CREATE POLICY "Staff update own profile details"
   )
   WITH CHECK (
     EXISTS (
+      SELECT 1 FROM public.profiles p
+      WHERE p.id = (SELECT auth.uid())
+        AND p.role = 'owner'
+        AND COALESCE(p.is_archived, false) = false
+    )
+    OR EXISTS (
       SELECT 1 FROM public.profiles p
       WHERE p.id = (SELECT auth.uid())
         AND p.role = 'staff'
