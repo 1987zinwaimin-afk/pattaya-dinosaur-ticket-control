@@ -12,6 +12,7 @@ SET search_path TO 'public', 'pg_temp'
 AS $function$
 DECLARE
   v_staff_id text;
+  v_saved_birth date;
   v_department text := lower(btrim(coalesce(p_department, '')));
 BEGIN
   IF auth.uid() IS NULL THEN
@@ -25,6 +26,17 @@ BEGIN
   END IF;
   IF v_department NOT IN ('sale', 'entry', 'playing', 'event') THEN
     RAISE EXCEPTION 'Please select one valid Staff Department';
+  END IF;
+
+  SELECT coalesce(d.birth_date, x.birth_date)
+    INTO v_saved_birth
+    FROM public.staff_directory d
+    LEFT JOIN public.staff_profile_details x
+      ON upper(btrim(x.staff_id)) = upper(btrim(d.staff_id))
+   WHERE upper(btrim(d.staff_id)) = upper(btrim(p_staff_id))
+   LIMIT 1;
+  IF v_saved_birth IS NOT NULL AND v_saved_birth <> p_birth_date THEN
+    RAISE EXCEPTION 'Date of Birth does not match the saved Staff profile. Please contact Owner if it needs correction.';
   END IF;
 
   v_staff_id := public.claim_staff_identity(p_staff_id, p_display_name, v_department);
