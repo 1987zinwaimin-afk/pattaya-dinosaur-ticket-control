@@ -7889,3 +7889,56 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
   }
 }
 </style>
+
+
+<style id="pdk-staff-actions-nowrap-v2">
+/* Keep every department action control in one equal-width horizontal row on phones. */
+@media(max-width:700px){
+  #pageContent > .actions:has(#ticketArchiveOpen){
+    display:flex!important;
+    flex-direction:row!important;
+    flex-wrap:nowrap!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    gap:5px!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow:visible!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{
+    display:inline-flex!important;
+    flex:1 1 0!important;
+    box-sizing:border-box!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:40px!important;
+    min-height:40px!important;
+    margin:0!important;
+    padding:4px 2px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    font-size:clamp(8px,2.5vw,11px)!important;
+    line-height:1!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn{
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:4px!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn svg{
+    width:20px!important;
+    height:20px!important;
+    flex:0 0 20px!important;
+  }
+}
+@media(max-width:360px){
+  #pageContent > .actions:has(#ticketArchiveOpen){gap:4px!important}
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{font-size:8px!important;padding:3px 1px!important}
+}
+</style>
