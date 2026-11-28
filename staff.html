@@ -7921,18 +7921,37 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
 
 <style id="pdk-date-time-media-first-frame-v1">
 /* Keep the Date & Time artwork hidden until the correct selected media is ready. */
-#appDateTime.pdk-media-pending{
+#appDateTime.app-datetime.pdk-media-pending,
+#appDateTime.app-datetime.pdk-video-fallback{
   background:transparent!important;
+  background-color:transparent!important;
   background-image:none!important;
+  box-shadow:none!important;
 }
-#appDateTime.pdk-media-pending .pdk-festival-art{
+#appDateTime.app-datetime.pdk-media-pending::before,
+#appDateTime.app-datetime.pdk-media-pending::after,
+#appDateTime.app-datetime.pdk-video-fallback::before,
+#appDateTime.app-datetime.pdk-video-fallback::after{
+  content:none!important;
+  display:none!important;
+  opacity:0!important;
+  background:none!important;
+}
+#appDateTime.pdk-media-pending .pdk-festival-art,
+#appDateTime.pdk-video-fallback .pdk-festival-art{
+  display:none!important;
   opacity:0!important;
   visibility:hidden!important;
   background:transparent!important;
+  background-image:none!important;
 }
 #appDateTime.pdk-media-pending .pdk-festival-video,
 #appDateTime.pdk-media-pending .pdk-festival-scene,
-#appDateTime.pdk-media-pending .pdk-auto-festival-canvas{
+#appDateTime.pdk-media-pending .pdk-auto-festival-canvas,
+#appDateTime.pdk-video-fallback .pdk-festival-video,
+#appDateTime.pdk-video-fallback .pdk-festival-scene,
+#appDateTime.pdk-video-fallback .pdk-auto-festival-canvas{
+  display:none!important;
   opacity:0!important;
   visibility:hidden!important;
 }
