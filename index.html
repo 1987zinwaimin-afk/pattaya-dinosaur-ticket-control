@@ -4724,7 +4724,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 
 </head>
 <body>
-<header class="top brand-header"><div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-2" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+<header class="top brand-header"><div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
 <defs>
  <linearGradient id="pdkSky" x2="0" y2="1"><stop stop-color="#06132e"/><stop offset=".52" stop-color="#0b2852"/><stop offset="1" stop-color="#123c62"/></linearGradient>
  <linearGradient id="pdkWater" x2="0" y2="1"><stop stop-color="#16466d"/><stop offset=".45" stop-color="#0b315b"/><stop offset="1" stop-color="#061b3b"/></linearGradient>
@@ -5558,6 +5558,8 @@ async function startCloudSession(session){
   // Refresh the already-authorized push endpoint whenever Owner signs in; never prompt automatically.
   refreshOwnerPushSubscription().catch(e=>console.warn('Owner push subscription refresh failed:',e.message||e));
   document.getElementById('authScreen').style.display='none';
+  // Clear any previous Festival Calendar preview so Owner always starts on Thailand's actual date.
+  window.__pdkFestivalDateTimePreview=null;window.__pdkUpdateThailandDateTime?.();
   // Start the shared Date & Time media immediately after the Owner identity is verified.
   // This runs before the slower ticket-data load so the header video appears on app entry.
   setTimeout(()=>{if(currentRole==='owner'&&currentUser&&document.getElementById('appDateTime'))window.__pdkSyncFestivalDateTime?.(true)},0);
@@ -5764,7 +5766,7 @@ function navRender(){
  }).join('');
  if(!nav.dataset.clickBound){nav.addEventListener('click',function(e){const b=e.target.closest('button[data-page]');if(!b||!nav.contains(b))return;e.preventDefault();e.stopPropagation();go(b.dataset.page)},true);nav.dataset.clickBound='1'}
 }
-function go(p){if(p==='festivals'&&!canViewOwnerStaffActivity()){alert('Thailand Festival Calendar ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p==='staff'&&!canViewOwnerStaffActivity()){alert('Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p!=='event')activeEventLocationNo='';page=p;try{if(currentRole==='owner'&&currentUser){if(p==='festivals')localStorage.setItem('tctl-owner-last-page-v1','festivals');else if(localStorage.getItem('tctl-owner-last-page-v1')==='festivals')localStorage.removeItem('tctl-owner-last-page-v1')}}catch(storageError){console.warn('Owner page preference could not be saved:',storageError)}const pageRoot=document.getElementById('pageContent');if(pageRoot)delete pageRoot.dataset.uiPage;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render(true)}
+function go(p){if(p!=='festivals'&&window.__pdkFestivalDateTimePreview){window.__pdkFestivalDateTimePreview=null;window.__pdkUpdateThailandDateTime?.()}if(p==='festivals'&&!canViewOwnerStaffActivity()){alert('Thailand Festival Calendar ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p==='staff'&&!canViewOwnerStaffActivity()){alert('Staff Activity ကို Owner account တစ်ခုတည်းသာ ကြည့်ရှုခွင့်ရှိပါသည်။');return}if(p!=='event')activeEventLocationNo='';page=p;try{if(currentRole==='owner'&&currentUser){if(p==='festivals')localStorage.setItem('tctl-owner-last-page-v1','festivals');else if(localStorage.getItem('tctl-owner-last-page-v1')==='festivals')localStorage.removeItem('tctl-owner-last-page-v1')}}catch(storageError){console.warn('Owner page preference could not be saved:',storageError)}const pageRoot=document.getElementById('pageContent');if(pageRoot)delete pageRoot.dataset.uiPage;document.getElementById('side').classList.remove('open');document.getElementById('shade').classList.remove('open');render(true)}
 async function archiveTicket(id){
  const t=tickets.find(x=>String(x.id)===String(id));if(!t||t.isArchived)return;
  if(!currentUser||!cloudReady){alert('Cloud connection is not ready. Please reconnect before archiving.');return}
@@ -8271,7 +8273,7 @@ window.__ownerBootDiagnostics.stage="main-script-complete";
   }
   const thailandClock=new Date(now.getTime()+7*60*60*1000),clockHour=thailandClock.getUTCHours(),clockMinute=String(thailandClock.getUTCMinutes()).padStart(2,'0'),clockSecond=String(thailandClock.getUTCSeconds()).padStart(2,'0'),clockPeriod=clockHour>=12?'PM':'AM',clockHour12=clockHour%12||12;timeEl.textContent=String(clockHour12)+':'+clockMinute+':'+clockSecond+' '+clockPeriod;
  }
- updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
+ window.__pdkUpdateThailandDateTime=updateThailandDateTime;updateThailandDateTime();window.setInterval(updateThailandDateTime,1000);
 })();
 </script>
 
