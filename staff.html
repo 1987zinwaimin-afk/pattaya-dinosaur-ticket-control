@@ -120,7 +120,7 @@ label{color:#c0d0e0}
 
 .auth-screen{position:fixed;inset:0;z-index:100;background:radial-gradient(ellipse at 20% 0%,#174a75,transparent 40%),#041326;display:grid;place-items:center;padding:20px}
 .auth-card{width:min(440px,100%);padding:24px;border:1px solid #315573;border-radius:24px;background:linear-gradient(145deg,#102d49,#06172a);box-shadow:0 20px 60px #0008}
-.auth-card h2{color:#ffd778;margin:0 0 8px}.auth-card p{color:#b8cadd}.auth-card .auth-actions{display:grid;gap:10px;margin-top:18px}.auth-error{color:#ff8ea8;white-space:pre-wrap;font-size:.9rem;margin-top:12px}.auth-meta{font-size:.82rem;color:#a8bad0;margin-top:12px}
+.auth-card h2{color:#ffd778;margin:0 0 8px}.auth-card p{color:#b8cadd}.auth-card .auth-actions{display:grid;gap:10px;margin-top:18px}.auth-birth-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 12px}.auth-birth-grid label{min-width:0;margin:0;font-size:.78rem}.auth-birth-grid label span{display:block;margin-bottom:5px}.auth-birth-grid select{min-width:0;padding:11px 8px;min-height:46px}.auth-error{color:#ff8ea8;white-space:pre-wrap;font-size:.9rem;margin-top:12px}.auth-meta{font-size:.82rem;color:#a8bad0;margin-top:12px}
 
 /* Compact mobile dashboard: reduce oversized cards, buttons and spacing */
 .wrap{padding:12px 10px 30px}
@@ -3473,10 +3473,50 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 .chat-message-status{font-size:10px;letter-spacing:.1px}
 @media(max-width:520px){.emergency-alarm-card{border-radius:19px!important;padding:19px 16px!important}.emergency-alarm-symbol{width:56px;height:56px;font-size:29px}.emergency-alarm-card>p{font-size:13px}.emergency-alarm-details{font-size:11px;padding:10px}.emergency-alarm-actions{gap:7px}.emergency-alarm-actions button{flex-basis:100%;min-height:46px}.staff-alarm-popover{max-width:calc(100vw - 16px)}}
 </style>
+<style id="pdk-staff-datetime-spacing-hitarea-v1">
+/* STAFF PAGE ONLY: keep the Date/Time hero in normal document flow and never let its
+   decorative media layer intercept ticket controls below it. */
+#appDateTime.app-datetime{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;right:auto!important;bottom:auto!important;left:auto!important;
+  float:none!important;
+  transform:none!important;
+  z-index:1!important;
+  pointer-events:none!important;
+  margin:10px auto 26px!important;
+}
+#appDateTime.app-datetime .pdk-festival-art,
+#appDateTime.app-datetime .pdk-festival-video,
+#appDateTime.app-datetime .pdk-festival-scene,
+#appDateTime.app-datetime .pdk-auto-festival-canvas,
+#appDateTime.app-datetime .app-datetime-date,
+#appDateTime.app-datetime .app-datetime-clock{
+  pointer-events:none!important;
+}
+main.wrap{
+  position:relative!important;
+  z-index:2!important;
+  margin-top:0!important;
+  padding-top:0!important;
+}
+main.wrap>#stats{margin-top:14px!important}
+#ticketCards{position:relative!important;z-index:2!important;pointer-events:auto!important}
+#ticketCards>.ticket{position:relative!important;z-index:1!important;pointer-events:auto!important}
+#ticketCards button,#ticketCards input,#ticketCards select{pointer-events:auto!important}
+@media(max-width:700px){
+  #appDateTime.app-datetime{
+    width:calc(100% - 20px)!important;
+    margin:8px auto 24px!important;
+  }
+  main.wrap{padding:0 10px 30px!important}
+  main.wrap>#stats{margin:14px 0 12px!important}
+}
+</style>
 </head>
 <body>
 <header class="top brand-header"><img class="brand-banner" src="/file_000000002a408207ab0d9bef49f92c89.png" alt="Pattaya Dinosaur Kingdom" fetchpriority="high"><span class="green-dino-cover" aria-hidden="true"><svg viewBox="0 0 120 70" preserveAspectRatio="none"><defs><linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6b9d35"/><stop offset=".55" stop-color="#245b28"/><stop offset="1" stop-color="#103b25"/></linearGradient><linearGradient id="leafB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#9bbd45"/><stop offset=".6" stop-color="#3f792d"/><stop offset="1" stop-color="#174629"/></linearGradient></defs><path d="M0 70 Q10 43 26 49 Q34 20 48 37 Q57 5 72 30 Q90 13 94 42 Q112 28 120 55 L120 70Z" fill="#173f27"/><g fill="url(#leafA)" stroke="#163d24" stroke-width="1.2"><path d="M9 70 Q-2 34 17 7 Q31 34 9 70Z"/><path d="M26 70 Q12 30 38 1 Q47 36 26 70Z"/><path d="M48 70 Q32 29 58 4 Q68 38 48 70Z"/><path d="M69 70 Q55 31 82 7 Q91 42 69 70Z"/><path d="M91 70 Q78 39 105 14 Q111 45 91 70Z"/><path d="M109 70 Q96 47 117 28 Q124 52 109 70Z"/></g><g fill="url(#leafB)" stroke="#1b4b29" stroke-width="1"><path d="M4 66 Q17 37 32 40 Q25 62 4 66Z"/><path d="M30 67 Q42 38 59 39 Q51 62 30 67Z"/><path d="M57 68 Q72 38 89 43 Q78 64 57 68Z"/><path d="M83 69 Q99 45 116 49 Q105 67 83 69Z"/></g><g stroke="#b2c96a" stroke-width="1" opacity=".65" fill="none"><path d="M9 68L17 10M26 68L38 4M48 68L58 7M69 68L82 10M91 68L105 17"/></g></svg></span><button class="hamb header-menu" id="openMenu" aria-label="Open menu">☰</button><button type="button" id="staffAlarmHeaderButton" class="staff-alarm-header-button" aria-label="Alarm settings are in Menu > Settings" aria-expanded="false" hidden>🚨<span class="staff-alarm-dot"></span></button><span id="pageTitle" class="visually-hidden">Dashboard</span></header>
-<div id="appDateTime" class="app-datetime" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none" poster="/pdk-loy-krathong-photoreal.webp"><source src="/Loy%20Krathong%20Festival.mp4?v=20261124-2" type="video/mp4"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+<div id="appDateTime" class="app-datetime pdk-media-pending" aria-label="Thailand date and time"><div class="pdk-festival-art" aria-hidden="true"><video class="pdk-festival-video" aria-hidden="true" muted loop playsinline webkit-playsinline disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback" preload="none"></video><svg class="pdk-festival-scene" viewBox="0 0 1536 513" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
 <defs>
  <linearGradient id="pdkSky" x2="0" y2="1"><stop stop-color="#06132e"/><stop offset=".52" stop-color="#0b2852"/><stop offset="1" stop-color="#123c62"/></linearGradient>
  <linearGradient id="pdkWater" x2="0" y2="1"><stop stop-color="#16466d"/><stop offset=".45" stop-color="#0b315b"/><stop offset="1" stop-color="#061b3b"/></linearGradient>
@@ -3528,7 +3568,7 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 </g>
 <g class="pdk-svg-krathong pdk-svg-krathong-small" transform="translate(310 370) scale(.46)"><ellipse cy="12" rx="96" ry="22" fill="#154c31" stroke="#d8a64e" stroke-width="4"/><path d="M-90 8Q-50-60-22 0Q0-70 26 0Q60-52 90 8" fill="#277344" stroke="#a9bf62" stroke-width="4"/><g fill="url(#pdkPetal)"><path d="M-32 0Q-30-70 0-42Q0-12-32 0Z"/><path d="M0 0Q20-70 45-38Q32-10 0 0Z"/></g><path d="M0-30q-8-28 0-40q8 13 0 40" fill="#fff1b0"/></g>
 <g class="pdk-svg-krathong pdk-svg-krathong-small" transform="translate(1190 374) scale(.4)"><ellipse cy="12" rx="96" ry="22" fill="#154c31" stroke="#d8a64e" stroke-width="4"/><path d="M-90 8Q-50-60-22 0Q0-70 26 0Q60-52 90 8" fill="#277344" stroke="#a9bf62" stroke-width="4"/><g fill="url(#pdkPetal)"><path d="M-32 0Q-30-70 0-42Q0-12-32 0Z"/><path d="M0 0Q20-70 45-38Q32-10 0 0Z"/></g><path d="M0-30q-8-28 0-40q8 13 0 40" fill="#fff1b0"/></g>
-</svg><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i><i class="pdk-petal pdk-petal-one"></i><i class="pdk-petal pdk-petal-two"></i><i class="pdk-petal pdk-petal-three"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
+</svg><i class="pdk-sky-lantern pdk-lantern-one"></i><i class="pdk-sky-lantern pdk-lantern-two"></i><i class="pdk-sky-lantern pdk-lantern-three"></i><i class="pdk-water-light pdk-water-one"></i><i class="pdk-water-light pdk-water-two"></i><i class="pdk-krathong pdk-krathong-one"></i><i class="pdk-krathong pdk-krathong-two"></i><i class="pdk-petal pdk-petal-one"></i><i class="pdk-petal pdk-petal-two"></i><i class="pdk-petal pdk-petal-three"></i></div><div class="app-datetime-date"><span class="app-datetime-caption">DATE</span><strong id="appDateValue">--.--.----</strong><span id="appWeekdayValue">---</span><span id="appHolidayValue" class="app-holiday-label" hidden></span><div id="appDateNoticeValue" class="app-date-notice" hidden role="status" aria-live="polite"><strong id="appDateNoticeTitle"></strong><span id="appDateNoticeText"></span></div></div><div class="app-datetime-clock"><span class="app-datetime-caption">THAILAND TIME</span><strong id="appTimeValue">--:--:-- --</strong><span class="app-datetime-zone">Asia/Bangkok · UTC+7</span></div></div>
 <div class="staff-install-help" id="staffInstallHelp" hidden role="dialog" aria-modal="true" aria-labelledby="staffInstallHelpTitle">
  <div class="staff-install-panel">
   <button type="button" class="staff-install-close" id="staffInstallClose" aria-label="Close">✕</button>
@@ -3544,9 +3584,9 @@ input::placeholder,textarea::placeholder{color:#8298ad;opacity:1}
 <section id="pageContent"></section>
 </main>
 
-<div id="staffSiteAccessOverlay" hidden role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button><div id="staffSubscriptionPaymentPanel" hidden></div></div></div><div class="auth-screen" id="authScreen" style="display:none" aria-hidden="true"><div class="auth-card">
+<div id="staffSiteAccessOverlay" hidden role="alert" aria-live="assertive"><div class="staff-site-access-card"><p id="staffSiteAccessMessage">We apologize. The Staff Account is currently unavailable while maintenance is in progress. Please wait a little longer. Once access is restored, everyone will receive a notification on their phones.</p><h1 id="staffSiteAccessTitle" hidden></h1><p id="staffSiteAccessDetail" hidden></p><button type="button" id="staffSiteAccessRetry" hidden>Check again</button><div id="staffSubscriptionPaymentPanel" hidden></div></div></div><div class="auth-screen" id="authScreen" data-no-translate style="display:none" aria-hidden="true"><div class="auth-card">
 <h2>Welcome Back</h2><p id="authIntro">Staff Login · Owner login is not available on this link.</p>
-<form id="authForm"><label for="authStaffId">Staff ID</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Name</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label for="authBirthDate">Date of Birth</label><input id="authBirthDate" type="date" autocomplete="bday" aria-describedby="authBirthDateHint"><small id="authBirthDateHint" style="display:block;margin:-5px 0 12px;color:#aebed0;font-size:12px">Enter your birthday to receive your annual Birthday Postcard. You can leave this blank and add it later.</small><label for="staffDepartment">Department</label><select id="staffDepartment" required><option value="all">All Departments</option><option value="sale">Sale Department</option><option value="entry">Entry Department</option><option value="playing">Playing Department</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
+<form id="authForm"><label for="authStaffId">Staff ID *</label><input id="authStaffId" maxlength="32" required autocomplete="username" placeholder="Enter your Staff ID"><label for="authName">Full Name *</label><input id="authName" maxlength="80" required autocomplete="name" placeholder="Enter your name"><label>Date of Birth *</label><div class="auth-birth-grid"><label for="authBirthDay"><span>Day</span><select id="authBirthDay" required aria-label="Birth day"><option value="">Day</option></select></label><label for="authBirthMonth"><span>Month</span><select id="authBirthMonth" required aria-label="Birth month"><option value="">Month</option></select></label><label for="authBirthYear"><span>Year</span><select id="authBirthYear" required aria-label="Birth year"><option value="">Year</option></select></label></div><small id="authBirthDateHint" style="display:block;margin:-5px 0 12px;color:#aebed0;font-size:12px">Choose Day, Month and Year. This device remembers your signed-in session.</small><label for="staffDepartment">Department *</label><select id="staffDepartment" required><option value="" selected disabled>Select your Department</option><option value="sale">Sale Departments</option><option value="entry">Entry Departments</option><option value="playing">Playing Departments</option><option value="all">All Departments</option></select><div class="auth-actions"><button class="gold" type="submit" id="authSubmit">Continue to Tickets</button></div></form>
 <div id="authError" class="auth-error"></div><div class="auth-meta">STAFF WEBSITE · Owner login is not available on this link.</div>
 </div></div>
 
@@ -4186,7 +4226,7 @@ async function checkStaffBirthdayPostcard(){
    if(attempt<2)await new Promise(resolve=>setTimeout(resolve,700*(attempt+1)));
   }
   if(birthdayError)console.warn('Birthday RPC read failed; checking the verified login form value as a safe fallback:',birthdayError.message||birthdayError);
-  const birthday=String(birthdayData||document.getElementById('authBirthDate')?.value||'').trim().slice(0,10);
+  const birthday=String(birthdayData||getStaffBirthDateValue()||'').trim().slice(0,10);
   if(!/^\d{4}-\d{2}-\d{2}$/.test(birthday)){
    console.info('Birthday postcard skipped: no valid saved Date of Birth for this Staff account.');
    return;
@@ -4281,7 +4321,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  const enteredName=document.getElementById('authName').value.trim();
  const enteredStaffId=document.getElementById('authStaffId').value.trim();
  const requestedDepartmentRaw=departmentOverride||document.getElementById('staffDepartment').value||'sale';
- const requestedDepartment=['all','sale','entry','playing'].includes(requestedDepartmentRaw)?requestedDepartmentRaw:'sale';
+ const requestedDepartment=['all','sale','entry','playing','event'].includes(requestedDepartmentRaw)?requestedDepartmentRaw:'sale';
  // Read the active identity and automatically replace a stale anonymous session on shared staff phones.
  let profile=knownProfile;
  if(!profile){
@@ -4309,6 +4349,8 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
   if(profile.role!=='staff'||!profile.staff_id||String(profile.staff_id).toUpperCase()!==enteredStaffId.toUpperCase())throw new Error('Staff ID verification did not finish. Please contact Owner.');
  }
  currentRole=profile.role;currentStaffId=profile.staff_id||null;
+ // Start Date & Time media immediately after the verified staff identity is ready.
+ setTimeout(()=>window.__pdkSyncFestivalDateTime?.(true),0);
   chatPresenceStart().catch(error=>console.warn('Staff Team Chat presence startup failed:',error?.message||error));
  // Refresh an existing background push subscription as soon as the Staff identity is verified.
  // This is non-blocking and never changes login, ticket, or payroll data.
@@ -4316,7 +4358,7 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  // Ensure the Normal Staff emergency-alarm control is initialized after authentication, even if the first render happened before its script loaded.
  setTimeout(()=>{try{window.renderStaffAlarmSetupBanner?.()}catch(error){console.warn('Staff emergency alarm control initialization failed:',error)}},0);
  const previousDepartment=localStorage.getItem('tctl-staff-department')||'';
- const selectedDepartment=['all','sale','entry','playing'].includes(requestedDepartment)?requestedDepartment:(['all','sale','entry','playing'].includes(previousDepartment)?previousDepartment:'sale');
+ const selectedDepartment=['all','sale','entry','playing','event'].includes(requestedDepartment)?requestedDepartment:(['all','sale','entry','playing','event'].includes(previousDepartment)?previousDepartment:'sale');
  selectedStaffDepartment=selectedDepartment;
  localStorage.setItem('tctl-staff-department',selectedStaffDepartment);
  page=selectedStaffDepartment==='all'?'dashboard':selectedStaffDepartment;
@@ -4351,6 +4393,31 @@ async function startCloudSession(session,notifyOwnerPush=false,knownProfile=null
  }
  Promise.allSettled(backgroundTasks);
 }
+// Date of Birth uses separate Day / Month / Year selectors while preserving the database YYYY-MM-DD format.
+function populateStaffBirthDateFields(){
+ const day=document.getElementById('authBirthDay'),month=document.getElementById('authBirthMonth'),year=document.getElementById('authBirthYear');
+ if(!day||!month||!year||day.dataset.ready==='1')return;
+ day.innerHTML='<option value="">Day</option>'+Array.from({length:31},(_,i)=>'<option value="'+String(i+1).padStart(2,'0')+'">'+String(i+1).padStart(2,'0')+'</option>').join('');
+ month.innerHTML='<option value="">Month</option>'+Array.from({length:12},(_,i)=>'<option value="'+String(i+1).padStart(2,'0')+'">'+String(i+1).padStart(2,'0')+'</option>').join('');
+ const currentYear=new Date().getFullYear();
+ year.innerHTML='<option value="">Year</option>'+Array.from({length:currentYear-1899},(_,i)=>{const y=currentYear-i;return '<option value="'+y+'">'+y+'</option>'}).join('');
+ day.dataset.ready='1';
+}
+function setStaffBirthDateFields(value){
+ populateStaffBirthDateFields();
+ const day=document.getElementById('authBirthDay'),month=document.getElementById('authBirthMonth'),year=document.getElementById('authBirthYear');
+ if(!day||!month||!year)return;
+ const match=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+ year.value=match?match[1]:'';month.value=match?match[2]:'';day.value=match?match[3]:'';
+}
+function getStaffBirthDateValue(){
+ const d=document.getElementById('authBirthDay')?.value||'',m=document.getElementById('authBirthMonth')?.value||'',y=document.getElementById('authBirthYear')?.value||'';
+ if(!d||!m||!y)return '';
+ const date=new Date(Date.UTC(Number(y),Number(m)-1,Number(d)));
+ if(date.getUTCFullYear()!==Number(y)||date.getUTCMonth()!==Number(m)-1||date.getUTCDate()!==Number(d))return '';
+ return y+'-'+m+'-'+d;
+}
+populateStaffBirthDateFields();
 // Staff ID lookup: existing IDs fill the registered name; new IDs remain available for self-registration.
 let staffNameLookupTimer=null,staffNameLookupSequence=0,staffLookupError=null,staffLookupCompletedId='';
 let staffSessionCreationPromise=null;
@@ -4413,8 +4480,8 @@ async function lookupStaffNameById(){
    nameInput.placeholder='Registered Staff name';
    nameInput.dataset.resolvedStaffId=staffId.toUpperCase();
    const departmentSelect=document.getElementById('staffDepartment');
-   if(departmentSelect&&['all','sale','entry','playing','event'].includes(data.department))departmentSelect.value=data.department;
-   if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name and department filled automatically.';
+   if(departmentSelect&&!departmentSelect.value)departmentSelect.value=['all','sale','entry','playing','event'].includes(data.department)?data.department:'';
+   if(hint)hint.textContent='✓ Existing Staff ID verified. Registered name filled automatically. Please enter your Date of Birth and confirm your Department.';
   }else{
    // Keep any manually entered name for a new Staff ID.
    nameInput.readOnly=false;
@@ -4438,13 +4505,14 @@ document.getElementById('authStaffId').addEventListener('keydown',event=>{
 document.getElementById('authStaffId').addEventListener('input',()=>{
  clearTimeout(staffNameLookupTimer);
  // Clear the previous employee's date on shared devices; the signed-in ID's saved date is reloaded after verification.
- const birthday=document.getElementById('authBirthDate');if(birthday)birthday.value='';
+ setStaffBirthDateFields('');
+ const department=document.getElementById('staffDepartment');if(department)department.value='';
  const name=document.getElementById('authName');
  name.value='';name.readOnly=false;name.dataset.resolvedStaffId='';
  name.placeholder='Enter your name';
  const hint=document.getElementById('authNameHint');
  if(hint)hint.textContent='Enter an existing Staff ID to fill the registered name automatically. For a new ID, enter any available number and your name.';
- staffNameLookupTimer=setTimeout(()=>{staffLookupInFlight=lookupStaffNameById()},650);
+ staffNameLookupTimer=setTimeout(()=>{staffLookupInFlight=lookupStaffNameById()},180);
 });
 
 let staffLoginSubmitting=false;
@@ -4460,13 +4528,18 @@ document.getElementById('authForm').onsubmit=async e=>{
  const staffIdInput=document.getElementById('authStaffId');
  const staffId=staffIdInput.value.trim();
  // Freeze department before asynchronous lookup/session calls.
- const chosenDepartment=['all','sale','entry','playing'].includes(document.getElementById('staffDepartment').value)?document.getElementById('staffDepartment').value:'sale';
+ const chosenDepartment=document.getElementById('staffDepartment').value;
+ const birthDate=getStaffBirthDateValue();
  const err=document.getElementById('authError');
  try{
   if(!/^[A-Za-z0-9][A-Za-z0-9_-]{1,31}$/.test(staffId)){
    err.textContent='Staff ID must be 2–32 characters using letters, numbers, hyphens or underscores.';
    return;
   }
+  if(!nameInput.value.trim())throw new Error('Please enter your full name.');
+  if(!birthDate)throw new Error('Date of Birth is required. Please enter your birthday before login.');
+  if(birthDate>new Date().toISOString().slice(0,10))throw new Error('Date of Birth cannot be in the future.');
+  if(!['all','sale','entry','playing','event'].includes(chosenDepartment))throw new Error('Please select your Department before login.');
   // Cancel the debounce timer and finish the latest ID lookup before claiming the identity.
   // This prevents a fast tap on Continue from racing the 650ms lookup on mobile.
   clearTimeout(staffNameLookupTimer);
@@ -4511,24 +4584,11 @@ document.getElementById('authForm').onsubmit=async e=>{
    session=data.session||null;
   }
   if(!session)throw new Error('Could not start a staff session. Please try again.');
-  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity',{p_staff_id:staffId,p_display_name:name,p_department:chosenDepartment});
+  const {data:claimed,error:claimError}=await sb.rpc('claim_staff_identity_with_profile',{p_staff_id:staffId,p_display_name:name,p_birth_date:birthDate,p_department:chosenDepartment});
   if(claimError)throw claimError;
   if(!claimed)throw new Error('Staff ID could not be verified.');
   currentStaffId=claimed;
-  // Birthday is optional for existing Staff login. Retrieve the saved value, then
-  // securely save only when this Staff member supplied/changed their own date.
-  const birthdayInput=document.getElementById('authBirthDate');
-  const enteredBirthday=birthdayInput?.value||'';
-  const {data:savedBirthday,error:birthdayReadError}=await sb.rpc('get_my_staff_birthday');
-  if(birthdayReadError)throw birthdayReadError;
-  if(enteredBirthday){
-   if(enteredBirthday>new Date().toISOString().slice(0,10))throw new Error('Date of Birth cannot be in the future.');
-   const {error:birthdaySaveError}=await sb.rpc('save_my_staff_birthday',{p_birth_date:enteredBirthday});
-   if(birthdaySaveError)throw birthdaySaveError;
-   if(birthdayInput)birthdayInput.value=enteredBirthday;
-  }else if(birthdayInput&&savedBirthday){
-   birthdayInput.value=String(savedBirthday).slice(0,10);
-  }
+  // Date of Birth and Department were required and saved atomically by the verified login RPC.
   if(!knownProfile){
    const {data:verifiedProfile,error:verifiedProfileError}=await sb.from('profiles').select('role,display_name,avatar_url,is_archived,staff_id').eq('id',session.user.id).maybeSingle();
    if(verifiedProfileError)throw verifiedProfileError;
@@ -4571,11 +4631,11 @@ async function restoreSavedSession(){
    // Load the signed-in Staff member's own saved birthday into the login form for next time.
    try{
     const {data:birthday,error:birthdayError}=await sb.rpc('get_my_staff_birthday');
-    if(!birthdayError&&birthday)document.getElementById('authBirthDate').value=String(birthday).slice(0,10);
+    if(!birthdayError&&birthday)setStaffBirthDateFields(String(birthday).slice(0,10));
    }catch(birthdayLoadError){console.warn('Staff birthday could not be loaded:',birthdayLoadError)}
-   if(!staffLoginSubmitting){const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';document.getElementById('staffDepartment').value=['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale';}
+   if(!staffLoginSubmitting){const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';document.getElementById('staffDepartment').value=['all','sale','entry','playing','event'].includes(savedDepartment)?savedDepartment:'';}
    const savedDepartment=localStorage.getItem('tctl-staff-department')||'sale';
-   await startCloudSession(data.session,true,profile,'app_open',['sale','entry','playing','all'].includes(savedDepartment)?savedDepartment:'sale');
+   await startCloudSession(data.session,true,profile,'app_open',['all','sale','entry','playing','event'].includes(savedDepartment)?savedDepartment:'sale');
   }else if(profile && profile.role!=='staff'){
    await sb.auth.signOut();
    const authScreen=document.getElementById('authScreen');if(authScreen){authScreen.style.display='grid';authScreen.setAttribute('aria-hidden','false')}
@@ -4634,6 +4694,7 @@ function translateTextNode(node){
  const next=uiTranslate(state.source);if(node.nodeValue!==next)node.nodeValue=next;state.last=next;
 }
 function translateAttribute(el,attr){
+ if(el?.closest?.('[data-no-translate]'))return;
  let map=UI_ATTR_ORIGINALS.get(el);if(!map){map=new Map();UI_ATTR_ORIGINALS.set(el,map)}
  let state=map.get(attr),value=el.getAttribute(attr);if(!state||value!==state.last){state={source:value,last:null};map.set(attr,state)}
  const next=uiTranslate(state.source);if(value!==next)el.setAttribute(attr,next);state.last=next;
@@ -4734,7 +4795,46 @@ function printStaffCvQr(row,qrData){
  return frame
 }
 async function staffCvCheckout(raw){const m=String(raw||'').trim().match(/^PDKCV:([0-9a-f-]{36})$/i);if(!m)throw new Error('Invalid Customer Visit QR');const {data:r,error}=await sb.from('customer_visit_logs').select('id,group_number,status,exit_at').eq('id',m[1]).maybeSingle();if(error)throw error;if(!r)throw new Error('Group not found');if(r.status==='completed'||r.exit_at)return {already:true,row:r};const {data,error:updateError}=await sb.from('customer_visit_logs').update({status:'completed',exit_at:new Date().toISOString()}).eq('id',r.id).eq('status','pending').select('id').maybeSingle();if(updateError)throw updateError;return {already:!data,row:r}}
-async function scanStaffCvQr(){await staffCvScanLib();const m=document.createElement('div');m.id='staffCvScanModal';m.style.cssText='position:fixed;inset:0;z-index:10070;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px';m.innerHTML='<section class="panel" style="width:min(100%,440px);padding:14px;background:#0b2037"><div style="display:flex;justify-content:space-between"><h2>📷 Scan Group QR</h2><button id="staffCvScanClose">✕</button></div><p class="subtle">Scan the group ticket at exit.</p><div id="staffCvReader" style="background:#fff"></div><p id="staffCvScanStatus" class="subtle">Starting camera…</p><label>Manual QR<input id="staffCvManual" placeholder="PDKCV:…"></label><button id="staffCvManualGo" class="gold" style="width:100%">Confirm Scan</button></section>';document.body.appendChild(m);const status=document.getElementById('staffCvScanStatus'),close=async()=>{try{if(staffCvScanner){await staffCvScanner.stop();await staffCvScanner.clear()}}catch(e){}staffCvScanner=null;m.remove()};document.getElementById('staffCvScanClose').onclick=close;const done=async raw=>{try{status.textContent='Checking group…';if(staffCvScanner)try{await staffCvScanner.stop()}catch(e){}const r=await staffCvCheckout(raw);status.textContent=r.already?'Already checked out; duplicate scan ignored.':'✓ Group checked out successfully.';await loadStaffCustomerVisits();setTimeout(close,1300)}catch(e){status.textContent=e.message||String(e)}};document.getElementById('staffCvManualGo').onclick=()=>done(document.getElementById('staffCvManual').value);try{staffCvScanner=new Html5Qrcode('staffCvReader');await staffCvScanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},done,()=>{});status.textContent='Camera ready. Scan a group QR.'}catch(e){status.textContent='Camera unavailable: '+(e.message||e)+'. Use manual QR below.'}}
+async function scanStaffCvQr(){
+ const prior=document.getElementById('staffCvScanModal');if(prior)prior.remove();
+ try{await staffCvScanLib()}catch(error){alert('QR scanner could not start: '+(error.message||error));return}
+ const m=document.createElement('div');m.id='staffCvScanModal';
+ m.style.cssText='position:fixed;inset:0;z-index:10070;background:#000d;display:flex;align-items:center;justify-content:center;padding:12px';
+ m.innerHTML='<section class="panel" role="dialog" aria-modal="true" aria-labelledby="staffCvScanTitle" style="width:min(100%,440px);padding:14px;background:#0b2037"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="staffCvScanTitle">📷 Scan Group QR</h2><button type="button" id="staffCvScanClose" aria-label="Close QR scanner">✕</button></div><p class="subtle">Scan the group ticket at exit.</p><div id="staffCvReader" style="background:#fff;border-radius:12px;overflow:hidden"></div><p id="staffCvScanStatus" class="subtle" role="status" aria-live="polite">Starting camera…</p><label>Manual QR<input id="staffCvManual" autocomplete="off" placeholder="PDKCV:…"></label><button type="button" id="staffCvManualGo" class="gold" style="width:100%">Confirm Scan</button></section>';
+ document.body.appendChild(m);
+ const status=m.querySelector('#staffCvScanStatus'),manual=m.querySelector('#staffCvManualGo');
+ let scanner=null,scannerRunning=false,processing=false,closed=false;
+ const stopCamera=async()=>{
+  if(!scanner)return;
+  if(scannerRunning){try{await scanner.stop()}catch(error){console.warn('Staff QR camera stop:',error)}scannerRunning=false}
+  try{await scanner.clear()}catch(error){console.warn('Staff QR camera clear:',error)}
+  if(staffCvScanner===scanner)staffCvScanner=null;
+ };
+ const close=async()=>{if(closed)return;closed=true;await stopCamera();if(m.isConnected)m.remove();document.removeEventListener('keydown',onKeyDown)};
+ const onKeyDown=e=>{if(e.key==='Escape'&&m.isConnected)close()};
+ document.addEventListener('keydown',onKeyDown);
+ m.addEventListener('click',e=>{if(e.target===m)close()});
+ m.querySelector('#staffCvScanClose').onclick=close;
+ const done=async raw=>{
+  if(closed||processing)return;
+  processing=true;manual.disabled=true;status.textContent='Checking group…';
+  await stopCamera();
+  try{
+   const result=await staffCvCheckout(raw);
+   if(closed)return;
+   status.textContent=result.already?'Already checked out; duplicate scan ignored.':'✓ Group checked out successfully.';
+   await loadStaffCustomerVisits();
+   if(!closed)setTimeout(close,1300);
+  }catch(error){if(!closed){status.textContent=error.message||String(error);processing=false;manual.disabled=false}}
+ };
+ manual.onclick=()=>done(m.querySelector('#staffCvManual').value);
+ try{
+  scanner=new Html5Qrcode('staffCvReader');staffCvScanner=scanner;
+  await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:220,height:220}},done,()=>{});
+  scannerRunning=true;
+  if(!closed)status.textContent='Camera ready. Scan a group QR.';else await stopCamera();
+ }catch(error){await stopCamera();if(!closed)status.textContent='Camera unavailable: '+(error.message||error)+'. Use manual QR below.'}
+}
 
 function renderStaffCustomerVisits(){
  const root=document.getElementById('pageContent');root.dataset.uiPage='customer-visits';
@@ -4757,7 +4857,55 @@ function renderStaffCustomerVisits(){
 async function loadStaffCustomerVisits(){const host=document.getElementById('staffCvHistory');if(!host)return;const t=(en,th,my)=>lang==='th'?th:lang==='my'?my:en;host.textContent=t('Loading visitor records…','กำลังโหลดบันทึกผู้เข้าชม…','ဖတ်နေသည်…');try{const date=document.getElementById('staffCvFilter')?.value||new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date());const [{data:rows,error},{data:pending,error:pendingError}]=await Promise.all([sb.from('customer_visit_logs').select('id,visit_date,group_number,total_visitors,thai_visitors,foreign_visitors,review_visitors,visitor_type,entry_at,exit_at,duration_minutes,status').eq('visit_date',date).order('group_number',{ascending:true}),sb.from('customer_visit_logs').select('id,total_visitors').eq('status','pending')]);if(error)throw error;if(pendingError)throw pendingError;staffCustomerVisitRows=rows||[];const sum=k=>staffCustomerVisitRows.reduce((n,r)=>n+Number(r[k]||0),0),set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=String(v)};set('staffCvTotal',sum('total_visitors'));set('staffCvThai',sum('thai_visitors'));set('staffCvForeign',sum('foreign_visitors'));set('staffCvReview',sum('review_visitors'));set('staffCvNext',Math.max(0,...staffCustomerVisitRows.map(r=>Number(r.group_number)||0))+1);const inside=pending.reduce((n,r)=>n+Number(r.total_visitors||0),0);host.innerHTML='<div class="subtle" style="font-size:12px;margin-bottom:7px">'+t('Pending groups: ','กลุ่มที่รอดำเนินการ: ','ဆိုင်းငံ့အဖွဲ့: ')+pending.length+' · '+t('People inside: ','จำนวนคนภายใน: ','အတွင်းရှိသူ: ')+inside+'</div>'+(staffCustomerVisitRows.length?staffCustomerVisitRows.map(r=>{const fmt=v=>v?new Intl.DateTimeFormat(lang==='th'?'th-TH':'en-GB',{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'}).format(new Date(v)):'—';const mins=r.duration_minutes;const dur=mins===null?'':mins<60?mins+' min':Math.floor(mins/60)+' h '+(mins%60)+' min';return '<article class="panel" style="padding:9px;margin:6px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b style="color:var(--gold)">#'+Number(r.group_number||0)+' · '+({thai:'🇹🇭 '+t('Thai','ชาวไทย','ထိုင်း'),foreign:'🌐 '+t('Foreign','ชาวต่างชาติ','နိုင်ငံခြား'),review:'⭐ '+t('Review','รอตรวจสอบ','စစ်ဆေးရန်')})[r.visitor_type]+'</b><strong>'+Number(r.total_visitors)+' '+t('people','คน','ဦး')+'</strong></div><div class="subtle" style="font-size:12px;margin-top:4px">'+t('Entry','เข้า','ဝင်')+': '+fmt(r.entry_at)+' · '+t('Exit','ออก','ထွက်')+': '+fmt(r.exit_at)+'</div><div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px"><span style="font-size:12px">'+(r.status==='completed'?'✓ '+t('Completed','เสร็จสิ้น','ပြီးဆုံး')+(dur?' · '+dur:''):'● '+t('Pending','รอดำเนินการ','ဆိုင်းငံ့'))+'</span><div style="display:flex;gap:5px">'+'<button type="button" class="blue" data-staff-cv-qr="'+esc(r.id)+'">▣ QR</button>'+(r.status==='pending'?'<button type="button" class="gold" data-staff-cv-out="'+esc(r.id)+'">✓ '+t('Check-out','เช็กเอาต์','ထွက်စာရင်း')+'</button>':'')+'<button type="button" class="blue" data-staff-cv-edit="'+esc(r.id)+'">✎</button><button type="button" class="red" data-staff-cv-del="'+esc(r.id)+'">🗑</button></div></div></article>'}).join(''):'<p class="subtle">'+t('No visitor records for this date.','ไม่มีบันทึกในวันที่เลือก','ဤရက်စွဲအတွက် မှတ်တမ်းမရှိပါ။')+'</p>');host.querySelectorAll('[data-staff-cv-qr]').forEach(b=>b.onclick=async()=>{const row=staffCustomerVisitRows.find(r=>String(r.id)===b.dataset.staffCvQr);if(row)try{await showStaffCvQr(row)}catch(e){alert(e.message||e)}});host.querySelectorAll('[data-staff-cv-out]').forEach(b=>b.onclick=async()=>{if(!confirm(t('Mark this group completed and set exit time to now?','ยืนยันเช็กเอาต์กลุ่มนี้และบันทึกเวลาปัจจุบันหรือไม่?','ဤအဖွဲ့ကို ပြီးဆုံးအဖြစ် သတ်မှတ်ပြီး လက်ရှိအချိန်ကို ထွက်ချိန်အဖြစ် မှတ်မလား။')))return;b.disabled=true;try{const {error}=await sb.from('customer_visit_logs').update({status:'completed',exit_at:new Date().toISOString()}).eq('id',b.dataset.staffCvOut);if(error)throw error;await loadStaffCustomerVisits()}catch(e){b.disabled=false;alert(e.message||e)}});host.querySelectorAll('[data-staff-cv-edit]').forEach(b=>b.onclick=()=>openStaffCustomerVisitEditor(staffCustomerVisitRows.find(r=>String(r.id)===b.dataset.staffCvEdit)));host.querySelectorAll('[data-staff-cv-del]').forEach(b=>b.onclick=async()=>{if(!confirm(t('Delete this Customer Visit record only?','ลบเฉพาะบันทึกผู้เข้าชมนี้หรือไม่?','ဤ Customer Visits မှတ်တမ်းတစ်ခုတည်းကို ဖျက်မလား။')))return;b.disabled=true;try{const {error}=await sb.from('customer_visit_logs').delete().eq('id',b.dataset.staffCvDel);if(error)throw error;await loadStaffCustomerVisits()}catch(e){b.disabled=false;alert(e.message||e)}})}catch(e){host.innerHTML='<p style="color:#ff9aa9">'+t('Could not load Customer Visits: ','ไม่สามารถโหลดข้อมูลได้: ','Customer Visits ဖတ်မရပါ: ')+esc(e.message||e)+'</p><button type="button" class="blue" id="staffCvRetry">'+t('Retry','ลองอีกครั้ง','ထပ်ကြိုးစားရန်')+'</button>';document.getElementById('staffCvRetry').onclick=loadStaffCustomerVisits}}
 function openStaffCustomerVisitEditor(r){if(!r)return;const t=(en,th,my)=>lang==='th'?th:lang==='my'?my:en;const fmt=v=>{if(!v)return '';const d=new Date(v);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)+'T'+new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(d)};const entry=fmt(r.entry_at).split('T');const exit=r.exit_at?fmt(r.exit_at).split('T')[1]:'';const modal=document.createElement('div');modal.style.cssText='position:fixed;inset:0;z-index:10050;background:#000b;display:grid;place-items:center;padding:16px';modal.innerHTML='<section class="panel" style="width:min(100%,440px);padding:16px"><h3 style="color:var(--gold)">'+t('Edit group #','แก้ไขกลุ่ม #','အဖွဲ့ပြင်ဆင်ရန် #')+esc(r.group_number)+'</h3><form id="staffCvEditForm" style="display:grid;gap:9px"><label>'+t('People','จำนวนคน','လူဦးရေ')+'<input id="staffCvEditCount" type="number" min="1" max="1000" required value="'+Number(r.total_visitors)+'"></label><label>'+t('Visitor type','ประเภทผู้เข้าชม','ဧည့်သည်အမျိုးအစား')+'<select id="staffCvEditType"><option value="thai">Thai</option><option value="foreign">Foreign</option><option value="review">Review</option></select></label><label>'+t('Entry date','วันที่เข้า','ဝင်ရက်စွဲ')+'<input id="staffCvEditDate" type="date" required value="'+entry[0]+'"></label><label>'+t('Entry time','เวลาเข้า','ဝင်ချိန်')+'<input id="staffCvEditTime" type="time" required value="'+entry[1]+'"></label><label>'+t('Exit time (optional)','เวลาออก (ไม่บังคับ)','ထွက်ချိန် (မဖြစ်မနေမဟုတ်ပါ)')+'<input id="staffCvEditExit" type="time" value="'+exit+'"></label><div style="display:flex;gap:8px"><button type="button" class="blue" id="staffCvEditCancel">'+t('Cancel','ยกเลิก','မလုပ်တော့ပါ')+'</button><button type="submit" class="gold" id="staffCvEditSave" style="flex:1">'+t('Save changes','บันทึกการเปลี่ยนแปลง','ပြင်ဆင်ချက်သိမ်းရန်')+'</button></div><p id="staffCvEditError" class="auth-error"></p></form></section>';document.body.appendChild(modal);document.getElementById('staffCvEditType').value=r.visitor_type||'thai';document.getElementById('staffCvEditCancel').onclick=()=>modal.remove();modal.querySelector('form').onsubmit=async e=>{e.preventDefault();const count=Number(document.getElementById('staffCvEditCount').value),kind=document.getElementById('staffCvEditType').value,date=document.getElementById('staffCvEditDate').value,time=document.getElementById('staffCvEditTime').value,exitTime=document.getElementById('staffCvEditExit').value,err=document.getElementById('staffCvEditError'),btn=document.getElementById('staffCvEditSave');if(!Number.isInteger(count)||count<1||count>1000){err.textContent=t('Enter 1–1000 people.','กรุณาระบุจำนวน 1–1,000 คน','လူဦးရေ ၁ မှ ၁၀၀၀ ထည့်ပါ။');return}const entryAt=new Date(date+'T'+time+':00+07:00');const exitAt=exitTime?new Date(date+'T'+exitTime+':00+07:00'):null;if(Number.isNaN(entryAt.getTime())||(exitAt&&Number.isNaN(exitAt.getTime()))||(exitAt&&exitAt<entryAt)){err.textContent=t('Check entry and exit times.','กรุณาตรวจสอบเวลาเข้าและออก','ဝင်ချိန်နှင့်ထွက်ချိန်ကို စစ်ဆေးပါ။');return}btn.disabled=true;try{const patch={total_visitors:count,visitor_type:kind,thai_visitors:kind==='thai'?count:0,foreign_visitors:kind==='foreign'?count:0,review_visitors:kind==='review'?count:0,entry_at:entryAt.toISOString(),exit_at:exitAt?exitAt.toISOString():null,status:exitAt?'completed':'pending'};const {error}=await sb.from('customer_visit_logs').update(patch).eq('id',r.id);if(error)throw error;modal.remove();await loadStaffCustomerVisits()}catch(error){err.textContent=error.message||String(error);btn.disabled=false}}}
 let staffCustomerVisitRows=[];
-async function staffCustomerVisitExport(share){const date=document.getElementById('staffCvFilter')?.value||'';const rows=staffCustomerVisitRows||[];const lines=[['Group','Type','People','Entry','Exit','Duration'],...rows.map(r=>[r.group_number,r.visitor_type,r.total_visitors,r.entry_at,r.exit_at,r.duration_minutes])];const csv='\uFEFF'+lines.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const file=new File([blob],'customer-visits-'+date+'.csv',{type:'text/csv'});if(share&&navigator.canShare?.({files:[file]})){try{await navigator.share({files:[file],title:'Customer Visits Report'});return}catch(e){if(e.name==='AbortError')return}}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+async function staffCustomerVisitExport(share){
+ try{
+ const date=document.getElementById('staffCvFilter')?.value||new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok'}).format(new Date());
+ const rows=Array.isArray(staffCustomerVisitRows)?staffCustomerVisitRows:[];
+ const W=1400,pad=56,headerH=250,rowH=76,footerH=90,H=Math.max(520,headerH+rows.length*rowH+footerH);
+ if(H>32000)throw new Error('This report has too many rows for one image. Please export a shorter date range.');
+ const canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;
+ const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Image canvas is not available in this browser.');
+ ctx.fillStyle='#0b1220';ctx.fillRect(0,0,W,H);
+ ctx.fillStyle='#172235';ctx.fillRect(0,0,W,headerH);
+ ctx.fillStyle='#f5c66b';ctx.font='bold 42px Arial';ctx.fillText('CUSTOMER SERVICE · VISIT REPORT',pad,78);
+ ctx.fillStyle='#ffffff';ctx.font='bold 30px Arial';ctx.fillText('Date: '+date,pad,132);
+ const total=rows.reduce((n,r)=>n+Number(r.total_visitors||0),0);
+ const completed=rows.filter(r=>r.status==='completed').length;
+ ctx.font='22px Arial';ctx.fillStyle='#cbd5e1';
+ ctx.fillText('Groups: '+rows.length+'     Visitors: '+total+'     Completed: '+completed,pad,188);
+ const cols=[pad,pad+150,pad+360,pad+520,pad+800,pad+1080];
+ const labels=['GROUP','VISITOR TYPE','PEOPLE','ENTRY TIME','EXIT TIME','DURATION'];
+ ctx.fillStyle='#26364d';ctx.fillRect(pad,headerH,W-pad*2,58);
+ ctx.font='bold 19px Arial';ctx.fillStyle='#f5c66b';
+ labels.forEach((v,i)=>ctx.fillText(v,cols[i]+12,headerH+37));
+ const fmt=v=>v?new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',dateStyle:'medium',timeStyle:'short'}).format(new Date(v)):'—';
+ rows.forEach((r,i)=>{
+  const y=headerH+58+i*rowH;
+  ctx.fillStyle=i%2?'#111d2d':'#152338';ctx.fillRect(pad,y,W-pad*2,rowH);
+  const type=({thai:'Thai',foreign:'Foreign',review:'Review'})[r.visitor_type]||String(r.visitor_type||'—');
+  const mins=Number(r.duration_minutes);const duration=r.duration_minutes===null||r.duration_minutes===undefined?'—':mins<60?mins+' min':Math.floor(mins/60)+' h '+(mins%60)+' min';
+  const values=['#'+String(r.group_number??'—'),type,String(Number(r.total_visitors||0)),fmt(r.entry_at),fmt(r.exit_at),duration];
+  ctx.font='20px Arial';ctx.fillStyle='#f8fafc';
+  values.forEach((v,j)=>{let value=String(v);const max=j===3||j===4?270:j===5?150:190;while(ctx.measureText(value).width>max&&value.length>4)value=value.slice(0,-2)+'…';ctx.fillText(value,cols[j]+10,y+45)});
+  if(r.status==='pending'){ctx.fillStyle='#f5c66b';ctx.font='15px Arial';ctx.fillText('PENDING',W-pad-105,y+20)}
+ });
+ ctx.fillStyle='#94a3b8';ctx.font='17px Arial';ctx.fillText('Generated from Customer Service · Pattaya Dinosaur Ticket Control',pad,H-34);
+ const blob=await new Promise(resolve=>{try{canvas.toBlob(resolve,'image/png')}catch(e){resolve(null)}});
+ if(!blob||!blob.size)throw new Error('Could not create PNG image. Please try Chrome again.');
+ const filename='customer-visits-'+date+'.png';
+ if(share){
+  const file=new File([blob],filename,{type:'image/png'});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   try{await navigator.share({files:[file],title:'Customer Service Visit Report'});return}
+   catch(e){if(e.name==='AbortError')return;console.warn('Native image sharing unavailable; downloading PNG instead.',e)}
+  }
+ }
+ const url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download=filename;a.style.display='none';document.body.appendChild(a);a.click();
+ setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},30000);
+ if(share)alert('PNG report downloaded. Open it from Downloads to share the image.');
+ }catch(e){if(e?.name!=='AbortError')alert('Could not create Customer Service report image: '+(e?.message||e))}
+}
 async function archiveTicket(id){
  const t=tickets.find(x=>String(x.id)===String(id));if(!t||t.isArchived)return;
  if(!currentUser||!cloudReady){alert('Cloud connection is not ready. Reconnect before archiving.');return}
@@ -7185,7 +7333,7 @@ input:focus,select:focus{border-color:#55d6ff!important;box-shadow:0 0 0 3px rgb
 /* v4: visibility is managed by festival-media.js for all themes. */
 #appDateTime .pdk-auto-festival-canvas{mix-blend-mode:screen;opacity:.72!important}
 </style>
-<script src="/festival-media.js?v=20261125-4"></script>
+<script src="/festival-media.js?v=20261128-1"></script>
 </body></html>
 
 <style id="pdk-staff-access-maintenance-center-v1">
@@ -7492,7 +7640,7 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
 #appDateTime.app-datetime{
  position:relative!important;display:flex!important;flex-direction:row!important;align-items:flex-start!important;justify-content:space-between!important;
  width:calc(100% - 28px)!important;max-width:1500px!important;min-height:0!important;height:auto!important;aspect-ratio:3/1!important;
- margin:12px auto 16px!important;padding:clamp(13px,2.1vw,30px)!important;gap:12px!important;
+ margin:12px auto 38px!important;padding:clamp(13px,2.1vw,30px)!important;gap:12px!important;
  overflow:hidden!important;isolation:isolate!important;border:2px solid #e8c779!important;border-radius:clamp(18px,2.6vw,34px)!important;
  background:#071b3a!important;box-shadow:0 5px 22px rgba(0,0,0,.26),inset 0 0 0 3px rgba(255,228,160,.16)!important;
 }
@@ -7541,7 +7689,7 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
 #appDateTime .pdk-svg-reflections{animation:pdkReflection 7s ease-in-out infinite alternate!important}
 #appDateTime .pdk-svg-krathong{animation:pdkKrathongBob 8s ease-in-out infinite alternate!important}
 @media(max-width:700px){
- #appDateTime.app-datetime{width:calc(100% - 20px)!important;aspect-ratio:3/1!important;min-height:0!important;height:auto!important;padding:12px 13px!important;gap:8px!important;border-radius:20px!important;margin:10px auto 14px!important}
+ #appDateTime.app-datetime{width:calc(100% - 20px)!important;aspect-ratio:3/1!important;min-height:0!important;height:auto!important;padding:12px 13px!important;gap:8px!important;border-radius:20px!important;margin:10px auto 40px!important}
  #appDateTime .app-datetime-date,#appDateTime .app-datetime-clock{width:49%!important;gap:3px!important}
  #appDateTime .app-datetime-caption{font-size:clamp(9px,2vw,14px)!important;letter-spacing:.08em!important;gap:4px!important}
  #appDateTime .app-datetime-date strong{font-size:clamp(18px,4.4vw,30px)!important}
@@ -7620,51 +7768,7 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
 /* Keep actual video playback available even when Android has Reduce animations enabled. */
 @media(prefers-reduced-motion:reduce){#appDateTime .pdk-festival-video{display:block!important;transition:none!important}}
 </style>
-<script id="pdk-loy-krathong-video-controller-v2">
-(function(){
- const card=document.getElementById('appDateTime');
- const video=card&&card.querySelector('.pdk-festival-video');
- if(!card||!video||video.dataset.controllerBound==='yes')return;
- video.dataset.controllerBound='yes';
- const selected=()=>card.classList.contains('has-owner-festival-video');
- const fallback=()=>card.classList.contains('pdk-video-fallback');
- const reveal=()=>{if(selected()&&!video.paused){card.classList.remove('pdk-video-fallback');card.classList.add('pdk-video-ready')}};
- const start=async()=>{
-  if(!selected()){
-   video.pause();
-   card.classList.remove('pdk-video-ready','pdk-video-fallback');
-   return;
-  }
-  if(fallback())return;
-  video.muted=true;video.defaultMuted=true;video.volume=0;
-  video.setAttribute('muted','');video.setAttribute('autoplay','');video.setAttribute('loop','');
-  video.setAttribute('playsinline','');video.setAttribute('webkit-playsinline','');
-  video.playsInline=true;video.loop=true;video.preload='auto';
-  if(video.networkState===HTMLMediaElement.NETWORK_EMPTY)video.load();
-  if(!video.paused){reveal();return}
-  try{await video.play();reveal()}
-  catch(error){card.classList.remove('pdk-video-ready');card.classList.add('pdk-video-fallback');video.dataset.playbackBlocked='yes'}
- };
- video.addEventListener('loadeddata',()=>{if(selected()&&!fallback()&&video.paused)start()});
- video.addEventListener('canplay',()=>{if(selected()&&!fallback()&&video.paused)start()});
- video.addEventListener('playing',reveal);
- video.addEventListener('error',()=>{card.classList.remove('pdk-video-ready');if(selected())card.classList.add('pdk-video-fallback');video.dataset.playbackError=String(video.error&&video.error.code||'unknown')});
- const observer=new MutationObserver(()=>{
-   if(selected()){
-    if(!fallback()&&video.paused)start();
-    return;
-   }
-   if(!video.paused)video.pause();
-   if(card.classList.contains('pdk-video-ready')||card.classList.contains('pdk-video-fallback'))card.classList.remove('pdk-video-ready','pdk-video-fallback');
-  });
- observer.observe(card,{attributes:true,attributeFilter:['class']});
- document.addEventListener('visibilitychange',()=>{if(document.hidden)video.pause();else start()});
- window.addEventListener('pageshow',start);
- window.addEventListener('online',start);
- document.addEventListener('pointerdown',()=>{if(selected()&&fallback()){card.classList.remove('pdk-video-fallback');start()}},{passive:true});
- start();
-})();
-</script>
+
 
 
 <style id="pdk-loy-krathong-vivid-color-v1">
@@ -7776,3 +7880,169 @@ body.theme-light #side #closeMenu{background:#fff!important;color:#344d63!import
  new MutationObserver(scan).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['data-festival-theme','class']});scan();
 })();
 </script>
+<style id="pdk-staff-datetime-flow-fix-v2">
+/* Staff Date/Time card must reserve its full mobile height before dashboard controls. */
+@media(max-width:700px){
+  #appDateTime.app-datetime{
+    position:relative!important;
+    display:flex!important;
+    aspect-ratio:unset!important;
+    height:auto!important;
+    min-height:245px!important;
+    margin:10px auto 52px!important;
+  }
+  main.wrap{
+    position:relative!important;
+    display:flow-root!important;
+    z-index:1!important;
+    clear:both!important;
+    margin-top:24px!important;
+  }
+}
+</style>
+<style id="pdk-staff-department-actions-one-row-v1">
+/* Compact the main department action bar only; keep Date/Time card untouched. */
+@media(max-width:700px){
+  #pageContent > .actions:has(#ticketArchiveOpen){
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    align-items:stretch!important;
+    gap:6px!important;
+    width:100%!important;
+    margin:10px 0 12px!important;
+  }
+  #pageContent > .actions:has(#ticketRangeCalcBtn){
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:40px!important;
+    height:40px!important;
+    padding:5px 2px!important;
+    margin:0!important;
+    border-radius:10px!important;
+    font-size:clamp(9px,2.8vw,11px)!important;
+    line-height:1.1!important;
+    font-weight:800!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn{
+    min-width:0!important;
+    width:100%!important;
+    height:40px!important;
+    min-height:40px!important;
+    padding:5px!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn svg{
+    width:21px!important;
+    height:21px!important;
+  }
+}
+@media(max-width:360px){
+  #pageContent > .actions:has(#ticketArchiveOpen){gap:4px!important}
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{
+    font-size:9px!important;
+    padding:4px 1px!important;
+    border-radius:9px!important;
+  }
+}
+</style>
+
+
+<style id="pdk-staff-actions-nowrap-v2">
+/* Keep every department action control in one equal-width horizontal row on phones. */
+@media(max-width:700px){
+  #pageContent > .actions:has(#ticketArchiveOpen){
+    display:flex!important;
+    flex-direction:row!important;
+    flex-wrap:nowrap!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    gap:5px!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow:visible!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{
+    display:inline-flex!important;
+    flex:1 1 0!important;
+    box-sizing:border-box!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:none!important;
+    height:40px!important;
+    min-height:40px!important;
+    margin:0!important;
+    padding:4px 2px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    font-size:clamp(8px,2.5vw,11px)!important;
+    line-height:1!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn{
+    flex:1 1 0!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:none!important;
+    padding:4px!important;
+  }
+  #pageContent > .actions:has(#ticketArchiveOpen) > .report-icon-btn svg{
+    width:20px!important;
+    height:20px!important;
+    flex:0 0 20px!important;
+  }
+}
+@media(max-width:360px){
+  #pageContent > .actions:has(#ticketArchiveOpen){gap:4px!important}
+  #pageContent > .actions:has(#ticketArchiveOpen) > button{font-size:8px!important;padding:3px 1px!important}
+}
+</style>
+
+<script src="/account-profile.js?v=20261128-3"></script>
+
+<style id="pdk-date-time-media-first-frame-v1">
+/* Keep the Date & Time artwork hidden until the correct selected media is ready. */
+#appDateTime.app-datetime.pdk-media-pending,
+#appDateTime.app-datetime.pdk-video-fallback{
+  background:transparent!important;
+  background-color:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+#appDateTime.app-datetime.pdk-media-pending::before,
+#appDateTime.app-datetime.pdk-media-pending::after,
+#appDateTime.app-datetime.pdk-video-fallback::before,
+#appDateTime.app-datetime.pdk-video-fallback::after{
+  content:none!important;
+  display:none!important;
+  opacity:0!important;
+  background:none!important;
+}
+#appDateTime.pdk-media-pending .pdk-festival-art,
+#appDateTime.pdk-video-fallback .pdk-festival-art{
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  background:transparent!important;
+  background-image:none!important;
+}
+#appDateTime.pdk-media-pending .pdk-festival-video,
+#appDateTime.pdk-media-pending .pdk-festival-scene,
+#appDateTime.pdk-media-pending .pdk-auto-festival-canvas,
+#appDateTime.pdk-video-fallback .pdk-festival-video,
+#appDateTime.pdk-video-fallback .pdk-festival-scene,
+#appDateTime.pdk-video-fallback .pdk-auto-festival-canvas{
+  display:none!important;
+  opacity:0!important;
+  visibility:hidden!important;
+}
+</style>
